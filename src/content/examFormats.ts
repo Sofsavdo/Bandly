@@ -43,3 +43,48 @@ export const UZ_MULTILEVEL: ExamFormat = {
     'Bandly bu imtihonning rasmiy materiallaridan foydalanmaydi; mashqlar Bandly’ning o‘z kontenti.',
   ],
 };
+
+// ---------- Digital SAT (College Board) ----------
+export interface SatFormat {
+  verifiedAt: string;
+  sections: { nameUz: string; minutes: number; questions: number; modules: string }[];
+  totals: { minutes: number; questions: number; breakMin: number };
+  adaptiveUz: string;
+  domains: { section: 'rw' | 'math'; name: string; uz: string }[];
+  scores: { total: string; section: string };
+  passagesUz: string;
+  sources: { title: string; url: string }[];
+  notesUz: string[];
+}
+export const DIGITAL_SAT: SatFormat = {
+  verifiedAt: '2026-11-14',
+  sections: [
+    { nameUz: 'Reading and Writing', minutes: 64, questions: 54, modules: '2 ta modul × 32 daqiqa' },
+    { nameUz: 'Math', minutes: 70, questions: 44, modules: '2 ta modul × 35 daqiqa' },
+  ],
+  totals: { minutes: 134, questions: 98, breakMin: 10 },
+  adaptiveUz: 'Har bo‘lim 2 ta teng modulga bo‘linadi. 1-modulda oson, o‘rta va qiyin savollar aralash; 1-moduldagi natijangizga qarab 2-modul qiyinroq yoki osonroq bo‘ladi.',
+  domains: [
+    { section: 'rw', name: 'Information and Ideas', uz: 'Ma’lumot va g‘oyalar (matn va grafiklardan xulosa)' },
+    { section: 'rw', name: 'Craft and Structure', uz: 'Tuzilma va so‘z (kontekstdagi so‘z, matnlarni bog‘lash)' },
+    { section: 'rw', name: 'Expression of Ideas', uz: 'Fikrni ifodalash (matnni tahrirlash, bog‘lovchilar)' },
+    { section: 'rw', name: 'Standard English Conventions', uz: 'Standart ingliz qoidalari (gap tuzilishi, moslashuv, tinish belgilari)' },
+    { section: 'math', name: 'Algebra', uz: 'Algebra' },
+    { section: 'math', name: 'Advanced Math', uz: 'Murakkab matematika' },
+    { section: 'math', name: 'Problem-Solving and Data Analysis', uz: 'Masala yechish va ma’lumotlar tahlili' },
+    { section: 'math', name: 'Geometry and Trigonometry', uz: 'Geometriya va trigonometriya' },
+  ],
+  scores: { total: '400–1600', section: 'har bo‘lim 200–800' },
+  passagesUz: 'Reading and Writing: 25–150 so‘zli qisqa matnlar (yoki matn juftligi), har biriga bitta test savoli; adabiyot, tarix/ijtimoiy fanlar, gumanitar va tabiiy fanlar mavzularida.',
+  sources: [
+    { title: 'How the SAT Is Structured (College Board)', url: 'https://satsuite.collegeboard.org/sat/whats-on-the-test/structure' },
+    { title: 'The SAT Reading and Writing Section (College Board)', url: 'https://satsuite.collegeboard.org/sat/whats-on-the-test/reading-writing' },
+    { title: 'The SAT Math Section (College Board)', url: 'https://satsuite.collegeboard.org/sat/whats-on-the-test/math' },
+    { title: 'Understanding SAT Scores (College Board)', url: 'https://satsuite.collegeboard.org/sat/scores/understanding-scores' },
+  ],
+  notesUz: [
+    'Ko‘pchilik savollar test shaklida; Math’dagi ba’zi savollarda javobni o‘zingiz kiritasiz (student-produced response).',
+    'Bandly SAT ballini taxmin qilmaydi: haqiqiy ball moslashuvchan modullar va rasmiy shkala asosida hisoblanadi. Ishonchli baho uchun College Board’ning bepul rasmiy Bluebook amaliy testlaridan foydalaning.',
+    'Kalkulyator qoidalari va savollar soni bo‘yicha domenlar ulushi bu yerda keltirilmadi (rasmiy sahifadan to‘liq o‘qib bo‘lmadi).',
+  ],
+};
