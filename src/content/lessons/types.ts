@@ -11,6 +11,7 @@ export type Item =
 export interface WritingTask {
   promptUz: string;
   minWords: number;
+  maxWords?: number;                             // optional upper limit (exam word ranges)
   require: { re: string; labelUz: string }[];   // case-insensitive regex sources; ALL must match
   forbid?: { re: string; labelUz: string }[];   // must NOT match
   model: string;                                 // model answer shown after checking

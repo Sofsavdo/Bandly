@@ -58,7 +58,7 @@ export function validateLesson(l: Lesson): string[] {
 }
 
 // ---------- writing (rule-based, not AI) ----------
-export interface WritingCheck { words: number; enoughWords: boolean; reqs: { labelUz: string; ok: boolean }[]; forbidden: string[]; issues: Issue[]; passed: boolean }
+export interface WritingCheck { words: number; tooLong: boolean; enoughWords: boolean; reqs: { labelUz: string; ok: boolean }[]; forbidden: string[]; issues: Issue[]; passed: boolean }
 const unifyQuotes = (s: string): string => s.replace(/[’‘`´]/g, "'");
 export const wordCount = (s: string): number => (unifyQuotes(s).trim().match(/[A-Za-z']+/g) ?? []).length;
 export function checkWriting(task: WritingTask, raw: string): WritingCheck {
@@ -68,7 +68,8 @@ export function checkWriting(task: WritingTask, raw: string): WritingCheck {
   const forbidden = (task.forbid ?? []).filter((f) => new RegExp(f.re, 'i').test(text)).map((f) => f.labelUz);
   const issues = findIssues(text);
   const enoughWords = words >= task.minWords;
-  return { words, enoughWords, reqs, forbidden, issues, passed: enoughWords && reqs.every((r) => r.ok) && !forbidden.length && !issues.length };
+  const tooLong = task.maxWords !== undefined && words > task.maxWords;
+  return { words, tooLong, enoughWords, reqs, forbidden, issues, passed: enoughWords && !tooLong && reqs.every((r) => r.ok) && !forbidden.length && !issues.length };
 }
 
 // ---------- local progress (moves server-side with accounts) ----------

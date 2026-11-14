@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Tile } from '../components/Tile';
 import { useProfile } from '../lib/store';
 import { ReadinessCard } from '../components/ReadinessCard';
+import { CefrPrep } from '../components/CefrPrep';
 
 const skills = [
   { href: '#/exam/reading', icon: BookOpen, tone: 'blue', title: 'Reading', text: 'Matn va savollar, taymer, dalil izohlari' },
@@ -21,10 +22,11 @@ export default function Exam() {
         <div className="tabs" style={{ marginBottom: 0 }}>
           <button className={`btn ${tab === 'ielts' ? 'dark' : ''}`} onClick={() => setTab('ielts')}>IELTS</button>
           <button className={`btn ${tab === 'sat' ? 'dark' : ''}`} onClick={() => setTab('sat')}>SAT <span className="badge soon">tez orada</span></button>
-          <button className={`btn ${tab === 'cefr' ? 'dark' : ''}`} onClick={() => setTab('cefr')}>CEFR <span className="badge soon">tez orada</span></button>
+          <button className={`btn ${tab === 'cefr' ? 'dark' : ''}`} onClick={() => setTab('cefr')}>CEFR <span className="badge on">Multilevel</span></button>
         </div>
-        {tab !== 'ielts' && <p style={{ marginTop: 14 }}>{tab.toUpperCase()} bo‘limi ishlab chiqilmoqda. Imtihon tayyorgarligi obunasi bilan qo‘shilganda qo‘shimcha to‘lovsiz ochiladi.</p>}
+        {tab === 'sat' && <p style={{ marginTop: 14 }}>SAT bo‘limi rasmiy Digital SAT spetsifikatsiyasi tekshirilgach qo‘shiladi.</p>}
       </div>
+      {tab === 'cefr' && <CefrPrep />}
       {tab === 'ielts' && <ReadinessCard />}
       {tab === 'ielts' && (
         <div className="grid">
