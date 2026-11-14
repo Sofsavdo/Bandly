@@ -127,3 +127,12 @@ M8 / paid launch OD-07, OD-01 answered, OD-11 for non-UZ
 | OD-18 | Speaking allowance per plan (30/60/120 min or fair-use) and free demo size | before first real voice key | **PROD** | Open — part of OD-09 |
 | OD-19 | Whether any score-guarantee style marketing offer is allowed | before launch marketing | **PROD** | Open — legal review; default: no |
 | OD-20 | B2B "Bandly for Schools": scope, pricing model, data-processing terms with centres | after M3 | **PROD** of B2B | Open |
+
+## 7. Additions from the speech & voice engine research (2026-11-14, see `docs/audit/voice/`)
+
+| ID | Name | Required before | Blocks | Status |
+|---|---|---|---|---|
+| OD-21 | Which voice providers may be contracted (Azure, Google, ElevenLabs, OpenAI) and on which data terms (zero/short retention, EU vs US processing) | benchmark with real keys | **IMPL** of any provider adapter; **PROD** of voice | Open — depends on OD-01 |
+| OD-22 | Voice consent and recording policy: consent text, whether learner recordings may be kept for replay (opt-in, TTL), minors (with OD-06) | any real user audio sent to a cloud provider | **PROD** of Speaking/Reading voice | Open — legal input (voice may count as biometric/personal data) |
+| OD-23 | Benchmark go-ahead: budget (est. < $50 provider spend + people's time), volunteer recruitment, native reviewers (≥ 3 English incl. US+UK, ≥ 5 Uzbek, ≥ 2 English teachers), and approval of the thresholds in `VOICE_ACCEPTANCE_CRITERIA.md` | running `VOICE_BENCHMARK_PLAN.md` | **IMPL** of provider selection | Open |
+| OD-24 | Default reference accent (US or UK) and whether UK learners accept "no prosody score" (Azure prosody is en-US only) | Reading mode pilot | UX only | Open — recommended: learner chooses, default US for full scoring |
