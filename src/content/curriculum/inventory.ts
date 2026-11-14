@@ -79,7 +79,7 @@ export const SKILL_NODES: CurriculumNode[] = (['reading', 'listening'] as const)
   (Object.keys(QTYPE_NAME) as QType[]).map((qt) => ({
     id: `ge.${skill}.${qt}`, level: 'A2' as Level, skill,
     objective: `Answer ${skill} ${QTYPE_NAME[qt]} questions accurately within the time limit.`,
-    taxonomyIds: SKILL_TAX[skill][qt], prerequisites: ['ge.vocab.a1'], estMinutes: 15,
+    taxonomyIds: SKILL_TAX[skill][qt], prerequisites: ['ge.vocab.a1'], estMinutes: 15, examTags: ['ielts', 'cefr', `weak-${skill}`],
     hasPractice: true, hasCheck: true, reviewStatus: 'legacy' as const,
   })));
 export const skillNodeFor = (skill: 'reading' | 'listening', qt: QType): string => `ge.${skill}.${qt}`;

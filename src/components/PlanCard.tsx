@@ -2,7 +2,13 @@ import { CalendarCheck, ArrowRight } from 'lucide-react';
 import { ALL_NODES, nodeById, skillNodeTitle, topicOfNode } from '../content/curriculum/inventory';
 import { ALL_LESSONS } from '../content/lessons';
 import { loadAdaptive } from '../lib/adaptive/store';
-import { planDay, type PlanTask } from '../lib/adaptive/recommend';
+import type { PlanTask } from '../lib/adaptive/recommend';
+import { useState } from 'react';
+import { buildDailyPlan } from '../lib/dailyPlan';
+import { GOALS, MINUTES, loadPrefs, savePrefs, weekStart, weeklyLessonTarget, type PlanPrefs } from '../lib/planPrefs';
+import { loadSkills } from '../lib/skillCheck';
+import { loadProgress } from '../lib/lessons';
+import { setTarget } from '../lib/store';
 import { levelIndex, type Cefr } from '../lib/levels';
 import { useProfile } from '../lib/store';
 import { dueMistakes } from '../lib/mistakes';
@@ -21,7 +27,7 @@ function whyUz(t: PlanTask): string {
     case 'revision_due': return `Takrorlash vaqti keldi (${t.params.days} kun kechikkan).`;
     case 'repeated_error': return `Yaqinda «${ERR_UZ[String(t.params.taxonomy)] ?? t.params.taxonomy}» xatosini ${t.params.count} marta qildingiz — shu ustida ishlaymiz.`;
     case 'exam_soon': return `Imtihongacha ${t.params.days} kun qoldi.`;
-    case 'goal_match': return 'Maqsadingizga mos.';
+    case 'goal_match': return 'Tanlagan maqsadingizga mos (yoki tekshiruv bo‘yicha zaif ko‘nikma).';
     case 'weak_skill': return `Hozirgi o‘zlashtirish darajangiz: ${t.params.mastery}%.`;
     default: return 'Yo‘lingizdagi keyingi qadam.';
   }
@@ -30,6 +36,8 @@ function whyUz(t: PlanTask): string {
 /** "Today's plan": built only from the learner's real placement level and answered items; never invented numbers. */
 export function PlanCard() {
   const p = useProfile();
+  const [prefs, setPrefs] = useState<PlanPrefs>(() => loadPrefs());
+  const [edit, setEdit] = useState(false);
   if (!p.level) {
     return (
       <section className="card"><h3><CalendarCheck size={18} /> Bugungi reja</h3>
@@ -39,23 +47,38 @@ export function PlanCard() {
     );
   }
   const mistakesDue = dueMistakes().length;
-  const u = levelIndex(p.level as Cefr);
-  const isSkill = (s: string): boolean => s === 'reading' || s === 'listening';
-  // levels that already have structured General English lessons: the lessons replace the loose legacy grammar topics in the plan (answers there still count)
-  const lessonLevels = new Set(ALL_LESSONS.map((x) => x.unit.level as string));
-  const window = ALL_NODES.filter((n) => (isSkill(n.skill) || Math.abs(levelOf(n.level) - u) <= 1) && !(n.id.startsWith('ge.grammar.') && lessonLevels.has(n.level))); // reading/listening question types matter at every level
-  const saved = loadAdaptive();
-  const assumedIds = ALL_NODES.filter((n) => !isSkill(n.skill) && levelOf(n.level) < u).map((n) => n.id);
-  // below-level nodes count as known (placement evidence) and are only planned once real answers show they are weak
-  const candidates = window.filter((n) => !assumedIds.includes(n.id) || !!saved.mastery[n.id]);
+  const skills = loadSkills();
   const examDate = p.examDate ? new Date(p.examDate).getTime() : undefined;
-  const plan = planDay(candidates, {
-    mastery: saved.mastery, recentErrors: saved.errors, goalTags: ['general'], examDate, now: Date.now(),
-    assumed: assumedIds,
-  }, { minutes: 25 });
+  const { tasks: plan, weak } = buildDailyPlan({ level: p.level!, saved: loadAdaptive(), prefs, skills, examDate, now: Date.now() });
+  const weekTarget = weeklyLessonTarget(prefs.minutes);
+  const since = weekStart();
+  const lp = loadProgress();
+  const weekDone = Object.values(lp).filter((x) => x.passedAt && x.passedAt >= since).length;
+  const update = (np: PlanPrefs) => { setPrefs(np); savePrefs(np); };
   return (
     <section className="card">
       <h3><CalendarCheck size={18} /> Bugungi reja <span className="pill">taxminiy · {plan.reduce((s, t) => s + t.minutes, 0)} daqiqa</span></h3>
+      <p className="row">
+        <span className="pill">Maqsad: {GOALS.find((g) => g.id === prefs.goal)!.labelUz}</span>
+        <span className="pill">Kuniga {prefs.minutes} daq</span>
+        <span className="pill">Bu hafta: {weekDone}/{weekTarget} dars</span>
+        <button type="button" className="btn sm" onClick={() => setEdit((e) => !e)}>{edit ? 'Yopish' : 'Rejani sozlash'}</button>
+      </p>
+      {edit && (
+        <div className="q">
+          <p><b>Maqsadingiz</b></p>
+          <p className="row">{GOALS.map((g) => <button key={g.id} type="button" className={`chipbtn ${prefs.goal === g.id ? 'on' : ''}`} onClick={() => update({ ...prefs, goal: g.id })}>{g.labelUz}</button>)}</p>
+          <p><b>Kuniga qancha vaqt ajrata olasiz?</b></p>
+          <p className="row">{MINUTES.map((m) => <button key={m} type="button" className={`chipbtn ${prefs.minutes === m ? 'on' : ''}`} onClick={() => update({ ...prefs, minutes: m })}>{m} daq</button>)}</p>
+          {prefs.goal !== 'general' && (
+            <p className="row"><label>Imtihon sanasi: <input type="date" value={p.examDate ?? ''} onChange={(e) => setTarget(p.target, e.target.value || null)} /></label></p>
+          )}
+          <p className="muted" style={{ fontSize: 13 }}>Haftalik maqsad: kuniga {prefs.minutes} daqiqa × 5 kun ÷ ~12 daqiqalik dars = {weekTarget} ta dars.</p>
+        </div>
+      )}
+      {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>Ko‘nikmalar tekshiruvi bo‘yicha {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(' va ')} umumiy darajangizdan past — rejada unga ko‘proq joy beriladi.</p>}
+      {prefs.goal === 'sat' && <a className="path-step" href="#/exam"><b>SAT mashqi</b><span>Imtihon → SAT: Reading and Writing va Math savollari</span></a>}
+      {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>CEFR Multilevel</b><span>Imtihon → CEFR: format va yozma ish mashqi (rasmiy so‘z hajmida)</span></a>}
       {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>Xatolar ustida ishlash · {mistakesDue} ta</b><span>Avval qilgan xatolaringiz takrorlash vaqti keldi — eng foydali 5 daqiqa.</span></a>}
       {plan.length === 0 && <p className="muted">Bugun uchun yangi vazifa topilmadi. Grammar bo‘limida mashq qilib ko‘ring.</p>}
       <div className="stack">
