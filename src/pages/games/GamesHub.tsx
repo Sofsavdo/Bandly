@@ -1,9 +1,10 @@
-import { ArrowRight, BookOpen, Puzzle, Swords, Zap } from 'lucide-react';
+import { ArrowRight, BookOpen, Mic, Puzzle, Swords, Zap } from 'lucide-react';
 import { vocabForLevel } from '../../content/vocab';
 import { isDue, isMastered } from '../../lib/srs';
 import { freeGamesLeft, hasAnyPlan, useProfile } from '../../lib/store';
 
 const games = [
+  { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: 'Jim qolma!', text: '60 soniya to‘xtamay gapiring — jim qolsangiz shar yoriladi' },
   { href: '#/games/rush', icon: <Zap size={26} color="#ffb02e" />, cls: '', title: 'So‘z poygasi', text: '60 soniya, 3 jon, kombo ball' },
   { href: '#/games/pairs', icon: <Puzzle size={26} color="#5cd6ff" />, cls: 'g2', title: 'Juftlik', text: 'So‘z va ma’noni juftlang' },
   { href: '#/games/spell', icon: <BookOpen size={26} color="#ff8fb1" />, cls: 'g3', title: 'Imlo sinovi', text: 'Misol gapdan so‘zni yozing' },

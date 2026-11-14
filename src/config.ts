@@ -32,8 +32,8 @@ export const PLANS: Plan[] = [
   {
     id: 'mocks',
     title: 'Mock testlar',
-    short: 'Imtihon sharoitidagi testlar: taymer, avtomatik baho, batafsil tahlil.',
-    features: ['Imtihon taymeri', 'Avtomatik baho va tahlil', 'Natijalar tarixi', 'So‘z o‘yinlari cheksiz'],
+    short: 'Reading va Listening mocklar endi bepul (Mock Arena). Obuna: to‘liq imtihon simulyatsiyasi (Writing + Speaking bilan).',
+    features: ['To‘liq imtihon simulyatsiyasi', 'Writing va Speaking qismlari', 'Natijalar tarixi', 'So‘z o‘yinlari cheksiz'],
     priceUzs: 99_000,
     icon: '⏱️',
   },

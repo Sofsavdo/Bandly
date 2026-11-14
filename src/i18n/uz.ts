@@ -3,9 +3,11 @@
 export const uz = {
   'nav.home': 'Bosh sahifa',
   'nav.home.short': 'Asosiy',
+  'nav.learn': 'Ingliz tili',
+  'nav.coach': 'AI ustoz',
   'nav.exam': 'Imtihon',
   'nav.grammar': 'Grammar',
-  'nav.mocks': 'Mock testlar',
+  'nav.mocks': 'Mock Arena',
   'nav.games': 'O‘yinlar',
   'nav.league': 'Reyting',
   'nav.duel': 'Duel',
@@ -32,7 +34,8 @@ export const uz = {
   'footer.pairs': 'Juftlik',
   'footer.spell': 'Imlo sinovi',
   'footer.results': 'Natijalarim',
-  'brand.tagline': 'IELTS ga o‘zbek tilida tayyorlaning',
+  'brand.tagline': 'Ingliz tili, imtihonlar va AI ustoz — bir joyda',
+  'nav.mistakes': 'Xatolarim',
   'lang.label': 'Til',
   'greet.progress': '{n} ta qoldi',
 } as const;

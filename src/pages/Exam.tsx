@@ -2,6 +2,9 @@ import { BookOpen, Headphones, Mic, PenLine } from 'lucide-react';
 import { useState } from 'react';
 import { Tile } from '../components/Tile';
 import { useProfile } from '../lib/store';
+import { ReadinessCard } from '../components/ReadinessCard';
+import { CefrPrep } from '../components/CefrPrep';
+import { SatPrep } from '../components/SatPrep';
 
 const skills = [
   { href: '#/exam/reading', icon: BookOpen, tone: 'blue', title: 'Reading', text: 'Matn va savollar, taymer, dalil izohlari' },
@@ -19,11 +22,14 @@ export default function Exam() {
         <h2>Imtihon tayyorgarligi {p.plan.exam ? <span className="badge on">{p.planUntil.exam ? 'Obuna faol' : 'Obuna faol (demo)'}</span> : <span className="badge">Obuna kerak</span>}</h2>
         <div className="tabs" style={{ marginBottom: 0 }}>
           <button className={`btn ${tab === 'ielts' ? 'dark' : ''}`} onClick={() => setTab('ielts')}>IELTS</button>
-          <button className={`btn ${tab === 'sat' ? 'dark' : ''}`} onClick={() => setTab('sat')}>SAT <span className="badge soon">tez orada</span></button>
-          <button className={`btn ${tab === 'cefr' ? 'dark' : ''}`} onClick={() => setTab('cefr')}>CEFR <span className="badge soon">tez orada</span></button>
+          <button className={`btn ${tab === 'sat' ? 'dark' : ''}`} onClick={() => setTab('sat')}>SAT <span className="badge on">Digital</span></button>
+          <button className={`btn ${tab === 'cefr' ? 'dark' : ''}`} onClick={() => setTab('cefr')}>CEFR <span className="badge on">Multilevel</span></button>
         </div>
-        {tab !== 'ielts' && <p style={{ marginTop: 14 }}>{tab.toUpperCase()} bo‘limi ishlab chiqilmoqda. Imtihon tayyorgarligi obunasi bilan qo‘shilganda qo‘shimcha to‘lovsiz ochiladi.</p>}
+        
       </div>
+      {tab === 'cefr' && <CefrPrep />}
+      {tab === 'sat' && <SatPrep />}
+      {tab === 'ielts' && <ReadinessCard />}
       {tab === 'ielts' && (
         <div className="grid">
           {skills.map((s) => <Tile key={s.href} href={s.href} icon={s.icon} tone={s.tone} title={s.title} text={s.text} badge={!p.plan.exam && <span className="badge">Obuna kerak</span>} />)}

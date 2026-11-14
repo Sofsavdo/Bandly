@@ -32,9 +32,20 @@ import GamesHub from './pages/games/GamesHub';
 import WordRush from './pages/games/WordRush';
 import Pairs from './pages/games/Pairs';
 import Spell from './pages/games/Spell';
+import Learn from './pages/Learn';
+import LessonPage from './pages/Lesson';
+import SkillCheck from './pages/SkillCheck';
+import Coach from './pages/Coach';
+import Mistakes from './pages/Mistakes';
+import Challenge from './pages/Challenge';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
+  '#/learn': () => <Learn />,
+  '#/skills': () => <SkillCheck />,
+  '#/coach': () => <Coach />,
+  '#/mistakes': () => <Mistakes />,
+  '#/challenge': () => <Challenge />,
   '#/exam': () => <Exam />,
   '#/exam/writing': () => <Gate track="exam"><Writing /></Gate>,
   '#/exam/speaking': () => <Gate track="exam"><Speaking /></Gate>,
@@ -66,7 +77,8 @@ function testRoute(hash: string): ReactNode | null {
   if (!id) body = <TestList track={track} kind={kind} />;
   else if (kind === 'reading') { const t = readingTests.find((x) => x.id === id); body = t ? <Reading test={t} /> : <TestList track={track} kind={kind} />; }
   else { const t = listeningTests.find((x) => x.id === id); body = t ? <Listening test={t} /> : <TestList track={track} kind={kind} />; }
-  return <Gate track={track}>{body}</Gate>;
+  // Mock Arena objective tests are free (strategy DR-19, owner decision OD-08 sets limits); the exam-prep track stays behind its subscription.
+  return track === 'mocks' ? <>{body}</> : <Gate track={track}>{body}</Gate>;
 }
 
 export default function App() {
@@ -74,9 +86,10 @@ export default function App() {
   // Menyu bosilganda yangi sahifa har doim tepadan boshlansin
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
+  const lessonId = hash.match(/^#\/learn\/([\w-]+)$/)?.[1];
   const duelCode = hash.match(/^#\/duel\/([A-Za-z0-9]{4,8})$/)?.[1];
   const tr = testRoute(hash);
-  const page = tr ? tr : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
+  const page = tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
   return (
     <>
       <Header hash={hash} />

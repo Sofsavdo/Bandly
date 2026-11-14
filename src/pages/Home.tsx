@@ -1,8 +1,10 @@
 import { ArrowRight, CalendarDays, Clapperboard, PenLine, Compass, Map as MapIcon, BookOpen, Brain, Flame, Gamepad2, Headphones, Languages, Mic, Plus, Puzzle, ShieldCheck, Star, Swords, Target, Timer, Zap } from 'lucide-react';
 import { BRAND } from '../brand';
+import { ALL_LESSONS } from '../content/lessons';
 import { Mascot } from '../components/Mascot';
 import { DailyCards } from '../components/DailyCards';
 import { ProgressCard } from '../components/ProgressCard';
+import { PlanCard } from '../components/PlanCard';
 import { Tile } from '../components/Tile';
 import { grammar } from '../content/grammar';
 import { listeningTests } from '../content/listeningTests';
@@ -43,36 +45,36 @@ export default function Home() {
     { task: 'grammar', icon: Puzzle, title: 'Grammar', text: low ? 'Asoslar: to be, Present Simple, Past Simple' : '“Sizga mos” savollar', href: '#/grammar' },
     { task: 'practice', icon: PenLine, title: 'Gap tuzish', text: low ? 'Tarjima va so‘z tartibi mashqlari' : 'Xatoni toping, gapni kuchaytiring', href: '#/practice' },
     { task: 'shadow', icon: Clapperboard, title: 'Eshit va takrorla', text: low ? 'Oddiy sahnalar: tinglang va takrorlang' : 'Film, podkast, ma’ruza: shadowing va dictant', href: '#/shadow' },
-    { task: 'reading', icon: BookOpen, title: 'Reading', text: nextRead.title.replace(/^Reading mini-test \d+: /, ''), href: `#/exam/reading/${nextRead.id}` },
-    { task: 'listening', icon: Headphones, title: 'Listening', text: nextListen.title.replace(/^Listening mini-test \d+: /, ''), href: `#/exam/listening/${nextListen.id}` },
+    { task: 'reading', icon: BookOpen, title: 'Reading', text: nextRead.title.replace(/^Reading mini-test \d+: /, ''), href: `#/mocks/reading/${nextRead.id}` },
+    { task: 'listening', icon: Headphones, title: 'Listening', text: nextListen.title.replace(/^Listening mini-test \d+: /, ''), href: `#/mocks/listening/${nextListen.id}` },
     { task: 'speaking', icon: Mic, title: 'Speaking', text: low ? 'Sodda savollar, o‘zbekcha yordam bilan' : 'IELTS Part 1–3', href: '#/exam/speaking' },
   ] : [];
 
   return (
     <div>
-      <section className="landing-hero">
+      {!lvl && <section className="landing-hero">
         <div className="hero-main">
-          <span className="eyebrow"><Zap size={15} /> IELTS · Grammar · Mock testlar</span>
-          <h1>IELTS ga o‘zbek tilida, o‘yin kabi tayyorlaning</h1>
-          <p className="lead">{BRAND.name}: jonli ovozli Speaking, mock testlar va takrorlash o‘yinlari bir joyda. Yodlash emas, o‘ynab o‘rganing.</p>
+          <span className="eyebrow"><Zap size={15} /> General English · IELTS · CEFR · SAT</span>
+          <h1>Ingliz tilini o‘rganing, gapiring va imtihonga tayyorlaning</h1>
+          <p className="lead">{BRAND.name}: A1 dan C2 gacha darslar, sizga moslashadigan kunlik reja, xatolaringizni qaytarib mustahkamlaydigan takrorlash, bepul mock testlar va xarakterli AI ustoz.</p>
           <div className="row" style={{ marginTop: 22 }}>
-            <a className="btn primary lg" href="#/exam">Boshlash <ArrowRight size={18} /></a>
-            <a className="btn lg" href="#/games/rush"><Gamepad2 size={18} /> Bepul o‘yin</a>
+            <a className="btn primary lg" href="#/placement">Darajamni aniqlash <ArrowRight size={18} /></a>
+            <a className="btn lg" href="#/mocks"><Gamepad2 size={18} /> Bepul mock test</a>
           </div>
           <div className="hero-stats">
-            <div><b>{vocab.length}</b><span>so‘z (A1–C1)</span></div>
-            <div><b>{tests}</b><span>Reading/Listening test</span></div>
-            <div><b>{grammar.length}</b><span>Grammar savol</span></div>
-            <div><b>3</b><span>So‘z o‘yini</span></div>
+            <div><b>{ALL_LESSONS.length}</b><span>dars (A1–C2)</span></div>
+            <div><b>{tests}</b><span>bepul mock test</span></div>
+            <div><b>{vocab.length}</b><span>so‘z</span></div>
+            <div><b>5</b><span>AI ustoz xarakteri</span></div>
           </div>
         </div>
         <div className="hero-art" aria-hidden="true">
           <Mascot mood={started && goal >= 1 ? 'laugh' : 'happy'} size={190} />
           <span className="chip c1"><Flame size={16} color="#ff7a1a" fill="#ff7a1a" /> {p.streak || 0} kunlik seriya</span>
           <span className="chip c2"><Star size={16} color="#f5b400" fill="#f5b400" /> {lp.level}-daraja</span>
-          <span className="chip c3"><Mic size={16} color="#ea3624" /> Jonli Speaking</span>
+          <span className="chip c3"><Mic size={16} color="#ea3624" /> AI ustoz</span>
         </div>
-      </section>
+      </section>}
 
       {!lvl && (
         <div className="banner">
@@ -80,6 +82,8 @@ export default function Home() {
           <a className="btn lg" href="#/placement">Testni boshlash <ArrowRight size={18} /></a>
         </div>
       )}
+
+      {lvl && <PlanCard />}
 
       {lvl && (
         <section className="card myplan">
@@ -101,6 +105,8 @@ export default function Home() {
           <div className="row"><a className="btn sm primary" href="#/homework">Uyga vazifa</a><a className="btn sm" href="#/results">Natijalar</a><a className="btn sm" href="#/placement">Darajani qayta aniqlash</a></div>
         </section>
       )}
+
+      {!lvl && <PlanCard />}
 
       <DailyCards />
 

@@ -5,7 +5,7 @@ import { levelProgress } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
-import { HOME, HOMEWORK, NAV, PRACTICE, PROFILE, RESULTS, SHADOW, TOOLS, isActive } from './nav';
+import { HOME, HOMEWORK, MISTAKES, NAV, PRACTICE, PRIMARY_NAV, PROFILE, RESULTS, SHADOW, TOOLS, isActive } from './nav';
 
 function Stats() {
   const t = useT();
@@ -32,7 +32,7 @@ export function Header({ hash }: { hash: string }) {
         <div className="container">
           <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={38} />{BRAND.name}</a>
           <nav className="nav" aria-label={t('nav.main')}>
-            {NAV.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''}><n.icon size={16} />{t(n.label)}</a>)}
+            {PRIMARY_NAV.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''}><n.icon size={16} />{t(n.label)}</a>)}
           </nav>
           <div className="header-right">
             <Stats />
@@ -51,7 +51,7 @@ export function Header({ hash }: { hash: string }) {
               <button className="icon-btn" aria-label={t('nav.close')} onClick={() => setOpen(false)}><X size={20} /></button>
             </div>
             <div className="dstats"><Stats /></div>
-            {[HOME, ...NAV, SHADOW, HOMEWORK, PRACTICE, RESULTS, TOOLS, PROFILE].map((n) => <a key={n.href} href={n.href} className={`dlink ${isActive(hash, n.href) ? 'active' : ''}`}><n.icon size={20} />{t(n.label)}</a>)}
+            {[HOME, ...NAV, MISTAKES, SHADOW, HOMEWORK, PRACTICE, RESULTS, TOOLS, PROFILE].map((n) => <a key={n.href} href={n.href} className={`dlink ${isActive(hash, n.href) ? 'active' : ''}`}><n.icon size={20} />{t(n.label)}</a>)}
             <a className="btn primary" href="#/pricing" style={{ marginTop: 10 }}>{t('cta.plans')}</a>
           </aside>
         </>
