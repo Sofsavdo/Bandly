@@ -3,7 +3,9 @@ import { ALL_NODES, nodeById, skillNodeTitle, topicOfNode } from '../content/cur
 import { ALL_LESSONS } from '../content/lessons';
 import { loadAdaptive } from '../lib/adaptive/store';
 import type { PlanTask } from '../lib/adaptive/recommend';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { adjustMinutes, loadLog, recordPlanned, review } from '../lib/planLog';
+import { localDayKey } from '../lib/adaptive/store';
 import { buildDailyPlan } from '../lib/dailyPlan';
 import { GOALS, MINUTES, loadPrefs, savePrefs, weekStart, weeklyLessonTarget, type PlanPrefs } from '../lib/planPrefs';
 import { loadSkills } from '../lib/skillCheck';
@@ -36,8 +38,6 @@ function whyUz(t: PlanTask): string {
 /** "Today's plan": built only from the learner's real placement level and answered items; never invented numbers. */
 export function PlanCard() {
   const p = useProfile();
-  const [prefs, setPrefs] = useState<PlanPrefs>(() => loadPrefs());
-  const [edit, setEdit] = useState(false);
   if (!p.level) {
     return (
       <section className="card"><h3><CalendarCheck size={18} /> Bugungi reja</h3>
@@ -46,10 +46,26 @@ export function PlanCard() {
       </section>
     );
   }
+  return <PlanBody />;
+}
+
+/** Separate component so its hooks always run in the same order (the level check above returns early). */
+function PlanBody() {
+  const p = useProfile();
+  const [prefs, setPrefs] = useState<PlanPrefs>(() => loadPrefs());
+  const [edit, setEdit] = useState(false);
+  const [full, setFull] = useState(false);
   const mistakesDue = dueMistakes().length;
   const skills = loadSkills();
   const examDate = p.examDate ? new Date(p.examDate).getTime() : undefined;
-  const { tasks: plan, weak } = buildDailyPlan({ level: p.level!, saved: loadAdaptive(), prefs, skills, examDate, now: Date.now() });
+  const saved = loadAdaptive();
+  const today = localDayKey(Date.now());
+  const rv = review(loadLog(), saved.mastery, today);
+  const load = adjustMinutes(prefs.minutes, rv);
+  const minutes = full ? prefs.minutes : load.minutes;
+  const { tasks: plan, weak } = buildDailyPlan({ level: p.level!, saved, prefs: { ...prefs, minutes }, skills, examDate, now: Date.now() });
+  const planKey = plan.map((t) => t.nodeId).join(',');
+  useEffect(() => { recordPlanned(today, planKey ? planKey.split(',') : []); }, [today, planKey]);
   const weekTarget = weeklyLessonTarget(prefs.minutes);
   const since = weekStart();
   const lp = loadProgress();
@@ -76,6 +92,8 @@ export function PlanCard() {
           <p className="muted" style={{ fontSize: 13 }}>Haftalik maqsad: kuniga {prefs.minutes} daqiqa × 5 kun ÷ ~12 daqiqalik dars = {weekTarget} ta dars.</p>
         </div>
       )}
+      {load.lowered && !full && <p className="muted" style={{ fontSize: 14 }}>Oxirgi {rv.days} kunda rejaning {Math.round((rv.rate ?? 0) * 100)}% i bajarildi, shuning uchun bugungi reja {prefs.minutes} → {load.minutes} daqiqaga yengillashtirildi. <button type="button" className="btn sm" onClick={() => setFull(true)}>To‘liq rejani ko‘rsatish</button></p>}
+      {load.suggestMore && <p className="muted" style={{ fontSize: 14 }}>Oxirgi {rv.days} kunda rejaning {Math.round((rv.rate ?? 0) * 100)}% ini bajardingiz — zo‘r! Xohlasangiz, “Rejani sozlash”da kunlik vaqtni oshiring.</p>}
       {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>Ko‘nikmalar tekshiruvi bo‘yicha {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(' va ')} umumiy darajangizdan past — rejada unga ko‘proq joy beriladi.</p>}
       {prefs.goal === 'sat' && <a className="path-step" href="#/exam"><b>SAT mashqi</b><span>Imtihon → SAT: Reading and Writing va Math savollari</span></a>}
       {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>CEFR Multilevel</b><span>Imtihon → CEFR: format va yozma ish mashqi (rasmiy so‘z hajmida)</span></a>}
