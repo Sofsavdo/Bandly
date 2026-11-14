@@ -4,7 +4,7 @@ import { readiness, type ExamSkill } from '../lib/readiness';
 import { useProfile } from '../lib/store';
 
 const NAME: Record<ExamSkill, string> = { reading: 'Reading', listening: 'Listening', speaking: 'Speaking' };
-const HREF: Record<ExamSkill, string> = { reading: '#/exam/reading', listening: '#/exam/listening', speaking: '#/exam/speaking' };
+const HREF: Record<ExamSkill, string> = { reading: '#/mocks/reading', listening: '#/mocks/listening', speaking: '#/exam/speaking' }; // reading/listening mocks are free
 const CONF: Record<string, string> = { none: 'ma’lumot yo‘q', low: 'past (natijalar kam)', medium: 'o‘rtacha', good: 'yaxshi' };
 
 /** IELTS readiness, shown next to — never merged with — the General English level. */

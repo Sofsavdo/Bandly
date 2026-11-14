@@ -65,7 +65,7 @@ export function PlanCard() {
           const skillTitle = skillNodeTitle(t.nodeId);
           const lesson = ALL_LESSONS.find((x) => `ge.lesson.${x.lesson.id}` === t.nodeId);
           const title = lesson ? `Dars: ${lesson.lesson.titleUz}` : skillTitle ?? (isVocab ? `So‘z boyligi · ${node!.level}` : (topicOfNode(t.nodeId) ?? t.nodeId));
-          const href = lesson ? `#/learn/${lesson.lesson.id}` : node?.skill === 'reading' ? '#/exam/reading' : node?.skill === 'listening' ? '#/exam/listening' : isVocab ? '#/games' : '#/grammar';
+          const href = lesson ? `#/learn/${lesson.lesson.id}` : node?.skill === 'reading' ? '#/mocks/reading' : node?.skill === 'listening' ? '#/mocks/listening' : isVocab ? '#/games' : '#/grammar';
           return (
             <a key={t.nodeId} className="path-step" href={href} onClick={() => { if (href === '#/grammar') { try { sessionStorage.setItem('bandly.nextTopic', title); } catch { /* ignore */ } } }}>
               <b>{title}</b><span>{t.minutes} daq · {whyUz(t)}</span>

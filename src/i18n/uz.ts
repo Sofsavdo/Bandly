@@ -7,7 +7,7 @@ export const uz = {
   'nav.coach': 'AI ustoz',
   'nav.exam': 'Imtihon',
   'nav.grammar': 'Grammar',
-  'nav.mocks': 'Mock testlar',
+  'nav.mocks': 'Mock Arena',
   'nav.games': 'O‘yinlar',
   'nav.league': 'Reyting',
   'nav.duel': 'Duel',

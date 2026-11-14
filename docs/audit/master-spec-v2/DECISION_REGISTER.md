@@ -45,3 +45,6 @@ Stable IDs: **OD-01…OD-11** are owner questions (authoritative detail in `docs
 | DR-28 | First paid product | C1: General English first; C2: IELTS AI first | IELTS-centric code | conflict | owner decides OD-16; default: follow C1 (general English path) but Mock Arena earlier | pending | owner | sequencing |
 | DR-29 | Score guarantee marketing | C2 notes competitor practice | none | claims/legal risk | do not adopt without legal review (OD-19) | rejected as default | legal | marketing |
 | DR-30 | Grammar-only subscription | C2/C3 | `grammar` track in code | contradicts architecture | rejected | **rejected** (owner v2/v3) | — | remove track at M5 |
+
+### Implementation note (2026-11-14)
+DR-19 / DR-01: Reading and Listening mocks under `#/mocks` are free in the branch (not deployed). The exam-prep track (`#/exam/*`) and the full simulation (`#/mocks/full`, with Writing/Speaking) remain behind the existing subscription; the `mocks` price is unchanged (OD-08 / OD-09 still decide limits and the final plan structure). Easily reversible: one condition in `src/App.tsx`.
