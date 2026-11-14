@@ -54,7 +54,7 @@ svg.lucide { flex: none; }
 .mini { display: inline-block; width: 36px; height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
 .mini i { display: block; height: 100%; background: var(--brand); border-radius: 99px; transition: width .4s; }
 .icon-btn { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
-@media (min-width: 980px) { .nav { display: flex; } .stats { display: flex; } .menu-btn { display: none; } }
+@media (min-width: 980px) { .nav { display: flex; } .stats { display: flex; } }
 @media (max-width: 979px) { .header-cta { display: none; } .stats { display: flex; } .stats .stat:nth-child(n+2) { display: none; } }
 
 .drawer-back { position: fixed; inset: 0; background: rgba(8,10,20,.5); z-index: 60; animation: fade .2s; }

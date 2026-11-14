@@ -34,7 +34,8 @@ export const uz = {
   'footer.pairs': 'Juftlik',
   'footer.spell': 'Imlo sinovi',
   'footer.results': 'Natijalarim',
-  'brand.tagline': 'IELTS ga o‘zbek tilida tayyorlaning',
+  'brand.tagline': 'Ingliz tili, imtihonlar va AI ustoz — bir joyda',
+  'nav.mistakes': 'Xatolarim',
   'lang.label': 'Til',
   'greet.progress': '{n} ta qoldi',
 } as const;

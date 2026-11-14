@@ -104,8 +104,7 @@ export default function Coach() {
       <section className="card">
         <h2><Bot size={22} /> AI ustoz</h2>
         <p>Beshta xarakterdan birini tanlang va ingliz tilida gaplashing: ustoz javob beradi, xatoingizni tuzatadi va keyingi savolni beradi.</p>
-        {status && !status.ai && <p className="bad">AI ustoz hali ulanmagan: administrator AI kalitini va xarajat chegarasini sozlamaguncha suhbat ishlamaydi. Xarakterlarni ko‘rib chiqishingiz mumkin.</p>}
-        {status && status.ai && !status.coach && <p className="bad">AI ulangan, lekin umumiy kunlik xarajat chegarasi hali belgilanmagan — xavfsizlik uchun suhbat yopiq.</p>}
+        {status && !status.coach && <p className="notice">AI ustoz bilan suhbat tez orada ochiladi. Hozircha xarakterlar bilan tanishing va gapirishni “Jim qolma!” o‘yinida mashq qiling.</p>}
         <p><a className="btn sm" href="#/challenge">Jim qolma! — 60 soniyalik gapirish o‘yini</a></p>
         <p className="muted" style={{ fontSize: 13 }}>Hozir navbatma-navbat suhbat: nutqingiz brauzerda matnga aylanadi, javob brauzer ovozida o‘qiladi (ovoz va his-tuyg‘u sifati qurilmaga bog‘liq). Uzluksiz real vaqt ovozi va tabiiy hissiyotli ovozlar AI provayder ulangach sinovdan o‘tkaziladi.</p>
       </section>
