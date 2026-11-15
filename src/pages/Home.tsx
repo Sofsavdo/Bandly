@@ -5,6 +5,7 @@ import { Mascot } from '../components/Mascot';
 import { DailyCards } from '../components/DailyCards';
 import { ProgressCard } from '../components/ProgressCard';
 import { PlanCard } from '../components/PlanCard';
+import { QuestsCard } from '../components/QuestsCard';
 import { Tile } from '../components/Tile';
 import { grammar } from '../content/grammar';
 import { listeningTests } from '../content/listeningTests';
@@ -84,6 +85,7 @@ export default function Home() {
       )}
 
       {lvl && <PlanCard />}
+      {lvl && <QuestsCard />}
 
       {lvl && (
         <section className="card myplan">

@@ -289,3 +289,95 @@ The lesson header replaces the global nav: close, step progress (5 segments), he
 
 ## 7. Analytics (privacy)
 There is no analytics pipeline today. Events are defined now and sent only after OD-01 (data processors) is decided. Until then they go to a local debug log. No personal data in events: only the user id hash, the lesson id and numbers.
+
+## 8. Implementation status — G1, first slice (2026-11-15, branch)
+Client-only, with no database, API or AI change. The pure logic lives in `src/lib/gamify.ts` and is tested in `src/lib/gamify.test.ts`.
+
+**Learning Map (§2)**
+- **Component.** `src/components/LearningMap.tsx`, shown by default on `#/learn`. The old list view stays available through the "Xarita | Ro‘yxat" switch, and the choice is remembered.
+- **Content.** Every level band carries its level colour. Units are shown with their situation, and each of the 42 lessons is a node.
+- **Node states.** A node is locked, open, current, passed, mastered or "revise". The mastery value is read from the adaptive store. The unlock rule is exactly `isUnlocked()`.
+- **Interaction.**
+  - The map scrolls to the current node when it opens.
+  - Tapping a node opens a bottom sheet with the objective, minutes, an approximate XP figure, 5 hearts, the best score and Start/Takrorlash. Esc closes it.
+  - A locked node explains why it is locked.
+  - Each level ends with a milestone that links to the skill check.
+- **Reduced motion.** The pulse animation is turned off.
+
+**Hearts and combo (§3.2–3.3)**
+- **Where they apply.** Mashq and Tekshiruv now check each item immediately.
+- **Hearts.** A wrong answer costs a heart. The same 5 hearts span both steps.
+- **Combo.** Correct answers build a combo. It shows toasts at ×3, ×5 and ×10, and the bonus is capped at 50 % of the base XP.
+- **Re-learn at 0 hearts.**
+  - It shows the rule again and asks the learner to retry the practice items they got wrong. Check items are not used, because their answers are already shown.
+  - When every retried item is correct, 3 hearts come back.
+  - There is no timer and no payment.
+  - "Natijani ko‘rish" (see result) is disabled while re-learn is open.
+- **HUD.** A sticky bar shows the step segments, hearts and combo.
+
+**XP (§3.1)**
+- **Check XP** follows `checkXp`:
+  - 3 XP per correct answer + 15 XP for a first-ever pass;
+  - a repeat on the same day earns 1 XP per correct answer;
+  - a re-pass bonus is 4 XP.
+- **Practice XP** is 2 XP per correct first answer plus the combo bonus, paid once per lesson per day.
+- The lesson result shows the XP gained and the longest combo.
+
+**Daily Quests (§3.7)**
+- **Component.** `src/components/QuestsCard.tsx` on the dashboard, for learners who have a level.
+- **The three quests.**
+  - Pass 1 lesson.
+  - Reach the daily XP goal.
+  - Work on 3 mistakes. If no mistakes are due, play 1 word game instead.
+- **Daily counts.** "Today" counts come from a baseline snapshot taken at the start of the local day.
+- **Claim.** Each claim gives +20 XP once; an unfinished quest cannot be claimed.
+
+**Deviations, documented**
+- Practice still shows every item at once rather than one item per screen.
+- The re-learn step reuses the lesson's own practice items, because there are no extra easier items yet.
+
+**Not yet (next slices)**
+- Boss Challenge (§3.5).
+- Streak rule change and freezes (§3.4).
+- New achievements (§3.8).
+- Leagues on server XP (§3.6, G2).
+- Low-quality-answer XP suppression (< 600 ms).
+- Lesson intro and result screens with the teacher character (T1).
+
+**Tests**
+- Unit tests in `src/lib/gamify.test.ts`.
+- A Playwright run on a Pixel 5 checked: 42 nodes with one current node, the current node in view on open, the sheet open and close, the locked-node notice, the list toggle, hearts reaching 0 → re-learn with result submit blocked, the sticky HUD, 3 quests, and no page errors or overflow.
+
+### 8.1 Learning Map v2 — visual redesign after owner review (2026-11-15)
+The owner judged the first map too plain compared with `design-references/`. The map was redrawn with original vector art (`src/components/mapArt.tsx`):
+
+**Level worlds.** Each level is an illustrated world with its own sky gradient, rolling hills and themed props, placed on both sides of the road:
+
+| Level | World | Props |
+|---|---|---|
+| A1 | Mahalla | houses, trees, bushes, sun |
+| A2 | Bozor ko‘chasi | domes, market stalls |
+| B1 | Ko‘l bo‘yi | lake with a boat, pines |
+| B2 | Tog‘ yo‘li | snowy mountains |
+| C1 | Tungi shahar | night skyline, moon |
+| C2 | Cho‘qqi | peak with a flag |
+
+**Road.** A winding road follows smooth curves with a dashed centre line. The part already travelled is drawn in the level colour.
+
+**Nodes.**
+- Lessons are 3-D "coins" in five styles: locked, open, current, passed and mastered (gold).
+- The current coin has a pulsing ring (static under reduced motion) and a "Siz shu yerdasiz" pin. The pin flips side so it never leaves the screen.
+- Passed lessons show 1–3 stars (≥ 80 / 90 / 100 %).
+- Each unit starts with a signboard and ends with a trophy diamond, which turns gold when every lesson in the unit is passed.
+
+**Panels and overlays.**
+- **Level banner.** A glass card on each world shows the level badge, world name, subtitle and a progress ring.
+- **HUD card.** Shows the Bandly XP level bar, streak and daily XP.
+- **"Davom ettirish" button.** Floats above the tab bar.
+- **Lesson sheet.** Opens from a node and shows a coin, the breadcrumb and 4 stat tiles.
+
+**Other modes and screen sizes.**
+- **Dark mode.** Daytime worlds are dimmed; the night world stays as drawn.
+- **Desktop.** The map sits on the left with a sticky panel of today's quests on the right.
+
+The node and state logic is unchanged (`isUnlocked()`, mastery from the adaptive store). No external images are used and nothing is copied from the references.
