@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { ApiError, DUEL_MAX_PLAYERS, DUEL_TTL, DUEL_WORDS, MAX_DELTA_PER_HOUR, MAX_DELTA_PER_SYNC, createDb, createDuel, getDuel, join, leaderboard, submitDuel, sync, weekStart } from './db';
+import { ApiError, aiCostSummary, recordAiCost, refundAi, refundGlobalVoiceChars, useAi, useGlobalVoiceChars, DUEL_MAX_PLAYERS, DUEL_TTL, DUEL_WORDS, MAX_DELTA_PER_HOUR, MAX_DELTA_PER_SYNC, createDb, createDuel, getDuel, join, leaderboard, submitDuel, sync, weekStart } from './db';
 
 const db = createDb();
 const T0 = Date.UTC(2026, 10, 13, 12, 0, 0); // juma
@@ -83,4 +83,24 @@ assert.throws(() => createDuel(db, a.token, D), (e) => e instanceof ApiError && 
 const d3 = createDuel(db, b.token, D + 7_200_000);
 for (let i = 0; i < DUEL_MAX_PLAYERS - 1; i++) { const x = join(db, `Bot${i}`, D); submitDuel(db, x.token, d3.code, 100, 1, 5000, D + 7_200_000); }
 assert.throws(() => submitDuel(db, a.token, d3.code, 100, 1, 5000, D + 7_200_000), (e) => e instanceof ApiError && e.status === 409);
+// AI xarajatlari jurnali va ovoz chegarasi
+{
+  const cdb = createDb();
+  const u = join(cdb, 'CostUser', D);
+  const pid = (cdb.prepare('SELECT id FROM players WHERE token = ?').get(u.token) as { id: number }).id;
+  recordAiCost(cdb, { playerId: pid, feature: 'tts_feedback', provider: 'elevenlabs', model: 'eleven_v4_turbo', units: 100, unitKind: 'chars', costUsd: 0.004 }, D);
+  recordAiCost(cdb, { playerId: pid, feature: 'tts_feedback', provider: 'elevenlabs', model: 'eleven_v4_turbo', units: 50, unitKind: 'chars', costUsd: 0.002 }, D);
+  const sum = aiCostSummary(cdb, 30, D);
+  assert.equal(sum.rows.length, 1); assert.equal(sum.rows[0].units, 150); assert.equal(sum.rows[0].events, 2); assert.equal(sum.rows[0].players, 1);
+  assert.ok(Math.abs(sum.total_usd - 0.006) < 1e-9);
+  assert.throws(() => useGlobalVoiceChars(cdb, 0, 10, D), (e) => e instanceof ApiError && e.status === 503, 'chegara 0 = o‘chiq');
+  assert.equal(useGlobalVoiceChars(cdb, 100, 60, D), 60);
+  assert.throws(() => useGlobalVoiceChars(cdb, 100, 60, D), (e) => e instanceof ApiError && e.status === 503);
+  refundGlobalVoiceChars(cdb, 60, D);
+  assert.equal(useGlobalVoiceChars(cdb, 100, 60, D), 60, 'qaytarilgandan keyin yana sig‘adi');
+  for (let i = 0; i < 5; i++) useAi(cdb, u.token, D, 5, 'voice');
+  assert.throws(() => useAi(cdb, u.token, D, 5, 'voice'), (e) => e instanceof ApiError && e.status === 429, 'kuniga 5 ta');
+  refundAi(cdb, pid, 'voice', D);
+  assert.equal(useAi(cdb, u.token, D, 5, 'voice'), 5);
+}
 console.log('db.test: OK');

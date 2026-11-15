@@ -1,13 +1,13 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, byToken, createDb, createDuel, getDuel, join, leaderboard, submitDuel, sync, useAi, useGlobalAi } from './db';
+import { ApiError, aiCostSummary, byToken, createDb, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, TRACKS, priceFor } from './pricing';
-import { TTS_DAILY_LIMIT, TtsError, cleanText, synthesize, ttsConfigFromEnv } from './tts';
+import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
@@ -148,13 +148,28 @@ createServer(async (req, res) => {
       }
       return send(res, 404, { error: 'Topilmadi' });
     }
-    if (req.method === 'GET' && url.pathname === '/api/tts/status') return send(res, 200, { enabled: tts.provider !== 'none', voice: tts.provider === 'none' ? null : tts.voice });
+    if (req.method === 'GET' && url.pathname === '/api/tts/status') return send(res, 200, { enabled: tts.provider !== 'none', provider: tts.provider, voice: tts.provider === 'none' ? null : tts.voice, model: tts.model ?? null });
     if (req.method === 'POST' && url.pathname === '/api/tts') {
       if (tts.provider === 'none') throw new TtsError(503, 'Ovoz xizmati yoqilmagan');
       const b = await readJson(req, 2048);
       const text = cleanText(b.text);
-      useAi(db, String(b.token ?? ''), Date.now(), TTS_DAILY_LIMIT, 'tts'); // token va kunlik limit
-      const { audio, cached } = await synthesize(tts, text, { rate: Number(b.rate) || 1, pitch: Number(b.pitch) || 0 });
+      const token = String(b.token ?? '');
+      const player = byToken(db, token);
+      const opts = { rate: Number(b.rate) || 1, pitch: Number(b.pitch) || 0, emotion: isEmotion(b.emotion) ? b.emotion : undefined };
+      const now = Date.now();
+      // ElevenLabs: limit faqat yangi (xarajatli) javobga — kuniga VOICE_DAILY_ANSWERS ta + platforma kunlik belgilar chegarasi (OD-25).
+      const paid = tts.provider === 'elevenlabs' && !isCached(tts, text, opts);
+      const reserve = text.length + 16;
+      const bucket = tts.provider === 'elevenlabs' ? 'voice' : 'tts';
+      if (tts.provider !== 'elevenlabs') useAi(db, token, now, TTS_DAILY_LIMIT, 'tts');
+      else if (paid) { useAi(db, token, now, VOICE_DAILY_ANSWERS, 'voice'); try { useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); } catch (e) { refundAi(db, player.id, 'voice', now); throw e; } }
+      let out: Awaited<ReturnType<typeof synthesize>>;
+      try { out = await synthesize(tts, text, opts); } catch (e) {
+        if (paid) { refundAi(db, player.id, bucket, now); refundGlobalVoiceChars(db, reserve, now); }
+        throw e;
+      }
+      const { audio, cached, chars } = out;
+      if (!cached) recordAiCost(db, { playerId: player.id, feature: 'tts_feedback', provider: tts.provider, model: tts.model ?? tts.voice, units: chars, unitKind: 'chars', costUsd: estimateCostUsd(tts, chars) }, now);
       res.writeHead(200, { 'content-type': 'audio/mpeg', 'content-length': audio.length, 'cache-control': 'private, max-age=86400', 'x-cache': cached ? 'hit' : 'miss' });
       return void res.end(audio);
     }
@@ -189,6 +204,7 @@ createServer(async (req, res) => {
     if (url.pathname.startsWith('/api/admin/')) {
       if (!ADMIN_TOKEN || String(req.headers['x-admin'] ?? '') !== ADMIN_TOKEN) throw new ApiError(403, 'Taqiqlangan');
       if (req.method === 'GET' && url.pathname === '/api/admin/payments') return send(res, 200, { payments: recent(db, 100) });
+      if (req.method === 'GET' && url.pathname === '/api/admin/ai-costs') return send(res, 200, aiCostSummary(db, Number(url.searchParams.get('days') ?? 30) || 30));
       if (req.method === 'POST' && url.pathname === '/api/admin/grant') { const b = await readJson(req); return send(res, 200, { until: grant(db, String(b.nickname ?? ''), String(b.track ?? ''), Number(b.days)) }); }
     }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true });

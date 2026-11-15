@@ -7,7 +7,7 @@ Status: **design only — nothing here is implemented.** It supersedes the inter
 |---|---|---|---|
 | Browser STT | `src/lib/speech.ts` (`SpeechRecognition` / `webkitSpeechRecognition`) | turn-based listening with silence/max timers, interim text; audio goes to the browser vendor, not to Bandly | **on** — Lesson speaking step, Skill check, Challenge ("Jim qolma!"), Coach page |
 | Browser TTS | `src/lib/speech.ts` `say()` / `bestVoice()` | picks the best installed en-GB/en-US voice | **on** |
-| Server Uzbek TTS | `server/tts.ts`, `src/lib/tts.ts`, `POST /api/tts` | Azure `uz-UZ-MadinaNeural` via REST, SSML prosody, disk cache, per-user daily limit | **off** (no `TTS_KEY`; log "TTS: none") |
+| Server Uzbek TTS | `server/tts.ts`, `src/lib/tts.ts`, `POST /api/tts` | Azure `uz-UZ-MadinaNeural` via REST, SSML prosody, disk cache, per-user daily limit; **since 2026-11-15 also ElevenLabs** (Mirzaev, `eleven_v4_turbo`, emotion → audio tags, 5 new voiced answers/day, global char ceiling, cost ledger `ai_cost_events`) — `docs/runbooks/voice-elevenlabs.md` | **off** (no key / ceiling in Railway; log "TTS: none") |
 | AI coach (text) | `server/coach.ts`, `server/ai.ts` | provider-agnostic LLM, fail-closed without `AI_GLOBAL_DAILY_CALLS` | **off** (no key) |
 
 **Rule:** these remain the default path. A new provider is added behind a flag, compared side by side, and only replaces the browser path after an approved migration step (§9). No existing feature is removed.

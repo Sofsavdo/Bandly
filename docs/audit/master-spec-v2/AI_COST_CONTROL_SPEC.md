@@ -117,3 +117,8 @@ Advertised allowances, such as "60 daqiqa", must be deliverable, or the pricing 
 - **OD-12:** tax.
 - **OD-04 / OD-11:** payment fees.
 - The FX rate source for USD-priced providers (recommended: Central Bank of Uzbekistan daily rate, stored per day) [U].
+
+## 11. Implementation status (2026-11-15, branch only, not deployed)
+- `ai_cost_events` table + `recordAiCost` / `aiCostSummary` (`server/db.ts`) and `GET /api/admin/ai-costs` — used by the ElevenLabs tutor voice (`feature = tts_feedback`, units = characters, cost = estimate at list price).
+- Limit stack steps implemented for voice: global kill-switch/ceiling (`VOICE_GLOBAL_DAILY_CHARS`, fail-closed), per-user daily cap on new AI-costing answers (`VOICE_DAILY_ANSWERS = 5`, cache hits exempt), refund on provider failure.
+- Not yet: plan entitlements and monthly allowances (need M5 accounts/subscriptions), per-user cost ceiling, plan-level budget levers, dashboards.
