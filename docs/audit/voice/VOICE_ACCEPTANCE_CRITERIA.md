@@ -64,3 +64,14 @@ Status: **proposed thresholds, pending owner approval (OD-23)**. A voice feature
 - Each threshold has an owner-visible report with the date, provider, model and region it was measured on.
 
 If a gate fails, the feature stays off (or browser-only) and the report says why. Gates are never relaxed silently. A change in threshold is an owner decision recorded in the decision register.
+
+## 7. Mixed-language correction turns (see `MIXED_LANGUAGE_TUTOR_SPEC.md`)
+| Gate | Threshold |
+|---|---|
+| Planted pronunciation errors (set P): right **word** flagged | recall ≥ 85 %, false flags on correctly pronounced target words ≤ 10 % |
+| Planted errors, right **sound** named (en-US only) | ≥ 70 % of flagged words name the planted phoneme |
+| Grammar errors in learner sentences: correct fix proposed | ≥ 90 % (two-teacher check); invented "errors" ≤ 5 % |
+| Mixed feedback MOS (set X, Uzbek raters) | ≥ 3.8; English `model` segments rated "clear native accent" ≥ 90 % |
+| Every correction turn contains quote + correct form + repeat request | 100 % (automated check on the tagged output) |
+| Roast safety | 0 lines outside the reviewed bank; 0 forbidden-topic lines; Savage levels 2–3 never served without the OD-06b standard; "Yumshat"/stop honoured within one turn in 100 % of tests |
+| Turn timing | first reaction ≤ 700 ms p95; full critique ≤ 3 s p95 |

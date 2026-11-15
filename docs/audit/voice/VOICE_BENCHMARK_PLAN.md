@@ -118,3 +118,26 @@ U+L+M ≈ (50+50+100) × 15 s ≈ 50 min audio per STT provider → < $2 per pro
 18. Uchinchi conditional'da "would have" ishlatiladi, to‘g‘rimi?
 19. Bu sentence'da qaysi tense noto‘g‘ri?
 20. Iltimos, sekinroq gapiring, men beginner'man.
+
+## Appendix C — Mixed tutor feedback lines (set X, original, 20)
+Segments: plain = Uzbek speech, «…» = `quote_wrong` (spelled as the learner said it), **…** = English `model` segment. Lines 15–20 are Savage level 2–3 and are rated only by adult raters who agreed to hear them.
+1. Yaxshi urinish! Faqat «shkul» emas — **school**. Yana bir marta.
+2. Sen «tink» deding. To‘g‘risi **think** — tilni tishlar orasiga qo‘y.
+3. «Vork» emas, **work**. Lablarni dumaloq qil.
+4. Gap to‘g‘ri, lekin o‘tgan zamon kerak: **Yesterday I went to the market.**
+5. **Ship** va **sheep** farqini eshit: qisqa va cho‘ziq.
+6. Urg‘u xato: «DEvelop» emas, **deVElop**.
+7. «Knayf» deding — **knife**, «k» o‘qilmaydi.
+8. Zo‘r! **I have been studying English for two years** — mukammal.
+9. **Wednesday** — o‘rtadagi «d» eshitilmaydi.
+10. Fikring qiziq, lekin bog‘lovchi qo‘sh: **However, I think it is too expensive.**
+11. «Komfortabl» emas, **comfortable** — uch bo‘g‘in.
+12. Artikl tushib qoldi: **She is a teacher.**
+13. «Bet» deding, men to‘shakmi yoki tikishmi tushunmadim — **bed**.
+14. Javob mavzuga to‘liq mos emas. Savol edi: **What do you do at the weekend?**
+15. Voy, ahmoq-ey! «Shkul» deysanmi? **School**! Skul! Qaytar!
+16. Tentak, «zis» nima o‘zi? **This**! Tilni chiqar, uyalma!
+17. Ingliz tilini bilaman deb o‘ylayapsanmi? «I go yesterday» emas — **I went yesterday**!
+18. Eshak ham «vork» demaydi! **Work**! Yana bir marta!
+19. Bu talaffuz bilan odam bo‘lmaysan-ku! **Island** — «s» o‘qilmaydi: aylend!
+20. NIMA?! «Banana» deb har bo‘g‘inni urib aytasanmi? **Banana** — bənɑːnə! Qaytar!

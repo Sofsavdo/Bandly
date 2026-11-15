@@ -11,5 +11,6 @@ Research, architecture and test plan for Bandly's speech and voice engine. **Not
 | `VOICE_BENCHMARK_PLAN.md` | Corpus (50 Uzbek, 50 learner, 30 TTS, 20 mixed), metrics, procedure, matrix template, test sentences |
 | `VOICE_COST_MODEL.md` | Unit prices and per-minute / per-learner cost estimates |
 | `VOICE_ACCEPTANCE_CRITERIA.md` | Measurable go-live gates per feature |
+| `MIXED_LANGUAGE_TUTOR_SPEC.md` | Uzbek task → English answer → exact error quoted back → mixed uz+en feedback, personality and scolding rules |
 
 Open owner decisions: OD-01, OD-07, OD-18, OD-21 … OD-24 (`phase-0.2/OWNER_DECISION_REGISTER.md` §7).
