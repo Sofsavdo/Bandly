@@ -15,7 +15,7 @@ Status: code is on the branch and **off by default**. Nothing changes in product
 |---|---|---|
 | `TTS_PROVIDER` | `elevenlabs` | selects ElevenLabs instead of Azure |
 | `ELEVENLABS_API_KEY` | *(new key from elevenlabs.io → API keys)* | enter in Railway only; never in chat or code |
-| `VOICE_GLOBAL_DAILY_CHARS` | e.g. `20000` | ≈ 10 000 credits/day on Turbo (0.5 credit/char); Starter = 40 000 credits/month → start with `1300`/day to stay inside the monthly plan, raise when the plan is upgraded |
+| `VOICE_GLOBAL_DAILY_CHARS` | `2500` on Starter | Turbo = 0.5 credit per character; Starter = 40 000 credits/month ≈ 80 000 characters ≈ **2 600/day**. 2 500/day ≈ 37 500 credits/month, roughly 15–20 new voiced answers a day across all learners (cached lines are free). Raise it when the ElevenLabs plan is upgraded. |
 | `VOICE_DAILY_ANSWERS` | `5` | owner decision OD-25 (default is already 5) |
 | `ELEVENLABS_VOICE_ID` / `ELEVENLABS_MODEL` | *(optional)* | defaults: `RaNVfTYq3HYeFPLng6XN` (Mirzaev), `eleven_v4_turbo`; used to switch to the fallback voice |
 | `PRICE_ELEVENLABS_PER_1K_CHARS` | *(optional)* | estimate for the cost ledger; default 0.04 (Turbo API list price) |
