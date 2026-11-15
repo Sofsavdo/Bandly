@@ -152,3 +152,8 @@ M8 / paid launch OD-07, OD-01 answered, OD-11 for non-UZ
 | OD-26 (new) | How "one person" is verified for the FREE demo (SMS/OTP provider, Telegram login, or other) and its cost/privacy terms | Required before the FREE demo goes live | Open |
 | OD-27 (new) | Credit packs: list, final prices (formula in `AI_CREDIT_TOPUP_SPEC.md` §2), 90-day validity, whether FREE users may buy, behaviour after cancellation | Required before selling packs | Open |
 | — | Whether the 20–25 % target is measured on gross price (owner's wording, default) or net revenue; both are reported | 30-day review | Open (reporting only) |
+
+## 10. Voice choice (2026-11-15)
+| ID | Update |
+|---|---|
+| OD-21 | **Partly answered:** ElevenLabs approved by the owner for the tutor voice (account on Starter, commercial licence). Tutor voice = **"Mirzaev – Uzbek" on `eleven_v4_turbo`** after a listening demo. Still open: STT/assessment/realtime providers, data terms (ElevenLabs default retention; zero retention is Enterprise-only), and a fallback voice (Mirzaev has a 30-day withdrawal notice). |

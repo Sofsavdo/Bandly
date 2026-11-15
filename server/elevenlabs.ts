@@ -5,6 +5,10 @@ import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 // Hozircha hech qaysi API marshrutiga ulanmagan: faqat ovoz demosi skripti ishlatadi (docs/audit/voice).
 
 export const EL_MODELS = ['eleven_v4', 'eleven_v4_turbo'] as const;
+
+/** Egasi tanlagan ustoz ovozi (2026-11-15, demo tinglangandan keyin): "Mirzaev - Uzbek" + eleven_v4_turbo.
+ *  Ogohlantirish muddati 30 kun (ovoz egasi uni kutubxonadan shu muddat bilan olib tashlashi mumkin) — zaxira ovoz kerak. */
+export const TUTOR_VOICE = { voiceId: 'RaNVfTYq3HYeFPLng6XN', name: 'Mirzaev - Uzbek', modelId: 'eleven_v4_turbo' } as const;
 export type ElModel = (typeof EL_MODELS)[number];
 export const isElModel = (m: string): m is ElModel => (EL_MODELS as readonly string[]).includes(m);
 
