@@ -3,3 +3,4 @@ dist
 .env
 .env.local
 server/data.sqlite*
+voice-demo-out
