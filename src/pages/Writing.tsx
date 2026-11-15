@@ -163,7 +163,7 @@ export default function Writing() {
             <p className="notice" style={{ marginTop: 12 }}>
               Bu <b>AI baholash emas</b>: tuzilma, uslub va tanish xatolarni tekshiradi, band bermaydi. AI bilan 4 mezon bo‘yicha batafsil baho AI xizmati ulanganda “AI baholash” tugmasi orqali ishlaydi.
             </p>
-            {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI baholash uchun laqab tanlang (parol shart emas)." />}
+            {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI baholash uchun hisobingizga kiring (kunlik limit hisobingizga yoziladi)." />}
             {aiOn && acct && <p className="evidence">AI baholashda insho matni AI provayderiga yuboriladi.</p>}
             {aiErr && <p className="notice">{aiErr}</p>}
             {aiEval && <EvalCard ev={aiEval} title="AI baho" />}

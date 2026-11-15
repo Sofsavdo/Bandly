@@ -1,6 +1,6 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, aiCostSummary, byToken, createDb, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, aiCostSummary, byToken, createDb, loginTelegram, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -8,6 +8,7 @@ import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, TRACKS, priceFor } from './pricing';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
+import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
@@ -25,6 +26,10 @@ const hapi = hcfg ? hamyonApi(hcfg) : null;
 // Demo rejim (to'lovsiz yoqish) faqat to'lov ulanmaganda; PAY_DEMO=1 bilan majburan yoqish mumkin
 const DEMO = process.env.PAY_DEMO ? process.env.PAY_DEMO === '1' : !hapi;
 const ADMIN_TOKEN = (process.env.ADMIN_TOKEN ?? '').trim();
+// Telegram bot (ixtiyoriy): TELEGRAM_BOT_TOKEN bo'lsa — Telegram orqali kirish, webhook va Mini App tugmasi yoqiladi
+const bot = botFromEnv();
+let botUsername: string | null = bot?.username ?? null;
+if (bot) setupBot(bot).then((u) => { botUsername = u; console.log('Telegram bot: @%s (webhook: %s)', u, bot.publicUrl ? 'yoqildi' : 'PUBLIC_URL yo‘q'); }).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
 const tts = ttsConfigFromEnv(process.env.TTS_CACHE_DIR ?? `${dirname(DB_FILE)}/tts-cache`);
 
 // Oddiy so'rov tezligi cheklovi (IP bo'yicha, daqiqada 120 ta)
@@ -82,7 +87,24 @@ createServer(async (req, res) => {
     const ip = fwd || (req.socket.remoteAddress ?? 'x');
     if (limited(ip)) return send(res, 429, { error: 'Juda ko‘p so‘rov' });
     const url = new URL(req.url ?? '/', 'http://x');
+    if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
+    if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
+      if (!bot) throw new ApiError(503, 'Telegram orqali kirish hali sozlanmagan');
+      const b = await readJson(req, 8192);
+      let u;
+      try { u = url.pathname.endsWith('/webapp') ? verifyInitData(String(b.initData ?? ''), bot.token) : verifyWidget((b.user ?? {}) as Record<string, unknown>, bot.token); }
+      catch (e) { if (e instanceof TgAuthError) throw new ApiError(401, e.message); throw e; }
+      const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
+      return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/telegram/webhook') {
+      if (!bot?.publicUrl || String(req.headers['x-telegram-bot-api-secret-token'] ?? '') !== webhookSecret(bot.token)) return send(res, 403, { error: 'Taqiqlangan' });
+      const reply = handleUpdate(await readJson(req, 65_536), bot.publicUrl);
+      return send(res, 200, reply ? { method: reply.method, ...reply.body } : {}); // javob webhook javobining o'zida yuboriladi
+    }
     if (req.method === 'POST' && url.pathname === '/api/join') {
+      // Telegram ulangach yangi hisob faqat Telegram orqali ochiladi (OD-05); mavjud hisoblar ishlashda davom etadi
+      if (bot) throw new ApiError(410, 'Hisob endi Telegram orqali ochiladi');
       const b = await readJson(req);
       return send(res, 200, join(db, String(b.nickname ?? '')));
     }
@@ -215,7 +237,7 @@ createServer(async (req, res) => {
     console.error(e);
     return send(res, 500, { error: 'Server xatosi' });
   }
-}).listen(PORT, HOST, () => console.log(`Bandly: http://${HOST}:${PORT} (AI: ${ai.provider}, TTS: ${tts.provider}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'})`));
+}).listen(PORT, HOST, () => console.log(`Bandly: http://${HOST}:${PORT} (AI: ${ai.provider}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'})`));
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);

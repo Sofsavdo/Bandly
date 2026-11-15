@@ -47,6 +47,13 @@ export interface Profile {
   activity: Record<string, number>;
   /** Bugungi reja bajarilishi */
   today: { day: string; done: string[] };
+  /** Seriyani saqlash (GAMIFIED_LEARNING_SPEC §3.4): har 7 kunda +1 muzlatish, ko'pi bilan 2 */
+  freezes: number;
+  /** Uzilgan seriya — 48 soat ichida ikki baravar kunlik maqsad bilan tiklash mumkin */
+  brokenStreak: { value: number; day: string } | null;
+  lastRepairDay: string | null;
+  /** Yutilgan boss sinovlari soni (birinchi g'alabalar) */
+  bossWins: number;
 }
 
 export const defaultProfile = (today: string): Profile => ({
@@ -75,4 +82,8 @@ export const defaultProfile = (today: string): Profile => ({
   checkpoints: [],
   activity: {},
   today: { day: today, done: [] },
+  freezes: 0,
+  brokenStreak: null,
+  lastRepairDay: null,
+  bossWins: 0,
 });

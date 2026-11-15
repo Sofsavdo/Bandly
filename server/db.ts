@@ -89,7 +89,38 @@ export function createDb(path = ':memory:'): DatabaseSync {
       PRIMARY KEY (code, player_id)
     );
   `);
+  // Telegram orqali kirish (OD-05, 2026-11-15): qo'shimcha ustun, mavjud ma'lumotga tegmaydi
+  const cols = (db.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map((c) => c.name);
+  if (!cols.includes('tg_id')) db.exec('ALTER TABLE players ADD COLUMN tg_id INTEGER');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_tg ON players (tg_id) WHERE tg_id IS NOT NULL');
   return db;
+}
+
+/**
+ * Telegram foydalanuvchisi bilan kirish:
+ *  1) shu Telegram id ga bog'langan hisob bo'lsa — o'sha hisob;
+ *  2) aks holda qurilmadagi eski hisob (linkToken) Telegram'ga bog'lanmagan bo'lsa — unga bog'lanadi (XP va obuna saqlanadi);
+ *  3) aks holda yangi hisob ochiladi, laqab Telegram ismidan (band bo'lsa raqam qo'shiladi).
+ */
+export function loginTelegram(db: DatabaseSync, tgId: number, nick: string, linkToken?: string, now = Date.now()): { token: string; nickname: string; linked: boolean; created: boolean } {
+  const found = db.prepare('SELECT token, nickname FROM players WHERE tg_id = ?').get(tgId) as { token: string; nickname: string } | undefined;
+  if (found) return { ...found, linked: false, created: false };
+  if (linkToken) {
+    const legacy = db.prepare('SELECT id, token, nickname FROM players WHERE token = ? AND tg_id IS NULL').get(linkToken) as { id: number; token: string; nickname: string } | undefined;
+    if (legacy) {
+      db.prepare('UPDATE players SET tg_id = ?, updated_at = ? WHERE id = ?').run(tgId, now, legacy.id);
+      return { token: legacy.token, nickname: legacy.nickname, linked: true, created: false };
+    }
+  }
+  const token = randomBytes(24).toString('hex');
+  for (let i = 0; i < 50; i++) {
+    const n = i === 0 ? nick : `${nick.slice(0, 16)}${randomInt(10, 10000)}`;
+    try {
+      db.prepare('INSERT INTO players (token, nickname, tg_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?)').run(token, n, tgId, now, now);
+      return { token, nickname: n, linked: false, created: true };
+    } catch { /* laqab band — boshqasini sinaymiz */ }
+  }
+  throw new ApiError(409, 'Hisob ochib bo‘lmadi, qayta urinib ko‘ring');
 }
 
 export class ApiError extends Error {

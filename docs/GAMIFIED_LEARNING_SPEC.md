@@ -337,11 +337,11 @@ Client-only, with no database, API or AI change. The pure logic lives in `src/li
 - The re-learn step reuses the lesson's own practice items, because there are no extra easier items yet.
 
 **Not yet (next slices)**
-- Boss Challenge (§3.5).
-- Streak rule change and freezes (§3.4).
-- New achievements (§3.8).
+- ~~Boss Challenge (§3.5).~~ Done in §8.2.
+- ~~Streak rule change and freezes (§3.4).~~ Done in §8.2.
+- ~~New achievements (§3.8).~~ Partly done in §8.2.
 - Leagues on server XP (§3.6, G2).
-- Low-quality-answer XP suppression (< 600 ms).
+- ~~Low-quality-answer XP suppression (< 600 ms).~~ Done in §8.2.
 - Lesson intro and result screens with the teacher character (T1).
 
 **Tests**
@@ -381,3 +381,69 @@ The owner judged the first map too plain compared with `design-references/`. The
 - **Desktop.** The map sits on the left with a sticky panel of today's quests on the right.
 
 The node and state logic is unchanged (`isUnlocked()`, mastery from the adaptive store). No external images are used and nothing is copied from the references.
+
+### 8.2 G1 remainder — boss, streak rule, achievements, fast-answer rule (2026-11-15, branch)
+
+**Boss Challenge (§3.5)** — `src/lib/boss.ts`, `src/pages/Boss.tsx`, route `#/boss/<unitId>`.
+- **Opening.** The trophy at the end of each unit on the map is now the boss node:
+  - locked (padlock) until every lesson in the unit is passed;
+  - then a red "BOSS" diamond;
+  - a gold trophy once the boss is won.
+- **Optional.** The boss does not gate the next unit, which still opens through the lesson chain (PXD-17 / PXD-05).
+- **Composition.** 12 items, chosen deterministically from a seed:
+  - ≈ 70 % from this unit, round-robin over its lessons, check items first;
+  - ≈ 30 % revision from earlier units the learner has passed, ranked by open mistakes, then `needs_revision` mastery, then low best score;
+  - no repeats.
+- **Rules.**
+  - One item per screen, 3 hearts, no re-learn mid-boss.
+  - Pass = ≥ 80 %. Progress counts items; there is no timer.
+  - The boss keeps its own combo.
+- **Result screen.**
+  - Score.
+  - Mastery change per lesson, e.g. "62 % → 78 %".
+  - A "Nimani tuzatish kerak" list linking to the lessons.
+  - Missed items with explanations.
+  - Retry, open immediately.
+  - Next unit.
+- **Mistakes.** Wrong answers go into "Xatolar ustida ishlash", which serves as the 1-tap practice set.
+- **Mastery.** Every answer is recorded with `recordAnswer`; XP never changes mastery.
+- **XP and achievement.**
+  - +100 XP on the first win, +25 on later wins.
+  - The share of answers flagged as too fast is removed from the reward.
+  - The first win increments `bossWins` (achievement "Birinchi boss").
+- **Resume.** The attempt is saved locally and can be resumed within 24 h.
+- **Deviations.**
+  - No writing micro-task or speaking line yet.
+  - No "Tezkor boss" for fully mastered units.
+  - No AI Teacher intro (T1).
+  - Analytics events are not wired (no analytics module yet).
+
+**Streak rule (§3.4)** — `goalDay`, `tryRepair`, `displayStreak`, `repairOpen` in `src/lib/game.ts`.
+- **Goal-based.** The streak grows only on days the daily XP goal is reached, not on any XP.
+- **Freezes.**
+  - 1 freeze is earned per 7-day streak, maximum 2.
+  - A missed day covered by a freeze keeps the streak.
+- **Breaks and repair.**
+  - A break stores the old value.
+  - Reaching 2× the daily goal within 48 h restores it, at most once in 30 days.
+  - A backwards clock change is ignored.
+- **Display.** The header, map and profile show `displayStreak` (0 once the gap can no longer be covered) and the freeze count. The profile explains the rule and shows the repair offer only while it is open.
+
+**Achievements (§3.8).** New: `streak-30`, `boss-1`, `boss-5`, `level-10`.
+
+**Fast-answer rule (§3.1).** `pace()` in `src/lib/gamify.ts`:
+- **When XP is withheld.** Choice items answered < 600 ms after the previous answer on 3 or more items in a row, or the same option on ≥ 5 items in a row, earn 0 XP.
+- **Where it applies.** Lesson practice, the lesson check (those items are removed from the check XP), and the boss.
+- **What the learner sees.** "Shoshilmang — o‘ylab javob bering".
+- **Mastery.** Still recorded honestly.
+
+**Tests.**
+- Unit tests:
+  - `src/lib/boss.test.ts`: determinism, no repeats, revision share between 3 and 4 items, mistake priority;
+  - `src/lib/game.test.ts`: freeze, break, repair window, cooldown, backwards clock, `repairOpen`;
+  - `src/lib/gamify.test.ts`: fast and same-option runs.
+- Playwright on Pixel 5:
+  - **Map.** The boss node is ready after unit 1, and 13 later units are locked.
+  - **Win.** 11/12 gives a win, +100 XP, `bossWins` = 1, the "Birinchi boss" achievement and a gold trophy on the map.
+  - **Loss.** 3 wrong answers end the boss with no XP, a fix list and a retry.
+  - **Errors.** No page errors or horizontal overflow.

@@ -1,11 +1,11 @@
-import { Flame, Menu, Star, Target, User, X } from 'lucide-react';
+import { ChevronDown, Flame, Menu, Star, Target, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { BRAND } from '../brand';
-import { levelProgress } from '../lib/game';
+import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
-import { HOME, HOMEWORK, MISTAKES, NAV, PRACTICE, PRIMARY_NAV, PROFILE, RESULTS, SHADOW, TOOLS, isActive } from './nav';
+import { NAV_GROUPS, PRIMARY_NAV, PROFILE, isActive } from './nav';
 
 function Stats() {
   const t = useT();
@@ -14,7 +14,7 @@ function Stats() {
   const goal = Math.min(1, p.dailyXp / Math.max(1, p.dailyGoal));
   return (
     <div className="stats" aria-label={t('stat.title')}>
-      <span className="stat" title={t('stat.streak')}><Flame color="#ff7a1a" fill="#ff7a1a" />{p.streak}</span>
+      <span className="stat" title={t('stat.streak')}><Flame color="#ff7a1a" fill="#ff7a1a" />{displayStreak(p, dayKey())}</span>
       <span className="stat" title={`${lp.into}/${lp.span} XP`}><Star color="#f5b400" fill="#f5b400" />{lp.level}<span className="mini"><i style={{ width: `${lp.pct * 100}%` }} /></span></span>
       <span className="stat" title={t('stat.daily')}><Target color="#12b76a" />{Math.min(p.dailyXp, p.dailyGoal)}/{p.dailyGoal}<span className="mini"><i style={{ width: `${goal * 100}%`, background: goal >= 1 ? 'var(--ok)' : undefined }} /></span></span>
     </div>
@@ -51,8 +51,15 @@ export function Header({ hash }: { hash: string }) {
               <button className="icon-btn" aria-label={t('nav.close')} onClick={() => setOpen(false)}><X size={20} /></button>
             </div>
             <div className="dstats"><Stats /></div>
-            {[HOME, ...NAV, MISTAKES, SHADOW, HOMEWORK, PRACTICE, RESULTS, TOOLS, PROFILE].map((n) => <a key={n.href} href={n.href} className={`dlink ${isActive(hash, n.href) ? 'active' : ''}`}><n.icon size={20} />{t(n.label)}</a>)}
-            <a className="btn primary" href="#/pricing" style={{ marginTop: 10 }}>{t('cta.plans')}</a>
+            {NAV_GROUPS.map((g) => {
+              const here = g.items.some((n) => isActive(hash, n.href));
+              return (
+                <details key={g.id} className="dgroup" open={g.id === 'main' || here}>
+                  <summary>{t(g.label)}<ChevronDown size={18} /></summary>
+                  {g.items.map((n) => <a key={n.href} href={n.href} className={`dlink ${isActive(hash, n.href) ? 'active' : ''}`}><n.icon size={20} />{t(n.label)}</a>)}
+                </details>
+              );
+            })}
           </aside>
         </>
       )}

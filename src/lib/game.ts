@@ -17,6 +17,49 @@ export function nextStreak(last: string | null, today: string, streak: number): 
   return diff === 1 ? streak + 1 : 1;
 }
 
+export const MAX_FREEZES = 2;
+export const REPAIR_WINDOW_DAYS = 2;   // 48 soat
+export const REPAIR_COOLDOWN_DAYS = 30;
+
+type StreakState = Pick<Profile, 'streak' | 'longestStreak' | 'lastActiveDay' | 'freezes' | 'brokenStreak' | 'lastRepairDay'>;
+
+/** Kunlik maqsad bajarilgan kun uchun seriyani yangilaydi (GAMIFIED_LEARNING_SPEC §3.4).
+ *  O'tkazib yuborilgan kunlar muzlatish bilan yopiladi; yetmasa seriya uziladi va 48 soat tiklash uchun saqlanadi. */
+export function goalDay(s: StreakState, today: string): StreakState {
+  const last = s.lastActiveDay;
+  if (last && daysBetween(last, today) <= 0) return s; // bugun allaqachon hisoblangan (yoki soat orqaga surilgan)
+  let { streak, freezes, brokenStreak } = s;
+  if (!last) streak = 1;
+  else {
+    const missed = daysBetween(last, today) - 1;
+    if (missed === 0) streak += 1;
+    else if (missed <= freezes) { freezes -= missed; streak += 1; }
+    else { brokenStreak = streak > 1 ? { value: streak, day: today } : brokenStreak; streak = 1; }
+  }
+  if (streak > 1 && streak % 7 === 0) freezes = Math.min(MAX_FREEZES, freezes + 1);
+  return { ...s, streak, freezes, brokenStreak, lastActiveDay: today, longestStreak: Math.max(s.longestStreak, streak) };
+}
+
+/** Uzilgan seriyani tiklash: uzilgandan keyin 48 soat ichida ikki baravar maqsad, 30 kunda bir marta. */
+export function tryRepair(s: StreakState, today: string, dailyXp: number, dailyGoal: number): StreakState {
+  const b = s.brokenStreak;
+  if (!b || dailyXp < dailyGoal * 2 || daysBetween(b.day, today) > REPAIR_WINDOW_DAYS) return s;
+  if (s.lastRepairDay && daysBetween(s.lastRepairDay, today) < REPAIR_COOLDOWN_DAYS) return s;
+  const streak = b.value + s.streak;
+  return { ...s, streak, brokenStreak: null, lastRepairDay: today, longestStreak: Math.max(s.longestStreak, streak) };
+}
+
+/** Uzilgan seriyani hozir tiklash mumkinmi (48 soat oynasi va 30 kunlik cheklov) — faqat ko'rsatish uchun. */
+export const repairOpen = (s: StreakState, today: string): boolean =>
+  !!s.brokenStreak && daysBetween(s.brokenStreak.day, today) <= REPAIR_WINDOW_DAYS && (!s.lastRepairDay || daysBetween(s.lastRepairDay, today) >= REPAIR_COOLDOWN_DAYS);
+
+/** Ko'rsatiladigan seriya: muzlatish bilan yopib bo'lmaydigan bo'shliq bo'lsa 0. */
+export function displayStreak(p: StreakState, today: string): number {
+  if (!p.lastActiveDay) return 0;
+  const missed = daysBetween(p.lastActiveDay, today) - 1;
+  return missed <= Math.max(0, p.freezes) ? p.streak : 0;
+}
+
 export const xpForLevel = (level: number): number => 50 * (level - 1) * (level - 1);
 export const levelFromXp = (xp: number): number => Math.floor(Math.sqrt(Math.max(0, xp) / 50)) + 1;
 
@@ -45,6 +88,10 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'words-30', title: 'So‘z ustasi', desc: '30 ta so‘zni o‘zlashtiring', check: (p) => masteredCount(p) >= 30 },
   { id: 'games-10', title: 'O‘yinchi', desc: '10 ta o‘yin o‘ynang', check: (p) => p.gamesPlayed >= 10 },
   { id: 'daily-goal', title: 'Kunlik maqsad', desc: 'Kunlik XP maqsadini bajaring', check: (p) => p.dailyXp >= p.dailyGoal },
+  { id: 'streak-30', title: '30 kunlik seriya', desc: 'Ketma-ket 30 kun kunlik maqsadni bajaring', check: (p) => p.streak >= 30 },
+  { id: 'boss-1', title: 'Birinchi boss', desc: 'Birinchi bo‘lim boss sinovini yuting', check: (p) => (p.bossWins ?? 0) >= 1 },
+  { id: 'boss-5', title: 'Boss ovchisi', desc: '5 ta bo‘lim boss sinovini yuting', check: (p) => (p.bossWins ?? 0) >= 5 },
+  { id: 'level-10', title: '10-daraja', desc: 'Bandly darajasi 10 ga yeting', check: (p) => levelFromXp(p.xp) >= 10 },
 ];
 
 export interface XpResult {
@@ -57,15 +104,12 @@ export interface XpResult {
 export function applyXp(p: Profile, amount: number, today: string): XpResult {
   const amt = Math.max(0, Math.round(amount));
   const rolled: Profile = p.dailyDay === today ? p : { ...p, dailyDay: today, dailyXp: 0 };
-  const streak = nextStreak(rolled.lastActiveDay, today, rolled.streak);
-  const next: Profile = {
-    ...rolled,
-    xp: rolled.xp + amt,
-    dailyXp: rolled.dailyXp + amt,
-    streak,
-    longestStreak: Math.max(rolled.longestStreak, streak),
-    lastActiveDay: today,
-  };
+  const dailyXp = rolled.dailyXp + amt;
+  // Seriya faqat kunlik maqsad bajarilgan kuni o'sadi (1 XP bilan seriya saqlanmaydi)
+  let st: StreakState = rolled;
+  if (dailyXp >= rolled.dailyGoal) st = goalDay(st, today);
+  st = tryRepair(st, today, dailyXp, rolled.dailyGoal);
+  const next: Profile = { ...rolled, ...st, xp: rolled.xp + amt, dailyXp };
   const before = new Set(next.achievements);
   const unlocked = ACHIEVEMENTS.filter((a) => !before.has(a.id) && a.check(next));
   next.achievements = [...next.achievements, ...unlocked.map((a) => a.id)];

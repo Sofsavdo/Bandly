@@ -81,6 +81,12 @@ export function addXp(amount: number): void {
   r.unlocked.forEach((a) => { pushToast(`Yutuq: ${a.title}`, 'ach'); if (!r.levelUp) { sfx('ach'); confetti(50); } });
 }
 
+/** Boss g'alabasi: hisoblagich (yutuqlar uchun) va XP bitta amalda — yutuq tekshiruvi yangi qiymatni ko'radi. */
+export function addBossWin(xp: number): void {
+  commit({ ...state, bossWins: (state.bossWins ?? 0) + 1 });
+  addXp(xp);
+}
+
 /** Put words into the spaced-repetition deck (due now) without recording an answer; words already in the deck are left unchanged. Returns how many were added. */
 export function addToReview(wordIds: string[], now = Date.now()): number {
   const fresh = wordIds.filter((id) => !state.srs[id]);
@@ -115,6 +121,12 @@ export function consumeGame(): boolean {
   const n = state.freeGames.day === today ? state.freeGames.n + 1 : 1;
   commit({ ...state, gamesPlayed: state.gamesPlayed + 1, freeGames: { day: today, n } });
   return true;
+}
+
+/** Hisobdan chiqilganda: serverdan kelgan obunalar bu qurilmada qolmaydi. */
+export function clearServerPlans(): void {
+  if (!Object.values(state.planUntil).some(Boolean)) return;
+  commit({ ...state, plan: { exam: false, grammar: false, mocks: false }, planUntil: { exam: null, grammar: null, mocks: null } });
 }
 
 /** To'lov ulangan rejimda obuna holati faqat serverdan keladi. */

@@ -129,7 +129,7 @@ export default function Coach() {
             <button type="button" className={`chipbtn ${mode === 'exam' ? 'on' : ''}`} onClick={() => setMode('exam')}>Imtihon rejimi (faqat qattiqqo‘l imtihonchi)</button>
           </p>
           {!acc
-            ? <JoinForm onJoined={setAcc} text="AI ustoz bilan gaplashish uchun laqab tanlang (kunlik limit shu laqabga hisoblanadi)." />
+            ? <JoinForm onJoined={setAcc} text="AI ustoz bilan gaplashish uchun hisobingizga kiring (kunlik limit hisobingizga yoziladi)." />
             : <button className="btn primary" disabled={!status?.coach} onClick={start}>Suhbatni boshlash</button>}
         </section>
       )}

@@ -1,11 +1,12 @@
-import { Flame, Lock, Trophy } from 'lucide-react';
-import { useState } from 'react';
-import { getAccount, restoreAccount } from '../lib/account';
+import { Flame, Lock, LogOut, Trophy } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { authConfig, getAccount, logout, onAccountChange, restoreAccount } from '../lib/account';
+import { JoinForm } from '../components/JoinForm';
 import { fmtDate, refreshEntitlements } from '../lib/pay';
 import { TRACK_NAME } from '../config';
 import { setSound, sfx, soundOn } from '../lib/fx';
 import { LEVEL_INFO } from '../lib/levels';
-import { ACHIEVEMENTS, levelProgress } from '../lib/game';
+import { ACHIEVEMENTS, levelProgress, dayKey, displayStreak, repairOpen } from '../lib/game';
 import { loadResults } from '../lib/storage';
 import { resetAll, setDailyGoal, useProfile } from '../lib/store';
 import { PersonaPicker } from '../components/PersonaPicker';
@@ -19,7 +20,10 @@ export default function Profile() {
   const [snd, setSnd] = useState(soundOn());
   const [code, setCode] = useState('');
   const [msg, setMsg] = useState('');
-  const acc = getAccount();
+  const [acc, setAcc] = useState(getAccount());
+  const [tgOn, setTgOn] = useState(false);
+  useEffect(() => { void authConfig().then((c) => setTgOn(!!c.telegram)); return onAccountChange(() => setAcc(getAccount())); }, []);
+  const earned = ACHIEVEMENTS.filter((a) => p.achievements.includes(a.id));
   const lp = levelProgress(p.xp);
   const results = loadResults();
   const mastered = vocab.filter((w) => isMastered(p.srs[w.id])).length;
@@ -32,41 +36,53 @@ export default function Profile() {
           <div className="bar" style={{ margin: '8px 0' }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
           <div className="evidence">{lp.into} / {lp.span} XP · jami {p.xp} XP</div>
           <div className="row" style={{ marginTop: 8 }}>
-            <span className="pill"><Flame size={14} color="#ff7a1a" fill="#ff7a1a" /> Seriya: {p.streak} kun</span>
+            <span className="pill"><Flame size={14} color="#ff7a1a" fill="#ff7a1a" /> Seriya: {displayStreak(p, dayKey())} kun{p.freezes > 0 ? ` · ❄ ${p.freezes} muzlatish` : ''}</span>
             <span className="pill">Eng uzun: {p.longestStreak}</span>
             {p.level && <span className="pill">Daraja: {p.level} · {LEVEL_INFO[p.level].name}</span>}
             <span className="pill">So‘zlar: {mastered}/{vocab.length}</span>
             <span className="pill">O‘yinlar: {p.gamesPlayed}</span>
           </div>
+          {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice" style={{ marginTop: 8 }}>{p.brokenStreak?.value} kunlik seriyangiz uzildi. Uzilgan kundan keyin 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, seriya tiklanadi (30 kunda bir marta).</p>}
+          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>Seriya kunlik XP maqsadiga yetgan kunlari o‘sadi. Har 7 kunlik seriya uchun 1 ta muzlatish beriladi (ko‘pi bilan 2 ta): o‘tkazib yuborilgan kun seriyani uzmaydi.</p>
         </div>
       </div>
 
       <ProgressCard />
 
       <div className="card">
-        <h3>Hisob va obunalar</h3>
+        <h3>Hisob</h3>
+        {acc ? (
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <p style={{ margin: 0 }}>Siz <b>{acc.nickname}</b> sifatida kirgansiz.</p>
+            <button className="btn sm" onClick={() => { if (window.confirm('Hisobdan chiqasizmi? Darslar progressi shu qurilmada qoladi; obuna va reyting hisobingizda saqlanadi.')) logout(); }}><LogOut size={14} /> Chiqish</button>
+          </div>
+        ) : <JoinForm onJoined={(a) => setAcc(a)} text="Kirsangiz reyting, duel, AI ustoz va obuna hisobingizga yoziladi va boshqa qurilmada ham ochiladi." />}
+        {acc && tgOn && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text="Hisobingizni Telegram'ga bog‘lang: XP va obuna saqlanadi, keyin istalgan qurilmada Telegram orqali kirasiz." /></div>}
+        <h4 style={{ margin: '14px 0 4px' }}>Obunalar</h4>
         {(['exam', 'grammar', 'mocks'] as const).map((t) => (
           <p key={t} style={{ margin: '4px 0' }}>{TRACK_NAME[t]}: {p.planUntil[t] && p.planUntil[t]! > Date.now() ? <b className="ok">faol, {fmtDate(p.planUntil[t]!)} gacha</b> : p.plan[t] ? <span>demo</span> : <span className="evidence">obuna yo‘q</span>}</p>
         ))}
-        {acc ? (
-          <>
-            <p className="evidence">Laqab: <b>{acc.nickname}</b>. Hisob kodi obunani boshqa qurilmada tiklash uchun kerak, uni hech kimga bermang.</p>
-            <div className="row"><button className="btn sm" onClick={async () => { await navigator.clipboard.writeText(acc.token).catch(() => {}); setMsg('Hisob kodi nusxalandi. Xavfsiz joyda saqlang.'); }}>Hisob kodini nusxalash</button></div>
-          </>
-        ) : <p className="evidence">Obuna sotib olish uchun hisob kerak: u to‘lov vaqtida laqab bilan yaratiladi.</p>}
-        <div className="row" style={{ marginTop: 10 }}>
-          <input type="text" value={code} placeholder="Boshqa qurilmadagi hisob kodi" onChange={(e) => setCode(e.target.value)} style={{ minWidth: 220 }} />
-          <button className="btn sm" disabled={code.trim().length < 20} onClick={async () => { try { const a = await restoreAccount(code); await refreshEntitlements(); setMsg(`Kirdingiz: ${a.nickname}`); setCode(''); } catch (e) { setMsg((e as Error).message); } }}>Kod bilan kirish</button>
-        </div>
+        <details className="fold" style={{ marginTop: 10 }}>
+          <summary>Eski hisob kodi</summary>
+          {acc && !acc.tg && <div className="row"><button className="btn sm" onClick={async () => { await navigator.clipboard.writeText(acc.token).catch(() => {}); setMsg('Hisob kodi nusxalandi. Xavfsiz joyda saqlang, hech kimga bermang.'); }}>Hisob kodini nusxalash</button></div>}
+          <div className="row" style={{ marginTop: 8 }}>
+            <input type="text" value={code} placeholder="Boshqa qurilmadagi hisob kodi" onChange={(e) => setCode(e.target.value)} style={{ minWidth: 220 }} />
+            <button className="btn sm" disabled={code.trim().length < 20} onClick={async () => { try { const a = await restoreAccount(code); await refreshEntitlements(); setMsg(`Kirdingiz: ${a.nickname}`); setCode(''); } catch (e) { setMsg((e as Error).message); } }}>Kod bilan kirish</button>
+          </div>
+          <p className="evidence">Telegram'dan oldin ochilgan hisoblar uchun. Kod bilan kirgach, hisobni Telegram'ga bog‘lab qo‘ying.</p>
+        </details>
         {msg && <p className="evidence">{msg}</p>}
       </div>
 
       <div className="card">
-        <h3>Yutuqlar</h3>
-        {ACHIEVEMENTS.map((a) => {
-          const on = p.achievements.includes(a.id);
-          return <div key={a.id} className={`ach ${on ? '' : 'off'}`}><span className="ach-ico">{on ? <Trophy size={20} /> : <Lock size={18} />}</span><div><b>{a.title}</b><div className="evidence">{a.desc}</div></div></div>;
-        })}
+        <details className="fold">
+          <summary><h3 style={{ display: 'inline', margin: 0 }}>Yutuqlar · {earned.length}/{ACHIEVEMENTS.length}</h3></summary>
+          {[...earned, ...ACHIEVEMENTS.filter((a) => !p.achievements.includes(a.id))].map((a) => {
+            const on = p.achievements.includes(a.id);
+            return <div key={a.id} className={`ach ${on ? '' : 'off'}`}><span className="ach-ico">{on ? <Trophy size={20} /> : <Lock size={18} />}</span><div><b>{a.title}</b><div className="evidence">{a.desc}</div></div></div>;
+          })}
+        </details>
+        {earned.length > 0 && <p className="row" style={{ marginTop: 8 }}>{earned.slice(-4).map((a) => <span key={a.id} className="pill"><Trophy size={13} /> {a.title}</span>)}</p>}
       </div>
 
       <div className="card">
@@ -82,8 +98,8 @@ export default function Profile() {
             </select>
           </label>
         </div>
-        <PersonaPicker />
-        <button className="btn" onClick={() => { if (window.confirm('Barcha natijalar, XP va demo obunalar o‘chiriladi. Davom etasizmi?')) { resetAll(); try { localStorage.removeItem('bandly.results.v1'); } catch { /* */ } } }}>Hisobni tiklash</button>
+        <details className="fold" style={{ margin: '10px 0' }}><summary>AI ustoz xarakteri</summary><PersonaPicker /></details>
+        <button className="btn" onClick={() => { if (window.confirm('Barcha natijalar, XP va demo obunalar o‘chiriladi. Davom etasizmi?')) { resetAll(); try { localStorage.removeItem('bandly.results.v1'); } catch { /* */ } } }}>Qurilmadagi progressni o‘chirish</button>
       </div>
 
       <div className="card">
