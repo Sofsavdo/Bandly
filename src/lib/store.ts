@@ -123,6 +123,12 @@ export function consumeGame(): boolean {
   return true;
 }
 
+/** Hisobdan chiqilganda: serverdan kelgan obunalar bu qurilmada qolmaydi. */
+export function clearServerPlans(): void {
+  if (!Object.values(state.planUntil).some(Boolean)) return;
+  commit({ ...state, plan: { exam: false, grammar: false, mocks: false }, planUntil: { exam: null, grammar: null, mocks: null } });
+}
+
 /** To'lov ulangan rejimda obuna holati faqat serverdan keladi. */
 export function applyServerPlans(subs: Record<TrackId, number | null>): void {
   const now = Date.now();

@@ -1,11 +1,11 @@
-import { Flame, Menu, Star, Target, User, X } from 'lucide-react';
+import { ChevronDown, Flame, Menu, Star, Target, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { BRAND } from '../brand';
 import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
-import { HOME, HOMEWORK, MISTAKES, NAV, PRACTICE, PRIMARY_NAV, PROFILE, RESULTS, SHADOW, TOOLS, isActive } from './nav';
+import { NAV_GROUPS, PRIMARY_NAV, PROFILE, isActive } from './nav';
 
 function Stats() {
   const t = useT();
@@ -51,8 +51,15 @@ export function Header({ hash }: { hash: string }) {
               <button className="icon-btn" aria-label={t('nav.close')} onClick={() => setOpen(false)}><X size={20} /></button>
             </div>
             <div className="dstats"><Stats /></div>
-            {[HOME, ...NAV, MISTAKES, SHADOW, HOMEWORK, PRACTICE, RESULTS, TOOLS, PROFILE].map((n) => <a key={n.href} href={n.href} className={`dlink ${isActive(hash, n.href) ? 'active' : ''}`}><n.icon size={20} />{t(n.label)}</a>)}
-            <a className="btn primary" href="#/pricing" style={{ marginTop: 10 }}>{t('cta.plans')}</a>
+            {NAV_GROUPS.map((g) => {
+              const here = g.items.some((n) => isActive(hash, n.href));
+              return (
+                <details key={g.id} className="dgroup" open={g.id === 'main' || here}>
+                  <summary>{t(g.label)}<ChevronDown size={18} /></summary>
+                  {g.items.map((n) => <a key={n.href} href={n.href} className={`dlink ${isActive(hash, n.href) ? 'active' : ''}`}><n.icon size={20} />{t(n.label)}</a>)}
+                </details>
+              );
+            })}
           </aside>
         </>
       )}

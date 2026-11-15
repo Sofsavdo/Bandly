@@ -21,20 +21,24 @@ export default function Learn() {
   const passed = UNITS.flatMap((u) => u.lessons).filter((l) => progress[l.id]?.passedAt).length;
   return (
     <div>
-      <section className="card">
-        <h2><BookOpenCheck size={22} /> General English</h2>
-        {view === 'list' && <p>Ingliz tilini darajama-daraja o‘rganish yo‘li: har bir darsda maqsad, qisqa tushuntirish, misollar, mashq va yakuniy tekshiruv bor. Tekshiruvdan {Math.round(0.8 * 100)}% va undan yuqori natija bilan o‘tsangiz, keyingi dars ochiladi.</p>}
-        <div className="row">
-          <span className="pill">{passed}/{total} dars tugallangan</span>
-          {p.level ? <span className="pill">Darajangiz: {p.level}</span> : <a className="btn sm" href="#/placement">Darajani aniqlash</a>}
-          <a className="btn sm" href="#/skills">Reading / Listening darajasi</a>
+      <section className="card learn-head">
+        <div className="learn-head-row">
+          <div>
+            <h2 style={{ margin: 0 }}><BookOpenCheck size={22} /> Ingliz tili</h2>
+            <p className="muted" style={{ margin: '4px 0 0' }}>{passed}/{total} dars · {p.level ? `darajangiz ${p.level}` : <a href="#/placement">darajani aniqlash</a>}</p>
+          </div>
+          <div className="seg" role="tablist" aria-label="Ko‘rinish">
+            <button type="button" role="tab" aria-selected={view === 'map'} className={view === 'map' ? 'on' : ''} onClick={() => pick('map')}><MapIcon size={15} /> Xarita</button>
+            <button type="button" role="tab" aria-selected={view === 'list'} className={view === 'list' ? 'on' : ''} onClick={() => pick('list')}><List size={15} /> Ro‘yxat</button>
+          </div>
         </div>
-        {next && <a className="btn primary" style={{ marginTop: 12, whiteSpace: 'normal' }} href={`#/learn/${next.lessonId}`}><PlayCircle size={16} /> Davom ettirish: {nextTitle}</a>}
-        <p className="muted" style={{ fontSize: 13, marginTop: 10 }}>Sinov (pilot) versiyasi: A1–C2 darslari Bandly uchun yozilgan va metodist tekshiruvini kutmoqda. Har bir darajada bo‘limlar soni bosqichma-bosqich ko‘payadi.</p>
-        <div className="seg" role="tablist" aria-label="Ko‘rinish" style={{ marginTop: 12 }}>
-          <button type="button" role="tab" aria-selected={view === 'map'} className={view === 'map' ? 'on' : ''} onClick={() => pick('map')}><MapIcon size={15} /> Xarita</button>
-          <button type="button" role="tab" aria-selected={view === 'list'} className={view === 'list' ? 'on' : ''} onClick={() => pick('list')}><List size={15} /> Ro‘yxat</button>
-        </div>
+        {view === 'list' && next && <a className="btn primary" style={{ marginTop: 12, whiteSpace: 'normal' }} href={`#/learn/${next.lessonId}`}><PlayCircle size={16} /> Davom ettirish: {nextTitle}</a>}
+        <details className="fold" style={{ marginTop: 8 }}>
+          <summary className="muted" style={{ fontSize: 13 }}>Darslar haqida</summary>
+          <p style={{ fontSize: 14 }}>Har bir darsda maqsad, qisqa tushuntirish, misollar, mashq va yakuniy tekshiruv bor. Tekshiruvdan 80% va undan yuqori natija bilan o‘tsangiz, keyingi dars ochiladi; bo‘lim oxirida ixtiyoriy boss sinovi bor.</p>
+          <p className="muted" style={{ fontSize: 13 }}>Sinov (pilot) versiyasi: darslar Bandly uchun yozilgan va metodist tekshiruvini kutmoqda.</p>
+          <a className="btn sm" href="#/skills">Reading / Listening darajasini tekshirish</a>
+        </details>
       </section>
       {view === 'map' && (
         <div className="learn-grid">

@@ -189,7 +189,7 @@ export default function Speaking() {
         <div className="card">
           <h3>Boshlashdan oldin</h3>
           {!supported && <p className="notice">Brauzeringiz nutqni tanishni qo‘llamaydi. Yozma rejim ishlaydi; ovozli rejim uchun Chrome yoki Safari kerak.</p>}
-          {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI bilan suhbat va baho uchun laqab tanlang (parol shart emas). Laqabsiz ham qoidaviy ustoz bilan davom etish mumkin." />}
+          {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI bilan suhbat va baho uchun hisobingizga kiring. Kirmasdan ham qoidaviy ustoz bilan davom etish mumkin." />}
           {aiOn && acct && <p className="notice">AI yoqilgan: suhbatning <b>matni</b> (ovoz emas) javobingizga bog‘liq savol berish va baholash uchun AI provayderiga yuboriladi.</p>}
           <p className="evidence">Ovozingiz <b>yozib olinmaydi va saqlanmaydi</b>. Nutqni matnga o‘girishni brauzeringiz xizmati bajaradi (Chrome, Edge, Safari qo‘llaydi; bu xizmat ovozni o‘z serveriga yuborishi mumkin). Naushnik ishlatsangiz, ustoz ovozi mikrofonga kirmaydi.</p>
           <div style={{ margin: '12px 0' }}>

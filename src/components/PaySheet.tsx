@@ -106,7 +106,7 @@ export function PaySheet() {
         {stage === 'account' && want && (
           <div>
             <p className="evidence">Obuna hisobingizga bog‘lanadi. Avval laqab tanlang (parol shart emas).</p>
-            <JoinForm text="Laqabingiz hisob vazifasini bajaradi. Keyin Profilda “hisob kodi”ni saqlab qo‘ying: boshqa qurilmada obunani shu kod bilan tiklaysiz." onJoined={(_a: Account) => void begin(want)} />
+            <JoinForm text="Obuna hisobingizga yoziladi: boshqa qurilmada ham shu hisob bilan kirasiz." onJoined={(_a: Account) => void begin(want)} />
           </div>
         )}
 

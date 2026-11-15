@@ -1,26 +1,18 @@
 import { BRAND } from '../brand';
-import { useT, type Key } from '../i18n';
+import { useT } from '../i18n';
 import { Mascot } from './Mascot';
 
-const cols: [Key, [Key, string][]][] = [
-  ['footer.tracks', [['footer.exam', '#/exam'], ['nav.grammar', '#/grammar'], ['nav.practice', '#/practice'], ['nav.shadow', '#/shadow'], ['nav.mocks', '#/mocks'], ['cta.plans', '#/pricing']]],
-  ['footer.games', [['footer.rush', '#/games/rush'], ['footer.pairs', '#/games/pairs'], ['footer.spell', '#/games/spell'], ['nav.duel', '#/duel']]],
-  ['footer.free', [['nav.homework', '#/homework'], ['nav.results', '#/results'], ['nav.tools', '#/tools'], ['nav.league', '#/league']]],
-];
-
+/** Ixcham pastki qism: barcha sahifalar menyuda guruhlangan, bu yerda faqat asosiy havolalar. */
 export function Footer() {
   const t = useT();
   return (
     <footer className="site-footer">
       <div className="container">
-        <div className="footer-grid">
-          <div>
-            <a className="logo" href="#/"><Mascot mood="happy" size={36} />{BRAND.name}</a>
-            <p className="muted" style={{ marginTop: 12, maxWidth: 240 }}>{t('brand.tagline')}</p>
-          </div>
-          {cols.map(([title, links]) => (
-            <div key={title}><h4>{t(title)}</h4>{links.map(([l, h]) => <a key={h} href={h}>{t(l)}</a>)}</div>
-          ))}
+        <div className="footer-row">
+          <a className="logo" href="#/"><Mascot mood="happy" size={30} />{BRAND.name}</a>
+          <nav className="footer-links" aria-label="Pastki havolalar">
+            <a href="#/learn">{t('nav.learn')}</a><a href="#/exam">{t('nav.exam')}</a><a href="#/mocks">{t('nav.mocks')}</a><a href="#/pricing">{t('nav.pricing')}</a>
+          </nav>
         </div>
         <p className="disclaimer">{BRAND.disclaimer}</p>
       </div>

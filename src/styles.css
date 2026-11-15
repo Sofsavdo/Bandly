@@ -630,3 +630,33 @@ mark.hl { background: #fde68a; color: inherit; border-radius: 2px; padding: 0 1p
 .boss-deltas, .boss-fix { list-style: none; padding: 0; margin: 8px auto; max-width: 480px; text-align: left; display: grid; gap: 6px; }
 .boss-deltas li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 6px 0; font-size: 14px; }
 .boss-q .q { margin: 10px 0 14px; }
+
+/* ---------- Menyu guruhlari (yig'iladigan) ---------- */
+.drawer .dgroup { border-top: 1px solid var(--line); padding: 4px 0; }
+.drawer .dgroup:first-of-type { border-top: 0; }
+.drawer .dgroup > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 10px 14px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-radius: 12px; }
+.drawer .dgroup > summary::-webkit-details-marker { display: none; }
+.drawer .dgroup > summary svg { transition: transform .2s; }
+.drawer .dgroup[open] > summary svg { transform: rotate(180deg); }
+.drawer .dgroup > summary:focus-visible { outline: 2px solid var(--blue); }
+.drawer .dgroup a.dlink { padding: 11px 14px; }
+
+/* ---------- Ixcham footer ---------- */
+.footer-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 0 6px; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.footer-links a { color: var(--ink-2); font-weight: 600; font-size: 14px; }
+.footer-links a:hover { color: var(--brand); }
+.site-footer .disclaimer { font-size: 12px; }
+
+/* ---------- Yig'iladigan bloklar ---------- */
+details.fold > summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+
+/* ---------- Telegram ---------- */
+.tg-widget { min-height: 48px; margin: 8px 0; }
+.tg-join h3 { display: flex; align-items: center; gap: 8px; }
+/* Telegram Mini App ichida: Telegram o'z sarlavhasini beradi — footer va narx tugmasi kerak emas */
+html[data-tg='1'] .site-footer, html[data-tg='1'] .header-cta { display: none; }
+.tg-promo { display: flex; align-items: center; gap: 14px; color: var(--ink); text-decoration: none; }
+.tg-promo > div { flex: 1; }
+@media (max-width: 640px) { .landing-hero .hero-art { display: none; } }
+.learn-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

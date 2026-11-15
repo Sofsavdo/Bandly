@@ -132,7 +132,7 @@ export function DuelRoom({ code }: { code: string }) {
 
   if (err && !info) return <div className="card"><p className="notice">{err}</p><a className="btn" href="#/duel">Duellar</a></div>;
   if (!info) return <div className="card">Yuklanmoqda…</div>;
-  if (!acc) return <JoinForm onJoined={setAcc} text="Duelda qatnashish uchun laqab tanlang (parol shart emas)." />;
+  if (!acc) return <JoinForm onJoined={setAcc} text="Duelda qatnashish uchun hisobingizga kiring." />;
   if (playing) return <Play info={info} onDone={(i) => { setInfo(i); setPlaying(false); }} />;
 
   return (
@@ -162,7 +162,7 @@ export default function DuelHub() {
     setBusy(true);
     try { const d = await createDuel(); window.location.hash = `#/duel/${d.code}`; } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
-  if (!acc) return <JoinForm onJoined={setAcc} text="Duel uchun laqab tanlang (parol shart emas)." />;
+  if (!acc) return <JoinForm onJoined={setAcc} text="Duel uchun hisobingizga kiring." />;
   return (
     <div>
       <div className="card hero">

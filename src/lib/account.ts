@@ -1,15 +1,40 @@
-import { getProfile } from './store';
+import { clearServerPlans, getProfile } from './store';
 
 const KEY = 'bandly.account.v1';
-export interface Account { token: string; nickname: string }
+export interface Account { token: string; nickname: string; tg?: boolean }
 
 export const getAccount = (): Account | null => {
   try { return JSON.parse(localStorage.getItem(KEY) ?? 'null') as Account | null; } catch { return null; }
 };
+const listeners = new Set<() => void>();
+/** Hisob o'zgarishini kuzatish (kirish/chiqish). */
+export const onAccountChange = (cb: () => void): (() => void) => { listeners.add(cb); return () => listeners.delete(cb); };
 const setAccount = (a: Account | null) => {
+  queueMicrotask(() => listeners.forEach((cb) => cb()));
   try { if (a) localStorage.setItem(KEY, JSON.stringify(a)); else localStorage.removeItem(KEY); } catch { /* */ }
 };
 export const leaveLeague = (): void => setAccount(null);
+/** Hisobdan chiqish: token va serverdan kelgan obunalar bu qurilmadan o'chiriladi; darslar progressi qurilmada qoladi. */
+export function logout(): void {
+  setAccount(null);
+  clearServerPlans();
+  try { sessionStorage.removeItem('bandly.tg.auth'); } catch { /* */ }
+}
+
+// ---------------- Telegram orqali kirish (OD-05) ----------------
+export interface AuthConfig { telegram: { bot: string } | null }
+let cfg: Promise<AuthConfig> | null = null;
+export const authConfig = (): Promise<AuthConfig> => (cfg ??= fetch('/api/auth/config').then((r) => (r.ok ? r.json() as Promise<AuthConfig> : { telegram: null })).catch(() => ({ telegram: null })));
+
+/** Telegram ma'lumoti bilan kirish. Qurilmada eski (laqabli) hisob bo'lsa, u Telegram'ga bog'lanadi — XP va obuna saqlanadi. */
+export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown): Promise<Account & { linked: boolean }> {
+  const link = getAccount()?.token;
+  const body = kind === 'webapp' ? { initData: payload, link } : { user: payload, link };
+  const r = await call<Account & { linked: boolean }>(kind === 'webapp' ? '/api/auth/telegram/webapp' : '/api/auth/telegram', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  setAccount({ token: r.token, nickname: r.nickname, tg: true });
+  void syncNow();
+  return r;
+}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;

@@ -14,7 +14,7 @@ Blocking classes: **IMPL** = blocks starting implementation of the named milesto
 | OD-02 | Database platform | M2a | **IMPL** M2a | Open |
 | OD-03 | Maintenance window, rollback-risk acceptance, window-user handling | M2b | **IMPL** M2b (cut-over); **PROD** | Open |
 | OD-04 | Vendor accounts & recurring foundation budget (backup storage, error tracker, email + domain, Google OAuth, Telegram bot, payment-provider export access) | M1 (storage, error tracker), M3 (rest) | **IMPL** M1 off-site/error tracker, M3 | Open |
-| OD-05 | Sign-in methods & legacy-account sunset | M3 | **IMPL** M3 | Open |
+| OD-05 | Sign-in methods & legacy-account sunset | M3 | **IMPL** M3 | **Answered 2026-11-15:** sign-in and sign-out via **Telegram** (Login Widget on the site, automatic in the Telegram Mini App). Existing nickname accounts keep working and are linked to Telegram on first Telegram sign-in on that device; new nickname accounts stop once the bot is configured. Next goal: Bandly as a Telegram bot Web App (mock tests in the bot). Runbook: `docs/runbooks/telegram.md`. |
 | OD-06 | Age policy & adult-mode policy | M3 | **IMPL** of age collection in M3; **PROD** for adult mode | Open — needs legal input on minimum age |
 | OD-07 | Retention, deletion, refund policy (incl. archive/backup retention) | M3 (deletion mechanics provisional), M8 (final) | **PROD** (privacy notice, paid launch); M3 may use provisional defaults | Open |
 | OD-08 | Mapping of three tracks & free-tier definition | M5 | **IMPL** M5 | Open (recommended A) |

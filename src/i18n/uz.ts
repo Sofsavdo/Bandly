@@ -36,6 +36,12 @@ export const uz = {
   'footer.results': 'Natijalarim',
   'brand.tagline': 'Ingliz tili, imtihonlar va AI ustoz — bir joyda',
   'nav.mistakes': 'Xatolarim',
+  'nav.pricing': 'Obuna turlari',
+  'nav.group.main': 'Asosiy',
+  'nav.group.practice': 'Mashq qilish',
+  'nav.group.exam': 'Imtihon (IELTS · CEFR · SAT)',
+  'nav.group.compete': 'Musobaqa',
+  'nav.group.account': 'Hisob',
   'lang.label': 'Til',
   'greet.progress': '{n} ta qoldi',
 } as const;

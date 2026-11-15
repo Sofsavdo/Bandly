@@ -2,7 +2,8 @@ import { Flame } from 'lucide-react';
 import { RankBadge } from '../components/RankBadge';
 import { useCallback, useEffect, useState } from 'react';
 import { Mascot } from '../components/Mascot';
-import { fetchBoard, getAccount, joinLeague, leaveLeague, syncNow, type Board } from '../lib/account';
+import { fetchBoard, getAccount, syncNow, type Board } from '../lib/account';
+import { JoinForm } from '../components/JoinForm';
 import { useProfile } from '../lib/store';
 
 export default function League() {
@@ -10,19 +11,12 @@ export default function League() {
   const [period, setPeriod] = useState<'week' | 'all'>('week');
   const [board, setBoard] = useState<Board | null>(null);
   const [err, setErr] = useState('');
-  const [nick, setNick] = useState('');
-  const [busy, setBusy] = useState(false);
   const [acc, setAcc] = useState(getAccount());
 
   const load = useCallback(async () => {
     try { await syncNow(); setBoard(await fetchBoard(period)); setErr(''); } catch (e) { setErr((e as Error).message); }
   }, [period]);
   useEffect(() => { void load(); const t = setInterval(() => void load(), 20_000); return () => clearInterval(t); }, [load]);
-
-  const join = async () => {
-    setBusy(true);
-    try { setAcc(await joinLeague(nick)); setErr(''); await load(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
-  };
 
   return (
     <div>
@@ -38,17 +32,7 @@ export default function League() {
         </div>
       </div>
 
-      {!acc && (
-        <div className="card">
-          <h3>Reytingda qatnashish</h3>
-          <p>Laqab tanlang (parol shart emas). Natijangiz shu qurilmadagi hisobga bog‘lanadi.</p>
-          <div className="row">
-            <input type="text" value={nick} maxLength={20} placeholder="Laqab" onChange={(e) => setNick(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void join(); }}
-              style={{ padding: 10, borderRadius: 10, border: '2px solid var(--line)', background: 'var(--bg)', color: 'var(--text)', fontSize: 16 }} />
-            <button className="btn primary" disabled={busy || nick.trim().length < 2} onClick={() => void join()}>Qo‘shilish</button>
-          </div>
-        </div>
-      )}
+      {!acc && <JoinForm text="Reytingda qatnashish uchun hisobingizga kiring. Laqabingiz reytingda ko‘rinadi." onJoined={(a) => { setAcc(a); void load(); }} />}
       {err && <p className="notice">{err}</p>}
 
       <div className="card">
@@ -67,7 +51,7 @@ export default function League() {
           </table>
         )}
         {board?.me && board.me.rank > 20 && <p className="evidence">Sizning o‘rningiz: {board.me.rank}-o‘rin, {board.me.xp} XP</p>}
-        {acc && <p className="evidence">Laqabingiz: <b>{acc.nickname}</b> · <button className="btn" onClick={() => { leaveLeague(); setAcc(null); }}>Chiqish</button></p>}
+        {acc && <p className="evidence">Siz reytingda <b>{acc.nickname}</b> nomi bilan qatnashyapsiz. Hisobdan chiqish — Profil sahifasida.</p>}
         <p className="evidence">Aldovning oldini olish uchun server qisqa vaqtda juda katta XP sakrashlarini qabul qilmaydi.</p>
       </div>
     </div>
