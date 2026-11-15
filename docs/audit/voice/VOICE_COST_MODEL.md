@@ -88,3 +88,10 @@ Add Reading mode: 300 attempts a month ≈ $1.1. Compare this with the hypothesi
 ## 9. Cost of the recommended split (see architecture §11)
 - AI Tutor live chat, 120 min/month at full use: `2.1-mini` ≈ $2.2–$22, `gpt-live-1` ≈ $6 + LLM, ElevenLabs Realtime ≈ $9.6 + LLM, full `gpt-realtime-2.1` ≈ $6–$70. Average use is usually below the allowance, but pricing must survive full use → 120 min fits only a top plan, or a cheaper realtime model that passes the benchmark.
 - Speaking practice feedback turn (≈ 30 s answer + ≈ 150 chars of voiced feedback): STT + assessment ≈ $0.011 + LLM ≈ $0.005 + ElevenLabs v4 TTS ≈ $0.012 → **≈ $0.03 per answer**; 300 answers/month ≈ $9 at the high end, ≈ $4–5 with Azure/Google TTS for neutral lines and ElevenLabs only for emotional ones. Fixed roast phrases without slots are pre-generated once and cached.
+
+## 10. Check against the owner's tariffs (2026-11-15; `MONETIZATION_SPEC.md` §7)
+Revenue at 1 USD ≈ 12 500 so‘m [U]: GENERAL $5.5, EXAM $7.9, ALL ACCESS $10.3 per month, before fees and tax.
+- **One AI Speaking assessment** (full mock, ≈ 12–14 min audio): naive (Azure STT + Azure assessment on all audio + LLM) ≈ $0.35–0.55; **optimised** (cheap STT for the transcript, e.g. Scribe v3 $0.22/h ≈ $0.05, + Azure scripted pronunciation on a 3-min sample ≈ $0.07, + LLM ≈ $0.02–0.04) ≈ **$0.15**. 20/month: $3 optimised vs $11 naive.
+- **One AI Writing assessment:** LLM only, ≈ $0.02–0.08 depending on model.
+- **Live voice minutes:** fit the plans only on a model at ≈ $0.02–0.05 per minute (`2.1-mini` with caching, or `gpt-live-1` at $0.05 + backend) — full `gpt-realtime-2.1` at up to $0.58/min would make 120 min cost more than the ALL ACCESS price. Benchmark acceptance must therefore include a cost gate (`VOICE_ACCEPTANCE_CRITERIA.md` §5).
+- **Assessed speaking practice** (lessons, "Jim qolma!") is not in the owner's limit table → recommend a fair-use daily cap (e.g. 20 assessed answers/day) so a heavy user cannot cost more than the plan.
