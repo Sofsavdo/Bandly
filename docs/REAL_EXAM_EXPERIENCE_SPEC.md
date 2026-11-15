@@ -278,3 +278,46 @@ This is content labour, not engineering (PXD-05).
 - **Unit:** deadline math, autosave reducer, idempotent submit, navigator state, adaptive module routing (SAT), score functions on fixed answer sets.
 - **E2E (Playwright, mobile and desktop):** a full Reading section with reload in the middle, an offline toggle, auto-submit at 0, and keyboard-only flow.
 - **Content QA:** two reviewers for every answer key; timing pilot with 5 learners per full mock.
+
+## 11. Implementation status — E1 (2026-11-15, branch, owner-approved plan)
+Built on the existing Reading and Listening mini-tests (`MockTest.tsx`, `QuestionList.tsx`, `Reading.tsx`, `Listening.tsx`) with no database, API or AI change:
+
+**Focus mode and timer**
+- **Focus mode.** `body[data-mode=focus]` hides the Header, TabBar, Footer and toasts while a test is running. The primary button and radio buttons turn blue.
+- **Timer.** The deadline is stored as an absolute timestamp (`src/lib/examAttempt.ts`), so a reload continues from the real remaining time. The timer turns amber at 10 min and red at 5 min, can be hidden, and is announced to screen readers at 10, 5 and 1 min.
+- **Auto-submit.** At 0 the test is submitted automatically, including after the page was closed and reopened. A notice says "Vaqt tugadi".
+
+**Answers and navigation**
+- **Autosave and resume.** Every change is saved on the device. Answers, flags, notes, highlights and audio plays survive a reload.
+- **Question navigator.** Cells are in numeric order and show answered, flagged and current states. Prev/Next buttons are provided. Keyboard: Alt+N / Alt+P / Alt+F.
+- **Flag for review.** Each question can be flagged and is listed again in the submit dialog.
+- **Highlight.** Reading passage text can be highlighted (select, then "bo‘yash") and cleared. Highlights are stored as character ranges.
+- **Notes.** A notes panel per attempt, not graded.
+
+**Submit**
+- **Submit confirmation.** The dialog shows answered, unanswered and flagged questions and the time left.
+- **Single submission.** Submit records the result once; a double click or reload never records it twice.
+
+**Listening**
+- Play-once is kept across reloads.
+- A sound check runs before the start.
+
+**Mobile**
+- Tabs switch between "Matn/Audio" and "Savollar (n/N)".
+- The navigator is a sticky footer.
+- There is no horizontal scroll at 360 px.
+
+**Access (owner decisions)**
+- PXD-09: `#/mocks/full` is no longer behind the paid Gate. Writing and Speaking keep their own gated routes.
+- PXD-11: the start page recommends a computer or tablet but allows phones.
+
+**Tests**
+- `src/lib/examAttempt.test.ts` covers the deadline maths, autosave reducers, idempotent submit and highlight merge/segments.
+- A Playwright run (desktop and Pixel 5) checked: reload keeps the time, answers and highlights; one result after a double submit; auto-submit after expiry; no gate on the full mock; no mobile overflow; no page errors.
+
+**Not yet (later phases)**
+- Full-format 40-question content (E2).
+- Server deadline and keys (E3).
+- Writing and Speaking exam shells.
+- The SAT interface.
+- **Rollback:** revert the PR. Only device storage under `bandly.attempt.v1.*` is added; no feature flag was introduced.

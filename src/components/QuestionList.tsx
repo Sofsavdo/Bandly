@@ -1,4 +1,5 @@
 import type { Question } from '../content/types';
+import { Flag } from 'lucide-react';
 import { correctText, isCorrect, type Answer } from '../lib/grade';
 
 interface Props {
@@ -7,11 +8,16 @@ interface Props {
   answers: Record<number, Answer>;
   onChange: (id: number, a: Answer) => void;
   submitted: boolean;
+  /** Imtihon rejimi: belgilangan savollar, belgilash tugmasi, savol langari va joriy savol */
+  flags?: number[];
+  onFlag?: (id: number) => void;
+  anchorPrefix?: string;
+  current?: number | null;
 }
 
 const TFNG = ['True', 'False', 'Not Given'] as const;
 
-export function QuestionList({ groups, questions, answers, onChange, submitted }: Props) {
+export function QuestionList({ groups, questions, answers, onChange, submitted, flags, onFlag, anchorPrefix, current }: Props) {
   return (
     <div>
       {groups.map((g) => (
@@ -26,11 +32,17 @@ export function QuestionList({ groups, questions, answers, onChange, submitted }
             const q = questions.find((x) => x.id === id)!;
             const a = answers[id];
             const ok = submitted && isCorrect(q, a);
-            const cls = submitted ? (ok ? 'q correct' : 'q wrong') : 'q';
+            const flagged = !!flags?.includes(id);
+            const cls = (submitted ? (ok ? 'q correct' : 'q wrong') : 'q') + (flagged ? ' flagged' : '') + (current === id ? ' current' : '');
             return (
-              <div className={cls} key={id}>
-                <div>
-                  <b>{id}.</b> {q.text}
+              <div className={cls} key={id} id={anchorPrefix ? `${anchorPrefix}${id}` : undefined}>
+                <div className="q-head">
+                  <span><b>{id}.</b> {q.text}</span>
+                  {onFlag && (
+                    <button type="button" className={`flag-btn${flagged ? ' on' : ''}`} onClick={() => onFlag(id)} aria-pressed={flagged} aria-label={flagged ? `${id}-savol belgisini olib tashlash` : `${id}-savolni belgilash`} title="Keyinroq qaytish uchun belgilash">
+                      <Flag size={15} />
+                    </button>
+                  )}
                 </div>
                 {q.type === 'tfng' &&
                   TFNG.map((opt) => (

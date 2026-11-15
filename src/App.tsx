@@ -51,7 +51,8 @@ const routes: Record<string, () => ReactNode> = {
   '#/exam/speaking': () => <Gate track="exam"><Speaking /></Gate>,
   '#/grammar': () => <Grammar />,
   '#/mocks': () => <Mocks />,
-  '#/mocks/full': () => <Gate track="mocks"><FullExam /></Gate>,
+  // PXD-09 (owner, 2026-11-15): the full objective mock (Listening + Reading) is free (DR-19); AI-scored Writing/Speaking stay in the plan (their own routes are gated).
+  '#/mocks/full': () => <FullExam />,
   '#/games': () => <GamesHub />,
   '#/games/rush': () => <WordRush />,
   '#/games/pairs': () => <Pairs />,
