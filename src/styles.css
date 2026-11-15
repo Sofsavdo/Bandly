@@ -613,3 +613,20 @@ mark.hl { background: #fde68a; color: inherit; border-radius: 2px; padding: 0 1p
   .learn-grid .lmap2 { margin: 0; }
   .learn-side { display: block; position: sticky; top: calc(var(--header-h) + 16px); }
 }
+
+/* ---------- Boss sinovi (GAMIFIED §3.5) ---------- */
+.trophy.boss { text-decoration: none; cursor: pointer; }
+.trophy.ready { background: linear-gradient(160deg, #ff7a7a, #d6336c); color: #fff; box-shadow: 0 5px 0 #9c1f4d, 0 0 0 6px rgba(214,51,108,.22); animation: boss-pulse 2.2s ease-in-out infinite; }
+.trophy.boss:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+@keyframes boss-pulse { 50% { box-shadow: 0 5px 0 #9c1f4d, 0 0 0 11px rgba(214,51,108,.12); } }
+@media (prefers-reduced-motion: reduce) { .trophy.ready { animation: none; } }
+.boss-tag { display: block; font-size: 10px; letter-spacing: .12em; color: #d6336c; }
+.boss-intro, .boss-result { text-align: center; }
+.boss-emblem { width: 76px; height: 76px; margin: 4px auto 8px; display: grid; place-items: center; border-radius: 24px; background: linear-gradient(160deg, #ff7a7a, #d6336c); color: #fff; box-shadow: 0 6px 0 #9c1f4d; }
+.boss-result.won .boss-emblem, .boss-won { background: linear-gradient(160deg, #ffd166, #f5a400); color: #fff; box-shadow: 0 6px 0 #c27c00; }
+.boss-won { box-shadow: none; }
+.boss-rules { list-style: none; padding: 0; margin: 12px auto; display: grid; gap: 8px; max-width: 420px; text-align: left; }
+.boss-rules li { display: flex; gap: 8px; align-items: center; background: var(--brand-50); border-radius: var(--r-sm); padding: 8px 12px; font-size: 14px; }
+.boss-deltas, .boss-fix { list-style: none; padding: 0; margin: 8px auto; max-width: 480px; text-align: left; display: grid; gap: 6px; }
+.boss-deltas li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 6px 0; font-size: 14px; }
+.boss-q .q { margin: 10px 0 14px; }

@@ -5,7 +5,7 @@ import { fmtDate, refreshEntitlements } from '../lib/pay';
 import { TRACK_NAME } from '../config';
 import { setSound, sfx, soundOn } from '../lib/fx';
 import { LEVEL_INFO } from '../lib/levels';
-import { ACHIEVEMENTS, levelProgress } from '../lib/game';
+import { ACHIEVEMENTS, levelProgress, dayKey, displayStreak, repairOpen } from '../lib/game';
 import { loadResults } from '../lib/storage';
 import { resetAll, setDailyGoal, useProfile } from '../lib/store';
 import { PersonaPicker } from '../components/PersonaPicker';
@@ -32,12 +32,14 @@ export default function Profile() {
           <div className="bar" style={{ margin: '8px 0' }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
           <div className="evidence">{lp.into} / {lp.span} XP · jami {p.xp} XP</div>
           <div className="row" style={{ marginTop: 8 }}>
-            <span className="pill"><Flame size={14} color="#ff7a1a" fill="#ff7a1a" /> Seriya: {p.streak} kun</span>
+            <span className="pill"><Flame size={14} color="#ff7a1a" fill="#ff7a1a" /> Seriya: {displayStreak(p, dayKey())} kun{p.freezes > 0 ? ` · ❄ ${p.freezes} muzlatish` : ''}</span>
             <span className="pill">Eng uzun: {p.longestStreak}</span>
             {p.level && <span className="pill">Daraja: {p.level} · {LEVEL_INFO[p.level].name}</span>}
             <span className="pill">So‘zlar: {mastered}/{vocab.length}</span>
             <span className="pill">O‘yinlar: {p.gamesPlayed}</span>
           </div>
+          {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice" style={{ marginTop: 8 }}>{p.brokenStreak?.value} kunlik seriyangiz uzildi. Uzilgan kundan keyin 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, seriya tiklanadi (30 kunda bir marta).</p>}
+          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>Seriya kunlik XP maqsadiga yetgan kunlari o‘sadi. Har 7 kunlik seriya uchun 1 ta muzlatish beriladi (ko‘pi bilan 2 ta): o‘tkazib yuborilgan kun seriyani uzmaydi.</p>
         </div>
       </div>
 

@@ -92,3 +92,21 @@ export function nodeState(unlocked: boolean, passed: boolean, isCurrent: boolean
   if (!unlocked) return 'locked';
   return isCurrent ? 'current' : 'open';
 }
+
+// ---------------- Shoshilinch javoblar uchun XP yo'q (GAMIFIED §3.1 "Low-quality answers") ----------------
+// Tanlov savoliga < 600 ms da 3+ marta ketma-ket javob yoki ≥ 5 marta ketma-ket bir xil variant → o'sha javoblarga 0 XP.
+// Mastery baribir halol yoziladi (javob — dalil); bu faqat XP'ga ta'sir qiladi.
+export const FAST_MS = 600;
+export const FAST_RUN = 3;
+export const SAME_RUN = 5;
+export interface Pace { lastAt: number; fast: number; sameIdx: number | null; same: number }
+export const newPace = (now: number): Pace => ({ lastAt: now, fast: 0, sameIdx: null, same: 0 });
+/** choiceIdx — tanlov savolidagi tanlangan variant; boshqa turdagi savollar uchun null (ular hisobni uzadi). */
+export function pace(p: Pace, now: number, choiceIdx: number | null): { pace: Pace; suppress: boolean } {
+  if (choiceIdx === null) return { pace: { lastAt: now, fast: 0, sameIdx: null, same: 0 }, suppress: false };
+  const fast = now - p.lastAt < FAST_MS ? p.fast + 1 : 0;
+  const same = p.sameIdx === choiceIdx ? p.same + 1 : 1;
+  const next = { lastAt: now, fast, sameIdx: choiceIdx, same };
+  return { pace: next, suppress: fast >= FAST_RUN || same >= SAME_RUN };
+}
+export const SLOW_DOWN_UZ = 'Shoshilmang — o‘ylab javob bering';

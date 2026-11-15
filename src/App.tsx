@@ -38,6 +38,7 @@ import SkillCheck from './pages/SkillCheck';
 import Coach from './pages/Coach';
 import Mistakes from './pages/Mistakes';
 import Challenge from './pages/Challenge';
+import Boss from './pages/Boss';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
@@ -88,9 +89,10 @@ export default function App() {
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
   const lessonId = hash.match(/^#\/learn\/([\w-]+)$/)?.[1];
+  const bossUnit = hash.match(/^#\/boss\/([\w-]+)$/)?.[1];
   const duelCode = hash.match(/^#\/duel\/([A-Za-z0-9]{4,8})$/)?.[1];
   const tr = testRoute(hash);
-  const page = tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
+  const page = tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
   return (
     <>
       <Header hash={hash} />

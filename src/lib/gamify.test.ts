@@ -47,3 +47,18 @@ assert.equal(nodeState(true, true, false, 'learning'), 'passed');
 assert.equal(nodeState(true, true, false, 'mastered'), 'mastered');
 assert.equal(nodeState(true, true, false, 'needs_revision'), 'revise');
 console.log('gamify.test: OK');
+
+// Shoshilinch javoblar
+{
+  const { pace, newPace } = await import('./gamify');
+  let p = newPace(0); let s = false; const out: boolean[] = [];
+  for (let i = 1; i <= 4; i++) { ({ pace: p, suppress: s } = pace(p, i * 100, i % 2)); out.push(s); }
+  assert.deepEqual(out, [false, false, true, true], '3-chi tez javobdan boshlab XP yo‘q');
+  ({ pace: p, suppress: s } = pace(p, 5000, 0)); assert.equal(s, false, 'sekinlashsa — yana XP');
+  p = newPace(0); const same: boolean[] = [];
+  for (let i = 1; i <= 6; i++) { ({ pace: p, suppress: s } = pace(p, i * 5000, 2)); same.push(s); }
+  assert.deepEqual(same, [false, false, false, false, true, true], '5 marta bir xil variant');
+  ({ pace: p, suppress: s } = pace(p, 40000, null)); assert.equal(s, false);
+  assert.equal(p.same, 0, 'boshqa turdagi savol hisobni uzadi');
+  console.log('gamify pace: OK');
+}

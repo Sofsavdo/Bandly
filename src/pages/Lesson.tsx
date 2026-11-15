@@ -1,13 +1,13 @@
 import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Volume2 } from 'lucide-react';
 import { ItemView } from '../components/LessonItem';
 import { say, stopSpeaking, ttsSupported } from '../lib/speech';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { lessonById, lessonNodeId, lessonWordIds, ALL_LESSONS } from '../content/lessons';
 import { checkItem, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
 import { addMistake } from '../lib/mistakes';
 import { recordAnswer } from '../lib/adaptive/store';
 import { addToReview, addXp, pushToast } from '../lib/store';
-import { answer, checkXp, lessonXpDay, markLessonXp, MAX_HEARTS, newPlay, refill, type LessonPlay } from '../lib/gamify';
+import { answer, checkXp, lessonXpDay, markLessonXp, MAX_HEARTS, newPace, newPlay, pace, refill, SLOW_DOWN_UZ, type LessonPlay, type Pace } from '../lib/gamify';
 import { localDayKey } from '../lib/adaptive/store';
 import { saveResult } from '../lib/storage';
 import { LessonSpeak } from '../components/LessonSpeak';
@@ -33,6 +33,17 @@ export default function LessonPage({ id }: { id: string }) {
   const [rShown, setRShown] = useState<Record<number, boolean>>({});
   const [gained, setGained] = useState(0);
   const [cShown, setCShown] = useState<boolean[]>([]);
+  // Shoshilinch javoblarga XP berilmaydi (mastery baribir yoziladi)
+  const paceRef = useRef<Pace>(newPace(Date.now()));
+  const [suppressedCheck, setSuppressedCheck] = useState<Set<number>>(new Set());
+  const [slowMsg, setSlowMsg] = useState(false);
+  const paced = (item: { kind: string }, v: ItemAnswer): boolean => {
+    const r = pace(paceRef.current, Date.now(), item.kind === 'choice' && typeof v === 'number' ? v : null);
+    paceRef.current = r.pace;
+    if (r.suppress && !slowMsg) { setSlowMsg(true); pushToast(SLOW_DOWN_UZ, 'xp'); }
+    if (!r.suppress) setSlowMsg(false);
+    return r.suppress;
+  };
   const tts = typeof window !== 'undefined' && ttsSupported();
   // Jon tugaganda "qayta o'rganish" paneli darhol ko'rinsin
   useEffect(() => { if (relearn !== null) document.querySelector('.relearn')?.scrollIntoView({ block: 'start' }); }, [relearn]);
@@ -49,19 +60,22 @@ export default function LessonPage({ id }: { id: string }) {
     lesson.check.forEach((it, i) => { if (!checkItem(it, cAns[i])) addMistake('lesson', { kind: 'lesson', lessonId: lesson.id, part: 'check', index: i }, lesson.taxonomyIds, now); }); // wrong answers come back in “Xatolar ustida ishlash”
     const firstPassEver = !loadProgress()[lesson.id]?.passedAt;
     const today = localDayKey(now);
-    const xp = checkXp(r.correct, r.passed, firstPassEver, lessonXpDay(lesson.id) === today); // takror bir kunda kamroq (GAMIFIED §3.1)
+    const counted = r.correct - lesson.check.filter((it, i) => suppressedCheck.has(i) && checkItem(it, cAns[i])).length;
+    const xp = checkXp(counted, r.passed, firstPassEver, lessonXpDay(lesson.id) === today); // takror bir kunda kamroq (GAMIFIED §3.1)
     saveAttempt(lesson.id, r, now);
     saveResult({ kind: 'grammar', title: `Dars: ${lesson.titleUz}`, correct: r.correct, total: r.total });
     addXp(xp); markLessonXp(lesson.id, today); setGained((g) => g + xp);
     if (r.passed) addToReview(lessonWordIds(lesson.id), now); // lesson words join the spaced-repetition deck
     setResult(r); setStep('result');
   };
-  const retry = () => { setCAns([]); setCShown([]); setResult(null); setRound((x) => x + 1); setPlay((p) => ({ ...p, hearts: Math.max(p.hearts, 3) })); setStep('check'); };
+  const retry = () => { setCAns([]); setCShown([]); setSuppressedCheck(new Set()); setResult(null); setRound((x) => x + 1); setPlay((p) => ({ ...p, hearts: Math.max(p.hearts, 3) })); setStep('check'); };
 
   const revealPractice = (i: number) => {
     const ok = checkItem(lesson.practice[i]!, pAns[i]);
     setPShown((x) => { const n = [...x]; n[i] = true; return n; });
-    const np = answer(play, ok); // bitta bosish — bitta hodisa; yon ta'sirlar holat yangilovchisidan tashqarida
+    const slow = paced(lesson.practice[i]!, pAns[i]);
+    const a = answer(play, ok); // bitta bosish — bitta hodisa; yon ta'sirlar holat yangilovchisidan tashqarida
+    const np = slow ? { ...a, xp: play.xp } : a;
     setPlay(np);
     if (ok && (np.combo === 3 || np.combo === 5 || np.combo === 10)) pushToast(`Combo ×${np.combo}!`, 'xp');
     if (!ok) {
@@ -73,6 +87,7 @@ export default function LessonPage({ id }: { id: string }) {
   const revealCheck = (i: number) => {
     const ok = checkItem(lesson.check[i]!, cAns[i]);
     setCShown((x) => { const n = [...x]; n[i] = true; return n; });
+    if (paced(lesson.check[i]!, cAns[i])) setSuppressedCheck((x) => new Set(x).add(i));
     const np = { ...answer(play, ok), xp: play.xp }; // tekshiruv XP'si yakunda checkXp bilan hisoblanadi
     setPlay(np);
     if (ok && (np.combo === 3 || np.combo === 5 || np.combo === 10)) pushToast(`Combo ×${np.combo}!`, 'xp');
@@ -140,6 +155,7 @@ export default function LessonPage({ id }: { id: string }) {
 
       {step === 'practice' && (
         <section className="card">
+          {slowMsg && <p className="notice" role="status">{SLOW_DOWN_UZ}. Juda tez berilgan javoblarga XP yozilmaydi.</p>}
           <p className="muted">Har bir javobni darhol tekshiring. Xato javob 1 ta jon oladi, ketma-ket to‘g‘ri javoblar combo beradi. Bu qism yakuniy ballga ta’sir qilmaydi.</p>
           {lesson.practice.map((it, i) => (
             <div key={i}>
@@ -168,6 +184,7 @@ export default function LessonPage({ id }: { id: string }) {
 
       {step === 'check' && (
         <section className="card" key={round}>
+          {slowMsg && <p className="notice" role="status">{SLOW_DOWN_UZ}. Juda tez berilgan javoblarga XP yozilmaydi.</p>}
           <p className="muted">{lesson.check.length} ta savol. O‘tish uchun kamida {Math.ceil(PASS_RATE * lesson.check.length)} ta to‘g‘ri javob kerak. Har javob darhol tekshiriladi; xato javob 1 ta jon oladi.</p>
           {lesson.check.map((it, i) => (
             <div key={i}>

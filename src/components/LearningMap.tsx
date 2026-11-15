@@ -1,12 +1,13 @@
-import { Check, Flame, Lock, MapPin, Play, RotateCcw, Star, Trophy, X } from 'lucide-react';
+import { Check, Flame, Lock, MapPin, Play, RotateCcw, Star, Swords, Trophy, X } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { UNITS, lessonNodeId } from '../content/lessons';
 import type { Lesson, Unit } from '../content/lessons/types';
 import { stateOf } from '../lib/adaptive/mastery';
 import { loadAdaptive } from '../lib/adaptive/store';
-import { levelProgress } from '../lib/game';
+import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { nodeState, type NodeState } from '../lib/gamify';
 import { isUnlocked, type ProgressMap } from '../lib/lessons';
+import { loadBoss } from '../lib/boss';
 import { useProfile } from '../lib/store';
 import { Prop, ZONES, type PropKind, type ZoneTheme } from './mapArt';
 
@@ -20,7 +21,7 @@ const XS = [50, 27, 50, 73];
 
 type Item =
   | { kind: 'lesson'; unit: Unit; lesson: Lesson; index: number; state: NodeState; stars: number; x: number; y: number }
-  | { kind: 'trophy'; unit: Unit; done: boolean; x: number; y: number };
+  | { kind: 'trophy'; unit: Unit; done: boolean; won: boolean; x: number; y: number };
 
 interface Sel { unit: Unit; lesson: Lesson; index: number; state: NodeState }
 
@@ -42,6 +43,7 @@ function pathD(pts: { x: number; y: number }[]): string {
 function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; progress: ProgressMap; currentId: string | null; level: string | null; onPick: (s: Sel) => void; curRef: React.MutableRefObject<HTMLButtonElement | null> }) {
   const t: ZoneTheme = ZONES[lv]!;
   const saved = loadAdaptive();
+  const bosses = loadBoss();
   const now = Date.now();
   const units = UNITS.filter((u) => u.level === lv);
   const items: Item[] = [];
@@ -55,7 +57,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
       items.push({ kind: 'lesson', unit: u, lesson: l, index: i, state, stars: starsFor(pr?.best ?? 0, !!pr?.passedAt), x: XS[k % 4]!, y });
       y += STEP; k++;
     });
-    items.push({ kind: 'trophy', unit: u, done: u.lessons.every((l) => progress[l.id]?.passedAt), x: XS[k % 4]!, y });
+    items.push({ kind: 'trophy', unit: u, done: u.lessons.every((l) => progress[l.id]?.passedAt), won: !!bosses[u.id]?.passedAt, x: XS[k % 4]!, y });
     y += STEP; k++;
   });
   const H = y - STEP + BOTTOM;
@@ -110,8 +112,10 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
           if (it.kind === 'trophy') {
             return (
               <li key={`t-${it.unit.id}`} className="zn trophy-wrap" style={{ left: `${it.x}%`, top: it.y }}>
-                <div className={`trophy ${it.done ? 'done' : ''}`} role="img" aria-label={`${it.unit.titleUz} bo‘limi ${it.done ? 'yakunlangan' : 'hali yakunlanmagan'}`}><Trophy size={24} /></div>
-                <span className="zn-label">{it.unit.titleUz}</span>
+                {it.done
+                  ? <a className={`trophy boss ${it.won ? 'done' : 'ready'}`} href={`#/boss/${it.unit.id}`} aria-label={`${it.unit.titleUz}: boss sinovi${it.won ? ' — yutilgan' : ' — ochiq'}`}>{it.won ? <Trophy size={24} /> : <Swords size={24} />}</a>
+                  : <div className="trophy" role="img" aria-label={`${it.unit.titleUz}: boss sinovi barcha darslardan keyin ochiladi`}><Lock size={22} /></div>}
+                <span className="zn-label">{it.done && !it.won ? <b className="boss-tag">BOSS</b> : null}{it.unit.titleUz}</span>
               </li>
             );
           }
@@ -168,7 +172,7 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
           </div>
         </div>
         <div className="hud-chips">
-          <span className="chip-stat"><Flame size={16} /> {p.streak} kun</span>
+          <span className="chip-stat"><Flame size={16} /> {displayStreak(p, dayKey())} kun</span>{p.freezes > 0 && <span className="chip-stat" title="Seriya muzlatishlari: o‘tkazib yuborilgan kunni yopadi">❄ {p.freezes}</span>}
           <span className="chip-stat"><Star size={16} /> {today}/{p.dailyGoal} XP</span>
         </div>
       </div>

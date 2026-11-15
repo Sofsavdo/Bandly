@@ -81,6 +81,12 @@ export function addXp(amount: number): void {
   r.unlocked.forEach((a) => { pushToast(`Yutuq: ${a.title}`, 'ach'); if (!r.levelUp) { sfx('ach'); confetti(50); } });
 }
 
+/** Boss g'alabasi: hisoblagich (yutuqlar uchun) va XP bitta amalda — yutuq tekshiruvi yangi qiymatni ko'radi. */
+export function addBossWin(xp: number): void {
+  commit({ ...state, bossWins: (state.bossWins ?? 0) + 1 });
+  addXp(xp);
+}
+
 /** Put words into the spaced-repetition deck (due now) without recording an answer; words already in the deck are left unchanged. Returns how many were added. */
 export function addToReview(wordIds: string[], now = Date.now()): number {
   const fresh = wordIds.filter((id) => !state.srs[id]);

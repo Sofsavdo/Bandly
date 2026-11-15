@@ -1,7 +1,7 @@
 import { Flame, Menu, Star, Target, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { BRAND } from '../brand';
-import { levelProgress } from '../lib/game';
+import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
@@ -14,7 +14,7 @@ function Stats() {
   const goal = Math.min(1, p.dailyXp / Math.max(1, p.dailyGoal));
   return (
     <div className="stats" aria-label={t('stat.title')}>
-      <span className="stat" title={t('stat.streak')}><Flame color="#ff7a1a" fill="#ff7a1a" />{p.streak}</span>
+      <span className="stat" title={t('stat.streak')}><Flame color="#ff7a1a" fill="#ff7a1a" />{displayStreak(p, dayKey())}</span>
       <span className="stat" title={`${lp.into}/${lp.span} XP`}><Star color="#f5b400" fill="#f5b400" />{lp.level}<span className="mini"><i style={{ width: `${lp.pct * 100}%` }} /></span></span>
       <span className="stat" title={t('stat.daily')}><Target color="#12b76a" />{Math.min(p.dailyXp, p.dailyGoal)}/{p.dailyGoal}<span className="mini"><i style={{ width: `${goal * 100}%`, background: goal >= 1 ? 'var(--ok)' : undefined }} /></span></span>
     </div>
