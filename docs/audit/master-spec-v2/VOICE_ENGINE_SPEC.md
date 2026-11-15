@@ -23,3 +23,6 @@ Architecture seam: `SttProvider`, `TtsProvider`, `RealtimeProvider` interfaces w
 
 ## Listening-test method (source C1 §5)
 Before any local-language voice is advertised, run 5–10 real spoken scenarios per language and judge: natural pronunciation, correct stress, emotional intonation (anger, laughter, sarcasm), switching between English words and local-language explanation, and character consistency across one conversation. Source claim that one vendor's live-voice language list excludes Uzbek is **[S] unverified**; re-check each vendor's current official language list on the test date.
+
+## Superseded by the voice research set (2026-11-14)
+Detailed, source-checked research now lives in `docs/audit/voice/`: `VOICE_ENGINE_ARCHITECTURE.md`, `SPEECH_PROVIDER_COMPARISON.md`, `VOICE_BENCHMARK_PLAN.md`, `PRONUNCIATION_ASSESSMENT_SPEC.md`, `UZBEK_SPEECH_SUPPORT.md`, `VOICE_COST_MODEL.md`, `VOICE_ACCEPTANCE_CRITERIA.md`. This file stays as history; where they differ, the voice set wins.

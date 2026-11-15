@@ -28,6 +28,20 @@ export function createDb(path = ':memory:'): DatabaseSync {
       day TEXT PRIMARY KEY,
       calls INTEGER NOT NULL DEFAULT 0
     );
+    CREATE TABLE IF NOT EXISTS ai_cost_events (
+      id INTEGER PRIMARY KEY,
+      ts INTEGER NOT NULL,
+      day TEXT NOT NULL,
+      player_id INTEGER REFERENCES players(id),
+      feature TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      model TEXT NOT NULL,
+      units INTEGER NOT NULL,
+      unit_kind TEXT NOT NULL,
+      cost_usd REAL NOT NULL,
+      estimated INTEGER NOT NULL DEFAULT 1
+    );
+    CREATE INDEX IF NOT EXISTS ai_cost_day ON ai_cost_events (day);
     CREATE TABLE IF NOT EXISTS ai_usage (
       player_id INTEGER NOT NULL REFERENCES players(id),
       day TEXT NOT NULL,
@@ -224,4 +238,43 @@ export function useAi(db: DatabaseSync, token: string, now = Date.now(), limit =
   if ((row?.calls ?? 0) >= limit) throw new ApiError(429, 'Bugungi AI limiti tugadi. Ertaga qayta urinib ko‘ring.');
   db.prepare('INSERT INTO ai_usage (player_id, day, calls) VALUES (?, ?, 1) ON CONFLICT(player_id, day) DO UPDATE SET calls = calls + 1').run(p.id, day);
   return (row?.calls ?? 0) + 1;
+}
+
+// ---------------- AI xarajatlari jurnali (AI_COST_CONTROL_SPEC.md §2) ----------------
+export interface CostEvent { playerId: number | null; feature: string; provider: string; model: string; units: number; unitKind: 'chars' | 'seconds' | 'tokens'; costUsd: number; estimated?: boolean }
+
+/** Har bir xarajatli AI chaqiruvini yozadi (keshdan berilganlar yozilmaydi). Kun = UTC sana. */
+export function recordAiCost(db: DatabaseSync, e: CostEvent, now = Date.now()): void {
+  db.prepare('INSERT INTO ai_cost_events (ts, day, player_id, feature, provider, model, units, unit_kind, cost_usd, estimated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(now, new Date(now).toISOString().slice(0, 10), e.playerId, e.feature, e.provider, e.model, Math.max(0, Math.round(e.units)), e.unitKind, Math.max(0, e.costUsd), e.estimated === false ? 0 : 1);
+}
+
+export interface CostRow { day: string; feature: string; provider: string; model: string; events: number; units: number; cost_usd: number; players: number }
+/** Kun / funksiya / provayder / model bo'yicha jamlanma (egasining 30 kunlik test hisoboti uchun). */
+export function aiCostSummary(db: DatabaseSync, days = 30, now = Date.now()): { rows: CostRow[]; total_usd: number } {
+  const since = new Date(now - Math.max(1, Math.min(366, days)) * 86_400_000).toISOString().slice(0, 10);
+  const rows = db.prepare(`SELECT day, feature, provider, model, COUNT(*) AS events, SUM(units) AS units, ROUND(SUM(cost_usd), 6) AS cost_usd, COUNT(DISTINCT player_id) AS players
+    FROM ai_cost_events WHERE day >= ? GROUP BY day, feature, provider, model ORDER BY day DESC, cost_usd DESC`).all(since) as unknown as CostRow[];
+  const total = rows.reduce((a, r) => a + r.cost_usd, 0);
+  return { rows, total_usd: Math.round(total * 1e6) / 1e6 };
+}
+
+/** Platforma bo'yicha kunlik ovoz belgilar chegarasi. FAIL-CLOSED: chegara 0 bo'lsa hech narsa yuborilmaydi. */
+export function useGlobalVoiceChars(db: DatabaseSync, limit: number, chars: number, now = Date.now()): number {
+  if (!Number.isFinite(limit) || limit <= 0) throw new ApiError(503, 'Ovoz xizmati sozlanmagan: umumiy kunlik chegara belgilanmagan.');
+  const day = `voice-chars:${new Date(now).toISOString().slice(0, 10)}`;
+  const row = db.prepare('SELECT calls FROM ai_global_usage WHERE day = ?').get(day) as { calls: number } | undefined;
+  const used = row?.calls ?? 0;
+  if (used + chars > limit) throw new ApiError(503, 'Bugungi umumiy ovoz chegarasi tugadi.');
+  db.prepare('INSERT INTO ai_global_usage (day, calls) VALUES (?, ?) ON CONFLICT(day) DO UPDATE SET calls = calls + ?').run(day, chars, chars);
+  return used + chars;
+}
+
+/** Muvaffaqiyatsiz provayder chaqiruvidan keyin limitni qaytaradi (o'quvchi bizning xatomiz uchun to'lamaydi). */
+export function refundAi(db: DatabaseSync, playerId: number, bucket: string, now = Date.now()): void {
+  const day = (bucket ? `${bucket}:` : '') + new Date(now).toISOString().slice(0, 10);
+  db.prepare('UPDATE ai_usage SET calls = MAX(0, calls - 1) WHERE player_id = ? AND day = ?').run(playerId, day);
+}
+export function refundGlobalVoiceChars(db: DatabaseSync, chars: number, now = Date.now()): void {
+  db.prepare('UPDATE ai_global_usage SET calls = MAX(0, calls - ?) WHERE day = ?').run(chars, `voice-chars:${new Date(now).toISOString().slice(0, 10)}`);
 }

@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { TtsError, cacheKey, cleanText, ssml, synthesize, ttsConfigFromEnv } from './tts';
+import { EL_TAG, TtsError, cacheKey, cleanText, estimateCostUsd, isCached, isEmotion, ssml, stripTags, synthesize, ttsConfigFromEnv } from './tts';
+import { TUTOR_VOICE } from './elevenlabs';
 
 const dir = mkdtempSync(join(tmpdir(), 'tts-'));
 // Sozlama
@@ -40,6 +41,38 @@ await assert.rejects(synthesize({ ...cfg, provider: 'none' }, 'x'), (e: TtsError
 await assert.rejects(synthesize({ ...cfg, fetchImpl: (async () => new Response('no', { status: 401 })) as unknown as typeof fetch }, 'Boshqa matn'), (e: TtsError) => e.status === 502);
 await assert.rejects(synthesize({ ...cfg, fetchImpl: (async () => new Response(new Uint8Array(5), { status: 200 })) as unknown as typeof fetch }, 'Yana matn'), (e: TtsError) => e.status === 502);
 await assert.rejects(synthesize({ ...cfg, fetchImpl: (async () => { throw new Error('net'); }) as unknown as typeof fetch }, 'Tarmoq'), (e: TtsError) => e.status === 502);
+
+// ---------------- ElevenLabs ----------------
+// Fail-closed: kalit yoki umumiy kunlik chegara bo'lmasa o'chiq
+assert.equal(ttsConfigFromEnv(dir, { TTS_PROVIDER: 'elevenlabs' }).provider, 'none');
+assert.equal(ttsConfigFromEnv(dir, { TTS_PROVIDER: 'elevenlabs', ELEVENLABS_API_KEY: 'k' }).provider, 'none', 'VOICE_GLOBAL_DAILY_CHARS=0 → o‘chiq');
+const el0 = ttsConfigFromEnv(dir, { TTS_PROVIDER: 'elevenlabs', ELEVENLABS_API_KEY: 'k', VOICE_GLOBAL_DAILY_CHARS: '20000' });
+assert.equal(el0.provider, 'elevenlabs'); assert.equal(el0.voice, TUTOR_VOICE.voiceId); assert.equal(el0.model, 'eleven_v4_turbo');
+assert.equal(ttsConfigFromEnv(dir, { TTS_PROVIDER: 'elevenlabs', ELEVENLABS_API_KEY: 'k', VOICE_GLOBAL_DAILY_CHARS: '1', ELEVENLABS_VOICE_ID: '"><x', ELEVENLABS_MODEL: 'eleven_multilingual_v2' }).voice, TUTOR_VOICE.voiceId, 'noto‘g‘ri ovoz/model rad etiladi');
+assert.equal(ttsConfigFromEnv(dir, { TTS_PROVIDER: 'elevenlabs', ELEVENLABS_API_KEY: 'k', VOICE_GLOBAL_DAILY_CHARS: '1', ELEVENLABS_MODEL: 'eleven_multilingual_v2' }).model, 'eleven_v4_turbo');
+// Teglar: mijoz teg kirita olmaydi, emotsiya tegini server qo'yadi
+assert.equal(stripTags('Salom [shouting] dunyo [x'), 'Salom dunyo');
+assert.ok(isEmotion('angry') && !isEmotion('rage'));
+let elSeen: { url: string; headers: Record<string, string>; body: string } | null = null; let elCalls = 0;
+const elFake = (async (url: string, init: { headers: Record<string, string>; body: string }) => { elCalls++; elSeen = { url, headers: init.headers, body: init.body }; return new Response(new Uint8Array(900).fill(3), { status: 200 }); }) as unknown as typeof fetch;
+const el = { ...el0, fetchImpl: elFake };
+assert.equal(isCached(el, 'Voy, «shkul» deysanmi? School!', { emotion: 'angry' }), false);
+const e1 = await synthesize(el, 'Voy, «shkul» deysanmi? [whispers] School!', { emotion: 'angry' });
+assert.equal(e1.cached, false); assert.equal(elCalls, 1);
+assert.equal(elSeen!.url, `https://api.elevenlabs.io/v1/text-to-speech/${TUTOR_VOICE.voiceId}?output_format=mp3_44100_128`);
+assert.equal(elSeen!.headers['xi-api-key'], 'k');
+const sent = JSON.parse(elSeen!.body) as { text: string; model_id: string };
+assert.equal(sent.model_id, 'eleven_v4_turbo');
+assert.equal(sent.text, `${EL_TAG.angry} Voy, «shkul» deysanmi? School!`, 'faqat server tegi qoladi');
+assert.equal(e1.chars, sent.text.length);
+assert.equal(isCached(el, 'Voy, «shkul» deysanmi? [whispers] School!', { emotion: 'angry' }), true);
+const e2 = await synthesize(el, 'Voy, «shkul» deysanmi? [whispers] School!', { emotion: 'angry' });
+assert.equal(e2.cached, true); assert.equal(e2.chars, 0); assert.equal(elCalls, 1, 'kesh — qayta pul to‘lanmaydi');
+await synthesize(el, 'Voy, «shkul» deysanmi? [whispers] School!', { emotion: 'laugh' });
+assert.equal(elCalls, 2, 'boshqa emotsiya — boshqa kesh');
+assert.ok(Math.abs(estimateCostUsd(el, 1000) - 0.04) < 1e-9, 'turbo: $0.04 / 1000 belgi');
+await assert.rejects(synthesize({ ...el, fetchImpl: (async () => new Response('quota', { status: 401 })) as unknown as typeof fetch }, 'Yangi gap'), (e: TtsError) => e.status === 502);
+await assert.rejects(synthesize(el, '[shouting]'), (e: TtsError) => e.status === 400);
 
 rmSync(dir, { recursive: true, force: true });
 console.log('tts.test: OK');

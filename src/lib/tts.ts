@@ -2,9 +2,13 @@ import { getAccount } from './account';
 import type { Emotion } from '../content/roasts';
 
 // Server orqali o'zbekcha neyron ovoz (agar serverda TTS_KEY sozlangan bo'lsa). Ovoz yozib olinmaydi: faqat matn yuboriladi.
-let status: Promise<boolean> | null = null;
-export const uzTtsEnabled = (): Promise<boolean> =>
-  (status ??= fetch('/api/tts/status').then((r) => (r.ok ? r.json() : { enabled: false })).then((j: { enabled?: boolean }) => !!j.enabled).catch(() => false));
+interface TtsStatus { enabled: boolean; provider: 'azure' | 'elevenlabs' | 'none' }
+let status: Promise<TtsStatus> | null = null;
+const ttsStatus = (): Promise<TtsStatus> =>
+  (status ??= fetch('/api/tts/status').then((r) => (r.ok ? r.json() : {})).then((j: { enabled?: boolean; provider?: TtsStatus['provider'] }) => ({ enabled: !!j.enabled, provider: j.enabled ? j.provider ?? 'azure' : 'none' })).catch(() => ({ enabled: false, provider: 'none' as const })));
+export const uzTtsEnabled = (): Promise<boolean> => ttsStatus().then((s) => s.enabled);
+/** ElevenLabs ovozida kulgi, jahl va h.k. ovozning o'zida bo'ladi — brauzerdagi qo'shimcha "ha-ha" kerak emas. */
+export const uzTtsExpressive = (): Promise<boolean> => ttsStatus().then((s) => s.enabled && s.provider === 'elevenlabs');
 
 const STYLE: Record<Emotion, { rate: number; pitch: number }> = {
   happy: { rate: 1.0, pitch: 6 },
@@ -22,7 +26,7 @@ export async function playUz(text: string, emotion: Emotion, signal: { cancelled
   const acc = getAccount();
   if (!acc || signal.cancelled || !(await uzTtsEnabled())) return false;
   try {
-    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: acc.token, text, ...STYLE[emotion] }), signal: AbortSignal.timeout(12_000) });
+    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: acc.token, text, emotion, ...STYLE[emotion] }), signal: AbortSignal.timeout(12_000) });
     if (!r.ok || signal.cancelled) return false;
     const url = URL.createObjectURL(await r.blob());
     return await new Promise<boolean>((resolve) => {

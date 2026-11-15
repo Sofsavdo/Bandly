@@ -48,3 +48,6 @@ Stable IDs: **OD-01…OD-11** are owner questions (authoritative detail in `docs
 
 ### Implementation note (2026-11-14)
 DR-19 / DR-01: Reading and Listening mocks under `#/mocks` are free in the branch (not deployed). The exam-prep track (`#/exam/*`) and the full simulation (`#/mocks/full`, with Writing/Speaking) remain behind the existing subscription; the `mocks` price is unchanged (OD-08 / OD-09 still decide limits and the final plan structure). Easily reversible: one condition in `src/App.tsx`.
+
+### Voice research note (2026-11-14)
+DR-13 (voice provider) now has a source-checked research set in `docs/audit/voice/`. Findings that change earlier assumptions: Google has **no Uzbek TTS** voice and Chirp 3 Uzbek STT is **Preview**; Azure pronunciation **prosody is en-US only** and Azure Uzbek voices have **no phoneme/lexicon control**; ElevenLabs documents mid-sentence code-switching (`scribe_v3_live` `multilang_mode`) but zero retention/residency are Enterprise-only; OpenAI `gpt-realtime-2.1` exists with EU residency but Uzbek is undocumented. Provider choice stays **pending** (OD-21, OD-23) until the benchmark runs.

@@ -127,3 +127,33 @@ M8 / paid launch OD-07, OD-01 answered, OD-11 for non-UZ
 | OD-18 | Speaking allowance per plan (30/60/120 min or fair-use) and free demo size | before first real voice key | **PROD** | Open — part of OD-09 |
 | OD-19 | Whether any score-guarantee style marketing offer is allowed | before launch marketing | **PROD** | Open — legal review; default: no |
 | OD-20 | B2B "Bandly for Schools": scope, pricing model, data-processing terms with centres | after M3 | **PROD** of B2B | Open |
+
+## 7. Additions from the speech & voice engine research (2026-11-14, see `docs/audit/voice/`)
+
+| ID | Name | Required before | Blocks | Status |
+|---|---|---|---|---|
+| OD-21 | Which voice providers may be contracted (Azure, Google, ElevenLabs, OpenAI) and on which data terms (zero/short retention, EU vs US processing) | benchmark with real keys | **IMPL** of any provider adapter; **PROD** of voice | Open — depends on OD-01 |
+| OD-22 | Voice consent and recording policy: consent text, whether learner recordings may be kept for replay (opt-in, TTL), minors (with OD-06) | any real user audio sent to a cloud provider | **PROD** of Speaking/Reading voice | Open — legal input (voice may count as biometric/personal data) |
+| OD-23 | Benchmark go-ahead: budget (est. < $50 provider spend + people's time), volunteer recruitment, native reviewers (≥ 3 English incl. US+UK, ≥ 5 Uzbek, ≥ 2 English teachers), and approval of the thresholds in `VOICE_ACCEPTANCE_CRITERIA.md` | running `VOICE_BENCHMARK_PLAN.md` | **IMPL** of provider selection | Open |
+| OD-24 | Default reference accent (US or UK) and whether UK learners accept "no prosody score" (Azure prosody is en-US only) | Reading mode pilot | UX only | Open — recommended: learner chooses, default US for full scoring |
+
+## 8. Status update from the owner's tariff decision (2026-11-15, `master-spec-v2/MONETIZATION_SPEC.md` §7)
+| ID | Update |
+|---|---|
+| OD-08 | **Answered by owner (starting tariff):** FREE / GENERAL ENGLISH / EXAM PREPARATION / ALL ACCESS; objective mocks free. Legacy-track mapping for existing subscribers still needed before M5. |
+| OD-09 / OD-18 | **Partly answered:** voice 60 / 30 / 120 min; writing 10 / 20, speaking 10 / 20 assessments; prices 69 000 / 99 000 / 129 000 so‘m (USD anchor $5.99 / $7.99 / $9.99); 3-month ≈ −10 %, yearly = 10 months. Status: **owner-approved for a 30-day price test, not final**; ceilings and unknown-call policy still open. |
+| OD-13 | Partly answered: 3-month and yearly billing approved for the test; trial/promo still open. |
+| OD-25 (new) | Unit definitions: size of the FREE "first AI Speaking demo", what counts as one speaking/writing assessment, fair-use cap for assessed speaking practice, extra minute packs, and whether EXAM gets 30 or 60 voice minutes. Required before metering is built. Open. |
+
+## 9. OD-25 answered by the owner (2026-11-15)
+| ID | Decision / status |
+|---|---|
+| OD-25 | **Answered.** EXAM voice 30 min (GENERAL 60, difference explained on the pricing page); FREE demo once per person, max 3 min, with anti-abuse; 1 Speaking assessment = full IELTS Speaking mock ≤ 14 min; 1 Writing assessment = one complete task in official format/word range; assessed AI answers **5/day** plus monthly plan limits plus AI Cost Budget (lessons and "Jim qolma!" included); ALL ACCESS voice **60 min** (was 120) for the 30-day test; AI cost target **20–25 % of plan revenue**, server-side; extra AI credits to be documented; **no production/price/subscription change now.** Specs: `master-spec-v2/AI_COST_CONTROL_SPEC.md`, `AI_CREDIT_TOPUP_SPEC.md`, `PRICING_TEST_30D_REVIEW.md`. |
+| OD-26 (new) | How "one person" is verified for the FREE demo (SMS/OTP provider, Telegram login, or other) and its cost/privacy terms | Required before the FREE demo goes live | Open |
+| OD-27 (new) | Credit packs: list, final prices (formula in `AI_CREDIT_TOPUP_SPEC.md` §2), 90-day validity, whether FREE users may buy, behaviour after cancellation | Required before selling packs | Open |
+| — | Whether the 20–25 % target is measured on gross price (owner's wording, default) or net revenue; both are reported | 30-day review | Open (reporting only) |
+
+## 10. Voice choice (2026-11-15)
+| ID | Update |
+|---|---|
+| OD-21 | **Partly answered:** ElevenLabs approved by the owner for the tutor voice (account on Starter, commercial licence). Tutor voice = **"Mirzaev – Uzbek" on `eleven_v4_turbo`** after a listening demo. Still open: STT/assessment/realtime providers, data terms (ElevenLabs default retention; zero retention is Enterprise-only), and a fallback voice (Mirzaev has a 30-day withdrawal notice). |
