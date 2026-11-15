@@ -115,3 +115,14 @@ Startup validates every value against an allow-list (model ids and voice names f
 
 ## 10. Open decisions
 OD-01 (residency/law), OD-07 (retention), OD-09/OD-18 (allowances and budget), new **OD-21** (provider contracts), **OD-22** (voice consent and recording policy), **OD-23** (benchmark recording budget and reviewers), **OD-24** (default reference accent) — see `phase-0.2/OWNER_DECISION_REGISTER.md` §7.
+
+## 11. Recommended product split (owner question 2026-11-15; decision pending OD-18)
+| Part | Voice technology | Why | Limit model |
+|---|---|---|---|
+| **AI Tutor — live voice chat** (separate section; personalities incl. Savage; mixed uz+en; free talk, roleplay, debate) | realtime speech-to-speech (benchmark winner) | the only place that needs instant replies and interruption | **minutes per month**, reserved per session (§6); e.g. trial 5–10 min, paid plans 30 / 60 / 120 min — numbers are hypotheses |
+| **Speaking practice** (lesson speaking step, IELTS/CEFR speaking tasks, "Jim qolma!") | turn-based: record answer → STT + pronunciation + LLM → mixed feedback voiced by TTS (`MIXED_LANGUAGE_TUTOR_SPEC.md`) | full scoring and exact error quotes need the chained pipeline anyway; ~10× cheaper than realtime | generous daily attempt cap, not minutes |
+| **Reading practice** | pre-generated reference audio + scripted assessment | no live voice needed | attempt cap |
+| **Speaking mock exam** | turn-based examiner (pre-generated questions, timed recording, scoring after) | exam realism, Examiner persona only, no roasting | per mock |
+| **Listening** | pre-generated audio | — | none |
+
+So the roasting/laughing tutor voice exists in two forms: **live** inside the AI Tutor section (limited minutes) and **turn-based** as feedback in Speaking practice (cheap, not minute-limited). Speaking practice never depends on realtime minutes.
