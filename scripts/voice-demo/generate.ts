@@ -1,6 +1,7 @@
 // Ovoz demosi: DEMO_LINES ni tanlangan ElevenLabs ovozi va modelida MP3 ga aylantiradi.
 // Ishlatish:  npm run voice:demo -- --voice <voice_id> [--model eleven_v4|eleven_v4_turbo] [--out voice-demo-out] [--only 01-friendly,04-savage] --yes
 // --yes bo'lmasa faqat hisob-kitob ko'rsatiladi (kredit sarflanmaydi). Kalit: ELEVENLABS_API_KEY (kodda yo'q).
+// Proksi orqali chiqadigan muhitda (masalan bulut sessiyasi) NODE_USE_ENV_PROXY=1 bilan ishga tushiring: Node fetch HTTPS_PROXY ni o'zi o'qimaydi.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { elevenLabsFromEnv, isElModel, synthesize } from '../../server/elevenlabs';
@@ -41,3 +42,4 @@ for (const l of lines) {
 }
 writeFileSync(join(dir, 'lines.json'), JSON.stringify({ voice, model, lines }, null, 2));
 console.log(`${ok}/${lines.length} tayyor → ${dir}`);
+process.exit(ok === lines.length ? 0 : 1); // ochiq ulanishlar jarayonni ushlab qolmasin
