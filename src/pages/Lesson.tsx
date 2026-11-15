@@ -1,12 +1,14 @@
-import { ArrowLeft, ArrowRight, RotateCcw, Volume2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Volume2 } from 'lucide-react';
 import { ItemView } from '../components/LessonItem';
 import { say, stopSpeaking, ttsSupported } from '../lib/speech';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { lessonById, lessonNodeId, lessonWordIds, ALL_LESSONS } from '../content/lessons';
 import { checkItem, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
 import { addMistake } from '../lib/mistakes';
 import { recordAnswer } from '../lib/adaptive/store';
-import { addToReview, addXp } from '../lib/store';
+import { addToReview, addXp, pushToast } from '../lib/store';
+import { answer, checkXp, lessonXpDay, markLessonXp, MAX_HEARTS, newPlay, refill, type LessonPlay } from '../lib/gamify';
+import { localDayKey } from '../lib/adaptive/store';
 import { saveResult } from '../lib/storage';
 import { LessonSpeak } from '../components/LessonSpeak';
 import { LessonWrite } from '../components/LessonWrite';
@@ -23,7 +25,17 @@ export default function LessonPage({ id }: { id: string }) {
   const [result, setResult] = useState<ReturnType<typeof scoreCheck> | null>(null);
   const [round, setRound] = useState(0);
   const [vocabMsg, setVocabMsg] = useState('');
+  // O'yin qatlami (GAMIFIED_LEARNING_SPEC.md §3.2–3.3): jon va combo faqat mashqda; jon tugasa — xatolar ustida qayta ishlash
+  const [play, setPlay] = useState<LessonPlay>(newPlay);
+  const [wrongs, setWrongs] = useState<number[]>([]);
+  const [relearn, setRelearn] = useState<number[] | null>(null);
+  const [rAns, setRAns] = useState<Record<number, ItemAnswer>>({});
+  const [rShown, setRShown] = useState<Record<number, boolean>>({});
+  const [gained, setGained] = useState(0);
+  const [cShown, setCShown] = useState<boolean[]>([]);
   const tts = typeof window !== 'undefined' && ttsSupported();
+  // Jon tugaganda "qayta o'rganish" paneli darhol ko'rinsin
+  useEffect(() => { if (relearn !== null) document.querySelector('.relearn')?.scrollIntoView({ block: 'start' }); }, [relearn]);
   const next = useMemo(() => { const i = ALL_LESSONS.findIndex((x) => x.lesson.id === id); return i >= 0 ? ALL_LESSONS[i + 1] : undefined; }, [id]);
 
   if (!found) return <div className="card"><h2>Dars topilmadi</h2><a className="btn" href="#/learn">Darslar ro‘yxati</a></div>;
@@ -35,17 +47,69 @@ export default function LessonPage({ id }: { id: string }) {
     const now = Date.now();
     lesson.check.forEach((it, i) => recordAnswer(lessonNodeId(lesson.id), checkItem(it, cAns[i]), lesson.taxonomyIds, now));
     lesson.check.forEach((it, i) => { if (!checkItem(it, cAns[i])) addMistake('lesson', { kind: 'lesson', lessonId: lesson.id, part: 'check', index: i }, lesson.taxonomyIds, now); }); // wrong answers come back in “Xatolar ustida ishlash”
+    const firstPassEver = !loadProgress()[lesson.id]?.passedAt;
+    const today = localDayKey(now);
+    const xp = checkXp(r.correct, r.passed, firstPassEver, lessonXpDay(lesson.id) === today); // takror bir kunda kamroq (GAMIFIED §3.1)
     saveAttempt(lesson.id, r, now);
     saveResult({ kind: 'grammar', title: `Dars: ${lesson.titleUz}`, correct: r.correct, total: r.total });
-    addXp(r.correct * 3 + (r.passed ? 15 : 0));
+    addXp(xp); markLessonXp(lesson.id, today); setGained((g) => g + xp);
     if (r.passed) addToReview(lessonWordIds(lesson.id), now); // lesson words join the spaced-repetition deck
     setResult(r); setStep('result');
   };
-  const retry = () => { setCAns([]); setResult(null); setRound((x) => x + 1); setStep('check'); };
+  const retry = () => { setCAns([]); setCShown([]); setResult(null); setRound((x) => x + 1); setPlay((p) => ({ ...p, hearts: Math.max(p.hearts, 3) })); setStep('check'); };
+
+  const revealPractice = (i: number) => {
+    const ok = checkItem(lesson.practice[i]!, pAns[i]);
+    setPShown((x) => { const n = [...x]; n[i] = true; return n; });
+    const np = answer(play, ok); // bitta bosish — bitta hodisa; yon ta'sirlar holat yangilovchisidan tashqarida
+    setPlay(np);
+    if (ok && (np.combo === 3 || np.combo === 5 || np.combo === 10)) pushToast(`Combo ×${np.combo}!`, 'xp');
+    if (!ok) {
+      const nw = wrongs.includes(i) ? wrongs : [...wrongs, i];
+      setWrongs(nw);
+      if (np.hearts === 0) setRelearn(nw.length ? nw : [0, 1, 2]);
+    }
+  };
+  const revealCheck = (i: number) => {
+    const ok = checkItem(lesson.check[i]!, cAns[i]);
+    setCShown((x) => { const n = [...x]; n[i] = true; return n; });
+    const np = { ...answer(play, ok), xp: play.xp }; // tekshiruv XP'si yakunda checkXp bilan hisoblanadi
+    setPlay(np);
+    if (ok && (np.combo === 3 || np.combo === 5 || np.combo === 10)) pushToast(`Combo ×${np.combo}!`, 'xp');
+    if (!ok && np.hearts === 0) setRelearn(wrongs.length ? wrongs : [0, 1, 2]); // mashqdagi xatolar (yoki birinchi 3 ta) — tekshiruv javoblari ochiq bo'lgani uchun ular qayta berilmaydi
+  };
+  const finishPractice = () => {
+    const key = `${lesson.id}:practice`;
+    const today = localDayKey(Date.now());
+    if (play.xp > 0 && lessonXpDay(key) !== today) { addXp(play.xp); markLessonXp(key, today); setGained((g) => g + play.xp); } // mashq XP kuniga bir marta
+    setStep('speak');
+  };
+  const relearnPanel = () => relearn !== null && (
+            <div className="relearn card">
+        <h3><Heart size={18} /> Jonlar tugadi — keling, qoidani qayta ko‘rib chiqamiz</h3>
+        <p>{lesson.explanationUz[0]}</p>
+        <p className="muted">Quyidagi savollarni qayta yeching. Hammasi to‘g‘ri bo‘lsa, 3 ta jon qaytadi va darsni davom ettirasiz. Kutish yoki to‘lov yo‘q.</p>
+        {relearn.map((i) => (
+          <div key={i}>
+            <ItemView item={lesson.practice[i]!} value={rAns[i]} revealed={!!rShown[i]} onChange={(v) => setRAns((a) => ({ ...a, [i]: v }))} />
+            {!rShown[i] && <button className="btn sm" disabled={rAns[i] === undefined} onClick={() => setRShown((x) => ({ ...x, [i]: true }))}>Tekshirish</button>}
+            {rShown[i] && !checkItem(lesson.practice[i]!, rAns[i]) && <button className="btn sm" onClick={() => { setRAns((a) => { const n = { ...a }; delete n[i]; return n; }); setRShown((x) => ({ ...x, [i]: false })); }}><RotateCcw size={14} /> Yana urinish</button>}
+          </div>
+        ))}
+        <button className="btn primary" disabled={!relearn.every((i) => rShown[i] && checkItem(lesson.practice[i]!, rAns[i]))} onClick={() => { setPlay((p) => refill(p)); setRelearn(null); setWrongs([]); setRAns({}); setRShown({}); }}>Tushundim — 3 ta jonni qaytarish</button>
+      </div>
+  );
+  const steps = ['learn', 'practice', 'speak', ...(lesson.writing ? ['write' as const] : []), 'check'] as const;
+  const stepIdx = step === 'result' ? steps.length : steps.indexOf(step as (typeof steps)[number]);
 
   return (
     <div>
       <a className="btn sm" href="#/learn"><ArrowLeft size={14} /> Darslar</a>
+      <div className="lesson-hud sticky" aria-label="Dars holati">
+        <div className="seg-progress" aria-label={`${Math.min(stepIdx + 1, steps.length)} / ${steps.length} qadam`}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
+        <span className="hud-hearts" aria-label={`${play.hearts} ta jon`}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
+        {play.combo >= 2 && <span className="hud-combo" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
+      </div>
       <section className="card" style={{ marginTop: 10 }}>
         <p className="row"><span className={`lvl-tag ${unit.level}`}>{unit.level}</span><span className="pill">{unit.titleUz}</span><span className="pill">{lesson.minutes} daq</span><span className="pill">Pilot · metodist tekshiruvi kutilmoqda</span></p>
         <h2>{lesson.titleUz}</h2>
@@ -76,14 +140,15 @@ export default function LessonPage({ id }: { id: string }) {
 
       {step === 'practice' && (
         <section className="card">
-          <p className="muted">Har bir javobni darhol tekshiring — bu qism ballga ta’sir qilmaydi.</p>
+          <p className="muted">Har bir javobni darhol tekshiring. Xato javob 1 ta jon oladi, ketma-ket to‘g‘ri javoblar combo beradi. Bu qism yakuniy ballga ta’sir qilmaydi.</p>
           {lesson.practice.map((it, i) => (
             <div key={i}>
               <ItemView item={it} value={pAns[i]} revealed={!!pShown[i]} onChange={(v) => setPAns((a) => { const n = [...a]; n[i] = v; return n; })} />
-              {!pShown[i] && <button className="btn sm" disabled={pAns[i] === undefined || (Array.isArray(pAns[i]) && !(pAns[i] as string[]).length)} onClick={() => setPShown((s) => { const n = [...s]; n[i] = true; return n; })}>Tekshirish</button>}
+              {!pShown[i] && <button className="btn sm" disabled={relearn !== null || pAns[i] === undefined || (Array.isArray(pAns[i]) && !(pAns[i] as string[]).length)} onClick={() => revealPractice(i)}>Tekshirish</button>}
             </div>
           ))}
-          <button className="btn primary" style={{ marginTop: 14 }} onClick={() => setStep('speak')}>Gapirish mashqiga o‘tish <ArrowRight size={14} /></button>
+          {relearn !== null && relearnPanel()}
+          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null} onClick={finishPractice}>Gapirish mashqiga o‘tish <ArrowRight size={14} /></button>
         </section>
       )}
 
@@ -103,9 +168,15 @@ export default function LessonPage({ id }: { id: string }) {
 
       {step === 'check' && (
         <section className="card" key={round}>
-          <p className="muted">{lesson.check.length} ta savol. O‘tish uchun kamida {Math.ceil(PASS_RATE * lesson.check.length)} ta to‘g‘ri javob kerak. Javoblar oxirida ko‘rsatiladi.</p>
-          {lesson.check.map((it, i) => <ItemView key={i} item={it} value={cAns[i]} revealed={false} onChange={(v) => setCAns((a) => { const n = [...a]; n[i] = v; return n; })} />)}
-          <button className="btn primary" style={{ marginTop: 14 }} disabled={!cAns.some((a) => a !== undefined && !(Array.isArray(a) && !a.length))} onClick={submitCheck}>Natijani ko‘rish</button>
+          <p className="muted">{lesson.check.length} ta savol. O‘tish uchun kamida {Math.ceil(PASS_RATE * lesson.check.length)} ta to‘g‘ri javob kerak. Har javob darhol tekshiriladi; xato javob 1 ta jon oladi.</p>
+          {lesson.check.map((it, i) => (
+            <div key={i}>
+              <ItemView item={it} value={cAns[i]} revealed={!!cShown[i]} onChange={(v) => setCAns((a) => { const n = [...a]; n[i] = v; return n; })} />
+              {!cShown[i] && <button className="btn sm" disabled={relearn !== null || cAns[i] === undefined || (Array.isArray(cAns[i]) && !(cAns[i] as string[]).length)} onClick={() => revealCheck(i)}>Tekshirish</button>}
+            </div>
+          ))}
+          {relearn !== null && relearnPanel()}
+          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null || !cShown.some(Boolean)} onClick={submitCheck}>Natijani ko‘rish</button>
           <p className="muted" style={{ fontSize: 13 }}>Javob berilmagan savollar noto‘g‘ri hisoblanadi.</p>
         </section>
       )}
@@ -113,7 +184,7 @@ export default function LessonPage({ id }: { id: string }) {
       {step === 'result' && result && (
         <section className="card">
           <h3>{result.passed ? 'Dars o‘zlashtirildi!' : 'Hali biroz mashq kerak'}</h3>
-          <p className="row"><span className="pill">{result.correct}/{result.total} to‘g‘ri</span><span className="pill">{Math.round(result.rate * 100)}%</span></p>
+          <p className="row"><span className="pill">{result.correct}/{result.total} to‘g‘ri</span><span className="pill">{Math.round(result.rate * 100)}%</span>{gained > 0 && <span className="pill">+{gained} XP</span>}{play.maxCombo >= 2 && <span className="pill"><Flame size={13} /> eng uzun combo ×{play.maxCombo}</span>}</p>
           {lesson.check.map((it, i) => <ItemView key={i} item={it} value={cAns[i]} revealed onChange={() => undefined} />)}
           <div className="row" style={{ marginTop: 14 }}>
             <button className="btn" onClick={retry}><RotateCcw size={14} /> Qayta topshirish</button>

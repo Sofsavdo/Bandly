@@ -289,3 +289,61 @@ The lesson header replaces the global nav: close, step progress (5 segments), he
 
 ## 7. Analytics (privacy)
 There is no analytics pipeline today. Events are defined now and sent only after OD-01 (data processors) is decided. Until then they go to a local debug log. No personal data in events: only the user id hash, the lesson id and numbers.
+
+## 8. Implementation status — G1, first slice (2026-11-15, branch)
+Client-only, with no database, API or AI change. The pure logic lives in `src/lib/gamify.ts` and is tested in `src/lib/gamify.test.ts`.
+
+**Learning Map (§2)**
+- **Component.** `src/components/LearningMap.tsx`, shown by default on `#/learn`. The old list view stays available through the "Xarita | Ro‘yxat" switch, and the choice is remembered.
+- **Content.** Every level band carries its level colour. Units are shown with their situation, and each of the 42 lessons is a node.
+- **Node states.** A node is locked, open, current, passed, mastered or "revise". The mastery value is read from the adaptive store. The unlock rule is exactly `isUnlocked()`.
+- **Interaction.**
+  - The map scrolls to the current node when it opens.
+  - Tapping a node opens a bottom sheet with the objective, minutes, an approximate XP figure, 5 hearts, the best score and Start/Takrorlash. Esc closes it.
+  - A locked node explains why it is locked.
+  - Each level ends with a milestone that links to the skill check.
+- **Reduced motion.** The pulse animation is turned off.
+
+**Hearts and combo (§3.2–3.3)**
+- **Where they apply.** Mashq and Tekshiruv now check each item immediately.
+- **Hearts.** A wrong answer costs a heart. The same 5 hearts span both steps.
+- **Combo.** Correct answers build a combo. It shows toasts at ×3, ×5 and ×10, and the bonus is capped at 50 % of the base XP.
+- **Re-learn at 0 hearts.**
+  - It shows the rule again and asks the learner to retry the practice items they got wrong. Check items are not used, because their answers are already shown.
+  - When every retried item is correct, 3 hearts come back.
+  - There is no timer and no payment.
+  - "Natijani ko‘rish" (see result) is disabled while re-learn is open.
+- **HUD.** A sticky bar shows the step segments, hearts and combo.
+
+**XP (§3.1)**
+- **Check XP** follows `checkXp`:
+  - 3 XP per correct answer + 15 XP for a first-ever pass;
+  - a repeat on the same day earns 1 XP per correct answer;
+  - a re-pass bonus is 4 XP.
+- **Practice XP** is 2 XP per correct first answer plus the combo bonus, paid once per lesson per day.
+- The lesson result shows the XP gained and the longest combo.
+
+**Daily Quests (§3.7)**
+- **Component.** `src/components/QuestsCard.tsx` on the dashboard, for learners who have a level.
+- **The three quests.**
+  - Pass 1 lesson.
+  - Reach the daily XP goal.
+  - Work on 3 mistakes. If no mistakes are due, play 1 word game instead.
+- **Daily counts.** "Today" counts come from a baseline snapshot taken at the start of the local day.
+- **Claim.** Each claim gives +20 XP once; an unfinished quest cannot be claimed.
+
+**Deviations, documented**
+- Practice still shows every item at once rather than one item per screen.
+- The re-learn step reuses the lesson's own practice items, because there are no extra easier items yet.
+
+**Not yet (next slices)**
+- Boss Challenge (§3.5).
+- Streak rule change and freezes (§3.4).
+- New achievements (§3.8).
+- Leagues on server XP (§3.6, G2).
+- Low-quality-answer XP suppression (< 600 ms).
+- Lesson intro and result screens with the teacher character (T1).
+
+**Tests**
+- Unit tests in `src/lib/gamify.test.ts`.
+- A Playwright run on a Pixel 5 checked: 42 nodes with one current node, the current node in view on open, the sheet open and close, the locked-node notice, the list toggle, hearts reaching 0 → re-learn with result submit blocked, the sticky HUD, 3 quests, and no page errors or overflow.
