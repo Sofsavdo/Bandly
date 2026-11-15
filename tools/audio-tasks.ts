@@ -9,6 +9,9 @@ import { scenes } from '../src/content/scenes';
 import { Examiner } from '../src/lib/examiner';
 import type { Cefr } from '../src/lib/levels';
 import { clipKey } from '../src/lib/clipHash';
+import { ALL_LESSONS } from '../src/content/lessons';
+import { SKILL_SETS } from '../src/content/skillCheck';
+import { TOPICS } from '../src/lib/silenceGame';
 
 type Task = { kind: 'clip'; key: string; text: string; voice: string; speed: number };
 type Listen = { kind: 'listening'; id: string; lines: { text: string; voice: string }[]; pauseMs: number };
@@ -50,6 +53,13 @@ add('Ha, ha, ha, ha!', 1.2);
 vocab.forEach((w) => add(w.word));
 // Sahnalar: har gap o'z so'zlovchisining ovozida (bir xil matn bitta ovoz bilan yaratiladi)
 for (const sc of scenes) for (const l of sc.lines) add(l.text, 1, l.sp === 'A' ? sc.voices.A : (sc.voices.B ?? sc.voices.A));
+
+// General English darslari: misollar (Tushuntirish va Gapirish qadamlari shu gaplarni o'qiydi)
+for (const l of ALL_LESSONS) l.lesson.examples.forEach((e) => add(e.en));
+// Ko'nikmalar tekshiruvi: Listening matni bitta audio (say() butun matnni bitta kalit bilan so'raydi)
+for (const set of SKILL_SETS) add(set.listening.script, 1, 'af_heart');
+// "Jim qolma!" mavzulari
+TOPICS.forEach((t) => add(t.en));
 
 // 3) Reaksiya satrlari (inglizcha variant). Qo'yiladigan so'zlar: ma'lum xato juftliklari va "um" soni
 const PAIRS: [string, string][] = [['I am agree', 'I agree'], ['she go', 'she goes'], ['he have', 'he has'], ['he like', 'he likes'], ["it don't", "it doesn't"], ['more better', 'better'], ['discuss about', 'discuss'], ['I have twenty years old', 'I am twenty years old'], ['peoples', 'people'], ['advices', 'advice'], ['I am boring', 'I am bored'], ['I very like', 'I really like'], ['I am study', 'I study'], ["didn't went", "didn't go"]];
