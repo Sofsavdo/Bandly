@@ -1,14 +1,15 @@
 import { Flame, Lock, LogOut, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { authConfig, getAccount, logout, onAccountChange, restoreAccount } from '../lib/account';
+import { authConfig, getAccount, onAccountChange, restoreAccount } from '../lib/account';
 import { JoinForm } from '../components/JoinForm';
+import { SignOutDialog } from '../components/SignOutDialog';
 import { fmtDate, refreshEntitlements } from '../lib/pay';
 import { TRACK_NAME } from '../config';
 import { setSound, sfx, soundOn } from '../lib/fx';
 import { LEVEL_INFO } from '../lib/levels';
 import { ACHIEVEMENTS, levelProgress, dayKey, displayStreak, repairOpen } from '../lib/game';
 import { loadResults } from '../lib/storage';
-import { resetAll, setDailyGoal, useProfile } from '../lib/store';
+import { setDailyGoal, useProfile } from '../lib/store';
 import { PersonaPicker } from '../components/PersonaPicker';
 import { vocab } from '../content/vocab';
 import { isMastered } from '../lib/srs';
@@ -22,6 +23,7 @@ export default function Profile() {
   const [msg, setMsg] = useState('');
   const [acc, setAcc] = useState(getAccount());
   const [tgOn, setTgOn] = useState(false);
+  const [bye, setBye] = useState(false);
   useEffect(() => { void authConfig().then((c) => setTgOn(!!c.telegram)); return onAccountChange(() => setAcc(getAccount())); }, []);
   const earned = ACHIEVEMENTS.filter((a) => p.achievements.includes(a.id));
   const lp = levelProgress(p.xp);
@@ -54,9 +56,13 @@ export default function Profile() {
         {acc ? (
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <p style={{ margin: 0 }}>Siz <b>{acc.nickname}</b> sifatida kirgansiz.</p>
-            <button className="btn sm" onClick={() => { if (window.confirm('Hisobdan chiqasizmi? Darslar progressi shu qurilmada qoladi; obuna va reyting hisobingizda saqlanadi.')) logout(); }}><LogOut size={14} /> Chiqish</button>
+            <button className="btn sm" onClick={() => setBye(true)}><LogOut size={14} /> Chiqish</button>
           </div>
-        ) : <JoinForm onJoined={(a) => setAcc(a)} text="Kirsangiz reyting, duel, AI ustoz va obuna hisobingizga yoziladi va boshqa qurilmada ham ochiladi." />}
+        ) : <>
+          <JoinForm onJoined={(a) => setAcc(a)} text="Kirsangiz reyting, duel, AI ustoz va obuna hisobingizga yoziladi va boshqa qurilmada ham ochiladi." />
+          <button className="btn sm danger" style={{ marginTop: 10 }} onClick={() => setBye(true)}><LogOut size={14} /> Qurilmani tozalash va boshidan boshlash</button>
+        </>}
+        {bye && <SignOutDialog onClose={() => setBye(false)} />}
         {acc && tgOn && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text="Hisobingizni Telegram'ga bog‘lang: XP va obuna saqlanadi, keyin istalgan qurilmada Telegram orqali kirasiz." /></div>}
         <h4 style={{ margin: '14px 0 4px' }}>Obunalar</h4>
         {(['exam', 'grammar', 'mocks'] as const).map((t) => (
@@ -99,7 +105,6 @@ export default function Profile() {
           </label>
         </div>
         <details className="fold" style={{ margin: '10px 0' }}><summary>AI ustoz xarakteri</summary><PersonaPicker /></details>
-        <button className="btn" onClick={() => { if (window.confirm('Barcha natijalar, XP va demo obunalar o‘chiriladi. Davom etasizmi?')) { resetAll(); try { localStorage.removeItem('bandly.results.v1'); } catch { /* */ } } }}>Qurilmadagi progressni o‘chirish</button>
       </div>
 
       <div className="card">

@@ -42,6 +42,7 @@ import Boss from './pages/Boss';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
+  '#/welcome': () => <Home preview />,
   '#/learn': () => <Learn />,
   '#/skills': () => <SkillCheck />,
   '#/coach': () => <Coach />,

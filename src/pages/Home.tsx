@@ -22,10 +22,11 @@ const faq: [string, string][] = [
   ['“Qattiq” ustoz nima?', 'Ixtiyoriy, faqat 18+ tasdiqlash bilan: ustoz xatoingiz ustidan kuladi. Oila, din, millat, tashqi ko‘rinish haqida hech qachon gapirmaydi. Imtihon rejimida o‘chiq.'],
 ];
 
-export default function Home() {
+/** preview=true — #/welcome: yangi foydalanuvchi ko'radigan sahifa (progressdan qat'i nazar; reklama havolasi uchun ham). */
+export default function Home({ preview = false }: { preview?: boolean }) {
   const p = useProfile();
   const lvl = p.level;
-  const isNew = !lvl && p.xp === 0;
+  const isNew = preview || (!lvl && p.xp === 0);
   const [bot, setBot] = useState<string | null>(null);
   useEffect(() => { void authConfig().then((c) => setBot(c.telegram?.bot ?? null)); }, []);
   const tests = readingTests.length + listeningTests.length;

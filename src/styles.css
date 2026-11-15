@@ -660,3 +660,14 @@ html[data-tg='1'] .site-footer, html[data-tg='1'] .header-cta { display: none; }
 .tg-promo > div { flex: 1; }
 @media (max-width: 640px) { .landing-hero .hero-art { display: none; } }
 .learn-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- Chiqish oynasi ---------- */
+.modal { position: fixed; z-index: 71; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(92vw, 440px); max-height: 90vh; overflow: auto; margin: 0; }
+.btn.danger { color: #c0262d; border-color: color-mix(in srgb, #c0262d 35%, transparent); }
+.btn.danger:hover { background: color-mix(in srgb, #c0262d 8%, transparent); }
+.drawer .dacct { margin-top: auto; border-top: 1px solid var(--line); padding: 12px 4px 4px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.drawer .dacct span { font-size: 14px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.so-actions { gap: 10px; margin-top: 6px; }
+.so-actions .btn { width: 100%; justify-content: flex-start; white-space: normal; text-align: left; padding-top: 10px; padding-bottom: 10px; }
+.so-actions .btn span { display: flex; flex-direction: column; }
+.so-actions .btn small { font-weight: 500; color: var(--muted); font-size: 12.5px; }

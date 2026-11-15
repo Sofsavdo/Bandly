@@ -21,6 +21,22 @@ export function logout(): void {
   try { sessionStorage.removeItem('bandly.tg.auth'); } catch { /* */ }
 }
 
+const KEEP = new Set(['bandly.lang', 'bandly.sound', 'bandly.tg']);
+/**
+ * Chiqish. wipe=true — bu qurilmadagi barcha Bandly ma'lumotlari (progress, XP, natijalar, xatolar) ham o'chiriladi:
+ * sayt yangi foydalanuvchiga qanday ko'rinsa, shunday ochiladi. Hisobdagi obuna va reyting serverda qoladi.
+ */
+export function signOut(wipe: boolean): void {
+  logout();
+  if (wipe) {
+    for (const st of [localStorage, sessionStorage]) {
+      try { Object.keys(st).filter((k) => k.startsWith('bandly.') && !KEEP.has(k)).forEach((k) => st.removeItem(k)); } catch { /* */ }
+    }
+  }
+  location.replace(`${location.pathname}${location.search}#/`);
+  location.reload();
+}
+
 // ---------------- Telegram orqali kirish (OD-05) ----------------
 export interface AuthConfig { telegram: { bot: string } | null }
 let cfg: Promise<AuthConfig> | null = null;
