@@ -86,7 +86,7 @@ Add Reading mode: 300 attempts a month ≈ $1.1. Compare this with the hypothesi
 - **Global daily ceiling:** `VOICE_GLOBAL_DAILY_MINUTES` (default 0 = off) prevents a runaway bill even if many users start sessions at once.
 
 ## 9. Cost of the recommended split (see architecture §11)
-- AI Tutor live chat, 120 min/month at full use: `2.1-mini` ≈ $2.2–$22, `gpt-live-1` ≈ $6 + LLM, ElevenLabs Realtime ≈ $9.6 + LLM, full `gpt-realtime-2.1` ≈ $6–$70. Average use is usually below the allowance, but pricing must survive full use → 120 min fits only a top plan, or a cheaper realtime model that passes the benchmark.
+- *(Superseded by OD-25: ALL ACCESS is 60 min; current per-plan figures in `master-spec-v2/AI_COST_CONTROL_SPEC.md` §3.)* AI Tutor live chat, 120 min/month at full use: `2.1-mini` ≈ $2.2–$22, `gpt-live-1` ≈ $6 + LLM, ElevenLabs Realtime ≈ $9.6 + LLM, full `gpt-realtime-2.1` ≈ $6–$70. Average use is usually below the allowance, but pricing must survive full use → 120 min fits only a top plan, or a cheaper realtime model that passes the benchmark.
 - Speaking practice feedback turn (≈ 30 s answer + ≈ 150 chars of voiced feedback): STT + assessment ≈ $0.011 + LLM ≈ $0.005 + ElevenLabs v4 TTS ≈ $0.012 → **≈ $0.03 per answer**; 300 answers/month ≈ $9 at the high end, ≈ $4–5 with Azure/Google TTS for neutral lines and ElevenLabs only for emotional ones. Fixed roast phrases without slots are pre-generated once and cached.
 
 ## 10. Check against the owner's tariffs (2026-11-15; `MONETIZATION_SPEC.md` §7)

@@ -119,8 +119,8 @@ OD-01 (residency/law), OD-07 (retention), OD-09/OD-18 (allowances and budget), n
 ## 11. Recommended product split (owner question 2026-11-15; decision pending OD-18)
 | Part | Voice technology | Why | Limit model |
 |---|---|---|---|
-| **AI Tutor — live voice chat** (separate section; personalities incl. Savage; mixed uz+en; free talk, roleplay, debate) | realtime speech-to-speech (benchmark winner) | the only place that needs instant replies and interruption | **minutes per month**, reserved per session (§6); e.g. trial 5–10 min, paid plans 30 / 60 / 120 min — numbers are hypotheses |
-| **Speaking practice** (lesson speaking step, IELTS/CEFR speaking tasks, "Jim qolma!") | turn-based: record answer → STT + pronunciation + LLM → mixed feedback voiced by TTS (`MIXED_LANGUAGE_TUTOR_SPEC.md`) | full scoring and exact error quotes need the chained pipeline anyway; ~10× cheaper than realtime | generous daily attempt cap, not minutes |
+| **AI Tutor — live voice chat** (separate section; personalities incl. Savage; mixed uz+en; free talk, roleplay, debate) | realtime speech-to-speech (benchmark winner) | the only place that needs instant replies and interruption | **minutes per month**, reserved per session (§6); owner decision OD-25 for the 30-day test: FREE one 3-min demo, GENERAL 60, EXAM 30, ALL ACCESS 60 min/month |
+| **Speaking practice** (lesson speaking step, IELTS/CEFR speaking tasks, "Jim qolma!") | turn-based: record answer → STT + pronunciation + LLM → mixed feedback voiced by TTS (`MIXED_LANGUAGE_TUTOR_SPEC.md`) | full scoring and exact error quotes need the chained pipeline anyway; ~10× cheaper than realtime | **5 assessed answers/day** (OD-25) + plan and cost budget; unassessed browser practice stays unlimited |
 | **Reading practice** | pre-generated reference audio + scripted assessment | no live voice needed | attempt cap |
 | **Speaking mock exam** | turn-based examiner (pre-generated questions, timed recording, scoring after) | exam realism, Examiner persona only, no roasting | per mock |
 | **Listening** | pre-generated audio | — | none |

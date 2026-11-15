@@ -144,3 +144,11 @@ M8 / paid launch OD-07, OD-01 answered, OD-11 for non-UZ
 | OD-09 / OD-18 | **Partly answered:** voice 60 / 30 / 120 min; writing 10 / 20, speaking 10 / 20 assessments; prices 69 000 / 99 000 / 129 000 so‘m (USD anchor $5.99 / $7.99 / $9.99); 3-month ≈ −10 %, yearly = 10 months. Status: **owner-approved for a 30-day price test, not final**; ceilings and unknown-call policy still open. |
 | OD-13 | Partly answered: 3-month and yearly billing approved for the test; trial/promo still open. |
 | OD-25 (new) | Unit definitions: size of the FREE "first AI Speaking demo", what counts as one speaking/writing assessment, fair-use cap for assessed speaking practice, extra minute packs, and whether EXAM gets 30 or 60 voice minutes. Required before metering is built. Open. |
+
+## 9. OD-25 answered by the owner (2026-11-15)
+| ID | Decision / status |
+|---|---|
+| OD-25 | **Answered.** EXAM voice 30 min (GENERAL 60, difference explained on the pricing page); FREE demo once per person, max 3 min, with anti-abuse; 1 Speaking assessment = full IELTS Speaking mock ≤ 14 min; 1 Writing assessment = one complete task in official format/word range; assessed AI answers **5/day** plus monthly plan limits plus AI Cost Budget (lessons and "Jim qolma!" included); ALL ACCESS voice **60 min** (was 120) for the 30-day test; AI cost target **20–25 % of plan revenue**, server-side; extra AI credits to be documented; **no production/price/subscription change now.** Specs: `master-spec-v2/AI_COST_CONTROL_SPEC.md`, `AI_CREDIT_TOPUP_SPEC.md`, `PRICING_TEST_30D_REVIEW.md`. |
+| OD-26 (new) | How "one person" is verified for the FREE demo (SMS/OTP provider, Telegram login, or other) and its cost/privacy terms | Required before the FREE demo goes live | Open |
+| OD-27 (new) | Credit packs: list, final prices (formula in `AI_CREDIT_TOPUP_SPEC.md` §2), 90-day validity, whether FREE users may buy, behaviour after cancellation | Required before selling packs | Open |
+| — | Whether the 20–25 % target is measured on gross price (owner's wording, default) or net revenue; both are reported | 30-day review | Open (reporting only) |
