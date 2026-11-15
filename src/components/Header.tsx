@@ -1,4 +1,6 @@
-import { ChevronDown, Flame, Menu, Star, Target, User, X } from 'lucide-react';
+import { ChevronDown, Flame, LogIn, LogOut, Menu, Star, Target, User, X } from 'lucide-react';
+import { getAccount, onAccountChange } from '../lib/account';
+import { SignOutDialog } from './SignOutDialog';
 import { useEffect, useState } from 'react';
 import { BRAND } from '../brand';
 import { levelProgress, dayKey, displayStreak } from '../lib/game';
@@ -24,6 +26,9 @@ function Stats() {
 export function Header({ hash }: { hash: string }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [bye, setBye] = useState(false);
+  const [acc, setAcc] = useState(getAccount());
+  useEffect(() => onAccountChange(() => setAcc(getAccount())), []);
   useEffect(() => setOpen(false), [hash]);
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
   return (
@@ -60,9 +65,16 @@ export function Header({ hash }: { hash: string }) {
                 </details>
               );
             })}
+            <div className="dacct">
+              <span>{acc ? <>Hisob: <b>{acc.nickname}</b></> : 'Hisobga kirmagansiz'}</span>
+              {acc
+                ? <button className="btn sm" onClick={() => { setOpen(false); setBye(true); }}><LogOut size={14} /> Chiqish</button>
+                : <a className="btn sm primary" href="#/profile"><LogIn size={14} /> Kirish</a>}
+            </div>
           </aside>
         </>
       )}
+      {bye && <SignOutDialog onClose={() => setBye(false)} />}
     </>
   );
 }
