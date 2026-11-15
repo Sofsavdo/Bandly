@@ -347,3 +347,37 @@ Client-only, with no database, API or AI change. The pure logic lives in `src/li
 **Tests**
 - Unit tests in `src/lib/gamify.test.ts`.
 - A Playwright run on a Pixel 5 checked: 42 nodes with one current node, the current node in view on open, the sheet open and close, the locked-node notice, the list toggle, hearts reaching 0 → re-learn with result submit blocked, the sticky HUD, 3 quests, and no page errors or overflow.
+
+### 8.1 Learning Map v2 — visual redesign after owner review (2026-11-15)
+The owner judged the first map too plain compared with `design-references/`. The map was redrawn with original vector art (`src/components/mapArt.tsx`):
+
+**Level worlds.** Each level is an illustrated world with its own sky gradient, rolling hills and themed props, placed on both sides of the road:
+
+| Level | World | Props |
+|---|---|---|
+| A1 | Mahalla | houses, trees, bushes, sun |
+| A2 | Bozor ko‘chasi | domes, market stalls |
+| B1 | Ko‘l bo‘yi | lake with a boat, pines |
+| B2 | Tog‘ yo‘li | snowy mountains |
+| C1 | Tungi shahar | night skyline, moon |
+| C2 | Cho‘qqi | peak with a flag |
+
+**Road.** A winding road follows smooth curves with a dashed centre line. The part already travelled is drawn in the level colour.
+
+**Nodes.**
+- Lessons are 3-D "coins" in five styles: locked, open, current, passed and mastered (gold).
+- The current coin has a pulsing ring (static under reduced motion) and a "Siz shu yerdasiz" pin. The pin flips side so it never leaves the screen.
+- Passed lessons show 1–3 stars (≥ 80 / 90 / 100 %).
+- Each unit starts with a signboard and ends with a trophy diamond, which turns gold when every lesson in the unit is passed.
+
+**Panels and overlays.**
+- **Level banner.** A glass card on each world shows the level badge, world name, subtitle and a progress ring.
+- **HUD card.** Shows the Bandly XP level bar, streak and daily XP.
+- **"Davom ettirish" button.** Floats above the tab bar.
+- **Lesson sheet.** Opens from a node and shows a coin, the breadcrumb and 4 stat tiles.
+
+**Other modes and screen sizes.**
+- **Dark mode.** Daytime worlds are dimmed; the night world stays as drawn.
+- **Desktop.** The map sits on the left with a sticky panel of today's quests on the right.
+
+The node and state logic is unchanged (`isUnlocked()`, mastery from the adaptive store). No external images are used and nothing is copied from the references.

@@ -1,6 +1,7 @@
 import { BookOpenCheck, CheckCircle2, List, Lock, Map as MapIcon, PlayCircle } from 'lucide-react';
 import { useState } from 'react';
 import { LearningMap } from '../components/LearningMap';
+import { QuestsCard } from '../components/QuestsCard';
 import { UNITS } from '../content/lessons';
 import { isUnlocked, loadProgress, nextLesson } from '../lib/lessons';
 import { useProfile } from '../lib/store';
@@ -35,7 +36,12 @@ export default function Learn() {
           <button type="button" role="tab" aria-selected={view === 'list'} className={view === 'list' ? 'on' : ''} onClick={() => pick('list')}><List size={15} /> Ro‘yxat</button>
         </div>
       </section>
-      {view === 'map' && <LearningMap progress={progress} level={p.level} currentId={next?.lessonId ?? null} />}
+      {view === 'map' && (
+        <div className="learn-grid">
+          <LearningMap progress={progress} level={p.level} currentId={next?.lessonId ?? null} />
+          <aside className="learn-side" aria-label="Bugungi vazifalar">{p.level && <QuestsCard />}</aside>
+        </div>
+      )}
       {view === 'list' && UNITS.map((u) => (
         <section className="card" key={u.id}>
           <h3><span className={`lvl-tag ${u.level}`}>{u.level}</span> {u.titleUz} <span className="muted" style={{ fontWeight: 500 }}>· {u.title}</span>{p.level === u.level && <span className="pill" style={{ marginLeft: 8 }}>Sizning darajangiz</span>}</h3>
