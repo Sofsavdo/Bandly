@@ -1,6 +1,6 @@
-import { Pause, Play, RotateCcw } from 'lucide-react';
+import { Pause, Play, RotateCcw, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { MockTest } from '../components/MockTest';
+import { MockTest, type ExamLeftState } from '../components/MockTest';
 import type { ListeningTest } from '../content/types';
 import { listeningTrack } from '../lib/clips';
 import { LISTENING_TABLE } from '../lib/band';
@@ -17,11 +17,11 @@ function Transcript({ test }: { test: ListeningTest }) {
 }
 
 /** Tayyor neyron ovozli audio (public/audio/listening). Imtihon rejimida faqat bir marta. */
-function FilePlayer({ file, seconds, practice }: { file: string; seconds: number; practice: boolean }) {
+function FilePlayer({ file, seconds, practice, initialPlays = 0, onPlay }: { file: string; seconds: number; practice: boolean; initialPlays?: number; onPlay?: () => void }) {
   const ref = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [pos, setPos] = useState(0);
-  const [plays, setPlays] = useState(0);
+  const [plays, setPlays] = useState(initialPlays);
   const locked = !practice && plays >= 1 && !playing;
 
   useEffect(() => () => { ref.current?.pause(); }, []);
@@ -33,6 +33,7 @@ function FilePlayer({ file, seconds, practice }: { file: string; seconds: number
       a.onerror = () => { setPlaying(false); ref.current = null; };
       ref.current = a;
       setPlays((n) => n + 1);
+      onPlay?.();
     }
     const a = ref.current;
     if (a.paused) { void a.play(); setPlaying(true); } else if (practice) { a.pause(); setPlaying(false); }
@@ -83,18 +84,43 @@ function BrowserPlayer({ test, practice }: { test: ListeningTest; practice: bool
   );
 }
 
-function Player({ submitted, test }: { submitted: boolean; test: ListeningTest }) {
+function Player({ test, state }: { test: ListeningTest; state: ExamLeftState }) {
+  const { submitted, attempt } = state;
   const [track, setTrack] = useState<{ file: string; seconds: number } | null | undefined>(undefined);
   const [practice, setPractice] = useState(false);
   useEffect(() => { void listeningTrack(test.id).then(setTrack); }, [test.id]);
+  // Imtihon rejimida audio bir marta: necha marta boshlangani urinishga yoziladi (sahifa yangilansa ham saqlanadi).
+  const playedBefore = attempt?.audioPlays ?? 0;
   return (
     <div>
       <p><b>{test.context}</b></p>
-      {track === undefined ? <p className="muted">Audio yuklanmoqda…</p> : track ? <FilePlayer file={track.file} seconds={track.seconds} practice={practice} /> : <BrowserPlayer test={test} practice={practice} />}
+      {!practice && !submitted && playedBefore > 0 && <p className="notice">Audio allaqachon eshittirilgan. Imtihon qoidasi bo‘yicha qayta eshittirilmaydi — savollarga javob berishni davom ettiring.</p>}
+      {track === undefined ? <p className="muted">Audio yuklanmoqda…</p> : track ? <FilePlayer key={practice ? 'p' : 'e'} file={track.file} seconds={track.seconds} practice={practice} initialPlays={practice ? 0 : playedBefore} onPlay={() => { if (!practice) state.update((a) => ({ ...a, audioPlays: a.audioPlays + 1 })); }} /> : <BrowserPlayer test={test} practice={practice} />}
       <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={practice} onChange={(e) => setPractice(e.target.checked)} /> Mashq rejimi (pauza va qayta eshitish)</label></p>
       <p className="evidence">Imtihon rejimida audio faqat bir marta eshittiriladi.</p>
       {(submitted || practice) && <details open={submitted}><summary>Transkript</summary><Transcript test={test} /></details>}
     </div>
+  );
+}
+
+/** Qurilma tekshiruvi: boshlashdan oldin qisqa ovoz (REAL_EXAM_EXPERIENCE_SPEC.md §3, Device check). */
+function SoundCheck() {
+  const [heard, setHeard] = useState(false);
+  const beep = () => {
+    try {
+      const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx(); const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.frequency.value = 660; g.gain.value = 0.08; o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 0.6); o.onended = () => { void ctx.close(); };
+      setHeard(true);
+    } catch { /* ovoz chiqmadi */ }
+  };
+  return (
+    <p className="row">
+      <button type="button" className="btn sm" onClick={beep}><Volume2 size={15} /> Ovozni tekshirish</button>
+      {heard && <span className="muted" style={{ fontSize: 13 }}>Ovoz eshitildimi? Eshitilmasa, naushnik yoki ovoz balandligini tekshiring.</span>}
+    </p>
   );
 }
 
@@ -109,8 +135,9 @@ export default function Listening({ test: t }: { test: ListeningTest }) {
       groups={t.groups}
       questions={t.questions}
       table={LISTENING_TABLE}
-      intro={<p>Audioni tinglab {t.questions.length} ta savolga javob bering. Audio tabiiy ovozda yozilgan va imtihon qoidasi bo‘yicha bir marta eshittiriladi (mashq rejimida pauza va qayta eshitish mumkin).</p>}
-      left={({ submitted }) => <Player submitted={submitted} test={t} />}
+      testId={t.id}
+      intro={<><p>Audioni tinglab {t.questions.length} ta savolga javob bering. Audio tabiiy ovozda yozilgan va imtihon qoidasi bo‘yicha bir marta eshittiriladi (mashq rejimida pauza va qayta eshitish mumkin).</p><SoundCheck /></>}
+      left={(state) => <Player test={t} state={state} />}
     />
   );
 }

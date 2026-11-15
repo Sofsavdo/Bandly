@@ -41,6 +41,8 @@ export default function FullExam() {
             <li>Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.</li>
             <li>Test darajangizga ({p.level ?? 'B1'}) mos tanlanadi.</li>
             <li>Natijalar taxminiy: rasmiy IELTS balli emas.</li>
+            <li>Kompyuter yoki planshetda topshirish tavsiya etiladi (haqiqiy kompyuterdagi IELTS ham shunday); telefonda ham ishlaydi.</li>
+            <li>Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.</li>
           </ul>
           <button className="btn primary lg" onClick={start}>Imtihonni boshlash <ArrowRight size={18} /></button>
         </div>
