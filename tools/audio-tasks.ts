@@ -9,11 +9,17 @@ import { scenes } from '../src/content/scenes';
 import { Examiner } from '../src/lib/examiner';
 import type { Cefr } from '../src/lib/levels';
 import { clipKey } from '../src/lib/clipHash';
+import { ALL_LESSONS } from '../src/content/lessons';
+import { SKILL_SETS } from '../src/content/skillCheck';
+import { TOPICS } from '../src/lib/silenceGame';
 
 type Task = { kind: 'clip'; key: string; text: string; voice: string; speed: number };
 type Listen = { kind: 'listening'; id: string; lines: { text: string; voice: string }[]; pauseMs: number };
 
 const EXAMINER_VOICE = 'bf_emma';
+// General English (darslar, so'zlar, "Jim qolma!", Skill check) — American ovozlar; IELTS qismlari — British (egasi qarori, 2026-11-15).
+const US_FEMALE = 'af_heart';
+const US_MALE = 'am_adam';
 const SPEED: Record<string, number> = { happy: 1, angry: 1.12, laugh: 1.15, disappointed: 0.88, impressed: 1 };
 const clips = new Map<string, Task>();
 const add = (text: string, speed = 1, voice = EXAMINER_VOICE) => {
@@ -47,9 +53,16 @@ for (const c of easyPart2Cards) c.part3.forEach((q) => add(q.en));
 hardPart3.forEach((q) => add(q));
 add('Ha, ha, ha, ha!', 1.2);
 // Lug'at so'zlari va iboralari (kun so'zi, imlo o'yini va Writing mavzu so'zlari uchun)
-vocab.forEach((w) => add(w.word));
+vocab.forEach((w) => add(w.word, 1, US_FEMALE));
 // Sahnalar: har gap o'z so'zlovchisining ovozida (bir xil matn bitta ovoz bilan yaratiladi)
 for (const sc of scenes) for (const l of sc.lines) add(l.text, 1, l.sp === 'A' ? sc.voices.A : (sc.voices.B ?? sc.voices.A));
+
+// General English darslari: misollar (Tushuntirish va Gapirish qadamlari shu gaplarni o'qiydi)
+for (const l of ALL_LESSONS) l.lesson.examples.forEach((e, i) => add(e.en, 1, i % 2 ? US_MALE : US_FEMALE));
+// Ko'nikmalar tekshiruvi: Listening matni bitta audio (say() butun matnni bitta kalit bilan so'raydi)
+for (const set of SKILL_SETS) add(set.listening.script, 1, US_FEMALE);
+// "Jim qolma!" mavzulari
+TOPICS.forEach((t) => add(t.en, 1, US_MALE));
 
 // 3) Reaksiya satrlari (inglizcha variant). Qo'yiladigan so'zlar: ma'lum xato juftliklari va "um" soni
 const PAIRS: [string, string][] = [['I am agree', 'I agree'], ['she go', 'she goes'], ['he have', 'he has'], ['he like', 'he likes'], ["it don't", "it doesn't"], ['more better', 'better'], ['discuss about', 'discuss'], ['I have twenty years old', 'I am twenty years old'], ['peoples', 'people'], ['advices', 'advice'], ['I am boring', 'I am bored'], ['I very like', 'I really like'], ['I am study', 'I study'], ["didn't went", "didn't go"]];
