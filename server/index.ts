@@ -57,6 +57,7 @@ function limited(ip: string): boolean {
   return ++h.n > 120;
 }
 
+let langsCache: { at: number; langs: string[] } | null = null; // tayyor tillar ro'yxati (5 daqiqa kesh)
 /** So'rov tili: ilova sarlavhasi (x-lang), bo'lmasa brauzer tili. */
 const reqLang = (req: IncomingMessage): string => String(req.headers['x-lang'] ?? String(req.headers['accept-language'] ?? '').split(/[,;-]/)[0] ?? '').toLowerCase();
 const send = (res: ServerResponse, status: number, body: unknown) => {
@@ -155,7 +156,14 @@ createServer(async (req, res) => {
       if (url.searchParams.get('v') === String(v)) return send(res, 200, { version: v, units: null }); // o'zgarmagan
       return send(res, 200, { version: v, units: publishedUnits(db) });
     }
-    // ---- Tarjimalar (ochiq): /api/i18n/ru ----
+    // ---- Tarjimalar (ochiq): /api/i18n — tayyor tillar (qamrov ≥ 98%), /api/i18n/ru — lug'at ----
+    if (req.method === 'GET' && url.pathname === '/api/i18n') {
+      if (!langsCache || Date.now() - langsCache.at > 300_000) {
+        const cov = coverage(db);
+        langsCache = { at: Date.now(), langs: ['uz', ...Object.entries(cov).filter(([, c]) => c.total > 0 && c.done / c.total >= 0.98).map(([l]) => l)] };
+      }
+      return send(res, 200, { langs: langsCache.langs });
+    }
     const i18nM = url.pathname.match(/^\/api\/i18n\/([a-z]{2})$/);
     if (req.method === 'GET' && i18nM) {
       if (!isTarget(i18nM[1])) return send(res, 404, { error: 'Topilmadi' });

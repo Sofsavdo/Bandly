@@ -39,7 +39,13 @@ export function detectLang(saved: string | null, tg: string | null, browser: rea
   return 'uz';
 }
 
-let lang: Lang = detectLang(store()?.getItem(KEY) ?? null, typeof location === 'undefined' ? null : telegramLang(), typeof navigator === 'undefined' ? [] : navigator.languages ?? []);
+// Faqat tarjimasi tayyor tillar yoqiladi (server: qamrov ≥ 98%). Tayyor bo'lmagan til tanlangan bo'lsa — o'zbekcha.
+const ENABLED_KEY = 'bandly.i18n.langs';
+let enabled: Lang[] = (() => { try { const v = JSON.parse(store()?.getItem(ENABLED_KEY) ?? '["uz"]') as unknown[]; return v.filter(isLang); } catch { return ['uz' as Lang]; } })();
+if (!enabled.includes('uz')) enabled.unshift('uz');
+export const enabledLangs = (): Lang[] => enabled;
+const wanted: Lang = detectLang(store()?.getItem(KEY) ?? null, typeof location === 'undefined' ? null : telegramLang(), typeof navigator === 'undefined' ? [] : navigator.languages ?? []);
+let lang: Lang = enabled.includes(wanted) ? wanted : 'uz';
 let dict: Dict = readCache(lang);
 function readCache(l: Lang): Dict {
   if (l === 'uz') return {};
@@ -87,6 +93,13 @@ export function deepTranslate<T>(obj: T, seen = new WeakSet<object>()): T {
 /** Serverdan joriy til lug'atini oladi (keshdan tez, keyin yangilanadi). Ilova modullari shundan keyin yuklanadi. */
 export async function initI18n(fetchImpl: typeof fetch = fetch): Promise<void> {
   if (PSEUDO) pseudoSet = new Set((await import('./catalog.json')).default as string[]);
+  // Qaysi tillar tayyor — serverdan (keyingi ochilish uchun keshlanadi)
+  const langsReq = fetchImpl('/api/i18n', { signal: AbortSignal.timeout(4000) }).then((r) => (r.ok ? r.json() : null)).then((j: { langs?: unknown[] } | null) => {
+    if (!j?.langs) return;
+    enabled = ['uz', ...j.langs.filter(isLang).filter((l) => l !== 'uz')];
+    try { store()?.setItem(ENABLED_KEY, JSON.stringify(enabled)); } catch { /* joy yo'q */ }
+  }).catch(() => undefined);
+  if (wanted !== 'uz') { await langsReq; lang = enabled.includes(wanted) ? wanted : 'uz'; dict = readCache(lang); if (typeof document !== 'undefined') document.documentElement.lang = lang; }
   if (lang === 'uz') return;
   const cached = store()?.getItem(CACHE(lang));
   const ver = (() => { try { return (JSON.parse(cached ?? '{}') as { v?: string }).v ?? ''; } catch { return ''; } })();
@@ -104,7 +117,7 @@ export async function initI18n(fetchImpl: typeof fetch = fetch): Promise<void> {
 
 /** Tilni almashtiradi va ilovani qayta yuklaydi (barcha matnlar yangi tilda qayta hosil bo'ladi). */
 export function setLang(l: string): void {
-  if (!isLang(l) || l === lang) return;
+  if (!isLang(l) || l === lang || !enabled.includes(l)) return;
   try { store()?.setItem(KEY, l); } catch { /* ruxsat yo'q */ }
   if (typeof location !== 'undefined' && typeof window !== 'undefined') location.reload();
   else { lang = l; dict = readCache(l); listeners.forEach((f) => f()); }
@@ -121,4 +134,4 @@ export function useT(): typeof t {
 }
 
 /** Testlar uchun: lug'atni to'g'ridan-to'g'ri o'rnatish. */
-export function __setForTest(l: Lang, d: Dict): void { lang = l; dict = d; }
+export function __setForTest(l: Lang, d: Dict): void { lang = l; dict = d; if (!enabled.includes(l)) enabled.push(l); }
