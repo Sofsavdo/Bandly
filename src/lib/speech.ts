@@ -34,6 +34,32 @@ export function bestVoice(prefix: string): SpeechSynthesisVoice | undefined {
   return [...pool].sort((a, b) => score(b) - score(a))[0];
 }
 
+/** AI ustoz uchun bitta doimiy (erkak) ovoz: bir suhbatda ovoz almashmasin — ingliz ovozlari ichidan erkak ovozi afzal. */
+const MALE = /(\bmale\b|daniel|david|guy|ryan|alex\b|fred|george|james|mark|thomas|oliver|arthur|aaron|rishi|christopher|eric|roger|brian)/i;
+const FEMALE = /(female|samantha|serena|karen|moira|libby|sonia|jenny|aria|zira|susan|hazel|victoria|tessa|fiona|kate|emma|amy|joanna|salli|kimberly|ivy|linda|heera|catherine)/i;
+export function tutorVoice(): SpeechSynthesisVoice | undefined {
+  if (!ttsSupported()) return undefined;
+  const en = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith('en'));
+  const score = (v: SpeechSynthesisVoice) => (MALE.test(v.name) ? 20 : 0) - (FEMALE.test(v.name) ? 20 : 0) + (/en[-_]gb/i.test(v.lang) ? 3 : /en[-_]us/i.test(v.lang) ? 2 : 0) + (v.localService ? 0 : 1);
+  return [...en].sort((a, b) => score(b) - score(a))[0];
+}
+/** Berilgan ovozda gapiradi (ovoz tanlanmaydi — doim bir xil). */
+export function sayWithVoice(text: string, signal: Signal, voice: SpeechSynthesisVoice | undefined, prosody: Prosody = { pitch: 1, rate: 0.98, volume: 1 }): Promise<void> {
+  return new Promise((resolve) => {
+    const guard = setTimeout(done, Math.max(1500, text.length * 90 + 1500));
+    let finished = false;
+    function done() { if (finished) return; finished = true; clearTimeout(guard); resolve(); }
+    if (!ttsSupported() || signal.cancelled) { setTimeout(done, Math.min(1500, text.length * 30)); return; }
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (voice) { try { u.voice = voice; } catch { /* */ } u.lang = voice.lang; }
+    u.rate = prosody.rate; u.pitch = prosody.pitch; u.volume = prosody.volume;
+    u.onend = done; u.onerror = done;
+    synth.speak(u);
+  });
+}
+
 /** Ustoz gapirishi. onend ishlamaydigan qurilmalar uchun taxminiy vaqtdan keyin ham tugaydi. */
 export interface Prosody { pitch: number; rate: number; volume: number }
 export async function say(text: string, signal: Signal, lang = 'en-GB', prosody: Prosody = { pitch: 1, rate: 0.95, volume: 1 }): Promise<void> {

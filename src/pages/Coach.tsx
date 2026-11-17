@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
-import { hasVoice, listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
+import { listenTurn, SpeechError, sayWithVoice, stopSpeaking, sttSupported, ttsSupported, tutorVoice } from '../lib/speech';
 import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
 import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
 import { useProfile } from '../lib/store';
@@ -15,7 +15,7 @@ import type { CoachEmotion } from '../content/personas';
 import { addMistake } from '../lib/mistakes';
 import { logErrors } from '../lib/adaptive/store';
 import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
-import { L, getLang } from '../i18n';
+import { L } from '../i18n';
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
 const PHASE_UZ: Record<Phase, string> = { idle: L('Gapiring — tinglayman'), listening: L('Tinglayapman…'), thinking: L('O‘ylayapman…'), speaking: L('Bandi gapiryapti'), error: L('Qayta urinib ko‘ring') };
@@ -34,9 +34,6 @@ const SORRY = [
   L('Kechirasiz, miyam bir soniya o‘chib qoldi. Qaytadan ayting!'),
   L('Hmm, eshitolmay qoldim. Yana bir bor, iltimos.'),
 ];
-const NATIVE_STT: Record<string, string> = { uz: 'uz-UZ', ru: 'ru-RU', kk: 'kk-KZ', ky: 'ky-KG', tg: 'tg-TJ', en: 'uz-UZ' };
-const nativeStt = (): string => NATIVE_STT[getLang()] ?? 'uz-UZ';
-const isNative = (t: string): boolean => /[А-Яа-яЁёҚқҒғЎўҲҳӮӯҶҷӢӣ]/.test(t) || /[‘’ʻ]|\b(men|sen|siz|salom|qanday|keling|yaxshi|bu|uchun|bilan|emas|ham|nima|gapir|ayt)\b/i.test(t);
 const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
 interface Turn { role: 'learner' | 'coach'; text: string }
@@ -51,24 +48,32 @@ export function chunkReply(text: string): string[] {
 
 /** Ustoz gapini aytadi: neyron ovoz gapma-gap — birinchi gap tayyor bo'lishi bilan chalinadi, keyingisi shu payt tayyorlanadi.
  *  Neyron ovoz bo'lmasa — brauzer ovozi. */
+/** Bitta qo'ng'iroqda bitta ovoz: neyron ovoz ishlasa — faqat u (bir bo'lak xato bo'lsa, qayta urinadi, boshqa ovozga o'tmaydi);
+ *  kunlik limit tugasa — butun qo'ng'iroq bitta doimiy brauzer (erkak) ovoziga o'tadi. Ayol/erkak ovozi aralashmaydi. */
+type VoiceMode = 'neural' | 'browser' | null;
+let callVoice: VoiceMode = null;
+export const resetCallVoice = (): void => { callVoice = null; };
 async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 'happy' | 'angry' | 'laugh' = 'happy'): Promise<'ok' | 'limit'> {
   const parts = chunkReply(text);
-  let neural = true;
-  let next: Promise<string | null> = prepareUz(parts[0]!, emotion, 'coach', 0);
-  for (let i = 0; i < parts.length; i++) {
-    if (signal.cancelled) return 'ok';
-    const url = neural ? await next : null;
-    if (i === 0 && !url && lastTtsStatus === 429) neural = false; // kunlik neyron ovoz tugadi — bu javobni bo'lib-bo'lib aralashtirmaymiz
-    if (neural && i + 1 < parts.length) next = prepareUz(parts[i + 1]!, emotion, 'coach', i + 1);
-    if (url && !signal.cancelled) { await playPrepared(url, signal); continue; }
-    if (url) URL.revokeObjectURL(url);
-    if (!browserVoiceUsable()) return neural ? 'ok' : 'limit';
-    if (signal.cancelled) return 'ok';
-    const nat = isNative(parts[i]!) ? nativeStt() : null;
-    const ok = nat && hasVoice(nat.slice(0, 2));
-    await say(parts[i]!, signal, ok ? nat! : 'en-GB', { pitch: 1, rate: 0.98, volume: 1 });
+  let limited = false;
+  if (callVoice !== 'browser') {
+    let next: Promise<string | null> = prepareUz(parts[0]!, emotion, 'coach', 0);
+    for (let i = 0; i < parts.length; i++) {
+      if (signal.cancelled) return 'ok';
+      let url = await next;
+      if (!url && i === 0 && callVoice === null) { limited = lastTtsStatus === 429; callVoice = 'browser'; break; } // neyron ovoz hali ishlamagan (limit yoki o'chiq) — butun qo'ng'iroq bitta brauzer ovozida
+      if (!url && !signal.cancelled) url = await prepareUz(parts[i]!, emotion, 'coach', i); // bir marta qayta
+      if (i + 1 < parts.length) next = prepareUz(parts[i + 1]!, emotion, 'coach', i + 1);
+      if (url) { callVoice = 'neural'; if (!signal.cancelled) await playPrepared(url, signal); else URL.revokeObjectURL(url); }
+      // url yo'q (tarmoq xatosi) — bu bo'lak o'tkazib yuboriladi, boshqa ovoz bilan aytilmaydi
+    }
+    if (callVoice !== 'browser') return 'ok';
   }
-  return neural ? 'ok' : 'limit';
+  if (lastTtsStatus === 429) limited = true;
+  if (!browserVoiceUsable()) return limited ? 'limit' : 'ok';
+  const voice = tutorVoice();
+  for (const part of parts) { if (signal.cancelled) break; await sayWithVoice(part, signal, voice); }
+  return limited ? 'limit' : 'ok';
 }
 /** Brauzer ovozi haqiqatan bormi (Telegram ichidagi Android brauzerida ko'pincha ovoz yo'q — jim qoladi). */
 const browserVoiceUsable = (): boolean => ttsSupported() && window.speechSynthesis.getVoices().length > 0;
@@ -116,7 +121,7 @@ export default function Coach() {
   };
 
   const start = () => {
-    liveRef.current = true; setLive(true); setSecs(0); setErr(''); setEmotion('happy');
+    liveRef.current = true; setLive(true); setSecs(0); setErr(''); setEmotion('happy'); resetCallVoice();
     const opener = OPENERS[Math.floor(Math.random() * OPENERS.length)]!;
     turns.current = [{ role: 'coach', text: opener }];
     void tutorSays(opener);

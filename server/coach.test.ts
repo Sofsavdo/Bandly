@@ -81,7 +81,7 @@ console.log('coach.test: OK');
 // v2: native-language correction rule and verbatim-transcript rule are in every prompt; savage may swear, strict demands repetition
 {
   const sys = (id: Parameters<typeof buildPrompt>[0]) => buildPrompt(id, [], 'I go market yesterday', { mode: 'practice', native: 'Uzbek' }).system;
-  for (const id of ['friendly', 'strict', 'savage'] as const) { assert.match(sys(id), /START your spoken reply with one short sentence in the native language/); assert.match(sys(id), /verbatim speech-recognition transcript/); }
+  for (const id of ['friendly', 'strict', 'savage'] as const) { assert.match(sys(id), /ONE language per reply/); assert.match(sys(id), /verbatim speech-recognition transcript/); }
   assert.match(sys('savage'), /swear/); assert.match(sys('strict'), /say the corrected sentence again/);
   assert.equal(resolvePersona('strict', { adult: false, mode: 'practice' }).id, 'strict');
   assert.equal(resolvePersona('strict', { adult: false, mode: 'exam' }).id, 'examiner');
