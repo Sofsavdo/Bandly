@@ -83,7 +83,9 @@ const isMobile = (): boolean => /Android|iPhone|iPad|Mobile/i.test(navigator.use
 /** Bitta javobni tinglaydi. Ovoz xotirada saqlanmaydi, faqat tanilgan matn qaytadi.
  *  Telefonlarda (Android Chrome) `continuous` ishonchsiz: natijalar takrorlanadi va oraliq natijalar "yakuniy" deb
  *  belgilanadi. Shuning uchun u yerda har bir iborani alohida seans qilib, o'zimiz yig'amiz. */
-export function listenTurn(o: TurnOptions): Promise<TurnResult> {
+export function listenTurn(o: TurnOptions & { live?: boolean }): Promise<TurnResult> {
+  // Aniq tanish va bitta mikrofon ruxsati: server tanishi bor bo'lsa — u (jonli matn kerak bo'lgan o'yinlardan tashqari)
+  if (!o.live && serverSttReady()) return serverTurn(o);
   return new Promise((resolve, reject) => {
     const C = ctor();
     if (!C) { reject(new SpeechError('unsupported', L('Brauzer nutqni tanishni qo‘llamaydi'))); return; }
@@ -168,6 +170,7 @@ export function listenTurn(o: TurnOptions): Promise<TurnResult> {
 import type { Emotion, Reaction } from '../content/roasts';
 import { playClip, stopClip } from './clips';
 import { playUz, stopUz, uzTtsExpressive } from './tts';
+import { serverSttReady, serverTurn } from './voiceTurn';
 import { L } from '../i18n';
 
 /** Brauzer ovozida hissiyot faqat ohang (pitch), tezlik va balandlik orqali beriladi. */

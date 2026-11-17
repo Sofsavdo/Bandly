@@ -2,14 +2,16 @@
 // Nutq serverda (ElevenLabs Scribe) aniq tanadi: tilni o'zi aniqlaydi, gap tugaganini sukutdan sezadi, ustoz gapirayotganda
 // o'quvchi gapirsa — ustoz to'xtaydi. Xatolar "Xatolarim"ga jimgina yoziladi. Server tanishi bo'lmasa — brauzer tanishi.
 import { Mic, PhoneOff, Square } from 'lucide-react';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
 import { hasVoice, listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
 import { playUz } from '../lib/tts';
-import { recordTurn, recorderSupported, releaseMic, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
+import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
 import { useProfile } from '../lib/store';
+import { BandiAvatar } from '../components/BandiAvatar';
+import type { CoachEmotion } from '../content/personas';
 import { addMistake } from '../lib/mistakes';
 import { logErrors } from '../lib/adaptive/store';
 import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
@@ -56,6 +58,7 @@ export default function Coach() {
   const setPhase = (ph: Phase) => { phaseRef.current = ph; setPhaseState(ph); };
   const [err, setErr] = useState('');
   const [lvl, setLvl] = useState(0);
+  const [emotion, setEmotion] = useState<CoachEmotion>('neutral');
   const [secs, setSecs] = useState(0);
   const [serverDown, setServerDown] = useState(false);
   const [minutes, setMinutes] = useState<{ subscribed: boolean; left: number; total: number } | null>(null);
@@ -70,7 +73,7 @@ export default function Coach() {
 
   const loadMinutes = () => { const a = getAccount(); if (a) void fetch('/api/coach/minutes', { headers: { 'x-token': a.token } }).then((r) => (r.ok ? r.json() : null)).then(setMinutes).catch(() => undefined); };
   useEffect(() => { loadMinutes(); }, [acc]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { void coachStatus().then(setStatus); return () => { liveRef.current = false; sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.(); stopSpeaking(); releaseMic(); }; }, []);
+  useEffect(() => { void coachStatus().then(setStatus); return () => { liveRef.current = false; sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.(); stopSpeaking(); parkMic(); }; }, []);
   useEffect(() => { if (!live) return; const t = setInterval(() => setSecs((s) => s + 1), 1000); return () => clearInterval(t); }, [live]);
 
   /** Ustoz gapiradi, keyin o'quvchini o'zi tinglaydi. O'quvchi gapni bo'lsa — ustoz to'xtaydi. */
@@ -85,7 +88,7 @@ export default function Coach() {
   };
 
   const start = () => {
-    liveRef.current = true; setLive(true); setSecs(0); setErr('');
+    liveRef.current = true; setLive(true); setSecs(0); setErr(''); setEmotion('happy');
     const opener = OPENERS[Math.floor(Math.random() * OPENERS.length)]!;
     turns.current = [{ role: 'coach', text: opener }];
     void tutorSays(opener);
@@ -94,7 +97,7 @@ export default function Coach() {
   const end = () => {
     liveRef.current = false; setLive(false);
     sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.();
-    stopSpeaking(); releaseMic(); setPhase('idle'); setErr(''); setLvl(0); pending.current = null; turns.current = [];
+    stopSpeaking(); parkMic(); setPhase('idle'); setErr(''); setLvl(0); pending.current = null; turns.current = [];
     loadMinutes();
   };
 
@@ -116,6 +119,7 @@ export default function Coach() {
         try { addMistake('coach', { kind: 'fix', wrong: r.correction.wrong, right: r.correction.right, whyUz: r.correction.whyUz }, tax); } catch { /* juftlik yaroqsiz */ }
       }
       const line = [r.reply, r.question].filter(Boolean).join(' ');
+      setEmotion(r.emotion);
       turns.current = [...turns.current, { role: 'coach', text: line }];
       if (turns.current.length % 8 === 0) loadMinutes();
       if (liveRef.current) await tutorSays(line);
@@ -163,7 +167,7 @@ export default function Coach() {
     void listen();
   };
 
-  const orb = <div className={`tutor-orb xl ${phase}`} style={{ '--lvl': lvl } as CSSProperties} aria-hidden="true"><span>B</span></div>;
+  const orb = <div className={`bandi-wrap ${phase}`} aria-hidden="true"><BandiAvatar phase={phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 220 : 170} /></div>;
 
   if (!live) return (
     <div className="tutor">

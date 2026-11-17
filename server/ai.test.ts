@@ -7,7 +7,7 @@ import { ApiError, createDb, join, useAi } from './db';
 // ---- Sozlama ----
 assert.equal(configFromEnv({}).provider, 'none');
 assert.equal(configFromEnv({ AI_PROVIDER: 'anthropic' }).provider, 'none', 'kalitsiz AI yoqilmaydi');
-assert.equal(configFromEnv({ AI_PROVIDER: 'openai', AI_API_KEY: 'k' }).provider, 'none', 'modelsiz AI yoqilmaydi');
+assert.equal(configFromEnv({ AI_PROVIDER: 'openai', AI_API_KEY: 'k' }).model, 'gpt-4o-mini', 'openai: standart model');
 assert.equal(configFromEnv({ AI_PROVIDER: 'anthropic', AI_API_KEY: 'k' }).model, 'claude-haiku-5-5');
 assert.equal(configFromEnv({ AI_PROVIDER: 'openai', AI_API_KEY: 'k', AI_MODEL: 'm', AI_BASE_URL: 'http://x/' }).baseUrl, 'http://x');
 
@@ -119,3 +119,18 @@ assert.throws(() => useAi(db, me.token, now, 3), (e) => e instanceof ApiError &&
 assert.equal(useAi(db, me.token, now + 86_400_000, 3), 1, 'ertasi kuni limit yangilanadi');
 assert.throws(() => useAi(db, 'noma’lum', now, 3), (e) => e instanceof ApiError && e.status === 401);
 console.log('ai.test: OK');
+
+// Provayder sozlamasi: bo'sh joy, boshqa nom yoki noto'g'ri nom bo'lsa ham kalit turidan aniqlanadi
+{
+  const { configFromEnv: cfe, aiOffReason: why } = await import('./ai');
+  assert.equal(cfe({ AI_PROVIDER: ' Anthropic ', AI_API_KEY: 'sk-ant-x ' }).provider, 'anthropic');
+  assert.equal(cfe({ AI_PROVIDER: 'claude', AI_API_KEY: 'k' }).provider, 'anthropic');
+  assert.equal(cfe({ AI_PROVIDER: 'xyz', AI_API_KEY: 'sk-ant-abc' }).provider, 'anthropic');
+  assert.equal(cfe({ AI_API_KEY: 'sk-proj-abc' }).provider, 'openai');
+  assert.equal(cfe({ AI_PROVIDER: 'openai', AI_API_KEY: 'sk-abc' }).model, 'gpt-4o-mini', 'openai has a default model');
+  assert.equal(cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AIza1' }).provider, 'gemini');
+  assert.equal(cfe({ AI_PROVIDER: 'anthropic', AI_API_KEY: '' }).provider, 'none');
+  assert.equal(why({ AI_PROVIDER: 'anthropic', AI_API_KEY: '' }), 'AI_API_KEY bo‘sh');
+  assert.match(why({ AI_PROVIDER: 'xyz', AI_API_KEY: 'abc' })!, /AI_PROVIDER noma’lum/);
+  assert.equal(why({ AI_PROVIDER: 'anthropic', AI_API_KEY: 'sk-ant-1' }), null);
+}

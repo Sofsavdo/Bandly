@@ -2,11 +2,11 @@ import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Volume2 } from 'lucide-
 import { ItemView } from '../components/LessonItem';
 import { say, stopSpeaking, ttsSupported } from '../lib/speech';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { lessonById, lessonNodeId, lessonWordIds, ALL_LESSONS } from '../content/lessons';
+import { lessonById, lessonNodeId, lessonWordIds, ALL_LESSONS, UNITS } from '../content/lessons';
 import { checkItem, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
 import { addMistake } from '../lib/mistakes';
 import { recordAnswer } from '../lib/adaptive/store';
-import { addToReview, addXp, pushToast } from '../lib/store';
+import { addToReview, addXp, getProfile, pushToast } from '../lib/store';
 import { answer, checkXp, lessonXpDay, markLessonXp, MAX_HEARTS, newPace, newPlay, pace, refill, SLOW_DOWN_UZ, type LessonPlay, type Pace } from '../lib/gamify';
 import { localDayKey } from '../lib/adaptive/store';
 import { saveResult } from '../lib/storage';
@@ -21,7 +21,10 @@ const STEP_UZ: Record<Exclude<Step, 'result'>, string> = { learn: L('Tushuntiris
 
 export default function LessonPage({ id }: { id: string }) {
   const found = lessonById(id);
-  const [step, setStep] = useState<Step>('learn');
+  const [step, setStepState] = useState<Step>('learn');
+  const [reached, setReached] = useState(0); // eng uzoq ochilgan qadam (oldinga sakrab bo'lmaydi)
+  const [speakDone, setSpeakDone] = useState(false);
+  const [writeDone, setWriteDone] = useState(false);
   const [pAns, setPAns] = useState<ItemAnswer[]>([]);
   const [pShown, setPShown] = useState<boolean[]>([]);
   const [cAns, setCAns] = useState<ItemAnswer[]>([]);
@@ -54,8 +57,11 @@ export default function LessonPage({ id }: { id: string }) {
 
   if (!found) return <div className="card"><h2>{L('Dars topilmadi')}</h2><a className="btn" href="#/learn">{L('Darslar ro‘yxati')}</a></div>;
   const { unit, lesson, index } = found;
-  if (!isUnlocked(unit, index, loadProgress())) return <div className="card"><h2>{lesson.titleUz}</h2><p>{L('Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.')}</p><a className="btn" href="#/learn">{L('Darslar ro‘yxati')}</a></div>;
+  if (!isUnlocked(unit, index, loadProgress(), { units: UNITS, level: getProfile().level })) return <div className="card"><h2>{lesson.titleUz}</h2><p>{L('Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.')}</p><a className="btn" href="#/learn">{L('Darslar ro‘yxati')}</a></div>;
 
+  const ORDER: Step[] = ['learn', 'practice', 'speak', ...(lesson.writing ? ['write' as const] : []), 'check', 'result'];
+  /** Qadamga o'tish: faqat ochilgan qadamlar yoki navbatdagisi. */
+  const setStep = (s: Step) => { const i = ORDER.indexOf(s); setReached((r) => Math.max(r, i)); setStepState(s); };
   const submitCheck = () => {
     const r = scoreCheck(lesson.check, cAns);
     const now = Date.now();
@@ -135,7 +141,7 @@ export default function LessonPage({ id }: { id: string }) {
         <Illo kind="books" size={124} />
         <div className="chips" role="tablist" style={{ margin: 0 }}>
           {(['learn', 'practice', 'speak', ...(lesson.writing ? ['write' as const] : []), 'check'] as const).map((s, i) => (
-            <button key={s} role="tab" aria-selected={step === s} className={`chip ${step === s || (step === 'result' && s === 'check') ? 'on' : ''}`} onClick={() => setStep(s)}>{i + 1}. {STEP_UZ[s]}</button>
+            <button key={s} role="tab" aria-selected={step === s} disabled={i > reached} className={`chip ${step === s || (step === 'result' && s === 'check') ? 'on' : ''}`} onClick={() => { if (i <= reached) setStep(s); }}>{i + 1}. {STEP_UZ[s]}</button>
           ))}
         </div>
       </section>
@@ -166,28 +172,29 @@ export default function LessonPage({ id }: { id: string }) {
         <section className="card">
           {slowMsg && <p className="notice" role="status">{SLOW_DOWN_UZ}{L('. Juda tez berilgan javoblarga XP yozilmaydi.')}</p>}
           <p className="muted">{L('Xato — 1 jon. Ketma-ket to‘g‘ri javob — combo.')}</p>
-          {lesson.practice.map((it, i) => (
+          {lesson.practice.map((it, i) => (i > 0 && !pShown[i - 1] ? null : (
             <div key={i}>
               <ItemView item={it} value={pAns[i]} revealed={!!pShown[i]} onChange={(v) => setPAns((a) => { const n = [...a]; n[i] = v; return n; })} />
               {!pShown[i] && <button className="btn sm" disabled={relearn !== null || pAns[i] === undefined || (Array.isArray(pAns[i]) && !(pAns[i] as string[]).length)} onClick={() => revealPractice(i)}>{L('Tekshirish')}</button>}
             </div>
-          ))}
+          )))}
+          <p className="muted" style={{ fontSize: 13 }}>{L('{0} / {1} topshiriq', [pShown.filter(Boolean).length, lesson.practice.length])}</p>
           {relearn !== null && relearnPanel()}
-          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null} onClick={finishPractice}>{L('Gapirish mashqiga o‘tish')} <ArrowRight size={14} /></button>
+          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null || lesson.practice.some((_, i) => !pShown[i])} onClick={finishPractice}>{L('Gapirish mashqiga o‘tish')} <ArrowRight size={14} /></button>
         </section>
       )}
 
       {step === 'speak' && (
         <section className="card">
-          <LessonSpeak sentences={lesson.examples.map((e) => e.en)} />
-          <button className="btn primary" style={{ marginTop: 14 }} onClick={() => setStep(lesson.writing ? 'write' : 'check')}>{lesson.writing ? L('Yozish mashqiga o‘tish') : L('Yakuniy tekshiruvga o‘tish')} <ArrowRight size={14} /></button>
+          <LessonSpeak sentences={lesson.examples.map((e) => e.en)} onDone={() => setSpeakDone(true)} />
+          <button className="btn primary" style={{ marginTop: 14 }} disabled={!speakDone} onClick={() => setStep(lesson.writing ? 'write' : 'check')}>{lesson.writing ? L('Yozish mashqiga o‘tish') : L('Yakuniy tekshiruvga o‘tish')} <ArrowRight size={14} /></button>
         </section>
       )}
 
       {step === 'write' && lesson.writing && (
         <section className="card">
-          <LessonWrite task={lesson.writing} />
-          <button className="btn primary" style={{ marginTop: 14 }} onClick={() => setStep('check')}>{L('Yakuniy tekshiruvga o‘tish')} <ArrowRight size={14} /></button>
+          <LessonWrite task={lesson.writing} onDone={() => setWriteDone(true)} />
+          <button className="btn primary" style={{ marginTop: 14 }} disabled={!writeDone} onClick={() => setStep('check')}>{L('Yakuniy tekshiruvga o‘tish')} <ArrowRight size={14} /></button>
         </section>
       )}
 
@@ -195,15 +202,15 @@ export default function LessonPage({ id }: { id: string }) {
         <section className="card" key={round}>
           {slowMsg && <p className="notice" role="status">{SLOW_DOWN_UZ}{L('. Juda tez berilgan javoblarga XP yozilmaydi.')}</p>}
           <p className="muted">{lesson.check.length}  {L('ta savol. O‘tish uchun kamida')} {Math.ceil(PASS_RATE * lesson.check.length)}  {L('ta to‘g‘ri javob kerak. Har javob darhol tekshiriladi; xato javob 1 ta jon oladi.')}</p>
-          {lesson.check.map((it, i) => (
+          {lesson.check.map((it, i) => (i > 0 && !cShown[i - 1] ? null : (
             <div key={i}>
               <ItemView item={it} value={cAns[i]} revealed={!!cShown[i]} onChange={(v) => setCAns((a) => { const n = [...a]; n[i] = v; return n; })} />
               {!cShown[i] && <button className="btn sm" disabled={relearn !== null || cAns[i] === undefined || (Array.isArray(cAns[i]) && !(cAns[i] as string[]).length)} onClick={() => revealCheck(i)}>{L('Tekshirish')}</button>}
             </div>
-          ))}
+          )))}
           {relearn !== null && relearnPanel()}
-          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null || !cShown.some(Boolean)} onClick={submitCheck}>{L('Natijani ko‘rish')}</button>
-          <p className="muted" style={{ fontSize: 13 }}>{L('Javob berilmagan savollar noto‘g‘ri hisoblanadi.')}</p>
+          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null || lesson.check.some((_, i) => !cShown[i])} onClick={submitCheck}>{L('Natijani ko‘rish')}</button>
+          <p className="muted" style={{ fontSize: 13 }}>{L('{0} / {1} savol', [cShown.filter(Boolean).length, lesson.check.length])}</p>
         </section>
       )}
 

@@ -11,12 +11,14 @@ import { L } from '../i18n';
 const ISSUE_TAX: Record<string, TaxonomyId> = { '3sg': 'G.sva', dont3: 'G.sva', 'didnt-past': 'G.tense', 'more-adj': 'G.comparison', peoples: 'G.plural', informations: 'G.plural', 'am-study': 'G.tense', 'years-old': 'V.word_choice', 'listen-music': 'G.preposition', 'depend-of': 'G.preposition', 'married-with': 'G.preposition' };
 
 /** Writing step: rule-based checks only (length, required structures, forbidden patterns, known learner errors). Not an AI or band score. */
-export function LessonWrite({ task }: { task: WritingTask }) {
+/** onDone: topshiriq talablari bajarilganda (keyingi qadam shundan keyin ochiladi). */
+export function LessonWrite({ task, onDone }: { task: WritingTask; onDone?: () => void }) {
   const [text, setText] = useState('');
   const [res, setRes] = useState<WritingCheck | null>(null);
   const run = () => {
     const r = checkWriting(task, text);
     setRes(r);
+    if (r.passed) onDone?.();
     logErrors(r.issues.map((i) => ISSUE_TAX[i.id]).filter((x): x is TaxonomyId => !!x));
     for (const i of r.issues) { try { addMistake('writing', { kind: 'fix', wrong: i.wrong, right: i.right, whyUz: i.ruleUz }, ISSUE_TAX[i.id] ? [ISSUE_TAX[i.id]!] : []); } catch { /* not a usable pair */ } }
   };

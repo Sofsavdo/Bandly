@@ -6,21 +6,42 @@ import { FORBIDDEN, type Reaction } from '../src/content/roasts';
 export type Provider = 'anthropic' | 'openai' | 'gemini' | 'none';
 export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string }
 
+/** Provayder nomi: bo'sh joy va katta-kichik harfga, keng tarqalgan nomlarga chidamli; nom noto'g'ri bo'lsa — kalit turidan aniqlanadi. */
+export function detectProvider(name: string, key: string): Provider {
+  const n = name.trim().toLowerCase();
+  if (/^(anthropic|claude)/.test(n)) return 'anthropic';
+  if (/^(openai|open-ai|chatgpt|gpt)/.test(n)) return 'openai';
+  if (/^(gemini|google)/.test(n)) return 'gemini';
+  const k = key.trim();
+  if (k.startsWith('sk-ant-')) return 'anthropic';
+  if (k.startsWith('AIza')) return 'gemini';
+  if (k.startsWith('sk-')) return 'openai';
+  return 'none';
+}
+
 export function configFromEnv(env: Record<string, string | undefined> = process.env): AiConfig {
-  const p = (env.AI_PROVIDER ?? 'none').toLowerCase();
-  const provider: Provider = p === 'anthropic' || p === 'openai' || p === 'gemini' ? p : 'none';
-  const key = env.AI_API_KEY ?? '';
+  const key = (env.AI_API_KEY ?? '').trim();
+  const provider = detectProvider(env.AI_PROVIDER ?? '', key);
   const defaults: Record<Provider, { model: string; base: string }> = {
     anthropic: { model: 'claude-haiku-5-5', base: 'https://api.anthropic.com' },
-    openai: { model: '', base: 'https://api.openai.com' },
-    gemini: { model: '', base: 'https://generativelanguage.googleapis.com' },
+    openai: { model: 'gpt-4o-mini', base: 'https://api.openai.com' },
+    gemini: { model: 'gemini-2.0-flash', base: 'https://generativelanguage.googleapis.com' },
     none: { model: '', base: '' },
   };
   const d = defaults[provider];
-  const model = env.AI_MODEL ?? d.model;
+  const model = (env.AI_MODEL ?? '').trim() || d.model;
   // Kalit yoki model yo'q bo'lsa AI o'chiq hisoblanadi
   const enabled = provider !== 'none' && !!key && !!model;
-  return { provider: enabled ? provider : 'none', key, model, baseUrl: (env.AI_BASE_URL ?? d.base).replace(/\/$/, '') };
+  return { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, '') };
+}
+
+/** AI nega o'chiq — log uchun (kalitning o'zi chiqarilmaydi). */
+export function aiOffReason(env: Record<string, string | undefined> = process.env): string | null {
+  const key = (env.AI_API_KEY ?? '').trim();
+  if (configFromEnv(env).provider !== 'none') return null;
+  if (!key) return 'AI_API_KEY bo‘sh';
+  if (detectProvider(env.AI_PROVIDER ?? '', key) === 'none') return `AI_PROVIDER noma’lum ("${(env.AI_PROVIDER ?? '').trim().slice(0, 20)}"): anthropic, openai yoki gemini yozing`;
+  return 'AI_MODEL bo‘sh';
 }
 
 export class AiError extends Error {
@@ -54,7 +75,13 @@ export async function complete(cfg: AiConfig, system: string, user: string, opts
   }
   try {
     const res = await f(url, { method: 'POST', headers, body: JSON.stringify(body), signal: ctl.signal });
-    if (!res.ok) throw new AiError(502, `AI provayder xatosi (${res.status})`);
+    if (!res.ok) {
+      // Sababni log'ga yozamiz (kalit emas — faqat provayderning xato turi va qisqa matni): 401 kalit, 400 kredit/model, 404 model, 429 limit
+      let why = '';
+      try { const e = (await res.json()) as { error?: { type?: string; message?: string; status?: string } }; why = `${e.error?.type ?? e.error?.status ?? ''} ${String(e.error?.message ?? '').slice(0, 160)}`.trim(); } catch { /* bo'sh */ }
+      console.error(`[ai] ${cfg.provider} ${cfg.model} → HTTP ${res.status}${why ? `: ${why}` : ''}`);
+      throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`);
+    }
     const j = (await res.json()) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     const text = cfg.provider === 'anthropic' ? j.content?.[0]?.text : cfg.provider === 'openai' ? j.choices?.[0]?.message?.content : j.candidates?.[0]?.content?.parts?.[0]?.text;
     if (typeof text !== 'string' || !text.trim()) throw new AiError(502, 'AI bo‘sh javob berdi');

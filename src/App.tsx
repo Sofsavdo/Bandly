@@ -7,6 +7,8 @@ import { TabBar } from './components/TabBar';
 import { PaySheet } from './components/PaySheet';
 import { Toasts } from './components/Toasts';
 import { sectionOf } from './components/nav';
+import { setupRoute } from './lib/setupGate';
+import { onAccountChange } from './lib/account';
 import { SubNav } from './components/SubNav';
 import { PlanRunBar } from './components/PlanRunBar';
 import { useT } from './i18n';
@@ -108,6 +110,13 @@ export default function App() {
   // Menyu bosilganda yangi sahifa har doim tepadan boshlansin
   // Sahifa almashganda tepaga (o'quv xaritasi o'zi hozirgi dars joyini ochadi)
   useLayoutEffect(() => { if (hash !== '#/learn') window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, [hash]);
+  // Kirgan o'quvchi: avval shaxsiy reja (Bandi uslubi bilan), keyin daraja testi — shundan keyin darslar darajaga qarab ochiladi
+  useEffect(() => {
+    const check = () => { const to = setupRoute(window.location.hash || '#/'); if (to) window.location.hash = to; };
+    const t = setTimeout(check, 600); // hisob progressi tiklanishiga vaqt
+    const off = onAccountChange(() => setTimeout(check, 600));
+    return () => { clearTimeout(t); off(); };
+  }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
   const lessonId = hash.match(/^#\/learn\/([\w-]+)$/)?.[1];
   const bossUnit = hash.match(/^#\/boss\/([\w-]+)$/)?.[1];

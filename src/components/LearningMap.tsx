@@ -55,7 +55,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
     u.lessons.forEach((l, i) => {
       const pr = progress[l.id];
       const rec = saved.mastery[lessonNodeId(l.id)];
-      const state = nodeState(isUnlocked(u, i, progress), !!pr?.passedAt, l.id === currentId, rec ? stateOf(rec, now) : null);
+      const state = nodeState(isUnlocked(u, i, progress, { units: UNITS, level }), !!pr?.passedAt, l.id === currentId, rec ? stateOf(rec, now) : null);
       items.push({ kind: 'lesson', unit: u, lesson: l, index: i, state, stars: starsFor(pr?.best ?? 0, !!pr?.passedAt), x: XS[k % 4]!, y });
       y += STEP; k++;
     });

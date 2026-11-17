@@ -1,9 +1,11 @@
 // AI ustoz uchun ovozli navbat: mikrofonni yozib oladi, gap tugaganini o'zi sezadi (sukut), ovozni serverga yuboradi,
 // server uni ElevenLabs Scribe bilan matnga aylantiradi (inglizcha xatolar bilan so'zma-so'z, o'zbekcha ham aniq).
-// Ovoz qurilmada ham, serverda ham saqlanmaydi. Mikrofon qo'ng'iroq davomida bir marta ochiladi (har navbatda ruxsat so'ralmaydi).
+// Ovoz qurilmada ham, serverda ham saqlanmaydi. Mikrofon sessiyada BIR MARTA ochiladi: suhbatlar orasida faqat o'chirib qo'yiladi
+// (Telegram va telefon brauzerlari har getUserMedia'da ruxsat so'raydi). Ilova yopilganda yoki 2 daqiqa fonda tursa — to'liq yopiladi.
 import { getAccount } from './account';
 import { L } from '../i18n';
-import { SpeechError } from './speech';
+import { SpeechError, type TurnOptions, type TurnResult } from './speech';
+import { coachStatus } from './coach';
 
 type Mic = { stream: MediaStream; ctx: AudioContext; an: AnalyserNode; buf: Float32Array; floor: number };
 let mic: Mic | null = null;
@@ -19,6 +21,7 @@ export function pickMime(): string {
 
 async function openMic(): Promise<Mic> {
   if (mic && mic.stream.getAudioTracks().some((t) => t.readyState === 'live')) {
+    mic.stream.getAudioTracks().forEach((t) => { t.enabled = true; });
     if (mic.ctx.state === 'suspended') await mic.ctx.resume().catch(() => undefined);
     return mic;
   }
@@ -40,7 +43,14 @@ async function openMic(): Promise<Mic> {
   return mic;
 }
 
-/** Qo'ng'iroq tugaganda mikrofonni to'liq yopadi (brauzerdagi qizil belgi o'chadi). */
+/** Suhbat tugaganda: mikrofon o'chiriladi (ovoz olinmaydi), lekin ruxsat qayta so'ralmasligi uchun oqim saqlanadi. */
+export function parkMic(): void {
+  if (!mic) return;
+  mic.stream.getAudioTracks().forEach((t) => { t.enabled = false; });
+  void mic.ctx.suspend().catch(() => undefined);
+}
+
+/** Mikrofonni to'liq yopadi (ilova yopilganda yoki uzoq fonda turganda). */
 export function releaseMic(): void {
   if (!mic) return;
   mic.stream.getTracks().forEach((t) => t.stop());
@@ -136,4 +146,36 @@ export async function transcribeTurn(r: Recording): Promise<{ text: string; lang
   const j = (await res.json().catch(() => ({}))) as { text?: string; lang?: string | null; error?: string };
   if (!res.ok) throw new SttError(res.status, j.error ?? L('Nutqni tanib bo‘lmadi.'));
   return { text: (j.text ?? '').trim(), lang: j.lang ?? null };
+}
+
+// Ilova yopilsa yoki 2 daqiqa fonda tursa — mikrofon to'liq yopiladi (keyingi safar bir marta so'raladi)
+if (typeof window !== 'undefined') {
+  let hiddenAt = 0;
+  window.addEventListener('pagehide', releaseMic);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); setTimeout(() => { if (document.hidden && Date.now() - hiddenAt >= 119_000) releaseMic(); }, 120_000); }
+  });
+}
+
+// ---------------- Barcha ovozli mashqlar uchun server tanishi ----------------
+let serverOk: boolean | null = null;
+if (typeof window !== 'undefined') void coachStatus().then((st) => { serverOk = st.stt; }).catch(() => { serverOk = false; });
+/** Server tanishi ishlatiladimi (kalit bor, brauzer yozib oladi, o'quvchi kirgan, limit tugamagan). */
+export const serverSttReady = (): boolean => serverOk === true && recorderSupported() && !!getAccount();
+
+/** Brauzer tanishi o'rniga: bitta mikrofon, aniq server tanishi. Limit tugasa — shu sessiyada brauzer tanishiga qaytiladi. */
+export async function serverTurn(o: TurnOptions): Promise<TurnResult> {
+  const start = performance.now();
+  o.onStatus?.('starting');
+  const r = await recordTurn({ silenceMs: o.silenceMs, maxMs: o.maxMs, noSpeechMs: o.noSpeechMs ?? 12_000, endRef: o.endRef, signal: o.signal, onSpeech: () => o.onStatus?.('speech') });
+  o.onStatus?.('mic');
+  if (!r.blob) return { text: '', seconds: 0, latencyMs: performance.now() - start };
+  o.onInterim('…');
+  try {
+    const t = await transcribeTurn(r);
+    return { text: t.text, seconds: r.speechMs / 1000, latencyMs: performance.now() - start };
+  } catch (e) {
+    if (e instanceof SttError && (e.status === 429 || e.status === 503)) serverOk = false;
+    throw e instanceof SttError ? new SpeechError(e.status === 0 ? 'network' : 'unstable', e.message) : e;
+  }
 }

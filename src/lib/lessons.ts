@@ -95,14 +95,24 @@ export function nextLesson(units: Unit[], progress: ProgressMap, level: string |
   const pick = (from: number) => {
     for (const u of units) {
       if (order.indexOf(u.level) < from) continue;
-      for (let i = 0; i < u.lessons.length; i++) if (isUnlocked(u, i, progress) && !progress[u.lessons[i]!.id]?.passedAt) return { unitId: u.id, lessonId: u.lessons[i]!.id };
+      for (let i = 0; i < u.lessons.length; i++) if (isUnlocked(u, i, progress, { units, level }) && !progress[u.lessons[i]!.id]?.passedAt) return { unitId: u.id, lessonId: u.lessons[i]!.id };
     }
     return null;
   };
   return pick(min) ?? pick(0);
 }
 
-/** A lesson is open when it is the first of its unit, or the previous lesson in the unit is passed. Units themselves are all browsable. */
-export function isUnlocked(unit: Unit, index: number, progress: ProgressMap): boolean {
-  return index === 0 || !!progress[unit.lessons[index - 1]!.id]?.passedAt;
+/** Darsning ochiqligi. ctx berilsa — qat'iy yo'l: o'quvchining darajasidan past darslar ochiq (takrorlash uchun),
+ *  o'z darajasi va undan yuqorida bo'lim faqat oldingi bo'lim to'liq o'tilganda, dars esa oldingi dars o'tilganda ochiladi.
+ *  ctx bo'lmasa — eski qoida: bo'limning birinchi darsi ochiq, qolganlari oldingisidan keyin. */
+export function isUnlocked(unit: Unit, index: number, progress: ProgressMap, ctx?: { units: Unit[]; level: string | null | undefined }): boolean {
+  if (index > 0) return !!progress[unit.lessons[index - 1]!.id]?.passedAt;
+  if (!ctx) return true;
+  const order = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  const lv = ctx.level ? order.indexOf(ctx.level) : 0;
+  if (order.indexOf(unit.level) < lv) return true;
+  const k = ctx.units.findIndex((u) => u.id === unit.id);
+  const prev = k > 0 ? ctx.units[k - 1] : undefined;
+  if (!prev || order.indexOf(prev.level) < lv) return true;
+  return prev.lessons.every((l) => !!progress[l.id]?.passedAt);
 }

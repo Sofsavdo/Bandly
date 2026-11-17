@@ -9,4 +9,5 @@ ENV NODE_ENV=production
 RUN mkdir -p /data
 ENV DB_PATH=/data/bandly.sqlite
 ENV TRUST_PROXY=1
-CMD ["npm", "start"]
+# npm orqali emas: SIGTERM to'g'ridan-to'g'ri serverga yetadi (toza to'xtash, "npm error" shovqinisiz)
+CMD ["node", "--import", "tsx", "server/index.ts"]
