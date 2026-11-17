@@ -9,6 +9,7 @@ import { ensureGroupTables } from './groups';
 import { ensureLeagueNotifyColumn } from './leagueNotify';
 import { ensureSttTable } from './stt';
 import { ensureCallTable } from './callMinutes';
+import { ensureLiveTable } from './live';
 import { ensureLeagueTables } from './league';
 import { vocab } from '../src/content/vocab';
 
@@ -118,6 +119,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   ensureLeagueNotifyColumn(db);
   ensureSttTable(db);
   ensureCallTable(db);
+  ensureLiveTable(db);
   ensureLeagueTables(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;

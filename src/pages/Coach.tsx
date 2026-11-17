@@ -10,6 +10,8 @@ import { listenTurn, SpeechError, sayWithVoice, stopSpeaking, sttSupported, ttsS
 import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
 import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
 import { useProfile } from '../lib/store';
+import { liveSupported, startLive, type LiveCall } from '../lib/liveCall';
+import { getLang } from '../i18n';
 import { BandiAvatar } from '../components/BandiAvatar';
 import type { CoachEmotion } from '../content/personas';
 import { addMistake } from '../lib/mistakes';
@@ -102,11 +104,14 @@ export default function Coach() {
   const listenSig = useRef({ cancelled: false });
   const pending = useRef<{ text: string; turnId: string } | null>(null);
   const server = !!status?.stt && recorderSupported() && !serverDown;
+  const liveRefCall = useRef<LiveCall | null>(null);
+  const [liveFailed, setLiveFailed] = useState(false);
+  const useLive = !!status?.live && liveSupported() && !liveFailed;
   const canListen = server || (typeof window !== 'undefined' && sttSupported());
 
   const loadMinutes = () => { const a = getAccount(); if (a) void fetch('/api/coach/minutes', { headers: { 'x-token': a.token } }).then((r) => (r.ok ? r.json() : null)).then(setMinutes).catch(() => undefined); };
   useEffect(() => { loadMinutes(); }, [acc]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { void coachStatus().then(setStatus); return () => { liveRef.current = false; sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.(); stopSpeaking(); parkMic(); }; }, []);
+  useEffect(() => { void coachStatus().then(setStatus); return () => { liveRefCall.current?.end(); liveRef.current = false; sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.(); stopSpeaking(); parkMic(); }; }, []);
   useEffect(() => { if (!live) return; const t = setInterval(() => setSecs((s) => s + 1), 1000); return () => clearInterval(t); }, [live]);
 
   /** Ustoz gapiradi, keyin o'quvchini o'zi tinglaydi. O'quvchi gapni bo'lsa — ustoz to'xtaydi. */
@@ -120,14 +125,41 @@ export default function Coach() {
     if (canListen) void listen();
   };
 
+  /** Gemini Live: ovozdan-ovozga. Ishga tushmasa (model yo'q, tarmoq) — eski usulga (tanish → AI → ovoz) o'tadi. */
+  const startLiveCall = async (): Promise<boolean> => {
+    const a = getAccount();
+    if (!a) return false;
+    setPhase('thinking');
+    return new Promise<boolean>((resolve) => {
+      let settled = false;
+      const done = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
+      void startLive({ token: a.token, adult: p.adult, level: p.level, lang: getLang() }, {
+        onReady: () => { setPhase('listening'); done(true); },
+        onSpeaking: (on) => setPhase(on ? 'speaking' : 'listening'),
+        onLevel: (v) => setLvl(v),
+        onHeard: () => undefined,
+        onSaid: (t) => { if (/\bha(ha)+\b|lol/i.test(t)) setEmotion('laugh'); else if (/damn|hell|shit|what the|ahmoq|tentak|eshak/i.test(t)) setEmotion('angry'); },
+        onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); end(); } },
+        onLimit: () => { setLimitHit(true); end(); },
+        onClosed: () => { if (settled && liveRef.current) end(); done(false); },
+      }).then((c) => { liveRefCall.current = c; }).catch(() => { setLiveFailed(true); done(false); });
+    });
+  };
+
   const start = () => {
     liveRef.current = true; setLive(true); setSecs(0); setErr(''); setEmotion('happy'); resetCallVoice();
+    if (useLive) { void startLiveCall().then((ok) => { if (!ok && liveRef.current) startClassic(); }); return; }
+    startClassic();
+  };
+  const startClassic = () => {
+    setPhase('idle');
     const opener = OPENERS[Math.floor(Math.random() * OPENERS.length)]!;
     turns.current = [{ role: 'coach', text: opener }];
     void tutorSays(opener);
   };
 
   const end = () => {
+    liveRefCall.current?.end(); liveRefCall.current = null;
     liveRef.current = false; setLive(false);
     sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.();
     stopSpeaking(); parkMic(); setPhase('idle'); setErr(''); setLvl(0); pending.current = null; turns.current = [];
@@ -235,7 +267,7 @@ export default function Coach() {
           {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Bandi ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         </div>
         <div className="tutor-ctrl">
-          {canListen && (
+          {canListen && !liveRefCall.current && (
             <button type="button" className={`mic-big ${phase === 'listening' ? 'on' : ''}`} disabled={phase === 'thinking'} onClick={mic}
               aria-label={phase === 'listening' ? L('Tugatdim') : phase === 'speaking' ? L('Gapni bo‘lish') : L('Gapirish')}>
               {phase === 'listening' ? <Square size={28} /> : <Mic size={30} />}

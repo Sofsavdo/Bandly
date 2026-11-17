@@ -1,4 +1,4 @@
-import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
+import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt } from './coach';
 import { tzDay } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { ApiError, PROGRESS_MAX, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
@@ -9,6 +9,7 @@ import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
+import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { gradeMock } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
@@ -38,7 +39,8 @@ const COACH_FREE_DAILY_ANSWERS = Number(process.env.COACH_FREE_DAILY_ANSWERS ?? 
 const COACH_GLOBAL_DAILY = Number(process.env.AI_GLOBAL_DAILY_CALLS ?? 0);
 const STUDIO_VOICE_DAILY_CHARS = Number(process.env.STUDIO_VOICE_DAILY_CHARS ?? 20_000);
 const stt = sttConfigFromEnv();
-const coachAi = coachConfig(ai); // ovozli suhbat uchun tez model (Gemini: Flash-Lite birinchi) // ElevenLabs Scribe (AI ustoz uchun nutqni tanish); bo'lmasa brauzer tanishi
+const coachAi = coachConfig(ai);
+const live = liveConfigFromEnv(ai.provider === 'gemini' ? ai.key : null); // Gemini Live: ovozdan-ovozga AI ustoz // ovozli suhbat uchun tez model (Gemini: Flash-Lite birinchi) // ElevenLabs Scribe (AI ustoz uchun nutqni tanish); bo'lmasa brauzer tanishi
 const COACH_DAILY_LIMIT = Number(process.env.AI_COACH_DAILY_LIMIT ?? 30);
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
@@ -349,7 +351,7 @@ const httpServer = createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, submitDuel(db, String(b.token ?? ''), dm[1], Number(b.score), Number(b.correct), Number(b.ms)));
     }
-    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, configured: ai.provider !== 'none', stt: !!stt });
+    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, configured: ai.provider !== 'none', stt: !!stt, live: !!live && COACH_GLOBAL_DAILY > 0 });
     if (req.method === 'GET' && url.pathname === '/api/coach/minutes') {
       const tk = String(req.headers['x-token'] ?? ''); const pid = byToken(db, tk).id; const sub = entitlements(db, tk).plan !== null;
       return send(res, 200, { subscribed: sub, total: Math.round(CALL_MONTH_SECONDS / 60), left: Math.floor(callLeft(db, pid, sub) / 60) });
@@ -522,6 +524,22 @@ const httpServer = createServer(async (req, res) => {
     console.error(e);
     return send(res, 500, { error: 'Server xatosi' });
   }
+});
+if (live) attachLive(httpServer, {
+  db, cfg: live,
+  auth: (token) => {
+    try {
+      const p = byToken(db, token);
+      const role = roleOf(db, p.id);
+      return { id: p.id, staff: role === 'admin' || role === 'methodologist', subscriberLeftSec: callLeft(db, p.id, entitlements(db, token).plan !== null) };
+    } catch { return null; }
+  },
+  prompt: (o) => buildLivePrompt(o),
+  native: (lang) => nativeOf(lang),
+  onEnd: (pid, secs, model) => {
+    recordLive(db, pid, secs); addCall(db, pid, secs);
+    recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 60) * live.pricePerMin, estimated: true });
+  },
 });
 httpServer.listen(PORT, HOST, () => console.log(`Bandly: http://${HOST}:${PORT} (AI: ${ai.provider}${aiOffReason() ? ` — ${aiOffReason()}` : ''}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'})`));
 
