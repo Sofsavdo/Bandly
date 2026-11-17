@@ -23,6 +23,7 @@ import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgAp
 import { runReminders, setRemind } from './reminders';
 import { analytics } from './analytics';
 import { attachReferral, maybeRewardReferral, refStats } from './referral';
+import { creatorStats, creatorsOverview } from './creator';
 import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
@@ -180,6 +181,11 @@ createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/referral') {
       const p = byToken(db, String(req.headers['x-token'] ?? ''));
       return send(res, 200, { ...refStats(db, p.id), bot: botUsername });
+    }
+    // ---- Hamkor kabineti (rol: creator; admin — barcha hamkorlar) ----
+    if (req.method === 'GET' && url.pathname === '/api/creator') {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['creator']);
+      return send(res, 200, { me: creatorStats(db, me.id), all: me.role === 'admin' ? creatorsOverview(db) : null, bot: botUsername });
     }
     // ---- Admin analitikasi ----
     if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
@@ -426,7 +432,9 @@ createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/staff/role') {
       requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']);
       const b = await readJson(req);
-      return send(res, 200, setRole(db, String(b.nickname ?? ''), b.role ? 'methodologist' : null));
+      // role: 'methodologist' | 'creator' | 'teacher' (true — eski mijozlar uchun metodist), false/null — olib tashlash; admin faqat ADMIN_NICKNAMES orqali
+      const want = b.role === true ? 'methodologist' : typeof b.role === 'string' && ['methodologist', 'creator', 'teacher'].includes(b.role) ? b.role as 'methodologist' | 'creator' | 'teacher' : null;
+      return send(res, 200, setRole(db, String(b.nickname ?? ''), want));
     }
     if (url.pathname.startsWith('/api/admin/')) {
       if (!ADMIN_TOKEN || String(req.headers['x-admin'] ?? '') !== ADMIN_TOKEN) throw new ApiError(403, 'Taqiqlangan');

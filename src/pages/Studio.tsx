@@ -188,20 +188,23 @@ function LessonEditor({ lesson, onClose, onSaved }: { lesson: TLesson; onClose: 
 }
 
 /** Admin: metodistlarni qo'shish / olib tashlash (laqab bo'yicha). */
+const ROLE_UZ: Record<string, string> = { admin: 'admin', methodologist: L('metodist'), creator: L('hamkor (bloger)'), teacher: L('o‘qituvchi') };
+
 function StaffPanel() {
   const [list, setList] = useState<{ nickname: string; role: string }[]>([]);
   const [nick, setNick] = useState('');
+  const [kind, setKind] = useState<'methodologist' | 'creator' | 'teacher'>('methodologist');
   const [msg, setMsg] = useState('');
   const call = async (path: string, init?: RequestInit) => { const r = await fetch(path, { ...init, headers: { 'x-token': getAccount()?.token ?? '', 'content-type': 'application/json' } }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error((j as { error?: string }).error ?? L('Xato {0}', [r.status])); return j; };
   const load = async () => { try { setList(((await call('/api/staff')) as { staff: { nickname: string; role: string }[] }).staff); } catch (e) { setMsg((e as Error).message); } };
   useEffect(() => { void load(); }, []);
-  const setRole = async (nickname: string, on: boolean) => { try { await call('/api/staff/role', { method: 'POST', body: JSON.stringify({ nickname, role: on }) }); setNick(''); setMsg(on ? `${nickname} — metodist.` : `${nickname} — rol olib tashlandi.`); await load(); } catch (e) { setMsg((e as Error).message); } };
+  const setRole = async (nickname: string, on: boolean) => { try { await call('/api/staff/role', { method: 'POST', body: JSON.stringify({ nickname, role: on ? kind : null }) }); setNick(''); setMsg(on ? L('{0} — {1}.', [nickname, ROLE_UZ[kind]!]) : L('{0} — rol olib tashlandi.', [nickname])); await load(); } catch (e) { setMsg((e as Error).message); } };
   return (
     <section className="card">
       <h3 style={{ marginTop: 0 }}>{L('Admin: xodimlar')}</h3>
-      <p className="muted" style={{ fontSize: 13 }}>{L('Metodist avval saytda hisob ochadi, so‘ng uning laqabini shu yerga yozing.')}</p>
-      <div className="row"><input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={L('Laqab')} style={{ padding: 8, borderRadius: 10, border: '1.5px solid var(--line)' }} /><button className="btn sm primary" disabled={nick.trim().length < 2} onClick={() => void setRole(nick.trim(), true)}>{L('Metodist qilish')}</button></div>
-      <ul>{list.map((x) => <li key={x.nickname}>{x.nickname} — {x.role === 'admin' ? 'admin' : 'metodist'} {x.role !== 'admin' && <button className="btn sm" onClick={() => void setRole(x.nickname, false)}>{L('Olib tashlash')}</button>}</li>)}</ul>
+      <p className="muted" style={{ fontSize: 13 }}>{L('Xodim avval saytda hisob ochadi, so‘ng rolni tanlab, laqabini yozing.')}</p>
+      <div className="row"><select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} aria-label={L('Rol')}>{(['methodologist', 'creator', 'teacher'] as const).map((r) => <option key={r} value={r}>{ROLE_UZ[r]}</option>)}</select><input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={L('Laqab')} style={{ padding: 8, borderRadius: 10, border: '1.5px solid var(--line)' }} /><button className="btn sm primary" disabled={nick.trim().length < 2} onClick={() => void setRole(nick.trim(), true)}>{L('Metodist qilish')}</button></div>
+      <ul>{list.map((x) => <li key={x.nickname}>{x.nickname} — {ROLE_UZ[x.role] ?? x.role} {x.role !== 'admin' && <button className="btn sm" onClick={() => void setRole(x.nickname, false)}>{L('Olib tashlash')}</button>}</li>)}</ul>
       {msg && <p className="notice">{msg}</p>}
     </section>
   );
