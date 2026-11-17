@@ -33,3 +33,16 @@ Remove `TTS_PROVIDER` (or set `VOICE_GLOBAL_DAILY_CHARS=0`) in Railway → redep
 - Only the Speaking page reactions use it so far. Pronunciation pin-pointing («shkul» → school from the learner's real audio) needs an assessment provider (Azure key, OD-21) and is not built yet; today the error comes from the existing rule-based checks.
 - Mirzaev has a 30-day withdrawal notice in the ElevenLabs library → keep a fallback voice (set `ELEVENLABS_VOICE_ID`).
 - Credits on Starter are a monthly pool; the ledger cost is an **estimate** at API list price.
+
+## AI tutor voice call (v2)
+- **Speech recognition:** `POST /api/ai/stt` sends one recorded turn (webm/opus or mp4) to ElevenLabs Scribe (`scribe_v1`). It uses the same `ELEVENLABS_API_KEY` and auto-detects the language, so English is transcribed verbatim with the learner's grammar mistakes and Uzbek or mixed speech is recognised too. Audio is not stored. If the key is missing the client falls back to the browser recogniser.
+- **Turn-taking:** the browser detects the end of speech after about 1.3 s of silence and sends the turn automatically. When the learner starts talking over the tutor (about 0.4 s of loud speech), the tutor stops.
+- **Call minutes:** plans promise "60 minutes / month". The learner's speech seconds plus the tutor voice (about 15 chars = 1 s) are counted in `call_usage`. While a subscriber has minutes left, the tutor's voice in the call is not capped by `VOICE_DAILY_ANSWERS`. After that, or without a subscription, the normal daily rule applies and then the browser voice is used. `GET /api/coach/minutes` reports what is left.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `STT_DAILY_MINUTES` | `40` | per-learner daily recognition cap |
+| `STT_GLOBAL_DAILY_MINUTES` | `600` | platform daily recognition cap (`0` = off) |
+| `STT_PROVIDER` | — | set `none` to switch server recognition off |
+| `PRICE_STT_PER_HOUR` | `0.4` | estimate for the cost ledger (`feature: stt`) |
+| `COACH_CALL_MONTH_MINUTES` | `60` | call minutes per month for subscribers (matches the pricing page) |

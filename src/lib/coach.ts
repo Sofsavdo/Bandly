@@ -3,11 +3,11 @@ import type { CoachEmotion, PersonaId } from '../content/personas';
 import { L } from '../i18n';
 
 export interface CoachReply { reply: string; question: string | null; emotion: CoachEmotion; correction: { wrong: string; right: string; whyUz: string; errorType: string | null } | null; persona: PersonaId; notice: string | null }
-export interface CoachStatus { ai: boolean; coach: boolean }
+export interface CoachStatus { ai: boolean; coach: boolean; stt: boolean }
 
 let st: Promise<CoachStatus> | null = null;
 export function coachStatus(): Promise<CoachStatus> {
-  st ??= fetch('/api/ai/status').then((r) => r.json()).then((j: { enabled?: boolean; coach?: boolean }) => ({ ai: !!j.enabled, coach: !!j.coach })).catch(() => ({ ai: false, coach: false }));
+  st ??= fetch('/api/ai/status').then((r) => r.json()).then((j: { enabled?: boolean; coach?: boolean; stt?: boolean }) => ({ ai: !!j.enabled, coach: !!j.coach, stt: !!j.stt })).catch(() => ({ ai: false, coach: false, stt: false }));
   return st;
 }
 
