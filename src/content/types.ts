@@ -12,6 +12,8 @@ export interface ReadingTest {
   minutes: number;
   passageTitle: string;
   paragraphs: string[];
+  /** To'liq format: bir nechta matn — sarlavha `at` indeksli paragrafdan oldin chiqadi */
+  sections?: { at: number; title: string }[];
   groups: { instruction: string; questionIds: number[] }[];
   questions: Question[];
 }

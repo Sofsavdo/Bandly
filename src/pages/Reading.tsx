@@ -1,5 +1,5 @@
 import { Highlighter, Eraser } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { MockTest, type ExamLeftState } from '../components/MockTest';
 import type { PublicReadingTest as ReadingTest } from '../content/mockShared';
 import { READING_ACADEMIC_TABLE } from '../lib/band';
@@ -61,11 +61,14 @@ function Passage({ t, state }: { t: ReadingTest; state: ExamLeftState }) {
         </div>
       )}
       <div ref={root}>
-        <h3>{t.passageTitle}</h3>
+        {!t.sections?.length && <h3>{t.passageTitle}</h3>}
         {t.paragraphs.map((p, i) => (
-          <p key={p.slice(0, 24)} data-p={i}>
+          <Fragment key={`${i}-${p.slice(0, 16)}`}>
+          {t.sections?.filter((s) => s.at === i).map((s) => <h3 key={s.title} className="passage-title">{s.title}</h3>)}
+          <p data-p={i}>
             {segments(p, highlights, i).map((s, j) => (s.hl ? <mark key={j} className="hl">{s.text}</mark> : <span key={j}>{s.text}</span>))}
           </p>
+          </Fragment>
         ))}
       </div>
     </div>
@@ -84,7 +87,7 @@ export default function Reading({ test: t }: { test: ReadingTest }) {
       groups={t.groups}
       questions={t.questions}
       table={READING_ACADEMIC_TABLE}
-      intro={<p>Bitta matn va {t.questions.length} ta savol. Vaqt tugagach test avtomatik yakunlanadi. Matn original mashq materiali.</p>}
+      intro={<p>{t.sections?.length ? `${t.sections.length} ta matn` : 'Bitta matn'} va {t.questions.length} ta savol{t.sections?.length ? ' — haqiqiy IELTS Academic Reading formatida' : ''}. Vaqt tugagach test avtomatik yakunlanadi. Matnlar original mashq materiali (rasmiy IELTS emas).</p>}
       left={(state) => <Passage t={t} state={state} />}
     />
   );
