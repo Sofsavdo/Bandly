@@ -21,7 +21,6 @@ const faq: [string, string][] = [
   ['Nima bepul?', 'Darajani aniqlash testi, Mock Arena (Listening va Reading), so‘z o‘yinlari va darslarning bir qismi.'],
   ['Qanday kiraman?', 'Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.'],
   ['Ovozim saqlanadimi?', 'Yo‘q. Ovoz yozib olinmaydi; AI yoqilganda faqat suhbat matni yuboriladi.'],
-  ['Baholar rasmiymi?', 'Yo‘q, taxminiy. Rasmiy natijani faqat imtihon markazi beradi.'],
 ];
 
 /** preview=true — #/welcome: yangi foydalanuvchi ko'radigan sahifa (progressdan qat'i nazar; reklama havolasi uchun ham). */

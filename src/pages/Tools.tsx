@@ -36,7 +36,6 @@ function Raw() {
         <li>Reading Academic: <b>{rawToBand(raw, READING_ACADEMIC_TABLE).toFixed(1)}</b></li>
         <li>Reading General Training: <b>{rawToBand(raw, READING_GENERAL_TABLE).toFixed(1)}</b></li>
       </ul>
-      <p className="evidence">Jadvallar taxminiy; rasmiy imtihonda test variantiga qarab biroz farq qilishi mumkin.</p>
     </div>
   );
 }

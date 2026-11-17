@@ -61,6 +61,9 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
     y += STEP; k++;
   });
   const H = y - STEP + BOTTOM;
+  // Yo'l pastdan tepaga ko'tariladi: birinchi dars zonaning pastida, oxirgisi (boss) tepada
+  const lastY = y - STEP;
+  for (const it of items) it.y = TOP + lastY - it.y;
   const lessons = items.filter((x): x is Extract<Item, { kind: 'lesson' }> => x.kind === 'lesson');
   const passedN = lessons.filter((x) => x.state === 'passed' || x.state === 'mastered' || x.state === 'revise').length;
   const reached = items.reduce((last, it, i) => ((it.kind === 'lesson' && it.state !== 'locked' && it.state !== 'open') || (it.kind === 'trophy' && it.done) ? i : last), -1);
@@ -72,7 +75,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
   const props = [
     ...items.map((it, i) => ({ kind: t.props[i % t.props.length]!, left: it.x <= 50 ? 80 + ((i * 7) % 9) : 6 + ((i * 5) % 8), top: it.y - 50 + ((i * 13) % 22), size: 58 + ((i * 11) % 20) })),
     // ikkinchi qatlam: kichik dekoratsiyalar tugunlar orasida (yo'ldan uzoqroq chetda)
-    ...items.slice(0, -1).map((it, i) => ({ kind: i % 3 === 2 ? ('cloud' as PropKind) : SMALL[lv]!, left: it.x <= 50 ? 10 + ((i * 3) % 6) : 88 - ((i * 4) % 6), top: it.y + STEP / 2 - 18, size: 34 + ((i * 7) % 10) })),
+    ...items.slice(0, -1).map((it, i) => ({ kind: i % 3 === 2 ? ('cloud' as PropKind) : SMALL[lv]!, left: it.x <= 50 ? 10 + ((i * 3) % 6) : 88 - ((i * 4) % 6), top: it.y - STEP / 2 - 18, size: 34 + ((i * 7) % 10) })),
   ];
 
   return (
@@ -136,7 +139,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
           );
         })}
       </ol>
-      <a className="zone-gate" href="#/skills" style={{ top: H - 52 }}><Flag2 /> {lv} darajasini tekshirish</a>
+      <a className="zone-gate" href="#/skills" style={{ top: TOP - 62 }}><Flag2 /> {lv} darajasini tekshirish</a>
     </section>
   );
 }
@@ -177,7 +180,7 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
         </div>
       </div>
 
-      {levels.map((lv) => <Zone key={lv} lv={lv} progress={progress} currentId={currentId} level={level} onPick={setSel} curRef={curRef} />)}
+      {[...levels].reverse().map((lv) => <Zone key={lv} lv={lv} progress={progress} currentId={currentId} level={level} onPick={setSel} curRef={curRef} />)}
 
       {currentId && <a className="map-fab" href={`#/learn/${currentId}`}><Play size={18} /> Davom ettirish</a>}
 

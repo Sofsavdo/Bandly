@@ -1,8 +1,9 @@
+import type { Mood } from '../../components/Mascot';
 import { Volume2 } from 'lucide-react';
+import { Illo } from '../../components/Illo';
 import { useRef, useState } from 'react';
 import { vocabById, vocabForLevel } from '../../content/vocab';
 import { lines, pickLine } from '../../content/lines';
-import { Mascot, type Mood } from '../../components/Mascot';
 import { LockCard } from '../../components/Gate';
 import { norm } from '../../lib/grade';
 import { pickSession } from '../../lib/srs';
@@ -61,9 +62,9 @@ export default function Spell() {
   if (phase === 'intro') {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot mood="think" size={110} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="pencil" size={96} /></div>
         <h2>Imlo sinovi</h2>
-        <p>O‘zbekcha ma’no va misol gap beriladi, siz inglizcha so‘zni yozasiz. Talaffuzni eshitish tugmasi ham bor.</p>
+        <p>Ma’noga qarab inglizcha so‘zni yozing.</p>
         <button className="btn primary" onClick={start}>Boshlash</button>
       </div>
     );
@@ -72,7 +73,7 @@ export default function Spell() {
   if (phase === 'end') {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot mood={correct >= ids.length / 2 ? 'happy' : 'sad'} size={110} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="pencil" size={96} /></div>
         <h2>{correct} / {ids.length}</h2>
         <p><b>+{earned} XP</b></p>
         <div className="row" style={{ justifyContent: 'center' }}>
@@ -91,7 +92,6 @@ export default function Spell() {
         <span className="pill">{w.pos} · {w.topic}</span>
       </div>
       <div className="hero" style={{ margin: '10px 0' }}>
-        <Mascot mood={mood} size={72} />
         <div>{msg && <div className="bubble">{msg}</div>}</div>
       </div>
       <div className="qword">{w.uz}</div>

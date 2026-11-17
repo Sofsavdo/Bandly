@@ -1,6 +1,6 @@
 import { ArrowRight, CalendarDays, CheckCircle2, Rocket, Target } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Mascot } from '../components/Mascot';
+import { Illo } from '../components/Illo';
 import { placement } from '../content/placement';
 import { CEFR, LEVEL_INFO, suggestedTarget, type Cefr } from '../lib/levels';
 import { evaluate, nextQuestion } from '../lib/placement';
@@ -46,10 +46,10 @@ export default function Placement() {
     return (
       <div className="stage placement">
         <div className="stage-center">
-          <Mascot mood="think" size={150} />
+          <Illo kind="target" size={110} />
           <h1 className="say">Avval darajangizni aniqlaymiz</h1>
           <p className="lead" style={{ maxWidth: 560 }}>
-            20 tagacha qisqa savol. A1 dan C1 gacha bosqichma-bosqich: bilmagan joyingizda test to‘xtaydi. Shunga qarab sizga alohida dastur tuziladi, A1 va B2 talabalar bir xil dars olmaydi.
+            20 tagacha qisqa savol, A1 dan C1 gacha. Natijaga qarab sizga alohida dastur tuziladi.
           </p>
           <div className="row" style={{ justifyContent: 'center' }}>
             <span className="pill">~3 daqiqa</span><span className="pill">Taxminiy natija</span><span className="pill">Istalgan payt qayta topshirish</span>
@@ -72,18 +72,14 @@ export default function Placement() {
         <div className="level-steps" aria-label="Bosqichlar">
           {CEFR.map((l, i) => <i key={l} className={i < blockIdx ? 'done' : i === blockIdx ? 'now' : ''}><b>{l}</b></i>)}
         </div>
-        <div className="stage-center">
-          <Mascot mood="think" size={96} />
-          <p className="say">{q.q}</p>
-        </div>
-        <div className="opts">
+        <p className="say placement-q">{q.q}</p>
+        <div className="opts" key={q.id}>
           {q.options.map((o, i) => (
-            <button key={i} className="opt" onClick={() => setAnswers((a) => ({ ...a, [q.id]: i }))}>
+            <button key={`${q.id}-${i}`} type="button" className="opt" onClick={(e) => { e.currentTarget.blur(); setAnswers((a) => ({ ...a, [q.id]: i })); }}>
               <b style={{ opacity: .5, marginRight: 10 }}>{'ABCD'[i]}</b>{o}
             </button>
           ))}
         </div>
-        <p className="evidence" style={{ textAlign: 'center', marginTop: 14 }}>Bilmasangiz, taxmin qilmang: o‘tkazib yuborish uchun eng yaqin javobni tanlang.</p>
       </div>
     );
   }
@@ -95,7 +91,7 @@ export default function Placement() {
     <div>
       <div className="stage placement result">
         <div className="stage-center">
-          <Mascot mood={lvl === 'A1' || lvl === 'A2' ? 'happy' : 'laugh'} size={130} />
+          <Illo kind="trophy" size={110} />
           <span className="eyebrow"><CheckCircle2 size={15} /> Natija tayyor</span>
           <h1 className="say">Sizning darajangiz: <span className="lvl-big">{lvl}</span></h1>
           <p className="lead">{lvlName(lvl)} · {info.band}</p>
@@ -136,7 +132,6 @@ export default function Placement() {
           <button className="btn lg" onClick={() => { setAnswers({}); setSaved(false); }}>Qayta topshirish</button>
         </div>
       </div>
-      <p className="evidence">Natija taxminiy va rasmiy IELTS ballini bildirmaydi.</p>
     </div>
   );
 }

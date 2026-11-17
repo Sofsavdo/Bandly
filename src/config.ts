@@ -61,13 +61,13 @@ export const SALE_PLANS: SalePlan[] = [
   },
   {
     id: 'exam', title: 'Exam Preparation', short: 'IELTS, CEFR (Multilevel) va SAT: bo‘limlar bo‘yicha tayyorgarlik va AI baholash.', monthlyUzs: 99_000, usd: '$7.99',
-    tracks: ['exam', 'mocks'], voiceMin: 30, writing: 10, speaking: 10,
-    features: ['Reading, Listening, Writing, Speaking mashqlari', 'AI Writing baholash: 10 ta / oy', 'AI Speaking baholash (to‘liq mock): 10 ta / oy', 'AI ovozli suhbat: 30 daqiqa / oy', 'Eshit va takrorla, so‘z o‘yinlari cheksiz'],
+    tracks: ['exam', 'mocks'], voiceMin: 60, writing: 10, speaking: 10,
+    features: ['Reading, Listening, Writing, Speaking mashqlari', 'AI Writing baholash: 10 ta / oy', 'AI Speaking baholash (to‘liq mock): 10 ta / oy', 'AI ustoz bilan ovozli suhbat: 60 daqiqa / oy', 'Eshit va takrorla, so‘z o‘yinlari cheksiz'],
   },
   {
     id: 'all', title: 'All Access', short: 'Hammasi bitta obunada: General English + imtihon tayyorgarligi.', monthlyUzs: 129_000, usd: '$9.99',
     tracks: ['exam', 'grammar', 'mocks'], voiceMin: 60, writing: 20, speaking: 20, recommended: true,
-    features: ['General English va Exam Preparation’dagi hamma narsa', 'AI Writing baholash: 20 ta / oy', 'AI Speaking baholash: 20 ta / oy', 'AI ovozli suhbat: 60 daqiqa / oy', 'Barcha AI ustoz xarakterlari'],
+    features: ['General English va Exam Preparation’dagi hamma narsa', 'AI Writing baholash: 20 ta / oy', 'AI Speaking baholash: 20 ta / oy', 'AI ustoz bilan ovozli suhbat: 60 daqiqa / oy', 'Barcha AI ustoz xarakterlari'],
   },
 ];
 export interface PeriodDef { days: number; label: string; note?: string }

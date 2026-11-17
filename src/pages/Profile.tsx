@@ -120,7 +120,6 @@ export default function Profile() {
             <tbody>{results.map((r) => <tr key={r.id}><td>{new Date(r.date).toLocaleDateString('uz-UZ')}</td><td>{r.title}</td><td>{r.correct} / {r.total}</td><td>{r.band !== undefined ? r.band.toFixed(1) : '—'}</td></tr>)}</tbody>
           </table>
         )}
-        <p className="evidence">Ma’lumotlar faqat shu qurilmada saqlanadi.</p>
       </div>
     </div>
   );

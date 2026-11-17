@@ -13,7 +13,8 @@ type Phase = 'setup' | 'playing' | 'over';
 /** "Jim qolma!" — keep talking; a balloon inflates while you are silent and pops at the level's limit. */
 export default function Challenge() {
   const p = useProfile();
-  const [level, setLevel] = useState<ChallengeLevel>('easy');
+  const [level, setLevelState] = useState<ChallengeLevel>(() => { try { const v = localStorage.getItem('bandly.challenge.level'); return (LEVELS.some((l) => l.id === v) ? v : 'easy') as ChallengeLevel; } catch { return 'easy'; } });
+  const setLevel = (l: ChallengeLevel) => { setLevelState(l); try { localStorage.setItem('bandly.challenge.level', l); } catch { /* ignore */ } };
   const [phase, setPhase] = useState<Phase>('setup');
   const [topic, setTopic] = useState(() => pickTopic(p.level));
   const [live, setLive] = useState('');
@@ -74,23 +75,20 @@ export default function Challenge() {
 
   return (
     <div>
-      <section className="card page-head with-illo t-peach">
-        <h2>Jim qolma!</h2><Illo kind="mic" size={124} />
-        <p>Mavzu bo‘yicha {ROUND_MS / 1000} soniya to‘xtamay gapiring — jim qolsangiz, shar yoriladi.</p>
-        <p className="muted" style={{ fontSize: 13 }}>Nutq brauzerda aniqlanadi — ozgina kechikish bo‘lishi mumkin.</p>
-        {!stt && <p className="bad">Bu brauzer nutqni tanishni qo‘llamaydi (Chrome yoki Edge tavsiya etiladi).</p>}
-      </section>
-
       {phase === 'setup' && (
-        <section className="card">
-          <h3>Daraja</h3>
-          <p className="row">{LEVELS.map((l) => <button key={l.id} type="button" className={`chipbtn ${level === l.id ? 'on' : ''}`} onClick={() => setLevel(l.id)}>{l.labelUz}</button>)}</p>
-          <h3>Mavzu</h3>
-          <p><b>{topic.en}</b> <span className="muted">— {topic.uz}</span></p>
-          <p className="row">
-            <button type="button" className="btn" onClick={() => setTopic(pickTopic(p.level))}><RotateCcw size={14} /> Boshqa mavzu</button>
-            <button type="button" className="btn primary" disabled={!stt} onClick={() => void play()}><Mic size={16} /> Boshlash</button>
-          </p>
+        <section className="card page-head with-illo t-peach challenge-start">
+          <h2 style={{ margin: 0 }}>Jim qolma!</h2>
+          <p style={{ margin: '4px 0 14px' }}>{ROUND_MS / 1000} soniya to‘xtamay gapiring.</p>
+          <Illo kind="mic" size={124} />
+          <div className="topic-card">
+            <small>Mavzu</small>
+            <b>{topic.en}</b>
+            <span>{topic.uz}</span>
+            <button type="button" className="icon-btn sm" onClick={() => setTopic(pickTopic(p.level))} aria-label="Boshqa mavzu"><RotateCcw size={16} /></button>
+          </div>
+          <div className="seg" role="group" aria-label="Daraja" style={{ margin: '12px 0' }}>{LEVELS.map((l) => <button key={l.id} type="button" className={level === l.id ? 'on' : ''} onClick={() => setLevel(l.id)}>{l.labelUz.split(/ ·| \(/)[0]}</button>)}</div>
+          <div><button type="button" className="btn primary lg" disabled={!stt} onClick={() => void play()}><Mic size={18} /> Boshlash</button></div>
+          {!stt && <p className="bad">Bu brauzerda mikrofon ishlamaydi — Chrome’da oching.</p>}
           {err && <p className="bad">{err}</p>}
         </section>
       )}
@@ -117,15 +115,13 @@ export default function Challenge() {
           <p>{reaction(res, p.adult && p.roastLevel >= 2)}</p>
           {issues.length > 0 && (
             <>
-              <h3>Nutqingizdagi xatolar (“Xatolar ustida ishlash”ga qo‘shildi)</h3>
+              <h3>Xatolar</h3>
               <ul>{issues.map((i) => <li key={i.id + i.wrong}><span className="bad">{i.wrong}</span> → <span className="ok">{i.right}</span> <span className="muted">{i.ruleUz}</span></li>)}</ul>
             </>
           )}
-          <p className="muted" style={{ fontSize: 13 }}>Siz aytgan matn (brauzer tanigan): {live || '—'}</p>
           <p className="row">
-            <button type="button" className="btn primary" onClick={() => { setPhase('setup'); setTopic(pickTopic(p.level)); }}><RotateCcw size={14} /> Yana</button>
+            <button type="button" className="btn primary" onClick={() => { setTopic(pickTopic(p.level)); setPhase('setup'); }}><RotateCcw size={14} /> Yana</button>
             <button type="button" className="btn" onClick={() => void share()}><Share2 size={14} /> Natijani ulashish</button>
-            <a className="btn" href="#/coach">AI ustoz bilan gaplashish</a>
           </p>
           {msg && <p className="muted">{msg}</p>}
         </section>

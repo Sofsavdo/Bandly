@@ -25,7 +25,7 @@ export function ProgressCard() {
           <span className="eyebrow"><TrendingUp size={15} /> Sizning o‘sishingiz</span>
           <h2 style={{ margin: '4px 0' }}>{base.toFixed(1)} → <span className="lvl-inline">{cur.toFixed(1)}</span> → {p.target.toFixed(1)}</h2>
           <p className="evidence">
-            Boshlang‘ich · hozirgi (taxminiy) · maqsad. {delta > 0 ? <b className="ok">+{delta.toFixed(1)} band o‘sdi.</b> : delta < 0 ? 'Hozircha pasayish: yana mashq qiling.' : 'Mashq qilgan sari o‘sish shu yerda ko‘rinadi.'}
+            {delta > 0 ? <b className="ok">+{delta.toFixed(1)} band o‘sdi.</b> : delta < 0 ? 'Hozircha pasayish: yana mashq qiling.' : 'Mashq qilgan sari o‘sish shu yerda ko‘rinadi.'}
           </p>
         </div>
         <div className="gainbadge" title="Hozirgi taxminiy band">{cur.toFixed(1)}</div>
@@ -47,7 +47,6 @@ export function ProgressCard() {
       <div className="spark" aria-label="Oxirgi 14 kun faolligi">
         {days.map((d) => <i key={d.day} title={`${d.day}: ${d.xp} XP`} style={{ height: `${Math.max(6, (d.xp / max) * 44)}px`, opacity: d.xp ? 1 : 0.25 }} />)}
       </div>
-      <p className="evidence">Taxminiy, rasmiy IELTS balli emas.<a href="#/placement">darajani qayta aniqlang</a>.</p>
     </section>
   );
 }

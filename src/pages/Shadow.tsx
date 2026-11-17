@@ -171,7 +171,6 @@ function Shadow({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
         <button className="btn" disabled={i === 0} onClick={() => go(-1)}>Oldingisi</button>
         {i < lines.length - 1 ? <button className="btn primary" disabled={!res} onClick={() => go(1)}>Keyingisi</button> : <button className="btn primary" disabled={!finished} onClick={() => onDone(Math.round(scores.reduce((a, b) => a + (b ?? 0), 0) / lines.length))}>Yakunlash</button>}
       </div>
-      <p className="evidence">Aniqlik brauzer nutqni tanishi bo‘yicha: bu <b>talaffuz bahosi emas</b>, balki qanchalik tushunarli ekaningizning ko‘rsatkichi.</p>
     </div>
   );
 }

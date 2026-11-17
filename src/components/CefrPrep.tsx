@@ -21,7 +21,6 @@ export function CefrPrep() {
     <div>
       <div className="card">
         <h3>{F.nameUz}</h3>
-        <p className="muted" style={{ fontSize: 13 }}>Darajalar: {F.levels.value.join(', ')} · rasmiy manbalar {F.verifiedAt} sanasida tekshirildi.</p>
         <div className="stack">
           {F.sections.map((x) => (
             <div key={x.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderTop: '1px solid var(--line)' }}>
@@ -43,7 +42,6 @@ export function CefrPrep() {
           <span className="pill">Reading: {s.reading?.level ?? '—'}</span>
           <span className="pill">Listening: {s.listening?.level ?? '—'}</span>
         </p>
-        <p className="muted" style={{ fontSize: 13 }}>Bu Bandly’ning taxminiy CEFR darajalari; Multilevel balli emas va uni bashorat qilmaydi.</p>
         {!s.reading && <a className="btn sm" href="#/skills">Reading / Listening darajasini aniqlash</a>}
       </div>
 
@@ -55,7 +53,7 @@ export function CefrPrep() {
           <a className="path-step" href="#/mocks/listening/cefr-listening-1"><b><Headphones size={16} /> Tinglab tushunish — mashq testi 1</b><span>35 savol · 45 daqiqa · 5 qism, turli talaffuzlar · bepul</span></a>
           <a className="path-step" href="#/coach"><b><Mic size={16} /> Gapirish</b><span>AI ustoz bilan suhbat va “Jim qolma!” — ravon gapirish mashqi</span></a>
         </div>
-        <h3 style={{ marginTop: 14 }}><PenLine size={16} /> Yozma ish mashqi (rasmiy so‘z hajmida)</h3>
+        <h3 style={{ marginTop: 14 }}><PenLine size={16} /> Yozma ish mashqi</h3>
         <p className="row">{TASKS.map((t, i) => <button key={t.title} type="button" className={`chipbtn ${w === i ? 'on' : ''}`} onClick={() => setW(i)}>{t.title}</button>)}</p>
         {w !== null && <LessonWrite key={w} task={TASKS[w]!.task} />}
       </div>

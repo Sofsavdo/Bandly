@@ -1,4 +1,5 @@
 import { Lightbulb, Mic, ShieldCheck, Sparkles } from 'lucide-react';
+import { Illo } from '../components/Illo';
 import { useEffect, useRef, useState } from 'react';
 import { EvalCard } from '../components/EvalCard';
 import { JoinForm } from '../components/JoinForm';
@@ -8,9 +9,8 @@ import { Mascot, type Mood } from '../components/Mascot';
 import { capBand } from '../lib/progress';
 import { reviewAll } from '../lib/speakingReview';
 import { Examiner, summarize, type Summary, type TurnStat } from '../lib/examiner';
-import { SpeechError, hasVoice, listenTurn, say, sayReaction, stopSpeaking, sttSupported, type MicStatus, type Signal, type TurnResult } from '../lib/speech';
+import { SpeechError, listenTurn, say, sayReaction, stopSpeaking, sttSupported, type MicStatus, type Signal, type TurnResult } from '../lib/speech';
 import type { Reaction } from '../content/roasts';
-import { PersonaPicker } from '../components/PersonaPicker';
 import { detectSlip } from '../lib/roast';
 import { saveResult } from '../lib/storage';
 import { addXp, personaLevel, useProfile } from '../lib/store';
@@ -166,11 +166,11 @@ export default function Speaking() {
       <div>
         <div className="stage">
           <div className="hero">
-            <Mascot mood="think" size={120} />
+            <Illo kind="mic" size={96} />
             <div>
               <span className="eyebrow"><Mic size={15} /> Jonli ovozli suhbat</span>
               <h2 style={{ marginBottom: 8 }}>Speaking: ustoz bilan suhbat</h2>
-              <p style={{ color: 'var(--ink-2)' }}>Ustoz Bandi IELTS tartibida gaplashadi: Part 1 (tanishuv), Part 2 (1 daqiqa tayyorgarlik va monolog), Part 3 (muhokama). U gapiradi, siz ovoz bilan javob berasiz.</p>
+              <p style={{ color: 'var(--ink-2)' }}>IELTS tartibida: Part 1, Part 2 (monolog), Part 3.</p>
               <div className="row">
                 <span className="pill"><ShieldCheck size={14} /> Ovoz yozilmaydi</span>
                 <span className="pill">Part 1 · 2 · 3</span>
@@ -181,18 +181,10 @@ export default function Speaking() {
         </div>
 
         <div className="card">
-          <h3>Ustoz xarakteri</h3>
-          <PersonaPicker />
-          {personaLevel(profile) >= 1 && !hasVoice('uz') && <p className="evidence">Qurilmangizda o‘zbekcha ovoz topilmadi: ustoz reaksiyalarni inglizcha ovozda aytadi, o‘zbekcha matn ekranda ko‘rinadi.</p>}
-        </div>
-
-        <div className="card">
           <h3>Boshlashdan oldin</h3>
-          {!supported && <p className="notice">Brauzeringiz nutqni tanishni qo‘llamaydi. Yozma rejim ishlaydi; ovozli rejim uchun Chrome yoki Safari kerak.</p>}
-          {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI bilan suhbat va baho uchun hisobingizga kiring. Kirmasdan ham qoidaviy ustoz bilan davom etish mumkin." />}
-          {aiOn && acct && <p className="notice">AI yoqilgan: suhbatning <b>matni</b> (ovoz emas) javobingizga bog‘liq savol berish va baholash uchun AI provayderiga yuboriladi.</p>}
-          <p className="evidence">Ovozingiz <b>yozib olinmaydi va saqlanmaydi</b>. Nutqni matnga o‘girishni brauzeringiz xizmati bajaradi (Chrome, Edge, Safari qo‘llaydi; bu xizmat ovozni o‘z serveriga yuborishi mumkin). Naushnik ishlatsangiz, ustoz ovozi mikrofonga kirmaydi.</p>
-          <div style={{ margin: '12px 0' }}>
+          {!supported && <p className="notice">Ovozli rejim uchun Chrome yoki Safari kerak — hozircha yozib javob bering.</p>}
+          {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI baho uchun hisobingizga kiring." />}
+                    <div style={{ margin: '12px 0' }}>
             <b style={{ fontSize: 14 }}>Nutqni tanish aksenti</b>
             <div className="tabs" style={{ margin: '8px 0 4px' }}>
               {ACCENTS.map((a) => <button key={a.id} className={`btn sm ${accent === a.id ? 'dark' : ''}`} onClick={() => chooseAccent(a.id)}>{a.label}</button>)}
@@ -213,10 +205,10 @@ export default function Speaking() {
     return (
       <div>
         <div className="card hero">
-          <Mascot mood="happy" size={96} />
+          <Illo kind="trophy" size={90} />
           <div>
             <h2 style={{ margin: 0 }}>Suhbat tugadi</h2>
-            <p style={{ margin: '4px 0' }}>+30 XP. Quyidagi baho <b>taxminiy</b>: faqat javob uzunligi, to‘xtashlar va so‘z xilma-xilligi bo‘yicha.</p>
+            <p style={{ margin: '4px 0' }}>+30 XP. </p>
             <div className="row">
               <span className="pill">Fluency (taxm.): <b>{summary.fluencyBand.toFixed(1)}</b></span>
               <span className="pill">Lexical (taxm.): <b>{summary.lexicalBand.toFixed(1)}</b></span>
@@ -280,7 +272,7 @@ export default function Speaking() {
           <button className="btn sm" onClick={abort}>Tugatish</button>
         </div>
         <div className="stage-center">
-          <div className={`mascot-wrap ${status}`}><Mascot mood={mood} size={150} talking={status === 'speaking'} /></div>
+          <div className={`mascot-wrap ${status}`}><Mascot mood={mood} size={104} talking={status === 'speaking'} /></div>
           {reaction && <div className="bubble" style={{ maxWidth: 640 }}><b>{reaction.uz}</b><div className="evidence">{reaction.en}</div></div>}
           <div className="say">{caption}</div>
           {hint && <p className="hint-uz"><b>O‘zbekcha:</b> {hint}</p>}

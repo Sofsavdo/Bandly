@@ -155,7 +155,6 @@ export default function LessonPage({ id }: { id: string }) {
           )}
           <h3>Misollar</h3>
           <ul>{lesson.examples.map((e) => <li key={e.en}>{(tts || e.audio) && <button type="button" className="btn sm" aria-label={`Eshitish: ${e.en}`} style={{ padding: '2px 8px', marginRight: 6 }} onClick={() => { stopSpeaking(); if (e.audio) void new Audio(e.audio).play(); else void say(e.en, { cancelled: false }); }}><Volume2 size={14} /></button>}<b>{e.en}</b> <span className="muted">— {e.uz}</span></li>)}</ul>
-          {tts && <p className="muted" style={{ fontSize: 13 }}>Ovoz qurilmangiz brauzeridagi sintezator orqali o‘qiladi; sifat qurilmaga bog‘liq.</p>}
           {lesson.vocab && (<><h3>Yangi so‘zlar</h3><p className="row">{lesson.vocab.map((v) => <span key={v.en} className="pill">{v.en} · {v.uz}</span>)}</p>
             <p className="row"><button type="button" className="btn sm" onClick={() => { const n = addToReview(lessonWordIds(lesson.id)); setVocabMsg(n ? `${n} ta so‘z takrorlash ro‘yxatiga qo‘shildi — ular O‘yinlar bo‘limida (Pairs, Spell, Word Rush) takrorlash uchun chiqadi.` : 'Bu so‘zlar allaqachon takrorlash ro‘yxatida.'); }}>So‘zlarni takrorlashga qo‘shish</button>{vocabMsg && <span className="muted">{vocabMsg}</span>}</p></>)}
           <button className="btn primary" onClick={() => setStep('practice')}>Mashqqa o‘tish <ArrowRight size={14} /></button>

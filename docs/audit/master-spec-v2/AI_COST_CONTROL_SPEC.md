@@ -98,7 +98,7 @@ Advertised allowances, such as "60 daqiqa", must be deliverable, or the pricing 
 - **Privacy:** phone hashes and device ids are personal data. Retention follows OD-07, and they are listed in the privacy notice.
 
 ## 8. Pricing-page copy (EXAM vs GENERAL voice minutes) [O]
-> **Exam Preparation** — 30 daqiqa jonli AI suhbat **va qo‘shimcha 10 ta to‘liq Speaking mock baholash** (har biri 14 daqiqagacha, IELTS formatida). Imtihonga tayyorgarlikda asosiy vaqtingiz baholanadigan mocklarga ketadi, shuning uchun jonli suhbat daqiqasi General English'dagidan kam.
+> **Exam Preparation** — 60 daqiqa jonli AI suhbat **va qo‘shimcha 10 ta to‘liq Speaking mock baholash** (har biri 14 daqiqagacha, IELTS formatida). *(2026-11-17, egasi qarori: suhbat daqiqasi General English bilan teng — 30 dan 60 ga.)*
 > **General English** — 60 daqiqa jonli AI suhbat: kundalik gaplashish va so‘zlashuvni mashq qilish uchun.
 
 *(English gloss: Exam Preparation gives 30 minutes of live AI conversation **plus 10 full Speaking mock assessments**, each up to 14 minutes in IELTS format. Most exam-prep time goes into scored mocks, so live minutes are lower than in General English. General English gives 60 minutes of live AI conversation for everyday speaking practice.)*

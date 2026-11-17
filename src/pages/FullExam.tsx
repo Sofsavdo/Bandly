@@ -39,10 +39,6 @@ export default function FullExam() {
           <p className="lead" style={{ maxWidth: 620 }}>Haqiqiy imtihondagi tartib: <b>Listening → Reading → Writing → Speaking</b>. Har bo‘lim taymer bilan, Listening faqat bir marta eshittiriladi. Oxirida bo‘limlar bo‘yicha taxminiy umumiy band chiqadi.</p>
           <ul className="rules">
             <li>Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.</li>
-            <li>Test darajangizga ({p.level ?? 'B1'}) mos tanlanadi.</li>
-            <li>Natijalar taxminiy: rasmiy IELTS balli emas.</li>
-            <li>Listening (4 qism, 40 savol) va Reading (3 matn, 40 savol, 60 daqiqa) — <b>to‘liq format</b>. Listening audiosi savollarni o‘qish uchun pauzalarsiz, shuning uchun haqiqiy imtihondagidan qisqaroq.</li>
-            <li>Kompyuter yoki planshetda topshirish tavsiya etiladi (haqiqiy kompyuterdagi IELTS ham shunday); telefonda ham ishlaydi.</li>
             <li>Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.</li>
           </ul>
           <button className="btn primary lg" onClick={start}>Imtihonni boshlash <ArrowRight size={18} /></button>
@@ -99,7 +95,6 @@ export default function FullExam() {
             <div className="score">{overall.toFixed(1)}</div>
             <p className="lead">Taxminiy umumiy band</p>
             {p.baselineBand !== null && <p>{overall > p.baselineBand ? <b className="ok">Boshlang‘ich {p.baselineBand.toFixed(1)} dan +{(overall - p.baselineBand).toFixed(1)} yuqori.</b> : overall === p.baselineBand ? 'Boshlang‘ich natijangiz bilan teng.' : 'Boshlang‘ich bahodan past: yana mashq kerak.'}</p>}
-            <p className="evidence">Writing band kiritilmagan, rasmiy imtihon natijasi boshqacha bo‘lishi mumkin.</p>
           </div>
         </div>
       )}
