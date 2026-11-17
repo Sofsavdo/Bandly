@@ -123,9 +123,9 @@ export default function LessonPage({ id }: { id: string }) {
     <div>
       <a className="btn sm" href="#/learn"><ArrowLeft size={14} /> Darslar</a>
       <div className="lesson-hud sticky" aria-label="Dars holati">
-        <div className="seg-progress" aria-label={`${Math.min(stepIdx + 1, steps.length)} / ${steps.length} qadam`}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
-        <span className="hud-hearts" aria-label={`${play.hearts} ta jon`}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
-        {play.combo >= 2 && <span className="hud-combo" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
+        <div className="seg-progress" role="img" aria-label={`${Math.min(stepIdx + 1, steps.length)} / ${steps.length} qadam`}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
+        <span className="hud-hearts" role="img" aria-label={`${play.hearts} ta jon`}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
+        {play.combo >= 2 && <span className="hud-combo" role="img" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
       </div>
       <section className="card page-head with-illo" style={{ marginTop: 10 }}>
         <small className="muted" style={{ fontWeight: 650 }}>{unit.level} · {unit.titleUz} · {lesson.minutes} daq</small>

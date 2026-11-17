@@ -110,7 +110,7 @@ export async function setupBot(cfg: BotConfig, f: Fetch = fetch): Promise<string
   if (cfg.publicUrl) {
     await tgApi(cfg.token, 'setWebhook', { url: `${cfg.publicUrl}/api/telegram/webhook`, secret_token: webhookSecret(cfg.token), allowed_updates: ['message'], drop_pending_updates: true }, f);
     await tgApi(cfg.token, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Bandly', web_app: { url: appUrl(cfg.publicUrl, '/') } } }, f);
-    await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Bandly ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }] }, f);
+    await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Bandly ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }, { command: 'stop', description: 'Seriya eslatmalarini o‘chirish' }, { command: 'remind', description: 'Seriya eslatmalarini yoqish' }] }, f);
   }
   return me.username;
 }

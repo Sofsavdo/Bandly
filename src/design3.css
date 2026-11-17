@@ -470,10 +470,10 @@ a.path-step:hover { border-color: transparent; background: var(--lilac-50); }
 @media (min-width: 980px) and (max-height: 800px) { .nav a { padding: 4px 12px; font-size: 13px; } .nav-label { padding-top: 4px; } }
 
 /* Kontrast tuzatishlari (avtomatik tekshiruvdan keyin) */
-:root { --muted: #6c7190; --ok-ink: #127a55; }
+:root { --muted: #5f6483; --ok-ink: #127a55; }
 @media (prefers-color-scheme: dark) { :root { --muted: #9a9fc0; --ok-ink: #5fd6a5; } }
 .avatar, .burst { color: #14162b; }
-.course.c-coral { background: #e2513e; }
+.course.c-coral { background: #d2412f; }
 .course .tag { color: #14162b; }
 .badge.on, .lvl-tag.A1, .lvl-tag.A2 { color: var(--ok-ink); }
 .price-tabs button small { color: var(--ok-ink); }
@@ -537,3 +537,9 @@ html, body { overflow-x: clip; }
   .tutor-call:not(.idle-call) { height: calc(100dvh - 210px); }
 }
 .challenge-start .seg button { padding: 7px 11px; font-size: 13.5px; }
+.lvlcard { background: var(--brand-600); }
+.lvlcard p { color: #fff; opacity: .92; }
+.course.c-coral p { opacity: 1; }
+.btn.danger { color: #b3261e; }
+@media (prefers-color-scheme: dark) { .btn.danger { color: #ff9a8f; } }
+.zone-gate { background: #fff !important; color: #14162b !important; box-shadow: var(--shadow-1); }

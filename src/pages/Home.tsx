@@ -129,7 +129,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
       <section className="lvlcard">
         <h3>{lvl ? `${lvl} · ${LEVEL_INFO[lvl].name}` : 'Bandly'} — {lp.level}-bosqich</h3>
         <p>{left === 0 ? 'Bugungi maqsad bajarildi — seriya saqlandi!' : `Bugungi maqsadgacha ${left} XP`}</p>
-        <div className="slider" aria-label={`Bosqich: ${lp.into}/${lp.span} XP`}><i style={{ width: `${lp.pct * 100}%` }} /><b style={{ left: `${Math.max(4, Math.min(96, lp.pct * 100))}%` }} /></div>
+        <div className="slider" role="progressbar" aria-valuemin={0} aria-valuemax={lp.span} aria-valuenow={lp.into} aria-label="Keyingi bosqichgacha XP"><i style={{ width: `${lp.pct * 100}%` }} /><b style={{ left: `${Math.max(4, Math.min(96, lp.pct * 100))}%` }} /></div>
         <Illo kind="trophy" />
       </section>
 

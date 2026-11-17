@@ -6,6 +6,8 @@ import { Header } from './components/Header';
 import { TabBar } from './components/TabBar';
 import { PaySheet } from './components/PaySheet';
 import { Toasts } from './components/Toasts';
+import { NAV_GROUPS } from './components/nav';
+import { useT } from './i18n';
 import Home from './pages/Home';
 import Exam from './pages/Exam';
 import Mocks from './pages/Mocks';
@@ -89,6 +91,9 @@ function testRoute(hash: string): ReactNode | null {
 
 export default function App() {
   const hash = useHash();
+  const t = useT();
+  // Har sahifada bitta h1 (ekran o'quvchilar uchun): bo'lim nomi menyudan
+  const section = NAV_GROUPS.flatMap((g) => g.items).filter((n) => n.href === '#/' ? hash === '#/' || hash === '' : hash === n.href || hash.startsWith(n.href + '/')).sort((a, b) => b.href.length - a.href.length)[0];
   // Menyu bosilganda yangi sahifa har doim tepadan boshlansin
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
@@ -100,7 +105,7 @@ export default function App() {
   return (
     <>
       <Header hash={hash} />
-      <main className="container">{page}</main>
+      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{page}</main>
       <Footer />
       <TabBar hash={hash} />
       <Toasts />

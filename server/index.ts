@@ -1,4 +1,5 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
+import { tzDay } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { ApiError, PROGRESS_MAX, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +19,8 @@ import { archive, contentVersion, createLesson, createUnit, history, publish, pu
 import { awardXp, submitXp } from './xp';
 import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
-import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
+import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
+import { runReminders, setRemind } from './reminders';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
@@ -126,7 +128,15 @@ createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url.pathname === '/api/telegram/webhook') {
       if (!bot?.publicUrl || String(req.headers['x-telegram-bot-api-secret-token'] ?? '') !== webhookSecret(bot.token)) return send(res, 403, { error: 'Taqiqlangan' });
-      const reply = handleUpdate(await readJson(req, 65_536), bot.publicUrl);
+      const upd = await readJson(req, 65_536);
+      const m = (upd as { message?: { chat?: { id?: number; type?: string }; from?: { id?: number }; text?: string } }).message;
+      const cmd = (m?.text ?? '').trim();
+      if (m?.chat?.type === 'private' && m.from?.id && /^\/(stop|remind)\b/.test(cmd)) {
+        const on = cmd.startsWith('/remind');
+        const ok = setRemind(db, m.from.id, on);
+        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: !ok ? 'Avval Bandly’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind' });
+      }
+      const reply = handleUpdate(upd, bot.publicUrl);
       return send(res, 200, reply ? { method: reply.method, ...reply.body } : {}); // javob webhook javobining o'zida yuboriladi
     }
     if (req.method === 'POST' && url.pathname === '/api/join') {
@@ -186,7 +196,7 @@ createServer(async (req, res) => {
         const el = elevenLabsFromEnv();
         if (!el) throw new ApiError(503, 'Ovozlashtirish uchun ElevenLabs kaliti sozlanmagan');
         // Kabinet uchun alohida kunlik chegara (belgi), umumiy AI xarajatlar jurnaliga yoziladi
-        const day = `studio-voice:${new Date().toISOString().slice(0, 10)}`;
+        const day = `studio-voice:${tzDay(Date.now())}`;
         const used = (db.prepare('SELECT calls FROM ai_global_usage WHERE day = ?').get(day) as { calls: number } | undefined)?.calls ?? 0;
         const left = Math.max(0, STUDIO_VOICE_DAILY_CHARS - used);
         const voice = String(b.voice ?? 'us') === 'uk' ? 'y1LQSw6x4O5I1qZEI77j' : 'WZlYpi1yf6zJhNWXih74'; // Sarah (UK) / Hope (US) — egasi tanlagan ovozlar
@@ -392,4 +402,6 @@ createServer(async (req, res) => {
 }).listen(PORT, HOST, () => console.log(`Bandly: http://${HOST}:${PORT} (AI: ${ai.provider}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'})`));
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
+// Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)
+if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn')).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
