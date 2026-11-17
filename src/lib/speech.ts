@@ -149,7 +149,7 @@ export function listenTurn(o: TurnOptions): Promise<TurnResult> {
       const now = Date.now();
       restarts.push(now);
       while (restarts.length && now - restarts[0] > 4000) restarts.shift();
-      if (restarts.length > 10) { fail(new SpeechError('unstable', 'Nutqni tanish barqaror ishlamayapti')); return; }
+      if (restarts.length > 10) { fail(new SpeechError('unstable', L('Nutqni tanish barqaror ishlamayapti'))); return; }
       setTimeout(begin, restarts.length > 3 ? 500 : 120); // tez-tez uzilsa kutish oshiriladi (qotib qolmaslik uchun)
     };
     begin();

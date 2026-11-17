@@ -12,7 +12,7 @@ import { useProfile } from '../lib/store';
 import { Prop, ZONES, type PropKind, type ZoneTheme } from './mapArt';
 import { L } from '../i18n';
 
-const LEVEL_NAME: Record<string, string> = { A1: 'Beginner', A2: 'Elementary', B1: 'Intermediate', B2: 'Upper-intermediate', C1: 'Advanced', C2: 'Proficiency' };
+const LEVEL_NAME: Record<string, string> = { A1: L('Beginner'), A2: L('Elementary'), B1: L('Intermediate'), B2: L('Upper-intermediate'), C1: L('Advanced'), C2: L('Proficiency') };
 const ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const STATE_UZ: Record<NodeState, string> = { locked: 'yopiq', open: 'ochiq', current: L('hozirgi dars'), passed: 'tugallangan', mastered: L('to‘liq o‘zlashtirilgan'), revise: L('takrorlash vaqti keldi') };
 
@@ -104,14 +104,14 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
           <h3 id={`zone-${lv}`}>{t.name} <span>· {LEVEL_NAME[lv]}</span></h3>
           <p>{t.sub}{assumed ? L(' · o‘tilgan deb hisoblangan') : ''}{level === lv ? L(' · sizning darajangiz') : ''}</p>
         </div>
-        <svg className="zone-ring" viewBox="0 0 56 56" aria-label={`${passedN} / ${lessons.length} dars`} role="img">
+        <svg className="zone-ring" viewBox="0 0 56 56" aria-label={L('{0} / {1} dars', [passedN, lessons.length])} role="img">
           <circle cx="28" cy="28" r={R} fill="none" stroke="currentColor" strokeOpacity=".15" strokeWidth="6" />
           <circle cx="28" cy="28" r={R} fill="none" stroke={t.accent} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${C * pct} ${C}`} transform="rotate(-90 28 28)" />
           <text x="28" y="32" textAnchor="middle" fontSize="12" fontWeight="800" fill="currentColor">{passedN}/{lessons.length}</text>
         </svg>
       </header>
 
-      <ol className="zone-nodes" aria-label={`${lv} darslari`}>
+      <ol className="zone-nodes" aria-label={L('{0} darslari', [lv])}>
         {items.map((it) => {
           if (it.kind === 'trophy') {
             return (

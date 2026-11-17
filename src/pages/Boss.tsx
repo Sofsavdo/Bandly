@@ -106,7 +106,7 @@ export default function Boss({ unitId }: { unitId: string }) {
         <a className="btn sm" href="#/learn"><ArrowLeft size={14} />  {L('Xarita')}</a>
         <section className={`card boss-result ${run.done}`} style={{ marginTop: 10 }}>
           <div className="boss-emblem" aria-hidden="true">{run.done === 'won' ? <Trophy size={34} /> : <Swords size={34} />}</div>
-          <h2>{run.done === 'won' ? 'Boss yengildi!' : run.hearts === 0 ? 'Jonlar tugadi' : L('Bu safar yetmadi')}</h2>
+          <h2>{run.done === 'won' ? 'Boss yengildi!' : run.hearts === 0 ? L('Jonlar tugadi') : L('Bu safar yetmadi')}</h2>
           <p className="row" style={{ justifyContent: 'center' }}>
             <span className="pill">{correct}/{total}  {L('to‘g‘ri')}</span><span className="pill">{Math.round(rate * 100)}%</span>
             {gained > 0 && <span className="pill">+{gained}  {L('XP')}</span>}{play.maxCombo >= 2 && <span className="pill"><Flame size={13} />  {L('combo ×')}{play.maxCombo}</span>}
@@ -124,7 +124,7 @@ export default function Boss({ unitId }: { unitId: string }) {
           <div className="row" style={{ justifyContent: 'center', marginTop: 12 }}>
             {fixLessons.length > 0 && <a className="btn" href="#/mistakes">{L('Xatolar ustida ishlash')}</a>}
             <button className="btn" onClick={() => { setRunState(null); setStarted(false); }}><RotateCcw size={14} />  {L('Qayta urinish')}</button>
-            {run.done === 'won' && <a className="btn primary" href={nextUnit ? `#/learn/${nextUnit.lessons[0]!.id}` : '#/learn'}>{nextUnit ? L('Keyingi bo‘lim: {0}', [nextUnit.titleUz]) : 'Xaritaga qaytish'} <ArrowRight size={14} /></a>}
+            {run.done === 'won' && <a className="btn primary" href={nextUnit ? `#/learn/${nextUnit.lessons[0]!.id}` : '#/learn'}>{nextUnit ? L('Keyingi bo‘lim: {0}', [nextUnit.titleUz]) : L('Xaritaga qaytish')} <ArrowRight size={14} /></a>}
           </div>
           {wrong.length > 0 && <details style={{ marginTop: 12 }}><summary>{L('Xato javoblar va izohlar (')}{wrong.length})</summary>{wrong.map(({ r, i }) => <ItemView key={i} item={itemOf(r)!} value={run.answers[i] as ItemAnswer} revealed onChange={() => undefined} />)}</details>}
         </section>
@@ -177,7 +177,7 @@ export default function Boss({ unitId }: { unitId: string }) {
     <div>
       <button className="btn sm" onClick={() => { setStarted(false); }}><ArrowLeft size={14} />  {L('To‘xtatish')}</button>
       <div className="lesson-hud sticky" aria-label={L('Boss holati')}>
-        <div className="seg-progress" aria-label={`${answered} / ${total} savol`}>{run.refs.map((_, i) => <i key={i} className={run.shown[i] ? 'done' : i === idx ? 'now' : ''} />)}</div>
+        <div className="seg-progress" aria-label={L('{0} / {1} savol', [answered, total])}>{run.refs.map((_, i) => <i key={i} className={run.shown[i] ? 'done' : i === idx ? 'now' : ''} />)}</div>
         <span className="hud-hearts" aria-label={L('{0} ta jon', [play.hearts])}>{Array.from({ length: BOSS_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
         {play.combo >= 2 && <span className="hud-combo"><Flame size={16} /> ×{play.combo}</span>}
       </div>

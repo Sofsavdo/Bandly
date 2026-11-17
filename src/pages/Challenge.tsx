@@ -68,7 +68,7 @@ export default function Challenge() {
 
   const share = async () => {
     if (!res) return;
-    const blob = await renderCard({ title: `Jim qolma! · ${levelOf(res.level).labelUz}`, body: res.survived ? L('{0} soniya to‘xtamay gapirdim!', [Math.round(res.ms / 1000)]) : L('{0} soniyada jim qoldim…', [Math.round(res.ms / 1000)]), sub: L('{0} so‘z · {1} so‘z/daqiqa · {2} ball', [res.words, res.wpm, score(res)]), foot: L('Bandly — sen ham sinab ko‘r') });
+    const blob = await renderCard({ title: L('Jim qolma! · {0}', [levelOf(res.level).labelUz]), body: res.survived ? L('{0} soniya to‘xtamay gapirdim!', [Math.round(res.ms / 1000)]) : L('{0} soniyada jim qoldim…', [Math.round(res.ms / 1000)]), sub: L('{0} so‘z · {1} so‘z/daqiqa · {2} ball', [res.words, res.wpm, score(res)]), foot: L('Bandly — sen ham sinab ko‘r') });
     if (!blob) return;
     const r = await shareCard(blob, 'bandly-jim-qolma', L('Jim qolma! — {0} ball. {1}/#/challenge', [score(res), location.origin]));
     setMsg(r === 'shared' ? L('Ulashildi') : L('Rasm yuklab olindi'));
@@ -109,7 +109,7 @@ export default function Challenge() {
 
       {phase === 'over' && res && (
         <section className="card">
-          <h3>{res.survived ? (res.level === 'relaxed' ? 'Raund tugadi' : 'Omon qoldingiz! 🎈') : 'Shar yorildi! 💥'}</h3>
+          <h3>{res.survived ? (res.level === 'relaxed' ? 'Raund tugadi' : L('Omon qoldingiz! 🎈')) : 'Shar yorildi! 💥'}</h3>
           <p className="row">
             <span className="pill">{Math.round(res.ms / 1000)} s</span><span className="pill">{res.words}  {L('so‘z')}</span><span className="pill">{res.wpm}  {L('so‘z/daqiqa')}</span><span className="pill">{score(res)}  {L('ball')}</span>
           </p>

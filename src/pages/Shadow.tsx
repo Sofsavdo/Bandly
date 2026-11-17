@@ -232,7 +232,7 @@ function SceneView({ sc }: { sc: Scene }) {
     if (markStep(sc.id, s, score)) { addXp(s === 'watch' ? 5 : 10 + Math.round((score ?? 0) / 10)); }
     markDone('shadow');
     force((x) => x + 1);
-    if (s === 'retell' || s === 'shadow' || s === 'dictate') saveResult({ kind: 'practice', title: `Lavha: ${sc.title} (${STEPS.find((x) => x.id === s)!.label})`, correct: Math.round(score ?? 0), total: 100 });
+    if (s === 'retell' || s === 'shadow' || s === 'dictate') saveResult({ kind: 'practice', title: L('Lavha: {0} ({1})', [sc.title, STEPS.find((x) => x.id === s)!.label]), correct: Math.round(score ?? 0), total: 100 });
   };
   const S = STEPS.find((x) => x.id === step)!;
   return (

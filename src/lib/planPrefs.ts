@@ -1,8 +1,9 @@
+import { L } from '../i18n';
 // Learner's plan settings (goal, daily minutes). Device-local until accounts exist.
 // Weekly lesson target (documented): minutes per day × 5 study days ÷ 12 minutes per average lesson, rounded down, at least 1.
 export type Goal = 'general' | 'ielts' | 'cefr' | 'sat';
 export const GOALS: { id: Goal; labelUz: string }[] = [
-  { id: 'general', labelUz: 'Umumiy ingliz tili' }, { id: 'ielts', labelUz: 'IELTS' }, { id: 'cefr', labelUz: 'CEFR (Multilevel)' }, { id: 'sat', labelUz: 'SAT' },
+  { id: 'general', labelUz: L('Umumiy ingliz tili') }, { id: 'ielts', labelUz: 'IELTS' }, { id: 'cefr', labelUz: 'CEFR (Multilevel)' }, { id: 'sat', labelUz: 'SAT' },
 ];
 export const MINUTES = [10, 20, 30, 45, 60] as const;
 export interface PlanPrefs { goal: Goal; minutes: number }

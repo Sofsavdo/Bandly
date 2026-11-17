@@ -13,14 +13,14 @@ import { Illo } from '../components/Illo';
 import { L } from '../i18n';
 
 const KINDS: { id: Kind | 'mix'; label: string; hint: string }[] = [
-  { id: 'mix', label: 'Aralash', hint: L('Hamma turdan') },
-  { id: 'translate', label: L('Tarjima'), hint: "O'zbekchadan inglizchaga" },
+  { id: 'mix', label: L('Aralash'), hint: L('Hamma turdan') },
+  { id: 'translate', label: L('Tarjima'), hint: L('O\'zbekchadan inglizchaga') },
   { id: 'fix', label: L('Xatoni toping'), hint: L('Xatoli gapni tuzating') },
   { id: 'use', label: L('O‘z gapingiz'), hint: L('Berilgan qolipda gap tuzing') },
-  { id: 'upgrade', label: 'Kuchaytiring', hint: L('Gapni band oshiradigan qilib yozing') },
+  { id: 'upgrade', label: L('Kuchaytiring'), hint: L('Gapni band oshiradigan qilib yozing') },
   { id: 'build', label: L('So‘z tartibi'), hint: L('So\'zlardan gap yig\'ing') },
 ];
-const KIND_NAME: Record<Kind, string> = { translate: L('Tarjima'), fix: L('Xatoni toping'), use: L('O‘z gapingiz'), upgrade: 'Kuchaytiring', build: L('So‘z tartibi') };
+const KIND_NAME: Record<Kind, string> = { translate: L('Tarjima'), fix: L('Xatoni toping'), use: L('O‘z gapingiz'), upgrade: L('Kuchaytiring'), build: L('So‘z tartibi') };
 const SIZE = 8;
 const FREE_PER_DAY = 5;
 

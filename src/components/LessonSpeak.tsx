@@ -41,7 +41,7 @@ export function LessonSpeak({ sentences }: { sentences: string[] }) {
         return (
           <div key={s} className="q">
             <p className="row">
-              {tts && <button type="button" className="btn sm" aria-label={`Eshitish: ${s}`} onClick={() => { stopSpeaking(); void say(s, { cancelled: false }); }}><Volume2 size={14} /></button>}
+              {tts && <button type="button" className="btn sm" aria-label={L('Eshitish: {0}', [s])} onClick={() => { stopSpeaking(); void say(s, { cancelled: false }); }}><Volume2 size={14} /></button>}
               <b>{s}</b>
             </p>
             {active === i
@@ -51,7 +51,7 @@ export function LessonSpeak({ sentences }: { sentences: string[] }) {
             {res && v && (
               <p style={{ marginTop: 6 }}>
                 <span className={v.tone === 'no' ? 'bad' : 'ok'}>{v.label} · {res.pct}%</span>
-                <span className="muted">  {L('— tanildi: “')}{said[i] || '…'}”{res.missing.length ? ` · tushib qolgan/boshqacha: ${res.missing.join(', ')}` : ''}</span>
+                <span className="muted">  {L('— tanildi: “')}{said[i] || '…'}”{res.missing.length ? L(' · tushib qolgan/boshqacha: {0}', [res.missing.join(', ')]) : ''}</span>
               </p>
             )}
           </div>

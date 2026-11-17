@@ -124,7 +124,7 @@ export default function LessonPage({ id }: { id: string }) {
     <div>
       <a className="btn sm" href="#/learn"><ArrowLeft size={14} />  {L('Darslar')}</a>
       <div className="lesson-hud sticky" aria-label={L('Dars holati')}>
-        <div className="seg-progress" role="img" aria-label={`${Math.min(stepIdx + 1, steps.length)} / ${steps.length} qadam`}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
+        <div className="seg-progress" role="img" aria-label={L('{0} / {1} qadam', [Math.min(stepIdx + 1, steps.length), steps.length])}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
         <span className="hud-hearts" role="img" aria-label={L('{0} ta jon', [play.hearts])}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
         {play.combo >= 2 && <span className="hud-combo" role="img" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
       </div>
@@ -155,7 +155,7 @@ export default function LessonPage({ id }: { id: string }) {
             </table>
           )}
           <h3>{L('Misollar')}</h3>
-          <ul>{lesson.examples.map((e) => <li key={e.en}>{(tts || e.audio) && <button type="button" className="btn sm" aria-label={`Eshitish: ${e.en}`} style={{ padding: '2px 8px', marginRight: 6 }} onClick={() => { stopSpeaking(); if (e.audio) void new Audio(e.audio).play(); else void say(e.en, { cancelled: false }); }}><Volume2 size={14} /></button>}<b>{e.en}</b> <span className="muted">— {e.uz}</span></li>)}</ul>
+          <ul>{lesson.examples.map((e) => <li key={e.en}>{(tts || e.audio) && <button type="button" className="btn sm" aria-label={L('Eshitish: {0}', [e.en])} style={{ padding: '2px 8px', marginRight: 6 }} onClick={() => { stopSpeaking(); if (e.audio) void new Audio(e.audio).play(); else void say(e.en, { cancelled: false }); }}><Volume2 size={14} /></button>}<b>{e.en}</b> <span className="muted">— {e.uz}</span></li>)}</ul>
           {lesson.vocab && (<><h3>{L('Yangi so‘zlar')}</h3><p className="row">{lesson.vocab.map((v) => <span key={v.en} className="pill">{v.en} · {v.uz}</span>)}</p>
             <p className="row"><button type="button" className="btn sm" onClick={() => { const n = addToReview(lessonWordIds(lesson.id)); setVocabMsg(n ? L('{0} ta so‘z takrorlash ro‘yxatiga qo‘shildi — ular O‘yinlar bo‘limida (Pairs, Spell, Word Rush) takrorlash uchun chiqadi.', [n]) : L('Bu so‘zlar allaqachon takrorlash ro‘yxatida.')); }}>{L('So‘zlarni takrorlashga qo‘shish')}</button>{vocabMsg && <span className="muted">{vocabMsg}</span>}</p></>)}
           <button className="btn primary" onClick={() => setStep('practice')}>{L('Mashqqa o‘tish')} <ArrowRight size={14} /></button>
@@ -210,7 +210,7 @@ export default function LessonPage({ id }: { id: string }) {
       {step === 'result' && result && (
         <section className="card">
           <div className="result-hero">
-            <PRing value={result.correct} max={result.total} size={112} stroke={11} color={result.passed ? 'var(--green)' : 'var(--coral)'} label={`${result.correct}/${result.total} to‘g‘ri`}><b style={{ fontSize: 28 }}>{Math.round(result.rate * 100)}%</b></PRing>
+            <PRing value={result.correct} max={result.total} size={112} stroke={11} color={result.passed ? 'var(--green)' : 'var(--coral)'} label={L('{0}/{1} to‘g‘ri', [result.correct, result.total])}><b style={{ fontSize: 28 }}>{Math.round(result.rate * 100)}%</b></PRing>
             <div><h2 style={{ margin: 0 }}>{result.passed ? L('Dars o‘zlashtirildi!') : L('Hali biroz mashq kerak')}</h2><p className="muted" style={{ margin: '4px 0 0' }}>{result.correct}/{result.total}  {L('to‘g‘ri')}{gained > 0 ? ` · +${gained} XP` : ''}</p></div>
             {result.passed && <Illo kind="trophy" size={96} />}
           </div>

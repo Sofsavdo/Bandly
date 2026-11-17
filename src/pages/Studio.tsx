@@ -22,7 +22,7 @@ export async function studio<T>(method: string, path: string, body?: unknown): P
   return j;
 }
 
-const STATUS_UZ: Record<Status, string> = { draft: 'Qoralama', published: L('E’lon qilingan'), archived: 'Arxivda' };
+const STATUS_UZ: Record<Status, string> = { draft: L('Qoralama'), published: L('E’lon qilingan'), archived: 'Arxivda' };
 const badge = (s: Status, dirty: boolean) => <span className={`badge ${s === 'published' && !dirty ? 'on' : ''}`}>{STATUS_UZ[s]}{s !== 'archived' && dirty ? L(' · o‘zgarish e’lon qilinmagan') : ''}</span>;
 
 export default function Studio() {
@@ -143,7 +143,7 @@ function LessonEditor({ lesson, onClose, onSaved }: { lesson: TLesson; onClose: 
     try {
       await studio('PUT', `lesson/${lesson.id}`, { data: built });
       if (andPublish) await studio('POST', `lesson/${lesson.id}/publish`);
-      onSaved(andPublish ? L('Saqlandi va e’lon qilindi.') : 'Qoralama saqlandi.');
+      onSaved(andPublish ? L('Saqlandi va e’lon qilindi.') : L('Qoralama saqlandi.'));
     } catch (e) { setMsg((e as Error).message); } finally { setSaving(false); }
   };
   const area = (k: keyof typeof f, label: string, hint: string, rows = 5) => (

@@ -21,7 +21,7 @@ import { L } from '../i18n';
 
 const faq: [string, string][] = [
   [L('Nima bepul?'), L('Darajani aniqlash testi, Mock Arena (Listening va Reading), so‘z o‘yinlari va darslarning bir qismi.')],
-  ['Qanday kiraman?', L('Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.')],
+  [L('Qanday kiraman?'), L('Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.')],
   [L('Ovozim saqlanadimi?'), L('Yo‘q. Ovoz yozib olinmaydi; AI yoqilganda faqat suhbat matni yuboriladi.')],
 ];
 
@@ -97,13 +97,13 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   const passed = UNITS.flatMap((u) => u.lessons).filter((l) => progress[l.id]?.passedAt).length;
   const left = Math.max(0, p.dailyGoal - p.dailyXp);
   const h = new Date().getHours();
-  const hello = h < 12 ? 'Xayrli tong' : h < 18 ? L('Xayrli kun') : 'Xayrli kech';
+  const hello = h < 12 ? L('Xayrli tong') : h < 18 ? L('Xayrli kun') : L('Xayrli kech');
   const quick = [
     { href: '#/learn', icon: BookOpenCheck, label: L('Darslar'), c: 'var(--coral)' },
     { href: '#/coach', icon: Bot, label: L('AI ustoz'), c: 'var(--brand)' },
     { href: '#/exam', icon: Target, label: L('Imtihon'), c: 'var(--orange)' },
-    { href: '#/mocks', icon: Timer, label: 'Mock', c: 'var(--teal)' },
-    { href: '#/grammar', icon: Puzzle, label: 'Grammar', c: 'var(--blue)' },
+    { href: '#/mocks', icon: Timer, label: L('Mock'), c: 'var(--teal)' },
+    { href: '#/grammar', icon: Puzzle, label: L('Grammar'), c: 'var(--blue)' },
     { href: '#/games', icon: Gamepad2, label: L('O‘yinlar'), c: 'var(--pink)' },
     { href: '#/league', icon: Trophy, label: L('Liga'), c: 'var(--yellow)' },
     { href: '#/mistakes', icon: ClipboardList, label: L('Xatolar'), c: 'var(--red)' },
@@ -130,7 +130,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
 
       <section className="lvlcard">
         <h3>{lvl ? `${lvl} · ${LEVEL_INFO[lvl].name}` : 'Bandly'} — {lp.level}{L('-bosqich')}</h3>
-        <p>{left === 0 ? L('Bugungi maqsad bajarildi — seriya saqlandi!') : `Bugungi maqsadgacha ${left} XP`}</p>
+        <p>{left === 0 ? L('Bugungi maqsad bajarildi — seriya saqlandi!') : L('Bugungi maqsadgacha {0} XP', [left])}</p>
         <div className="slider" role="progressbar" aria-valuemin={0} aria-valuemax={lp.span} aria-valuenow={lp.into} aria-label={L('Keyingi bosqichgacha XP')}><i style={{ width: `${lp.pct * 100}%` }} /><b style={{ left: `${Math.max(4, Math.min(96, lp.pct * 100))}%` }} /></div>
         <Illo kind="trophy" />
       </section>
@@ -143,7 +143,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         <a className="cont" href={nl ? `#/learn/${nl.id}` : '#/learn'}>
           <small>{nl ? L('Davom ettirish') : L('Darslar')}</small>
           <h3>{nl ? nl.titleUz : L('Darslar xaritasi')}</h3>
-          <p>{nu ? `${nu.level} · ${nu.titleUz}` : `${passed}/${total} dars o‘tildi`}</p>
+          <p>{nu ? `${nu.level} · ${nu.titleUz}` : L('{0}/{1} dars o‘tildi', [passed, total])}</p>
           <span className="btn primary sm">{L('Boshlash')} <ArrowRight size={16} /></span>
           <Illo kind="books" />
         </a>

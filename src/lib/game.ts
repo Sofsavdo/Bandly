@@ -81,18 +81,18 @@ export interface Achievement {
 const masteredCount = (p: Profile): number => Object.values(p.srs).filter((c) => c.box >= MASTERED_BOX).length;
 
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'first-xp', title: 'Birinchi qadam', desc: L('Birinchi XP ni yig‘ing'), check: (p) => p.xp > 0 },
+  { id: 'first-xp', title: L('Birinchi qadam'), desc: L('Birinchi XP ni yig‘ing'), check: (p) => p.xp > 0 },
   { id: 'streak-3', title: L('3 kunlik seriya'), desc: L('Ketma-ket 3 kun mashq qiling'), check: (p) => p.streak >= 3 },
   { id: 'streak-7', title: L('Haftalik seriya'), desc: L('Ketma-ket 7 kun mashq qiling'), check: (p) => p.streak >= 7 },
-  { id: 'level-5', title: '5-daraja', desc: L('5-darajaga yeting'), check: (p) => levelFromXp(p.xp) >= 5 },
+  { id: 'level-5', title: L('5-daraja'), desc: L('5-darajaga yeting'), check: (p) => levelFromXp(p.xp) >= 5 },
   { id: 'words-10', title: L('10 ta so‘z'), desc: L('10 ta so‘zni o‘zlashtiring'), check: (p) => masteredCount(p) >= 10 },
   { id: 'words-30', title: L('So‘z ustasi'), desc: L('30 ta so‘zni o‘zlashtiring'), check: (p) => masteredCount(p) >= 30 },
   { id: 'games-10', title: L('O‘yinchi'), desc: L('10 ta o‘yin o‘ynang'), check: (p) => p.gamesPlayed >= 10 },
   { id: 'daily-goal', title: L('Kunlik maqsad'), desc: L('Kunlik XP maqsadini bajaring'), check: (p) => p.dailyXp >= p.dailyGoal },
   { id: 'streak-30', title: L('30 kunlik seriya'), desc: L('Ketma-ket 30 kun kunlik maqsadni bajaring'), check: (p) => p.streak >= 30 },
-  { id: 'boss-1', title: 'Birinchi boss', desc: L('Birinchi bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 1 },
-  { id: 'boss-5', title: 'Boss ovchisi', desc: L('5 ta bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 5 },
-  { id: 'level-10', title: '10-daraja', desc: L('Bandly darajasi 10 ga yeting'), check: (p) => levelFromXp(p.xp) >= 10 },
+  { id: 'boss-1', title: L('Birinchi boss'), desc: L('Birinchi bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 1 },
+  { id: 'boss-5', title: L('Boss ovchisi'), desc: L('5 ta bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 5 },
+  { id: 'level-10', title: L('10-daraja'), desc: L('Bandly darajasi 10 ga yeting'), check: (p) => levelFromXp(p.xp) >= 10 },
 ];
 
 export interface XpResult {

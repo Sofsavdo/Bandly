@@ -36,7 +36,7 @@ export default function Profile() {
     <div>
       <section className="card prof-head">
         <span className="avatar" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
-        <h2>{acc?.nickname ?? 'Mehmon'}</h2>
+        <h2>{acc?.nickname ?? L('Mehmon')}</h2>
         <p className="muted">{p.level ? `${p.level} · ${LEVEL_INFO[p.level].name}` : L('Daraja aniqlanmagan')} · {lp.level}{L('-bosqich · jami')} {p.xp}  {L('XP')}</p>
         <div className="bar" style={{ width: '100%', maxWidth: 420 }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
         <small className="muted">{lp.into} / {lp.span}  {L('XP keyingi bosqichgacha')}</small>

@@ -145,7 +145,7 @@ export function PaySheet() {
         {stage === 'success' && (
           <div className="center">
             <span className="paid-ico"><Check size={34} /></span>
-            <p>{L('Obunangiz yoqildi')}{pay ? ` (${pay.days === 365 ? L('12 oy') : `${Math.round(pay.days / 30)} oy`})` : ''}{L('. Omad!')}</p>
+            <p>{L('Obunangiz yoqildi')}{pay ? ` (${pay.days === 365 ? L('12 oy') : L('{0} oy', [Math.round(pay.days / 30)])})` : ''}{L('. Omad!')}</p>
             <button className="btn primary" onClick={() => setOpen(false)}>{L('Davom etish')}</button>
           </div>
         )}

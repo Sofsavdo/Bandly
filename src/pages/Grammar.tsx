@@ -11,9 +11,10 @@ import { nodeForGrammarTopic, taxonomyOfNode } from '../content/curriculum/inven
 import { Illo } from '../components/Illo';
 import { L } from '../i18n';
 
-const FREE_TOPICS: string[] = [L('To be va there is'), 'Artikllar'];
+const FREE_TOPICS: string[] = [L('To be va there is'), L('Artikllar')];
 const MISTAKES = L('Xatolarim');
 const FOR_YOU = L('Sizga mos');
+const ALL = L('Hammasi');
 
 /** Topic chosen on the Home plan card (one-shot handoff via sessionStorage). */
 function takeNextTopic(): string | undefined {
@@ -29,7 +30,7 @@ export default function Grammar() {
 
   const locked = !unlocked && !FREE_TOPICS.includes(topic);
   const items = useMemo(() => {
-    if (topic === 'Hammasi') return grammar;
+    if (topic === ALL) return grammar;
     if (topic === FOR_YOU) return grammar.filter((g) => fits(g.level, profile.level, 0, 1)).slice(0, 15);
     if (topic === MISTAKES) return grammar.filter((g) => { const c = profile.srs[`g${g.id}`]; return c && c.box === 0 && c.wrong > 0; });
     return grammar.filter((g) => g.topic === topic);
@@ -52,7 +53,7 @@ export default function Grammar() {
     saveResult({ kind: 'grammar', title: `Grammar: ${topic}`, correct, total: items.length });
     if (correct === items.length && items.length > 0) addXp(10);
   };
-  const tabs = [...(profile.level ? [FOR_YOU] : []), 'Hammasi', ...grammarTopics, MISTAKES];
+  const tabs = [...(profile.level ? [FOR_YOU] : []), ALL, ...grammarTopics, MISTAKES];
 
   return (
     <div>

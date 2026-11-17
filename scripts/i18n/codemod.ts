@@ -4,7 +4,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import ts from 'typescript';
-import { TEXT_ATTRS, isJsxText, isUzText } from './detect';
+import { TEXT_ATTRS, isJsxText, isUzTemplate, isUzText } from './detect';
 
 const ROOT = join(dirname(new URL(import.meta.url).pathname), '../..');
 const SRC = join(ROOT, 'src');
@@ -76,8 +76,8 @@ for (const file of files) {
     // 4) Shablonlar: `${a} ta dars` → L('{0} ta dars', [a])
     if (ts.isTemplateExpression(n) && !isLCall(n)) {
       const parts = [n.head.text, ...n.templateSpans.map((s) => s.literal.text)];
-      const textOnly = parts.join(' ');
-      if (isUzText(textOnly) && !(n.parent && ts.isTaggedTemplateExpression(n.parent))) {
+      const attr = n.parent && ts.isJsxExpression(n.parent) && n.parent.parent && ts.isJsxAttribute(n.parent.parent) ? n.parent.parent.name.getText(sf) : null;
+      if ((attr === null || TEXT_ATTRS.has(attr)) && isUzTemplate(parts) && !(n.parent && ts.isTaggedTemplateExpression(n.parent))) {
         let src = n.head.text; const args: string[] = [];
         n.templateSpans.forEach((s, i) => { src += `{${i}}` + s.literal.text; args.push(s.expression.getText(sf)); });
         edits.push({ start: n.getStart(sf), end: n.getEnd(), text: `L(${q(src)}, [${args.join(', ')}])` });

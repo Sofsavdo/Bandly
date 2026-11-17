@@ -11,12 +11,12 @@ export interface ZoneTheme {
 export type PropKind = 'house' | 'tree' | 'bush' | 'sun' | 'dome' | 'stall' | 'cloud' | 'pine' | 'water' | 'mountain' | 'tower' | 'building' | 'moon' | 'peak' | 'flag' | 'stars';
 
 export const ZONES: Record<string, ZoneTheme> = {
-  A1: { name: 'Mahalla', sub: 'Birinchi qadamlar', sky: ['#eafcf2', '#c8f1da'], hill: ['#9fe0b8', '#7fd3a2'], road: '#fff6df', roadEdge: '#e9d9a8', accent: '#12b76a', accentDark: '#0b8a4f', props: ['house', 'tree', 'bush', 'house', 'tree', 'sun'] },
+  A1: { name: L('Mahalla'), sub: L('Birinchi qadamlar'), sky: ['#eafcf2', '#c8f1da'], hill: ['#9fe0b8', '#7fd3a2'], road: '#fff6df', roadEdge: '#e9d9a8', accent: '#12b76a', accentDark: '#0b8a4f', props: ['house', 'tree', 'bush', 'house', 'tree', 'sun'] },
   A2: { name: L('Bozor ko‘chasi'), sub: L('Kundalik vaziyatlar'), sky: ['#e6fbfa', '#c3eeeb'], hill: ['#93dcd5', '#6fcac2'], road: '#fff3e0', roadEdge: '#ead2a8', accent: '#0ea5a4', accentDark: '#0b7d7c', props: ['dome', 'stall', 'tree', 'dome', 'cloud', 'stall'] },
   B1: { name: L('Ko‘l bo‘yi'), sub: L('Tajriba va rejalar'), sky: ['#ecf2ff', '#cddcff'], hill: ['#b4c9fb', '#93b0f5'], road: '#fffaf0', roadEdge: '#dfd4b8', accent: '#1f5cff', accentDark: '#1440b8', props: ['water', 'pine', 'cloud', 'pine', 'water', 'tree'] },
   B2: { name: L('Tog‘ yo‘li'), sub: L('Fikr va bahs'), sky: ['#f3edff', '#dccdff'], hill: ['#c6b2f3', '#a990e8'], road: '#fbf7ff', roadEdge: '#d8c8ee', accent: '#7c3aed', accentDark: '#5b21b6', props: ['mountain', 'pine', 'cloud', 'mountain', 'pine', 'cloud'] },
-  C1: { name: 'Tungi shahar', sub: 'Murakkab ingliz tili', sky: ['#2b1640', '#4b1f55'], hill: ['#3d1c4a', '#2c1238'], road: '#5a2f63', roadEdge: '#7b4485', accent: '#ec4899', accentDark: '#be185d', night: true, props: ['tower', 'building', 'moon', 'building', 'tower', 'stars'] },
-  C2: { name: L('Cho‘qqi'), sub: 'Mukammallik', sky: ['#fff7e0', '#ffe5a3'], hill: ['#f4cf7e', '#e9b85a'], road: '#fffaf0', roadEdge: '#e8c98a', accent: '#f59e0b', accentDark: '#b45309', props: ['peak', 'stars', 'cloud', 'peak', 'flag', 'cloud'] },
+  C1: { name: L('Tungi shahar'), sub: L('Murakkab ingliz tili'), sky: ['#2b1640', '#4b1f55'], hill: ['#3d1c4a', '#2c1238'], road: '#5a2f63', roadEdge: '#7b4485', accent: '#ec4899', accentDark: '#be185d', night: true, props: ['tower', 'building', 'moon', 'building', 'tower', 'stars'] },
+  C2: { name: L('Cho‘qqi'), sub: L('Mukammallik'), sky: ['#fff7e0', '#ffe5a3'], hill: ['#f4cf7e', '#e9b85a'], road: '#fffaf0', roadEdge: '#e8c98a', accent: '#f59e0b', accentDark: '#b45309', props: ['peak', 'stars', 'cloud', 'peak', 'flag', 'cloud'] },
 };
 
 /** Bitta dekoratsiya (o'lchami px). Ranglar zonaga moslashadi. */

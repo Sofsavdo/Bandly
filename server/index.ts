@@ -21,6 +21,7 @@ import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
+import { coverage, dictFor, isTarget, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
@@ -151,12 +152,40 @@ createServer(async (req, res) => {
       if (url.searchParams.get('v') === String(v)) return send(res, 200, { version: v, units: null }); // o'zgarmagan
       return send(res, 200, { version: v, units: publishedUnits(db) });
     }
+    // ---- Tarjimalar (ochiq): /api/i18n/ru ----
+    const i18nM = url.pathname.match(/^\/api\/i18n\/([a-z]{2})$/);
+    if (req.method === 'GET' && i18nM) {
+      if (!isTarget(i18nM[1])) return send(res, 404, { error: 'Topilmadi' });
+      const d = dictFor(db, i18nM[1]);
+      if (url.searchParams.get('v') === d.v) { res.writeHead(304); return void res.end(); }
+      return send(res, 200, d);
+    }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['methodologist']);
       const by = me.nickname;
       const p = url.pathname.slice('/api/studio/'.length).split('/');
       if (req.method === 'GET' && p[0] === 'tree') return send(res, 200, { units: studioTree(db), role: me.role });
+      // Tarjimalar: qamrov, ro'yxat, qo'lda tuzatish (metodist), AI tarjima (faqat admin — xarajatli)
+      if (p[0] === 'i18n') {
+        if (req.method === 'GET' && !p[1]) return send(res, 200, { coverage: coverage(db), ai: ai.provider !== 'none' });
+        const b = req.method === 'GET' ? Object.fromEntries(url.searchParams) : await readJson(req, 20_000);
+        const lang = String(b.lang ?? '');
+        if (!isTarget(lang)) throw new ApiError(400, 'Til noto‘g‘ri');
+        if (req.method === 'GET' && p[1] === 'list') return send(res, 200, { items: listTranslations(db, lang, String(b.q ?? ''), 60, b.missing === '1') });
+        if (req.method === 'PUT' && p[1] === 'item') {
+          const src = String(b.src ?? ''), text = String(b.text ?? '').trim().slice(0, 4000);
+          if (!src || !text) throw new ApiError(400, 'Matn bo‘sh');
+          setTranslation(db, lang, src, text, 'human');
+          return send(res, 200, { ok: true });
+        }
+        if (req.method === 'POST' && p[1] === 'translate') {
+          if (me.role !== 'admin') throw new ApiError(403, 'Faqat admin');
+          if (ai.provider === 'none') throw new ApiError(503, 'AI sozlanmagan');
+          const r = await translateMissing(db, ai, lang, { onCost: (chars) => recordAiCost(db, { playerId: me.id, feature: 'i18n', provider: ai.provider, model: ai.model, units: Math.round(chars / 3), unitKind: 'tokens', costUsd: (chars / 3) * 6e-6, estimated: true }) });
+          return send(res, 200, r);
+        }
+      }
       // Fayl yuklash: hujjat → matn → (AI) → qoralama darslar; video → media URL
       if (req.method === 'POST' && p[0] === 'upload') {
         const name = String(url.searchParams.get('name') ?? '').slice(0, 120);
@@ -395,7 +424,7 @@ createServer(async (req, res) => {
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
-    if (e instanceof ApiError || e instanceof AiError || e instanceof TtsError) return send(res, e.status, { error: e.message });
+    if (e instanceof ApiError || e instanceof AiError || e instanceof TtsError) return send(res, e.status, { error: trServer(db, String(req.headers['x-lang'] ?? ''), e.message) });
     console.error(e);
     return send(res, 500, { error: 'Server xatosi' });
   }

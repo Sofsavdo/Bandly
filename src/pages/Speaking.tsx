@@ -19,8 +19,8 @@ import { L } from '../i18n';
 type Stage = 'intro' | 'live' | 'report';
 type Status = 'speaking' | 'listening' | 'prep' | 'thinking';
 const ACCENTS = [
-  { id: 'en-US', label: 'AQSh (en-US)', hint: L('Ko‘pchilik uchun eng yaxshi tanish') },
-  { id: 'en-GB', label: 'Britaniya (en-GB)', hint: 'IELTS talaffuziga yaqin' },
+  { id: 'en-US', label: L('AQSh (en-US)'), hint: L('Ko‘pchilik uchun eng yaxshi tanish') },
+  { id: 'en-GB', label: 'Britaniya (en-GB)', hint: L('IELTS talaffuziga yaqin') },
   { id: 'en-IN', label: 'Hind (en-IN)', hint: 'Janubiy Osiyo aksentini yaxshiroq tushunishi mumkin' },
 ] as const;
 const readAccent = (): string => { try { return localStorage.getItem('bandly.stt') ?? 'en-US'; } catch { return 'en-US'; } };
@@ -214,7 +214,7 @@ export default function Speaking() {
             <div className="row">
               <span className="pill">{L('Fluency (taxm.):')} <b>{summary.fluencyBand.toFixed(1)}</b></span>
               <span className="pill">{L('Lexical (taxm.):')} <b>{summary.lexicalBand.toFixed(1)}</b></span>
-              {!aiEval && <span className="pill">{aiState === 'loading' ? 'AI baholayapti…' : L('Grammar va Pronunciation: AI kerak')}</span>}
+              {!aiEval && <span className="pill">{aiState === 'loading' ? L('AI baholayapti…') : L('Grammar va Pronunciation: AI kerak')}</span>}
             </div>
           </div>
         </div>
@@ -279,7 +279,7 @@ export default function Speaking() {
           <div className="say">{caption}</div>
           {hint && <p className="hint-uz"><b>{L('O‘zbekcha:')}</b> {hint}</p>}
           {status === 'listening' && !textMode && <span className="wave" aria-hidden="true" style={{ opacity: mic === 'speech' ? 1 : .35 }}><i /><i /><i /><i /><i /><i /><i /></span>}
-          {status === 'listening' && !textMode && <span className={`pill ${mic === 'starting' ? '' : 'ok'}`}>{mic === 'starting' ? 'Mikrofon ulanmoqda…' : mic === 'mic' ? L('Mikrofon tayyor, gapiring') : 'Eshityapman'}</span>}
+          {status === 'listening' && !textMode && <span className={`pill ${mic === 'starting' ? '' : 'ok'}`}>{mic === 'starting' ? L('Mikrofon ulanmoqda…') : mic === 'mic' ? L('Mikrofon tayyor, gapiring') : 'Eshityapman'}</span>}
           {err && <p className="notice">{err}</p>}
           {review !== null && (
             <div style={{ width: '100%', maxWidth: 720 }}>

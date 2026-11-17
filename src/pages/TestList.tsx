@@ -34,7 +34,7 @@ export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kin
                 <b>{t.title.replace(/^(Reading|Listening) mini-test \d+: /, '')}</b>
                 <span className="lbar"><i style={{ width: best ? `${(best.correct / best.total) * 100}%` : '0%' }} /></span>
               </span>
-              <span className="meta">{t.minutes}  {L('daq')}<br />{best ? `${best.correct}/${best.total}` : `${t.questions.length} savol`}</span>
+              <span className="meta">{t.minutes}  {L('daq')}<br />{best ? `${best.correct}/${best.total}` : L('{0} savol', [t.questions.length])}</span>
             </a>
           );
         })}

@@ -6,11 +6,11 @@ import { Illo } from '../../components/Illo';
 import { L } from '../../i18n';
 
 const games = [
-  { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: 'Jim qolma!', text: L('60 soniya to‘xtamay gapiring — jim qolsangiz shar yoriladi') },
+  { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: L('Jim qolma!'), text: L('60 soniya to‘xtamay gapiring — jim qolsangiz shar yoriladi') },
   { href: '#/games/rush', icon: <Zap size={26} color="#ffb02e" />, cls: '', title: L('So‘z poygasi'), text: L('60 soniya, 3 jon, kombo ball') },
-  { href: '#/games/pairs', icon: <Puzzle size={26} color="#5cd6ff" />, cls: 'g2', title: 'Juftlik', text: L('So‘z va ma’noni juftlang') },
-  { href: '#/games/spell', icon: <BookOpen size={26} color="#ff8fb1" />, cls: 'g3', title: 'Imlo sinovi', text: L('Misol gapdan so‘zni yozing') },
-  { href: '#/duel', icon: <Swords size={26} color="#8bff9c" />, cls: 'g4', title: 'Duel', text: L('Do‘st bilan bir xil so‘zlarda') },
+  { href: '#/games/pairs', icon: <Puzzle size={26} color="#5cd6ff" />, cls: 'g2', title: L('Juftlik'), text: L('So‘z va ma’noni juftlang') },
+  { href: '#/games/spell', icon: <BookOpen size={26} color="#ff8fb1" />, cls: 'g3', title: L('Imlo sinovi'), text: L('Misol gapdan so‘zni yozing') },
+  { href: '#/duel', icon: <Swords size={26} color="#8bff9c" />, cls: 'g4', title: L('Duel'), text: L('Do‘st bilan bir xil so‘zlarda') },
 ];
 
 export default function GamesHub() {

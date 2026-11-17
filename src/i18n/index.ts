@@ -46,6 +46,10 @@ function readCache(l: Lang): Dict {
   try { return (JSON.parse(store()?.getItem(CACHE(l)) ?? '{}') as { dict?: Dict }).dict ?? {}; } catch { return {}; }
 }
 const listeners = new Set<() => void>();
+/** Tekshiruv rejimi (bandly.i18n.pseudo=1): tarjimadan o'tgan har bir matn ko'rinmas belgi bilan o'raladi — qolib ketgan matnlarni topish uchun. */
+const PSEUDO = store()?.getItem('bandly.i18n.pseudo') === '1';
+const MARK = '\u2063';
+let pseudoSet: Set<string> | null = null;
 
 export const getLang = (): Lang => lang;
 export const hasDict = (): boolean => lang === 'uz' || Object.keys(dict).length > 0;
@@ -57,17 +61,24 @@ const fill = (s: string, vars?: Vars): string => (vars ? s.replace(/\{(\w+)\}/g,
 /** Tarjima: manba (o'zbekcha) matn → joriy tildagi matn. {0}, {n} kabi o'rinlar to'ldiriladi. */
 export function L(src: string, vars?: Vars): string {
   if (!src) return src;
-  return fill(dict[src] ?? dict[src.trim()] ?? src, vars);
+  let tr = dict[src];
+  if (tr === undefined) { const key = src.replace(/\s+/g, ' ').trim(); const hit = dict[key]; if (hit !== undefined) tr = src.match(/^\s*/)![0] + hit + src.match(/\s*$/)![0]; }
+  const out = fill(tr ?? src, vars);
+  return PSEUDO ? MARK + out + MARK : out;
 }
 
 /** Ma'lumotlardagi (darslar, grammatika, so'zlar) o'zbekcha matnlarni joyida tarjima qiladi. Inglizcha misollar tegilmaydi — ular lug'atda yo'q. */
 export function deepTranslate<T>(obj: T, seen = new WeakSet<object>()): T {
-  if (lang === 'uz' || !obj || typeof obj !== 'object' || seen.has(obj as object)) return obj;
+  if ((lang === 'uz' && !PSEUDO) || !obj || typeof obj !== 'object' || seen.has(obj as object)) return obj;
   seen.add(obj as object);
   const o = obj as Record<string, unknown>;
   for (const k of Object.keys(o)) {
     const v = o[k];
-    if (typeof v === 'string') { const tr = dict[v]; if (tr !== undefined && !Object.isFrozen(o)) o[k] = tr; }
+    if (typeof v === 'string') {
+      const key = v.replace(/\s+/g, ' ').trim();
+      if (PSEUDO) { if (pseudoSet?.has(key) && !Object.isFrozen(o)) o[k] = MARK + (dict[key] ?? v) + MARK; continue; }
+      const tr = dict[v] ?? dict[key]; if (tr !== undefined && !Object.isFrozen(o)) o[k] = tr;
+    }
     else if (v && typeof v === 'object') deepTranslate(v, seen);
   }
   return obj;
@@ -75,6 +86,7 @@ export function deepTranslate<T>(obj: T, seen = new WeakSet<object>()): T {
 
 /** Serverdan joriy til lug'atini oladi (keshdan tez, keyin yangilanadi). Ilova modullari shundan keyin yuklanadi. */
 export async function initI18n(fetchImpl: typeof fetch = fetch): Promise<void> {
+  if (PSEUDO) pseudoSet = new Set((await import('./catalog.json')).default as string[]);
   if (lang === 'uz') return;
   const cached = store()?.getItem(CACHE(lang));
   const ver = (() => { try { return (JSON.parse(cached ?? '{}') as { v?: string }).v ?? ''; } catch { return ''; } })();

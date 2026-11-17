@@ -17,11 +17,11 @@ import { dueMistakes } from '../lib/mistakes';
 import { L } from '../i18n';
 
 const ERR_UZ: Record<string, string> = {
-  'G.tense': 'zamonlar', 'G.article': 'artikllar', 'G.preposition': 'predloglar', 'G.sva': 'ega-kesim moslashuvi', 'G.word_order': L('so‘z tartibi'), 'G.modal': L('modal fe’llar'),
-  'G.conditional': L('shart gaplar'), 'G.plural': L('ko‘plik'), 'G.pronoun': 'olmoshlar', 'G.quantifier': 'miqdor', 'G.passive': 'majhul nisbat', 'G.relative_clause': L('nisbiy gaplar'),
-  'G.comparison': 'taqqoslash', 'G.gerund_infinitive': 'gerund/infinitiv', 'G.complex_structure': 'murakkab tuzilmalar', 'V.word_choice': L('so‘z tanlash'), 'V.spelling': 'imlo',
-  'R.inference': 'xulosa chiqarish (Reading)', 'R.detail': 'tafsilotni topish (Reading)', 'R.main_idea': L('asosiy g‘oya (Reading)'),
-  'L.detail': 'tafsilotni eshitish (Listening)', 'L.gist': 'umumiy mazmun (Listening)', 'L.distractor': L('chalg‘ituvchi javoblar (Listening)'),
+  'G.tense': L('zamonlar'), 'G.article': L('artikllar'), 'G.preposition': L('predloglar'), 'G.sva': 'ega-kesim moslashuvi', 'G.word_order': L('so‘z tartibi'), 'G.modal': L('modal fe’llar'),
+  'G.conditional': L('shart gaplar'), 'G.plural': L('ko‘plik'), 'G.pronoun': 'olmoshlar', 'G.quantifier': 'miqdor', 'G.passive': L('majhul nisbat'), 'G.relative_clause': L('nisbiy gaplar'),
+  'G.comparison': L('taqqoslash'), 'G.gerund_infinitive': 'gerund/infinitiv', 'G.complex_structure': L('murakkab tuzilmalar'), 'V.word_choice': L('so‘z tanlash'), 'V.spelling': 'imlo',
+  'R.inference': L('xulosa chiqarish (Reading)'), 'R.detail': 'tafsilotni topish (Reading)', 'R.main_idea': L('asosiy g‘oya (Reading)'),
+  'L.detail': L('tafsilotni eshitish (Listening)'), 'L.gist': L('umumiy mazmun (Listening)'), 'L.distractor': L('chalg‘ituvchi javoblar (Listening)'),
 };
 const levelOf = (l: string): number => ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].indexOf(l);
 

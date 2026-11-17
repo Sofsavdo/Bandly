@@ -81,7 +81,7 @@ export function analyzeTask2(textRaw: string, type?: EssayTypeId, topicId?: stri
   const em = text.match(EMOTION);
   add('emotion', !em, L('Haddan tashqari hissiy so‘zlar yo‘q'), em ? L('“{0}” o‘rniga: unacceptable, undesirable, I disapprove of', [em[0]]) : undefined);
   const linkers = base.linkers.length;
-  add('linkers', linkers >= 4, L('Bog‘lovchi iboralar yetarli (kamida 4 xil)'), `${linkers} ta: ${base.linkers.slice(0, 6).join(', ') || '—'}`);
+  add('linkers', linkers >= 4, L('Bog‘lovchi iboralar yetarli (kamida 4 xil)'), L('{0} ta: {1}', [linkers, base.linkers.slice(0, 6).join(', ') || '—']));
 
   const et = essayTypes.find((e) => e.id === type);
   if (et) {
@@ -103,10 +103,10 @@ export function analyzeTask2(textRaw: string, type?: EssayTypeId, topicId?: stri
   if (type === undefined) add('opinion', STANCE.test(lower), 'Fikr bildirish iborasi bor', L('Savol fikr so‘rasa, “I believe / in my view” ishlating'));
 
   const grammar = findIssues(text);
-  add('grammar', grammar.length === 0, L('Tanish grammatik xatolar topilmadi'), grammar.length ? `${grammar.length} ta: ${grammar.slice(0, 3).map((g) => `${g.wrong} → ${g.right}`).join('; ')}` : undefined);
+  add('grammar', grammar.length === 0, L('Tanish grammatik xatolar topilmadi'), grammar.length ? L('{0} ta: {1}', [grammar.length, grammar.slice(0, 3).map((g) => `${g.wrong} → ${g.right}`).join('; ')]) : undefined);
 
   const topic = writingTopics.find((t) => t.id === topicId);
   const topicWords = topic ? topic.vocab.filter((x) => new RegExp(`\\b${x.phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+')}`, 'i').test(text)).map((x) => x.phrase) : [];
-  if (topic) add('topicwords', topicWords.length >= 3, L('Mavzu so‘zlaridan kamida 3 tasi ishlatilgan'), `${topicWords.length} ta: ${topicWords.join(', ') || '—'}`);
+  if (topic) add('topicwords', topicWords.length >= 3, L('Mavzu so‘zlaridan kamida 3 tasi ishlatilgan'), L('{0} ta: {1}', [topicWords.length, topicWords.join(', ') || '—']));
   return { ...base, checks, passed: checks.filter((c) => c.ok).length, grammar, topicWords };
 }

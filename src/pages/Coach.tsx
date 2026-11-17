@@ -114,7 +114,7 @@ export default function Coach() {
       if (r.text.trim()) await send(r.text);
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? 'Internet aloqasi uzildi.' : L('Nutqni tanib bo‘lmadi.'));
+      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? L('Internet aloqasi uzildi.') : L('Nutqni tanib bo‘lmadi.'));
       setPhase('error');
     }
   }

@@ -24,7 +24,7 @@ export function ImportPanel({ unit, onClose, onDone }: { unit: { id: string; lev
 
   const pick = async (f: File | undefined) => {
     if (!f) return;
-    setErr(''); setBusy(`“${f.name}” yuklanmoqda…`);
+    setErr(''); setBusy(L('“{0}” yuklanmoqda…', [f.name]));
     try {
       const r = await upload(f);
       if (r.media) { setMedia(r.media); setBusy(''); return; }
