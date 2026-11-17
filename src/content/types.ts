@@ -7,6 +7,8 @@ export type Question =
 
 export interface ReadingTest {
   id: string;
+  /** Qaysi imtihon uslubida: yo'q bo'lsa IELTS (band ko'rsatiladi); 'cefr' — Multilevel uslubida (faqat xom ball) */
+  exam?: 'ielts' | 'cefr';
   level: Cefr;
   title: string;
   minutes: number;
@@ -20,6 +22,7 @@ export interface ReadingTest {
 
 export interface ListeningTest {
   id: string;
+  exam?: 'ielts' | 'cefr';
   level: Cefr;
   title: string;
   minutes: number;

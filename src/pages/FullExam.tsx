@@ -24,7 +24,7 @@ export default function FullExam() {
   const results = loadResults();
 
   const start = () => {
-    const s: State = { startedAt: Date.now(), listeningId: (listeningTests.find((t) => t.sections?.length) ?? nearest(listeningTests, p.level ?? 'B1')).id, readingId: (readingTests.find((t) => t.sections?.length) ?? nearest(readingTests, p.level ?? 'B1')).id, writingDone: false };
+    const s: State = { startedAt: Date.now(), listeningId: (listeningTests.find((t) => t.sections?.length && t.exam !== 'cefr') ?? nearest(listeningTests, p.level ?? 'B1')).id, readingId: (readingTests.find((t) => t.sections?.length && t.exam !== 'cefr') ?? nearest(readingTests, p.level ?? 'B1')).id, writingDone: false };
     saveFull(s); setSt(s);
   };
   const reset = () => { saveFull(null); setSt(null); };

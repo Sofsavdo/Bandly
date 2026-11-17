@@ -82,6 +82,7 @@ const VOICES: Record<string, { A: string; B?: string; C?: string; D?: string }> 
   'listening-5': { A: 'bf_isabella', B: 'bm_lewis' },
   // To'liq mock: A Sarah (UK), B Alistair (UK), C Hope (US), D Max (US)
   'listening-full-1': { A: 'bf_emma', B: 'bm_george', C: 'af_heart', D: 'am_michael' },
+  'cefr-listening-1': { A: 'bf_emma', B: 'bm_george', C: 'af_heart', D: 'am_michael' },
 };
 const listens: Listen[] = listeningTests.map((t) => {
   const v = VOICES[t.id] ?? { A: 'bf_emma', B: 'bm_george' };

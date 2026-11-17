@@ -26,6 +26,8 @@ interface Props {
   groups: { instruction: string; questionIds: number[] }[];
   questions: PublicQuestion[];
   table: ReadonlyArray<readonly [number, number]>;
+  /** 'raw' — IELTS band ko'rsatilmaydi (masalan CEFR Multilevel uslubidagi test: rasmiy ball o'ylab topilmaydi) */
+  scoring?: 'ielts' | 'raw';
   /** Test qiyinligi: past darajali testda band yuqori ko'rsatilmaydi */
   level?: Cefr;
   /** started=true bo'lganda ko'rsatiladigan chap panel (matn yoki audio) */
@@ -42,7 +44,7 @@ function useFocusMode(on: boolean): void {
   }, [on]);
 }
 
-export function MockTest({ kind, testId, title, minutes, groups, questions, table, level, left, intro }: Props) {
+export function MockTest({ kind, testId, title, minutes, groups, questions, table, level, left, intro, scoring = 'ielts' }: Props) {
   const key = `${kind}:${testId}`;
   const [attempt, setAttempt] = useState<ExamAttempt | null>(() => loadAttempt(key));
   const [now, setNow] = useState(() => Date.now());
@@ -90,7 +92,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
           if (a.graded) return a;
           if (!a.recorded && !recorded.current) {
             recorded.current = true;
-            saveResult({ kind, title, correct, total: questions.length, band: capBand(scaledBand(correct, questions.length, table), level), level });
+            saveResult({ kind, title, correct, total: questions.length, band: scoring === 'raw' ? undefined : capBand(scaledBand(correct, questions.length, table), level), level });
             addXp(correct * 5 + (correct / questions.length >= 0.8 ? 20 : 0), 'server'); // serverdagi XP'ni server o'zi yozdi
             recordTestAnswers(kind, questions.map((q) => ({ type: q.type, correct: !!graded[q.id]?.correct })), level, getProfile().level);
           }
@@ -207,10 +209,10 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
           {!graded && !gradeErr && <p className="muted" role="status">Natija hisoblanmoqda…</p>}
           {!graded && gradeErr && <p className="notice" role="alert">Natijani olib bo‘lmadi: {gradeErr}. Javoblaringiz saqlangan. <button className="btn sm" onClick={() => setGradeTry((n) => n + 1)}>Qayta urinish</button></p>}
           {graded && <><div className="score">{correct} / {questions.length}</div>
-          <div>
+          {scoring === 'raw' ? <p>To‘g‘ri javoblar: <b>{Math.round((correct / questions.length) * 100)}%</b>. <span className="muted">Bu Bandly mashq testi: rasmiy Multilevel balli hisoblanmaydi (rasmiy shkala va o‘tkazish jadvali e’lon qilinmagan).</span></p> : <div>
             Taxminiy band: <b>{band.toFixed(1)}</b> <span className="pill">40 ballik shkalaga keltirilgan, rasmiy natija emas</span>
             {level && rawBand > band && <p className="evidence">Bu test {level} darajali, shuning uchun band {BAND_CAP[level].toFixed(1)} dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.</p>}
-          </div></>}
+          </div>}</>}
         </div>
       )}
 

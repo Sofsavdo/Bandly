@@ -136,6 +136,7 @@ export default function Listening({ test: t }: { test: ListeningTest }) {
       kind="listening"
       title={t.title}
       level={t.level}
+      scoring={t.exam === 'cefr' ? 'raw' : 'ielts'}
       minutes={t.minutes}
       groups={t.groups}
       questions={t.questions}

@@ -25,7 +25,7 @@ export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kin
           const best = mine.length ? mine.reduce((a, b) => (b.correct > a.correct ? b : a)) : null;
           return (
             <Tile key={t.id} href={`#/${track}/${kind}/${t.id}`} icon={kind === 'reading' ? BookOpen : Headphones} tone={kind === 'reading' ? 'blue' : 'red'}
-              title={<>{t.title.replace(/^(Reading|Listening) mini-test \d+: /, '')} <span className={`lvl-tag ${t.level}`}>{t.level}</span></>} text={`Test ${i + 1} · ${t.questions.length} savol · ${t.minutes} daqiqa${near(t.level) ? ' · Sizga mos' : ''}`}
+              title={<>{t.title.replace(/^(Reading|Listening) mini-test \d+: /, '')} {t.exam === 'cefr' ? <span className="lvl-tag B2">CEFR</span> : <span className={`lvl-tag ${t.level}`}>{t.level}</span>}</>} text={`Test ${i + 1} · ${t.questions.length} savol · ${t.minutes} daqiqa${near(t.level) ? ' · Sizga mos' : ''}`}
               badge={best ? <span className="badge on">Eng yaxshi: {best.correct}/{best.total}</span> : <span className="badge">Hali yechilmagan</span>} />
           );
         })}

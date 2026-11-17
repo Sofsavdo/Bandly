@@ -12,9 +12,10 @@ assert.ok(t.every((x) => !x.done && x.deadline === endOfDay(noon)));
 assert.deepEqual(dailyTasks('B1', [], noon + 3_600_000).map((x) => x.href), t.map((x) => x.href));
 assert.notDeepEqual(dailyTasks('B1', [], noon + 86_400_000).map((x) => x.sub), t.map((x) => x.sub));
 // Daraja bo'yicha: A2 foydalanuvchiga A2 yoki B1 listening beriladi (C1 emas)
-for (let d = 0; d < 10; d++) { const href = dailyTasks('A2', [], noon + d * 86_400_000)[0].href; const test = listeningTests.find((x) => href.endsWith(x.id))!; assert.ok(['A1', 'A2', 'B1'].includes(test.level), `A2 → ${test.level}`); }
+for (let d = 0; d < 10; d++) { const href = dailyTasks('A2', [], noon + d * 86_400_000)[0].href; const test = listeningTests.find((x) => href.split('/').pop() === x.id)!; assert.ok(['A1', 'A2', 'B1'].includes(test.level), `A2 → ${test.level}`); }
 // Bajarilganlik: aynan tayinlangan test nomi bilan, bugun
-const L = listeningTests.find((x) => t[0].href.endsWith(x.id))!;
+const L = listeningTests.find((x) => t[0].href.split('/').pop() === x.id)!;
+assert.ok(!L.sections?.length, 'kundalik vazifaga uzun test berilmaydi');
 const done = dailyTasks('B1', [r('listening', L.title, noon + 1000), r('speaking', 'Speaking: jonli suhbat', noon + 2000)], noon + 5000);
 assert.equal(done[0].done, true); assert.equal(done[3].done, true); assert.equal(done[1].done, false);
 // Boshqa test yoki kechagi natija hisoblanmaydi
