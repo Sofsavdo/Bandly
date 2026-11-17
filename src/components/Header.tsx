@@ -1,4 +1,4 @@
-import { ChevronDown, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
+import { BarChart3, Megaphone, Users, ChevronDown, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
 import { getAccount, onAccountChange } from '../lib/account';
 import { SignOutDialog } from './SignOutDialog';
 import { LangPicker } from './LangPicker';
@@ -32,11 +32,19 @@ export function Header({ hash }: { hash: string }) {
   const [acc, setAcc] = useState(getAccount());
   useEffect(() => onAccountChange(() => setAcc(getAccount())), []);
   // Xodimlar (metodist/admin) uchun kabinet havolasi — rol serverdan
-  const [staff, setStaff] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
   useEffect(() => {
-    if (!acc) { setStaff(false); return; }
-    void fetch('/api/me', { headers: { 'x-token': acc.token } }).then((r) => (r.ok ? r.json() : null)).then((j: { role?: string | null } | null) => setStaff(!!j?.role)).catch(() => setStaff(false));
+    if (!acc) { setRole(null); return; }
+    void fetch('/api/me', { headers: { 'x-token': acc.token } }).then((r) => (r.ok ? r.json() : null)).then((j: { role?: string | null } | null) => setRole(j?.role ?? null)).catch(() => setRole(null));
   }, [acc]);
+  const staff = role === 'admin' || role === 'methodologist';
+  // Rolga qarab qo'shimcha bo'limlar: admin — analitika, hamkor — hamkor kabineti, o'qituvchi — guruhlar
+  const extra = [
+    ...(staff ? [{ href: '#/studio', icon: Pencil, label: L('Metodist kabineti') }] : []),
+    ...(role === 'admin' ? [{ href: '#/admin', icon: BarChart3, label: L('Analitika') }] : []),
+    ...(role === 'admin' || role === 'creator' ? [{ href: '#/creator', icon: Megaphone, label: L('Hamkor kabineti') }] : []),
+    ...(role === 'admin' || role === 'teacher' ? [{ href: '#/groups', icon: Users, label: L('Guruhlarim') }] : []),
+  ];
   useEffect(() => setOpen(false), [hash]);
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
   return (
@@ -51,7 +59,7 @@ export function Header({ hash }: { hash: string }) {
                 {g.items.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''} aria-current={isActive(hash, n.href) ? 'page' : undefined}><n.icon size={16} />{t(n.label)}</a>)}
               </div>
             ))}
-            {staff && <a href="#/studio" className={isActive(hash, '#/studio') ? 'active' : ''}><Pencil size={16} />{L('Metodist kabineti')}</a>}
+            {extra.map((x) => <a key={x.href} href={x.href} className={isActive(hash, x.href) ? 'active' : ''}><x.icon size={16} />{x.label}</a>)}
           </nav>
           <div className="header-right">
             <LangPicker compact />
@@ -81,7 +89,7 @@ export function Header({ hash }: { hash: string }) {
                 </details>
               );
             })}
-            {staff && <a className={`dlink ${isActive(hash, '#/studio') ? 'active' : ''}`} href="#/studio"><Pencil size={20} />{L('Metodist kabineti')}</a>}
+            {extra.map((x) => <a key={x.href} className={`dlink ${isActive(hash, x.href) ? 'active' : ''}`} href={x.href}><x.icon size={20} />{x.label}</a>)}
             <div className="dacct">
               <span>{acc ? <>{L('Hisob:')} <b>{acc.nickname}</b></> : L('Hisobga kirmagansiz')}</span>
               {acc

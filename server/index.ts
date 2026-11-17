@@ -21,6 +21,7 @@ import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
+import { analytics } from './analytics';
 import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
@@ -170,6 +171,11 @@ createServer(async (req, res) => {
       const d = dictFor(db, i18nM[1]);
       if (url.searchParams.get('v') === d.v) { res.writeHead(304); return void res.end(); }
       return send(res, 200, d);
+    }
+    // ---- Admin analitikasi ----
+    if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
+      requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
+      return send(res, 200, analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))));
     }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {

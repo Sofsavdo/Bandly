@@ -565,3 +565,18 @@ html, body { overflow-x: clip; }
 .tr-src { font-size: 14px; color: var(--ink-2); }
 .tr-dst { display: flex; gap: 6px; align-items: flex-start; }
 .tr-dst textarea { flex: 1; min-width: 0; font-size: 14px; padding: 8px 10px; border-radius: 12px; resize: vertical; }
+
+/* Analitika */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpis.three { grid-template-columns: repeat(3, 1fr); margin: 0; }
+.kpi2 { display: flex; flex-direction: column; gap: 2px; padding: 16px; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-1); min-width: 0; }
+.kpis.three .kpi2 { background: var(--surface-2); box-shadow: none; }
+.kpi2 span { color: var(--muted); font-size: 13px; font-weight: 650; }
+.kpi2 b { font-family: var(--display); font-size: 30px; letter-spacing: -.03em; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; }
+.kpi2 small { color: var(--muted); font-size: 12.5px; }
+.abars { margin: 0 0 18px; } .abars figcaption { font-weight: 650; margin-bottom: 6px; color: var(--ink-2); } .abars figcaption b { color: var(--ink); margin-left: 6px; }
+.abars svg { width: 100%; height: auto; display: block; color: var(--ink); }
+.funnel { display: grid; gap: 8px; }
+.fstep { display: grid; grid-template-columns: 120px 1fr 48px; align-items: center; gap: 10px; font-size: 14px; }
+.fstep i { height: 14px; border-radius: 99px; background: linear-gradient(90deg, var(--brand), var(--lilac)); min-width: 4px; }
+.fstep b { text-align: right; }
