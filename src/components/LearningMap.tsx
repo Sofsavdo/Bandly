@@ -1,3 +1,4 @@
+import { lessonStars } from '../lib/lessonGame';
 import { Check, Flame, Lock, Play, RotateCcw, Star, Swords, Trophy, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { UNITS, lessonNodeId } from '../content/lessons';
@@ -27,7 +28,7 @@ type Item =
 
 interface Sel { unit: Unit; lesson: Lesson; index: number; state: NodeState }
 
-const starsFor = (best: number, passed: boolean): number => (!passed ? 0 : best >= 1 ? 3 : best >= 0.9 ? 2 : 1);
+const starsFor = lessonStars;
 
 /** Ikki nuqta orasidagi silliq egri chiziq (vertikal urinmalar). */
 function pathD(pts: { x: number; y: number }[]): string {

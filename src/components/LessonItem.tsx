@@ -5,7 +5,7 @@ import { checkItem, correctAnswerText, type ItemAnswer } from '../lib/lessons';
 import { L } from '../i18n';
 
 /** Renders one deterministic exercise item (choice / gap / order) with optional reveal of the answer. Shared by lessons and mistake review. */
-export function ItemView({ item, value, onChange, revealed }: { item: Item; value: ItemAnswer; onChange: (v: ItemAnswer) => void; revealed: boolean }) {
+export function ItemView({ item, value, onChange, revealed, quiet = false }: { item: Item; value: ItemAnswer; onChange: (v: ItemAnswer) => void; revealed: boolean; /** o'yin rejimi: izoh pastki panelda ko'rsatiladi */ quiet?: boolean }) {
   const ok = revealed && checkItem(item, value);
   return (
     <div className="q">
@@ -21,7 +21,7 @@ export function ItemView({ item, value, onChange, revealed }: { item: Item; valu
         <input type="text" autoComplete="off" disabled={revealed} value={typeof value === 'string' ? value : ''} placeholder={L('Javobni yozing')} onChange={(e) => onChange(e.target.value)} />
       )}
       {item.kind === 'order' && <OrderInput item={item} value={Array.isArray(value) ? value : []} onChange={onChange} disabled={revealed} />}
-      {revealed && (
+      {revealed && !quiet && (
         <p style={{ marginTop: 8 }}>
           {ok ? <span className="ok"><CheckCircle2 size={16} />  {L('To‘g‘ri.')} </span> : <span className="bad"><XCircle size={16} />  {L('Noto‘g‘ri. To‘g‘ri javob: «')}{correctAnswerText(item)}». </span>}
           <span className="muted">{item.explainUz}</span>

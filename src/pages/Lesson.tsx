@@ -1,9 +1,11 @@
-import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Volume2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Star } from 'lucide-react';
 import { ItemView } from '../components/LessonItem';
-import { say, stopSpeaking, ttsSupported } from '../lib/speech';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { lessonById, lessonNodeId, lessonWordIds, ALL_LESSONS, UNITS } from '../content/lessons';
-import { checkItem, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
+import { checkItem, correctAnswerText, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
+import { advanceQueue, bossHp, lessonStars } from '../lib/lessonGame';
+import { BossBar, DiscoverDeck, FeedbackSheet, MissionIntro } from '../components/LessonGames';
+import { confetti, sfx } from '../lib/fx';
 import { addMistake } from '../lib/mistakes';
 import { recordAnswer } from '../lib/adaptive/store';
 import { addToReview, addXp, getProfile, pushToast } from '../lib/store';
@@ -17,16 +19,23 @@ import { PRing } from '../components/PRing';
 import { L } from '../i18n';
 
 type Step = 'learn' | 'practice' | 'speak' | 'write' | 'check' | 'result';
-const STEP_UZ: Record<Exclude<Step, 'result'>, string> = { learn: L('Tushuntirish'), practice: L('Mashq'), speak: L('Gapirish'), write: L('Yozish'), check: L('Tekshiruv') };
+const STEP_UZ: Record<Exclude<Step, 'result'>, string> = { learn: L('Kashf et'), practice: L('Mashq'), speak: L('Gapir'), write: L('Yoz'), check: L('Boss jang') };
 
 export default function LessonPage({ id }: { id: string }) {
   const found = lessonById(id);
+  const [started, setStarted] = useState(false);
   const [step, setStepState] = useState<Step>('learn');
   const [reached, setReached] = useState(0); // eng uzoq ochilgan qadam (oldinga sakrab bo'lmaydi)
   const [speakDone, setSpeakDone] = useState(false);
   const [writeDone, setWriteDone] = useState(false);
-  const [pAns, setPAns] = useState<ItemAnswer[]>([]);
-  const [pShown, setPShown] = useState<boolean[]>([]);
+  // Mashq: bitta topshiriq ekranda; xato topshiriq oxirida yana bir marta qaytadi
+  const [pQueue, setPQueue] = useState<number[]>(() => (lessonById(id)?.lesson.practice ?? []).map((_, i) => i));
+  const [pRetried, setPRetried] = useState<Set<number>>(new Set());
+  const [pVal, setPVal] = useState<ItemAnswer>(undefined);
+  const [pFb, setPFb] = useState<{ ok: boolean; xp: number } | null>(null);
+  const [pTurn, setPTurn] = useState(0);
+  const [cCur, setCCur] = useState(0);
+  const [cFb, setCFb] = useState<boolean | null>(null);
   const [cAns, setCAns] = useState<ItemAnswer[]>([]);
   const [result, setResult] = useState<ReturnType<typeof scoreCheck> | null>(null);
   const [round, setRound] = useState(0);
@@ -50,9 +59,11 @@ export default function LessonPage({ id }: { id: string }) {
     if (!r.suppress) setSlowMsg(false);
     return r.suppress;
   };
-  const tts = typeof window !== 'undefined' && ttsSupported();
   // Jon tugaganda "qayta o'rganish" paneli darhol ko'rinsin
   useEffect(() => { if (relearn !== null) document.querySelector('.relearn')?.scrollIntoView({ block: 'start' }); }, [relearn]);
+  // G'alaba: konfeti va fanfara
+  useEffect(() => { if (step === 'result' && result?.passed) { confetti(); sfx('level'); } }, [step, result]);
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [step, started]);
   const next = useMemo(() => { const i = ALL_LESSONS.findIndex((x) => x.lesson.id === id); return i >= 0 ? ALL_LESSONS[i + 1] : undefined; }, [id]);
 
   if (!found) return <div className="card"><h2>{L('Dars topilmadi')}</h2><a className="btn" href="#/learn">{L('Darslar ro‘yxati')}</a></div>;
@@ -77,15 +88,17 @@ export default function LessonPage({ id }: { id: string }) {
     if (r.passed) addToReview(lessonWordIds(lesson.id), now); // lesson words join the spaced-repetition deck
     setResult(r); setStep('result');
   };
-  const retry = () => { setCAns([]); setCShown([]); setSuppressedCheck(new Set()); setResult(null); setRound((x) => x + 1); setPlay((p) => ({ ...p, hearts: Math.max(p.hearts, 3) })); setStep('check'); };
+  const retry = () => { setCAns([]); setCShown([]); setCCur(0); setCFb(null); setSuppressedCheck(new Set()); setResult(null); setRound((x) => x + 1); setPlay((p) => ({ ...p, hearts: Math.max(p.hearts, 3) })); setStep('check'); };
 
-  const revealPractice = (i: number) => {
-    const ok = checkItem(lesson.practice[i]!, pAns[i]);
-    setPShown((x) => { const n = [...x]; n[i] = true; return n; });
-    const slow = paced(lesson.practice[i]!, pAns[i]);
+  const revealPractice = () => {
+    const i = pQueue[0]!;
+    const ok = checkItem(lesson.practice[i]!, pVal);
+    const slow = paced(lesson.practice[i]!, pVal);
     const a = answer(play, ok); // bitta bosish — bitta hodisa; yon ta'sirlar holat yangilovchisidan tashqarida
-    const np = slow ? { ...a, xp: play.xp } : a;
+    const np = slow || pRetried.has(i) ? { ...a, xp: play.xp } : a; // qaytgan topshiriqqa XP yo'q
     setPlay(np);
+    setPFb({ ok, xp: np.xp - play.xp });
+    sfx(ok ? 'ok' : 'bad');
     if (ok && (np.combo === 3 || np.combo === 5 || np.combo === 10)) pushToast(`Combo ×${np.combo}!`, 'xp');
     if (!ok) {
       const nw = wrongs.includes(i) ? wrongs : [...wrongs, i];
@@ -93,9 +106,14 @@ export default function LessonPage({ id }: { id: string }) {
       if (np.hearts === 0) setRelearn(nw.length ? nw : [0, 1, 2]);
     }
   };
+  const nextPractice = () => {
+    const r = advanceQueue(pQueue, !!pFb?.ok, pRetried);
+    setPQueue(r.queue); setPRetried(r.retried); setPVal(undefined); setPFb(null); setPTurn((t) => t + 1);
+  };
   const revealCheck = (i: number) => {
     const ok = checkItem(lesson.check[i]!, cAns[i]);
     setCShown((x) => { const n = [...x]; n[i] = true; return n; });
+    setCFb(ok); sfx(ok ? 'ok' : 'bad');
     if (paced(lesson.check[i]!, cAns[i])) setSuppressedCheck((x) => new Set(x).add(i));
     const np = { ...answer(play, ok), xp: play.xp }; // tekshiruv XP'si yakunda checkXp bilan hisoblanadi
     setPlay(np);
@@ -134,83 +152,80 @@ export default function LessonPage({ id }: { id: string }) {
         <span className="hud-hearts" role="img" aria-label={L('{0} ta jon', [play.hearts])}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
         {play.combo >= 2 && <span className="hud-combo" role="img" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
       </div>
-      <section className="card page-head with-illo" style={{ marginTop: 10 }}>
+      {!started ? (
+        <MissionIntro unit={unit} lesson={lesson} steps={steps.map((st) => STEP_UZ[st])} onStart={() => setStarted(true)} />
+      ) : (
+      <section className="card page-head lesson-head" style={{ marginTop: 10 }}>
         <small className="muted" style={{ fontWeight: 650 }}>{unit.level} · {unit.titleUz} · {lesson.minutes}  {L('daq')}</small>
-        <h2 style={{ margin: '4px 0 6px' }}>{lesson.titleUz}</h2>
-        <p style={{ margin: '0 0 12px' }}>{lesson.objectiveUz}</p>
-        <Illo kind="books" size={124} />
+        <h2 style={{ margin: '4px 0 10px' }}>{lesson.titleUz}</h2>
         <div className="chips" role="tablist" style={{ margin: 0 }}>
-          {(['learn', 'practice', 'speak', ...(lesson.writing ? ['write' as const] : []), 'check'] as const).map((s, i) => (
+          {steps.map((s, i) => (
             <button key={s} role="tab" aria-selected={step === s} disabled={i > reached} className={`chip ${step === s || (step === 'result' && s === 'check') ? 'on' : ''}`} onClick={() => { if (i <= reached) setStep(s); }}>{i + 1}. {STEP_UZ[s]}</button>
           ))}
         </div>
       </section>
-
-      {step === 'learn' && (
-        <section className="card">
-          {lesson.media?.map((m) => (
-            <div key={m.url} className="lesson-media">
-              {m.kind === 'video' ? <video src={m.url} controls preload="metadata" playsInline style={{ width: '100%', borderRadius: 12 }} /> : <audio src={m.url} controls preload="metadata" style={{ width: '100%' }} />}
-              {m.transcript && <details className="fold"><summary>{L('Matni')}</summary><p style={{ whiteSpace: 'pre-line' }}>{m.transcript}</p></details>}
-            </div>
-          ))}
-          {lesson.explanationUz.map((t) => <p key={t}>{t}</p>)}
-          {lesson.table && (
-            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', margin: '10px 0' }}>
-              <tbody>{lesson.table.map((r) => <tr key={r.form}><td style={{ padding: '8px 6px', borderTop: '1px solid var(--line)' }}><b>{r.form}</b></td><td style={{ padding: '8px 6px', borderTop: '1px solid var(--line)' }}>{r.example}</td></tr>)}</tbody>
-            </table>
-          )}
-          <h3>{L('Misollar')}</h3>
-          <ul>{lesson.examples.map((e) => <li key={e.en}>{(tts || e.audio) && <button type="button" className="btn sm" aria-label={L('Eshitish: {0}', [e.en])} style={{ padding: '2px 8px', marginRight: 6 }} onClick={() => { stopSpeaking(); if (e.audio) void new Audio(e.audio).play(); else void say(e.en, { cancelled: false }); }}><Volume2 size={14} /></button>}<b>{e.en}</b> <span className="muted">— {e.uz}</span></li>)}</ul>
-          {lesson.vocab && (<><h3>{L('Yangi so‘zlar')}</h3><p className="row">{lesson.vocab.map((v) => <span key={v.en} className="pill">{v.en} · {v.uz}</span>)}</p>
-            <p className="row"><button type="button" className="btn sm" onClick={() => { const n = addToReview(lessonWordIds(lesson.id)); setVocabMsg(n ? L('{0} ta so‘z takrorlash ro‘yxatiga qo‘shildi — ular O‘yinlar bo‘limida (Pairs, Spell, Word Rush) takrorlash uchun chiqadi.', [n]) : L('Bu so‘zlar allaqachon takrorlash ro‘yxatida.')); }}>{L('So‘zlarni takrorlashga qo‘shish')}</button>{vocabMsg && <span className="muted">{vocabMsg}</span>}</p></>)}
-          <button className="btn primary" onClick={() => setStep('practice')}>{L('Mashqqa o‘tish')} <ArrowRight size={14} /></button>
-        </section>
       )}
 
-      {step === 'practice' && (
-        <section className="card">
+      {started && step === 'learn' && (
+        <DiscoverDeck lesson={lesson} onDone={() => setStep('practice')} wordsMsg={vocabMsg}
+          onAddWords={() => { const n = addToReview(lessonWordIds(lesson.id)); setVocabMsg(n ? L('{0} ta so‘z takrorlash ro‘yxatiga qo‘shildi — ular O‘yinlar bo‘limida (Pairs, Spell, Word Rush) takrorlash uchun chiqadi.', [n]) : L('Bu so‘zlar allaqachon takrorlash ro‘yxatida.')); }} />
+      )}
+
+      {started && step === 'practice' && (
+        <section className="card game-card">
           {slowMsg && <p className="notice" role="status">{SLOW_DOWN_UZ}{L('. Juda tez berilgan javoblarga XP yozilmaydi.')}</p>}
-          <p className="muted">{L('Xato — 1 jon. Ketma-ket to‘g‘ri javob — combo.')}</p>
-          {lesson.practice.map((it, i) => (i > 0 && !pShown[i - 1] ? null : (
-            <div key={i}>
-              <ItemView item={it} value={pAns[i]} revealed={!!pShown[i]} onChange={(v) => setPAns((a) => { const n = [...a]; n[i] = v; return n; })} />
-              {!pShown[i] && <button className="btn sm" disabled={relearn !== null || pAns[i] === undefined || (Array.isArray(pAns[i]) && !(pAns[i] as string[]).length)} onClick={() => revealPractice(i)}>{L('Tekshirish')}</button>}
+          <div className="game-meta"><div className="mini-track" role="img" aria-label={L('{0} / {1} topshiriq', [lesson.practice.length - pQueue.length, lesson.practice.length])}><i style={{ width: `${(100 * (lesson.practice.length - pQueue.length)) / Math.max(1, lesson.practice.length)}%` }} /></div><span>{L('Qoldi: {0}', [pQueue.length])}</span>{pQueue[0] !== undefined && pRetried.has(pQueue[0]) && <span className="pill retry-pill"><RotateCcw size={12} /> {L('Xato qaytdi')}</span>}</div>
+          {pQueue[0] !== undefined ? (() => {
+            const i = pQueue[0];
+            const it = lesson.practice[i]!;
+            return (
+              <div key={pTurn}>
+                <ItemView item={it} value={pVal} revealed={!!pFb} quiet onChange={(v) => setPVal(v)} />
+                {!pFb && <button className="btn primary block" disabled={relearn !== null || pVal === undefined || (Array.isArray(pVal) && !pVal.length) || (typeof pVal === 'string' && !pVal.trim())} onClick={revealPractice}>{L('Tekshirish')}</button>}
+                {pFb && relearn === null && <FeedbackSheet ok={pFb.ok} n={pTurn} xp={pFb.xp} answer={correctAnswerText(it)} explain={it.explainUz} onNext={nextPractice} />}
+              </div>
+            );
+          })() : (
+            <div className="game-done">
+              <h3><Flame size={18} /> {L('Mashq tugadi!')}</h3>
+              <p className="muted">{L('+{0} XP · eng uzun combo ×{1}', [play.xp, play.maxCombo])}</p>
+              <button className="btn primary block" onClick={finishPractice}>{L('Gapirish mashqiga o‘tish')} <ArrowRight size={14} /></button>
             </div>
-          )))}
-          <p className="muted" style={{ fontSize: 13 }}>{L('{0} / {1} topshiriq', [pShown.filter(Boolean).length, lesson.practice.length])}</p>
+          )}
           {relearn !== null && relearnPanel()}
-          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null || lesson.practice.some((_, i) => !pShown[i])} onClick={finishPractice}>{L('Gapirish mashqiga o‘tish')} <ArrowRight size={14} /></button>
         </section>
       )}
 
-      {step === 'speak' && (
+      {started && step === 'speak' && (
         <section className="card">
           <LessonSpeak sentences={lesson.examples.map((e) => e.en)} onDone={() => setSpeakDone(true)} />
           <button className="btn primary" style={{ marginTop: 14 }} disabled={!speakDone} onClick={() => setStep(lesson.writing ? 'write' : 'check')}>{lesson.writing ? L('Yozish mashqiga o‘tish') : L('Yakuniy tekshiruvga o‘tish')} <ArrowRight size={14} /></button>
         </section>
       )}
 
-      {step === 'write' && lesson.writing && (
+      {started && step === 'write' && lesson.writing && (
         <section className="card">
           <LessonWrite task={lesson.writing} onDone={() => setWriteDone(true)} />
           <button className="btn primary" style={{ marginTop: 14 }} disabled={!writeDone} onClick={() => setStep('check')}>{L('Yakuniy tekshiruvga o‘tish')} <ArrowRight size={14} /></button>
         </section>
       )}
 
-      {step === 'check' && (
-        <section className="card" key={round}>
+      {started && step === 'check' && (
+        <section className="card game-card boss-card" key={round}>
+          <BossBar hp={bossHp(lesson.check.length, lesson.check.filter((it, i) => cShown[i] && checkItem(it, cAns[i])).length)} label={L('Dars bossi')} />
           {slowMsg && <p className="notice" role="status">{SLOW_DOWN_UZ}{L('. Juda tez berilgan javoblarga XP yozilmaydi.')}</p>}
-          <p className="muted">{lesson.check.length}  {L('ta savol. O‘tish uchun kamida')} {Math.ceil(PASS_RATE * lesson.check.length)}  {L('ta to‘g‘ri javob kerak. Har javob darhol tekshiriladi; xato javob 1 ta jon oladi.')}</p>
-          {lesson.check.map((it, i) => (i > 0 && !cShown[i - 1] ? null : (
-            <div key={i}>
-              <ItemView item={it} value={cAns[i]} revealed={!!cShown[i]} onChange={(v) => setCAns((a) => { const n = [...a]; n[i] = v; return n; })} />
-              {!cShown[i] && <button className="btn sm" disabled={relearn !== null || cAns[i] === undefined || (Array.isArray(cAns[i]) && !(cAns[i] as string[]).length)} onClick={() => revealCheck(i)}>{L('Tekshirish')}</button>}
-            </div>
-          )))}
+          <p className="muted game-meta">{L('Savol {0} / {1} · g‘alaba uchun kamida {2} ta to‘g‘ri javob', [Math.min(cCur + 1, lesson.check.length), lesson.check.length, Math.ceil(PASS_RATE * lesson.check.length)])}</p>
+          {lesson.check[cCur] && (() => {
+            const it = lesson.check[cCur]!;
+            return (
+              <div key={cCur}>
+                <ItemView item={it} value={cAns[cCur]} revealed={!!cShown[cCur]} quiet onChange={(v) => setCAns((a) => { const n = [...a]; n[cCur] = v; return n; })} />
+                {!cShown[cCur] && <button className="btn primary block" disabled={relearn !== null || cAns[cCur] === undefined || (Array.isArray(cAns[cCur]) && !(cAns[cCur] as string[]).length) || (typeof cAns[cCur] === 'string' && !(cAns[cCur] as string).trim())} onClick={() => revealCheck(cCur)}>{L('Zarba berish')}</button>}
+                {cShown[cCur] && cFb !== null && relearn === null && <FeedbackSheet ok={cFb} n={cCur + 3} answer={correctAnswerText(it)} explain={it.explainUz} onNext={() => { setCFb(null); if (cCur + 1 >= lesson.check.length) submitCheck(); else setCCur(cCur + 1); }} />}
+              </div>
+            );
+          })()}
           {relearn !== null && relearnPanel()}
-          <button className="btn primary" style={{ marginTop: 14 }} disabled={relearn !== null || lesson.check.some((_, i) => !cShown[i])} onClick={submitCheck}>{L('Natijani ko‘rish')}</button>
-          <p className="muted" style={{ fontSize: 13 }}>{L('{0} / {1} savol', [cShown.filter(Boolean).length, lesson.check.length])}</p>
         </section>
       )}
 
@@ -218,7 +233,10 @@ export default function LessonPage({ id }: { id: string }) {
         <section className="card">
           <div className="result-hero">
             <PRing value={result.correct} max={result.total} size={112} stroke={11} color={result.passed ? 'var(--green)' : 'var(--coral)'} label={L('{0}/{1} to‘g‘ri', [result.correct, result.total])}><b style={{ fontSize: 28 }}>{Math.round(result.rate * 100)}%</b></PRing>
-            <div><h2 style={{ margin: 0 }}>{result.passed ? L('Dars o‘zlashtirildi!') : L('Hali biroz mashq kerak')}</h2><p className="muted" style={{ margin: '4px 0 0' }}>{result.correct}/{result.total}  {L('to‘g‘ri')}{gained > 0 ? ` · +${gained} XP` : ''}</p></div>
+            <div><h2 style={{ margin: 0 }}>{result.passed ? L('Boss yengildi — missiya bajarildi!') : L('Bu safar boss yutdi')}</h2>
+              <p className="stars-row" aria-label={L('{0} ta yulduz', [lessonStars(result.rate, result.passed)])}>{[0, 1, 2].map((k) => <Star key={k} size={26} className={k < lessonStars(result.rate, result.passed) ? 'on' : ''} />)}</p>
+              <p className="muted" style={{ margin: '4px 0 0' }}>{result.correct}/{result.total}  {L('to‘g‘ri')}{gained > 0 ? ` · +${gained} XP` : ''}</p>
+              {!result.passed && <p className="muted" style={{ margin: '4px 0 0' }}>{L('Xatolar «Xatolarim» bo‘limiga tushdi. Qoidani yana bir ko‘rib, qayta jang qiling.')}</p>}</div>
             {result.passed && <Illo kind="trophy" size={96} />}
           </div>
           {play.maxCombo >= 2 && <p className="row"><span className="pill"><Flame size={13} />  {L('eng uzun combo ×')}{play.maxCombo}</span></p>}
@@ -226,9 +244,9 @@ export default function LessonPage({ id }: { id: string }) {
           {lesson.check.map((it, i) => <ItemView key={i} item={it} value={cAns[i]} revealed onChange={() => undefined} />)}
           </details>
           <div className="row" style={{ marginTop: 14 }}>
-            <button className="btn" onClick={retry}><RotateCcw size={14} />  {L('Qayta topshirish')}</button>
+            <button className="btn" onClick={retry}><RotateCcw size={14} />  {L('Qayta jang')}</button>
             {result.passed && next && <a className="btn primary" href={`#/learn/${next.lesson.id}`}>{L('Keyingi dars:')} {next.lesson.titleUz} <ArrowRight size={14} /></a>}
-            {!result.passed && <button className="btn" onClick={() => setStep('learn')}>{L('Tushuntirishni qayta o‘qish')}</button>}
+            {!result.passed && <button className="btn" onClick={() => setStep('learn')}>{L('Qoidani qayta ko‘rish')}</button>}
           </div>
         </section>
       )}
