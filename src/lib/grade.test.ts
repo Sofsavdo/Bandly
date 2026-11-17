@@ -30,8 +30,9 @@ const clean = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace
 assert.equal(readingTests.length, 7);
 // To'liq formatli mock: 3 matn, 40 savol, 60 daqiqa
 for (const t of readingTests.filter((x) => x.sections?.length)) { assert.equal(t.questions.length, 40, `${t.id}: 40 savol`); assert.equal(t.sections!.length, 3); assert.equal(t.minutes, 60); assert.equal(t.sections![0]!.at, 0); }
-assert.equal(listeningTests.length, 5);
-assert.equal(new Set([...readingTests, ...listeningTests].map((t) => t.id)).size, 12, 'test id lari noyob');
+assert.equal(listeningTests.length, 6);
+for (const t of listeningTests.filter((x) => x.sections?.length)) { assert.equal(t.questions.length, 40, `${t.id}: 40 savol`); assert.equal(t.sections!.length, 4); for (const l of t.script) assert.ok(t.names[l.speaker], `${t.id}: ${l.speaker} nomi`); }
+assert.equal(new Set([...readingTests, ...listeningTests].map((t) => t.id)).size, 13, 'test id lari noyob');
 for (const t of [...readingTests, ...listeningTests]) assert.ok(['A1', 'A2', 'B1', 'B2', 'C1'].includes(t.level), `${t.id}: daraja belgilangan`);
 // Har bir darajaga kamida bitta Reading (A2..C1) bor
 for (const lv of ['A2', 'B1', 'B2', 'C1']) assert.ok(readingTests.some((t) => t.level === lv), `Reading ${lv}`);

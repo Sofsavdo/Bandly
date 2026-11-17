@@ -74,16 +74,18 @@ for (const group of Object.values(roastLines)) for (const lv of [0, 1, 2, 3] as 
 }
 
 // 4) Listening: har bir test bitta mp3
-const VOICES: Record<string, { A: string; B?: string }> = {
+const VOICES: Record<string, { A: string; B?: string; C?: string; D?: string }> = {
   'listening-1': { A: 'bf_emma', B: 'bm_george' },
   'listening-2': { A: 'bf_isabella' },
   'listening-3': { A: 'bm_lewis', B: 'bf_emma' },
   'listening-4': { A: 'bm_george' },
   'listening-5': { A: 'bf_isabella', B: 'bm_lewis' },
+  // To'liq mock: A Sarah (UK), B Alistair (UK), C Hope (US), D Max (US)
+  'listening-full-1': { A: 'bf_emma', B: 'bm_george', C: 'af_heart', D: 'am_michael' },
 };
 const listens: Listen[] = listeningTests.map((t) => {
   const v = VOICES[t.id] ?? { A: 'bf_emma', B: 'bm_george' };
-  return { kind: 'listening', id: t.id, pauseMs: t.names.B ? 550 : 900, lines: t.script.map((l) => ({ text: l.text, voice: l.speaker === 'A' ? v.A : (v.B ?? v.A) })) };
+  return { kind: 'listening', id: t.id, pauseMs: t.names.B ? 550 : 900, lines: t.script.map((l) => ({ text: l.text, voice: (v as Record<string, string | undefined>)[l.speaker] ?? v.A })) };
 });
 
 process.stdout.write(JSON.stringify({ clips: [...clips.values()], listens }));

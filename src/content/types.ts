@@ -25,8 +25,10 @@ export interface ListeningTest {
   minutes: number;
   context: string;
   /** Ekranda ko'rsatiladigan ismlar (transkript uchun) */
-  names: { A: string; B?: string };
-  script: { speaker: 'A' | 'B'; text: string }[];
+  names: { A: string; B?: string; C?: string; D?: string };
+  script: { speaker: 'A' | 'B' | 'C' | 'D'; text: string }[];
+  /** To'liq format: qismlar — sarlavha `at` indeksli satrdan oldin */
+  sections?: { at: number; title: string }[];
   groups: { instruction: string; questionIds: number[] }[];
   questions: Question[];
 }

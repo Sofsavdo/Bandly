@@ -24,7 +24,7 @@ export default function FullExam() {
   const results = loadResults();
 
   const start = () => {
-    const s: State = { startedAt: Date.now(), listeningId: nearest(listeningTests, p.level ?? 'B1').id, readingId: (readingTests.find((t) => t.sections?.length) ?? nearest(readingTests, p.level ?? 'B1')).id, writingDone: false };
+    const s: State = { startedAt: Date.now(), listeningId: (listeningTests.find((t) => t.sections?.length) ?? nearest(listeningTests, p.level ?? 'B1')).id, readingId: (readingTests.find((t) => t.sections?.length) ?? nearest(readingTests, p.level ?? 'B1')).id, writingDone: false };
     saveFull(s); setSt(s);
   };
   const reset = () => { saveFull(null); setSt(null); };
@@ -40,7 +40,7 @@ export default function FullExam() {
             <li>Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.</li>
             <li>Test darajangizga ({p.level ?? 'B1'}) mos tanlanadi.</li>
             <li>Natijalar taxminiy: rasmiy IELTS balli emas.</li>
-            <li>Reading — <b>to‘liq format</b> (3 matn, 40 savol, 60 daqiqa). Listening hozircha <b>qisqartirilgan</b> mini-test (haqiqiy imtihonda 4 qism, 40 savol, ≈ 30 daqiqa) — to‘liq formati tayyorlanmoqda.</li>
+            <li>Listening (4 qism, 40 savol) va Reading (3 matn, 40 savol, 60 daqiqa) — <b>to‘liq format</b>. Listening audiosi savollarni o‘qish uchun pauzalarsiz, shuning uchun haqiqiy imtihondagidan qisqaroq.</li>
             <li>Kompyuter yoki planshetda topshirish tavsiya etiladi (haqiqiy kompyuterdagi IELTS ham shunday); telefonda ham ishlaydi.</li>
             <li>Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.</li>
           </ul>

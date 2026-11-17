@@ -1,5 +1,5 @@
 import { Pause, Play, RotateCcw, Volume2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { MockTest, type ExamLeftState } from '../components/MockTest';
 import type { PublicListeningTest as ListeningTest } from '../content/mockShared';
 import { listeningTrack } from '../lib/clips';
@@ -11,7 +11,12 @@ const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).
 function Transcript({ test }: { test: ListeningTest }) {
   return (
     <>
-      {test.script.map((l, i) => <p key={i}><b>{l.speaker === 'A' ? test.names.A : test.names.B}:</b> {l.text}</p>)}
+      {test.script.map((l, i) => (
+        <Fragment key={i}>
+          {test.sections?.filter((s) => s.at === i).map((s) => <h4 key={s.title}>{s.title}</h4>)}
+          <p><b>{test.names[l.speaker] ?? test.names.A}:</b> {l.text}</p>
+        </Fragment>
+      ))}
     </>
   );
 }
@@ -67,9 +72,9 @@ function BrowserPlayer({ test, practice }: { test: ListeningTest; practice: bool
     const vA = bestVoice('en'); const vB = synth.getVoices().filter((v) => v.lang.toLowerCase().startsWith('en') && v !== vA)[0] ?? vA;
     test.script.forEach((line, i, arr) => {
       const u = new SpeechSynthesisUtterance(line.text);
-      const v = line.speaker === 'A' ? vA : vB;
+      const v = line.speaker === 'A' || line.speaker === 'C' ? vA : vB;
       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
-      u.rate = 0.92; u.pitch = line.speaker === 'A' ? 1.1 : 0.85;
+      u.rate = 0.92; u.pitch = line.speaker === 'A' || line.speaker === 'C' ? 1.1 : 0.85;
       if (i === arr.length - 1) u.onend = () => setPlaying(false);
       u.onerror = () => setPlaying(false);
       synth.speak(u);
