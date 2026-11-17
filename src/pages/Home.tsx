@@ -1,10 +1,11 @@
-import { ArrowRight, BookOpenCheck, Bot, ClipboardList, Compass, Flame, Gamepad2, ListChecks, LineChart, Plus, Puzzle, Send, Target, Timer, Trophy } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Compass, Flame, Plus, Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { authConfig, getAccount } from '../lib/account';
 import { ALL_LESSONS, UNITS } from '../content/lessons';
 import { DailyCards } from '../components/DailyCards';
 import { ProgressCard } from '../components/ProgressCard';
 import { PlanCard } from '../components/PlanCard';
+import { ExamHero } from '../components/ExamHero';
 import { QuestsCard } from '../components/QuestsCard';
 import { Illo } from '../components/Illo';
 import { PRing } from '../components/PRing';
@@ -17,6 +18,7 @@ import { LEVEL_INFO } from '../lib/levels';
 import { dayKey, displayStreak, levelProgress } from '../lib/game';
 import { loadProgress, nextLesson } from '../lib/lessons';
 import { openExamTab } from '../lib/examTab';
+import { loadAnswers } from '../lib/onboarding';
 import { L } from '../i18n';
 
 const faq: [string, string][] = [
@@ -34,6 +36,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   const acc = getAccount();
   useEffect(() => { void authConfig().then((c) => setBot(c.telegram?.bot ?? null)); }, []);
   const tests = readingTests.length + listeningTests.length;
+  const onboarded = !!loadAnswers();
 
   if (isNew) return (
     <div>
@@ -43,8 +46,10 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <h1>{L('Ingliz tilini')} <span className="hl">{L('o‘yin kabi')}</span>  {L('o‘rganing')}</h1>
           <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
           <div className="cta">
-            <a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a>
-            <a className="btn lg" href="#/mocks">{L('Bepul mock test')}</a>
+            {onboarded
+              ? <a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a>
+              : <a className="btn primary lg" href="#/start">{L('Shaxsiy reja tuzish')} <ArrowRight size={18} /></a>}
+            <a className="btn lg" href={onboarded ? '#/start' : '#/placement'}>{onboarded ? L('Mening rejam') : L('Darajamni aniqlash')}</a>
           </div>
           <div className="w-proof">
             <div><b>{ALL_LESSONS.length}</b><span>{L('dars')}</span></div>
@@ -98,18 +103,6 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   const left = Math.max(0, p.dailyGoal - p.dailyXp);
   const h = new Date().getHours();
   const hello = h < 12 ? L('Xayrli tong') : h < 18 ? L('Xayrli kun') : L('Xayrli kech');
-  const quick = [
-    { href: '#/learn', icon: BookOpenCheck, label: L('Darslar'), c: 'var(--coral)' },
-    { href: '#/coach', icon: Bot, label: L('AI ustoz'), c: 'var(--brand)' },
-    { href: '#/exam', icon: Target, label: L('Imtihon'), c: 'var(--orange)' },
-    { href: '#/mocks', icon: Timer, label: L('Mock'), c: 'var(--teal)' },
-    { href: '#/grammar', icon: Puzzle, label: L('Grammar'), c: 'var(--blue)' },
-    { href: '#/games', icon: Gamepad2, label: L('O‘yinlar'), c: 'var(--pink)' },
-    { href: '#/league', icon: Trophy, label: L('Liga'), c: 'var(--yellow)' },
-    { href: '#/mistakes', icon: ClipboardList, label: L('Xatolar'), c: 'var(--red)' },
-    { href: '#/homework', icon: ListChecks, label: L('Vazifa'), c: 'var(--green)' },
-    { href: '#/results', icon: LineChart, label: L('Natijalar'), c: 'var(--ink-2)' },
-  ];
 
   return (
     <div>
@@ -128,6 +121,9 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         </div>
       )}
 
+      <ExamHero />
+      {lvl && <PlanCard />}
+
       <section className="lvlcard">
         <h3>{lvl ? `${lvl} · ${LEVEL_INFO[lvl].name}` : 'Bandly'} — {lp.level}{L('-bosqich')}</h3>
         <p>{left === 0 ? L('Bugungi maqsad bajarildi — seriya saqlandi!') : L('Bugungi maqsadgacha {0} XP', [left])}</p>
@@ -135,9 +131,6 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         <Illo kind="trophy" />
       </section>
 
-      <nav className="quick" aria-label={L('Bo‘limlar')}>
-        {quick.map((q) => <a key={q.href} href={q.href}><span className="q-ico" style={{ color: q.c }}><q.icon /></span>{q.label}</a>)}
-      </nav>
 
       <div className="dash2">
         <a className="cont" href={nl ? `#/learn/${nl.id}` : '#/learn'}>
@@ -162,7 +155,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
       </section>
 
       {!acc && <p className="notice">{L('Progress hozir faqat shu qurilmada.')} <a href="#/profile">{L('Hisob oching')}</a>  {L('— boshqa qurilmada ham ochiladi.')}</p>}
-      <PlanCard />
+      {!lvl && <PlanCard />}
       <QuestsCard />
       <ProgressCard />
       <DailyCards />

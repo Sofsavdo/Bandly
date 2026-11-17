@@ -42,6 +42,9 @@ export const uz = {
   'nav.group.exam': 'Imtihon (IELTS · CEFR · SAT)',
   'nav.group.compete': 'Musobaqa',
   'nav.group.account': 'Hisob',
+  'nav.lessons': 'Darslar',
+  'nav.practiceSection': 'Mashq',
+  'nav.sub': 'Bo‘lim sahifalari',
   'lang.label': 'Til',
   'greet.progress': '{n} ta qoldi',
 } as const;

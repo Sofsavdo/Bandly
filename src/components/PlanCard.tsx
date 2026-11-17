@@ -1,4 +1,5 @@
-import { CalendarCheck, ArrowRight } from 'lucide-react';
+import { CalendarCheck, ArrowRight, Play } from 'lucide-react';
+import { startRun, type RunTask } from '../lib/planRun';
 import { ALL_NODES, nodeById, skillNodeTitle, topicOfNode } from '../content/curriculum/inventory';
 import { ALL_LESSONS } from '../content/lessons';
 import { loadAdaptive } from '../lib/adaptive/store';
@@ -72,10 +73,26 @@ function PlanBody() {
   const lp = loadProgress();
   const weekDone = Object.values(lp).filter((x) => x.passedAt && x.passedAt >= since).length;
   const update = (np: PlanPrefs) => { setPrefs(np); savePrefs(np); };
+  const rows = plan.map((t) => {
+    const node = nodeById(t.nodeId);
+    const isVocab = node?.skill === 'vocabulary';
+    const skillTitle = skillNodeTitle(t.nodeId);
+    const lesson = ALL_LESSONS.find((x) => `ge.lesson.${x.lesson.id}` === t.nodeId);
+    const title = lesson ? L('Dars: {0}', [lesson.lesson.titleUz]) : skillTitle ?? (isVocab ? L('So‘z boyligi · {0}', [node!.level]) : (topicOfNode(t.nodeId) ?? t.nodeId));
+    const href = lesson ? `#/learn/${lesson.lesson.id}` : node?.skill === 'reading' ? '#/mocks/reading' : node?.skill === 'listening' ? '#/mocks/listening' : isVocab ? '#/games' : '#/grammar';
+    return { t, title, href, lessonId: lesson?.lesson.id };
+  });
+  /** Bir bosishda: xatolar (bo'lsa) → reja vazifalari ketma-ket; pastdagi panel keyingisiga olib boradi. */
+  const runTasks: RunTask[] = [
+    ...(mistakesDue > 0 ? [{ href: '#/mistakes', title: L('Xatolar ustida ishlash') }] : []),
+    ...rows.map((r) => ({ href: r.href, title: r.title, lessonId: r.lessonId })),
+  ];
+  const begin = () => { const g = rows.find((r) => r.href === '#/grammar'); if (g) { try { sessionStorage.setItem('bandly.nextTopic', g.title); } catch { /* */ } } startRun(runTasks); };
   return (
     <section className="card">
       <h3><CalendarCheck size={18} />  {L('Bugungi reja')} <span className="pill">{plan.reduce((s, t) => s + t.minutes, 0)}  {L('daqiqa')}</span></h3>
-      <p className="row">
+      {runTasks.length > 0 && <button type="button" className="btn primary lg plan-go" onClick={begin}><Play size={18} />  {L('Rejani boshlash')} · {L('{0} ta vazifa', [runTasks.length])}</button>}
+      <p className="row plan-meta">
         <span className="pill">{L('Maqsad:')} {GOALS.find((g) => g.id === prefs.goal)!.labelUz}</span>
         <span className="pill">{L('Kuniga')} {prefs.minutes}  {L('daq')}</span>
         <span className="pill">{L('Bu hafta:')} {weekDone}/{weekTarget}  {L('dars')}</span>
@@ -101,19 +118,11 @@ function PlanBody() {
       {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>{L('Xatolar ustida ishlash ·')} {mistakesDue}  {L('ta')}</b><span>{L('Avval qilgan xatolaringiz takrorlash vaqti keldi — eng foydali 5 daqiqa.')}</span></a>}
       {plan.length === 0 && <p className="muted">{L('Bugun uchun yangi vazifa topilmadi. Grammar bo‘limida mashq qilib ko‘ring.')}</p>}
       <div className="stack">
-        {plan.map((t) => {
-          const node = nodeById(t.nodeId);
-          const isVocab = node?.skill === 'vocabulary';
-          const skillTitle = skillNodeTitle(t.nodeId);
-          const lesson = ALL_LESSONS.find((x) => `ge.lesson.${x.lesson.id}` === t.nodeId);
-          const title = lesson ? L('Dars: {0}', [lesson.lesson.titleUz]) : skillTitle ?? (isVocab ? L('So‘z boyligi · {0}', [node!.level]) : (topicOfNode(t.nodeId) ?? t.nodeId));
-          const href = lesson ? `#/learn/${lesson.lesson.id}` : node?.skill === 'reading' ? '#/mocks/reading' : node?.skill === 'listening' ? '#/mocks/listening' : isVocab ? '#/games' : '#/grammar';
-          return (
-            <a key={t.nodeId} className="path-step" href={href} onClick={() => { if (href === '#/grammar') { try { sessionStorage.setItem('bandly.nextTopic', title); } catch { /* ignore */ } } }}>
-              <b>{title}</b><span>{t.minutes}  {L('daq ·')} {whyUz(t)}</span>
-            </a>
-          );
-        })}
+        {rows.map(({ t, title, href }) => (
+          <a key={t.nodeId} className="path-step" href={href} onClick={() => { if (href === '#/grammar') { try { sessionStorage.setItem('bandly.nextTopic', title); } catch { /* ignore */ } } }}>
+            <b>{title}</b><span>{t.minutes}  {L('daq ·')} {whyUz(t)}</span>
+          </a>
+        ))}
       </div>
       <p className="muted" style={{ fontSize: 13 }}>{L('Reja natijalaringizga qarab har kuni yangilanadi.')}</p>
     </section>

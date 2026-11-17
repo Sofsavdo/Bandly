@@ -29,13 +29,25 @@ export const isActive = (hash: string, base: string): boolean =>
 export const PRICING: NavItem = { href: '#/pricing', label: 'nav.pricing', icon: CreditCard };
 const by = (h: string): NavItem => NAV.find((n) => n.href === h)!;
 
-/** Menyu guruhlari: har bir sahifa bitta joyda; guruhlar yig'iladi (joriy sahifa guruhi ochiq turadi). */
-export interface NavGroup { id: string; label: Key; items: NavItem[] }
-export const NAV_GROUPS: NavGroup[] = [
-  { id: 'main', label: 'nav.group.main', items: [HOME, by('#/learn'), by('#/grammar'), by('#/coach')] },
-  { id: 'exam', label: 'nav.group.exam', items: [by('#/exam'), by('#/mocks'), RESULTS, TOOLS] },
-  { id: 'practice', label: 'nav.group.practice', items: [PRACTICE, SHADOW, MISTAKES, HOMEWORK, by('#/games')] },
-  { id: 'compete', label: 'nav.group.compete', items: [by('#/league'), by('#/duel')] },
-  { id: 'account', label: 'nav.group.account', items: [PROFILE, PRICING] },
+/** 7 ta asosiy bo'lim. Har bo'limning ichki sahifalari bo'lim tepasidagi yorliqlarda (SubNav) — menyu qisqa, hech bir sahifa yo'qolmaydi. */
+export interface Section { id: string; item: NavItem; children: NavItem[] }
+const LESSONS: NavItem = { href: '#/learn', label: 'nav.lessons', icon: BookOpenCheck };
+const PRACTICE_SECTION: NavItem = { href: '#/practice', label: 'nav.practiceSection', icon: PenLine };
+export const SECTIONS: Section[] = [
+  { id: 'home', item: HOME, children: [] },
+  { id: 'learn', item: by('#/learn'), children: [LESSONS, by('#/grammar'), by('#/games')] },
+  { id: 'coach', item: by('#/coach'), children: [] },
+  { id: 'exam', item: by('#/exam'), children: [by('#/exam'), by('#/mocks'), RESULTS, TOOLS] },
+  { id: 'practice', item: PRACTICE_SECTION, children: [PRACTICE, MISTAKES, SHADOW, HOMEWORK] },
+  { id: 'league', item: by('#/league'), children: [by('#/league'), by('#/duel')] },
+  { id: 'profile', item: PROFILE, children: [PROFILE, PRICING] },
 ];
 
+/** Joriy manzil qaysi bo'limga va qaysi ichki sahifaga tegishli (eng uzun mos keluvchi). */
+export function sectionOf(hash: string): { section: Section; page: NavItem } | null {
+  let best: { section: Section; page: NavItem } | null = null;
+  for (const s of SECTIONS) for (const n of [s.item, ...s.children]) {
+    if (isActive(hash, n.href) && (!best || n.href.length > best.page.href.length)) best = { section: s, page: n };
+  }
+  return best;
+}
