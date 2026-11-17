@@ -4,7 +4,7 @@
 import { FORBIDDEN, type Reaction } from '../src/content/roasts';
 
 export type Provider = 'anthropic' | 'openai' | 'gemini' | 'none';
-export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string; fallbackModel?: string }
+export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string; fallbackModels?: string[] }
 
 /** Provayder nomi: bo'sh joy va katta-kichik harfga, keng tarqalgan nomlarga chidamli; nom noto'g'ri bo'lsa — kalit turidan aniqlanadi. */
 export function detectProvider(name: string, key: string): Provider {
@@ -32,9 +32,9 @@ export function configFromEnv(env: Record<string, string | undefined> = process.
   const model = (env.AI_MODEL ?? '').trim() || d.model;
   // Kalit yoki model yo'q bo'lsa AI o'chiq hisoblanadi
   const enabled = provider !== 'none' && !!key && !!model;
-  // Zaxira model: asosiy model band bo'lsa (503) — shu bilan javob beriladi. Gemini uchun oldingi avlod Flash (ishlab chiqarishda qo'llanadi)
-  const fb = (env.AI_FALLBACK_MODEL ?? '').trim() || (provider === 'gemini' ? 'gemini-3.6-flash' : '');
-  return { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, ''), ...(fb && fb !== model ? { fallbackModel: fb } : {}) };
+  // Zaxira modellar (vergul bilan): asosiy model band yoki javobsiz bo'lsa — navbat bilan. Gemini uchun: tez Flash-Lite, keyin oldingi avlod Flash
+  const fbs = ((env.AI_FALLBACK_MODEL ?? '').trim() || (provider === 'gemini' ? 'gemini-3.5-flash-lite,gemini-3.6-flash' : '')).split(',').map((x) => x.trim()).filter((x) => x && x !== model);
+  return { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, ''), ...(fbs.length ? { fallbackModels: fbs } : {}) };
 }
 
 /** AI nega o'chiq — log uchun (kalitning o'zi chiqarilmaydi). */
@@ -52,19 +52,20 @@ export class AiError extends Error {
 
 type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body: string; signal: AbortSignal }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
-export interface CompleteOpts { maxTokens?: number; timeoutMs?: number; fetchImpl?: FetchLike; retryDelayMs?: number }
+export interface CompleteOpts { maxTokens?: number; timeoutMs?: number; fetchImpl?: FetchLike; attemptTimeoutMs?: number }
 
 /** Bitta so'rov: tizim ko'rsatmasi + foydalanuvchi matni → javob matni. */
-/** Vaqtinchalik band bo'lish (503/500/529/429): bir marta qisqa kutib qayta, keyin zaxira model bilan urinadi. */
-const TRANSIENT = new Set([429, 500, 503, 529]);
+/** Vaqtinchalik xato (band 503/500/529/429 yoki javobsiz qolish): darhol keyingi zaxira modelga o'tiladi.
+ *  Zaxira bo'lsa, har urinish ko'pi bilan 9 soniya — o'quvchi 20–30 soniya "qotib" kutmasin. */
+const TRANSIENT = new Set([429, 500, 503, 504, 529]);
 export async function complete(cfg: AiConfig, system: string, user: string, opts: CompleteOpts = {}): Promise<string> {
-  const plan: AiConfig[] = [cfg, cfg, ...(cfg.fallbackModel ? [{ ...cfg, model: cfg.fallbackModel }] : [])];
+  const plan: AiConfig[] = [cfg, ...(cfg.fallbackModels ?? []).map((m) => ({ ...cfg, model: m }))];
+  const perTry = plan.length > 1 ? Math.min(opts.timeoutMs ?? 20_000, opts.attemptTimeoutMs ?? 9_000) : opts.timeoutMs;
   let last: unknown;
   for (let i = 0; i < plan.length; i++) {
-    try { return await completeOnce(plan[i]!, system, user, opts); } catch (e) {
+    try { return await completeOnce(plan[i]!, system, user, { ...opts, timeoutMs: perTry }); } catch (e) {
       last = e;
       if (!(e instanceof AiError) || !e.upstream || !TRANSIENT.has(e.upstream)) throw e;
-      if (i === 0) await new Promise((r) => setTimeout(r, opts.retryDelayMs ?? 700));
     }
   }
   const e = last as AiError;
@@ -90,7 +91,7 @@ async function completeOnce(cfg: AiConfig, system: string, user: string, opts: C
     url = `${cfg.baseUrl}/v1beta/models/${encodeURIComponent(cfg.model)}:generateContent`;
     headers = { ...headers, 'x-goog-api-key': cfg.key };
     // Gemini 3 "o'ylaydigan" modellar: o'ylash past darajada (tez va arzon); o'ylash tokenlari ham chegara ichida bo'lishi mumkin — zaxira beramiz
-    const g3 = /gemini-3/i.test(cfg.model);
+    const g3 = /gemini-3/i.test(cfg.model) && !/lite/i.test(cfg.model); // Flash-Lite: o'ylash sozlamasisiz (tez)
     body = { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: { maxOutputTokens: g3 ? Math.max(2048, maxTokens * 4) : maxTokens, ...(g3 ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) } };
   }
   try {
@@ -108,7 +109,8 @@ async function completeOnce(cfg: AiConfig, system: string, user: string, opts: C
     return text.trim();
   } catch (e) {
     if (e instanceof AiError) throw e;
-    throw new AiError(504, 'AI javob bermadi (vaqt tugadi yoki aloqa yo‘q)');
+    console.error(`[ai] ${cfg.provider} ${cfg.model} → javob yo'q (vaqt tugadi yoki aloqa uzildi)`);
+    throw new AiError(504, 'AI javob bermadi (vaqt tugadi yoki aloqa yo‘q)', 504);
   } finally {
     clearTimeout(timer);
   }

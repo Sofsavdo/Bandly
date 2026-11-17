@@ -152,21 +152,31 @@ console.log('ai.test: OK');
 
 assert.equal((await import('./ai')).configFromEnv({ AI_API_KEY: 'AQ.Ab12' }).provider, 'gemini', 'yangi Gemini auth kaliti (AQ.) tanildi');
 
-// Model band (503): bir marta qayta, keyin zaxira model; doimiy xato (401) qayta urinilmaydi
+// Model band (503) yoki javobsiz: darhol zaxira modellarga (Flash-Lite, keyin 3.6 Flash); doimiy xato (401) qayta urinilmaydi
 {
   const { configFromEnv: cfe, complete: comp, AiError: AE } = await import('./ai');
   const g = cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AQ.k' });
-  assert.equal(g.fallbackModel, 'gemini-3.6-flash');
+  assert.deepEqual(g.fallbackModels, ['gemini-3.5-flash-lite', 'gemini-3.6-flash']);
   const models: string[] = [];
-  const busyThenFallback = (async (u: string) => { const m = decodeURIComponent(u.split('/models/')[1]!.split(':')[0]!); models.push(m); return m === 'gemini-3.6-flash' ? { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'hi' }] } }] }) } : { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE', message: 'high demand' } }) }; }) as never;
-  assert.equal(await comp(g, 's', 'u', { fetchImpl: busyThenFallback, retryDelayMs: 1 }), 'hi');
-  assert.deepEqual(models, ['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.6-flash']);
+  const busyThenLite = (async (u: string) => { const m = decodeURIComponent(u.split('/models/')[1]!.split(':')[0]!); models.push(m); return m === 'gemini-3.5-flash-lite' ? { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'hi' }] } }] }) } : { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE', message: 'high demand' } }) }; }) as never;
+  assert.equal(await comp(g, 's', 'u', { fetchImpl: busyThenLite }), 'hi');
+  assert.deepEqual(models, ['gemini-3.8-flash', 'gemini-3.5-flash-lite']);
+  // javobsiz qolgan model (osilib qolish) — qisqa vaqtdan keyin zaxiraga
+  const seen: string[] = [];
+  const hang = ((u: string, init: { signal: AbortSignal }) => { const m = decodeURIComponent(u.split('/models/')[1]!.split(':')[0]!); seen.push(m); if (m === 'gemini-3.8-flash') return new Promise((_, rej) => init.signal.addEventListener('abort', () => rej(new Error('aborted')))); return Promise.resolve({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }) }); }) as never;
+  const t0 = Date.now();
+  assert.equal(await comp(g, 's', 'u', { fetchImpl: hang, attemptTimeoutMs: 50 }), 'ok');
+  assert.ok(Date.now() - t0 < 2000, 'osilib qolgan model kutilmaydi'); assert.deepEqual(seen, ['gemini-3.8-flash', 'gemini-3.5-flash-lite']);
   let n = 0;
   const allBusy = (async () => { n++; return { ok: false, status: 503, json: async () => ({}) }; }) as never;
-  await assert.rejects(comp(g, 's', 'u', { fetchImpl: allBusy, retryDelayMs: 1 }), (e: unknown) => e instanceof AE && e.status === 503 && /band/.test(e.message));
+  await assert.rejects(comp(g, 's', 'u', { fetchImpl: allBusy }), (e: unknown) => e instanceof AE && e.status === 503 && /band/.test(e.message));
   assert.equal(n, 3);
   n = 0;
   const badKey = (async () => { n++; return { ok: false, status: 401, json: async () => ({}) }; }) as never;
-  await assert.rejects(comp(g, 's', 'u', { fetchImpl: badKey, retryDelayMs: 1 }), /kaliti yaroqsiz/);
+  await assert.rejects(comp(g, 's', 'u', { fetchImpl: badKey }), /kaliti yaroqsiz/);
   assert.equal(n, 1, '401 qayta urinilmaydi');
+  // Flash-Lite'ga o'ylash sozlamasi yuborilmaydi
+  let sb: Record<string, any> = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+  await comp({ ...g, model: 'gemini-3.5-flash-lite', fallbackModels: [] }, 's', 'u', { fetchImpl: (async (_u: string, init: { body: string }) => { sb = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'x' }] } }] }) }; }) as never });
+  assert.equal(sb.generationConfig.thinkingConfig, undefined);
 }
