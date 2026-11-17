@@ -134,3 +134,18 @@ console.log('ai.test: OK');
   assert.match(why({ AI_PROVIDER: 'xyz', AI_API_KEY: 'abc' })!, /AI_PROVIDER noma’lum/);
   assert.equal(why({ AI_PROVIDER: 'anthropic', AI_API_KEY: 'sk-ant-1' }), null);
 }
+
+// Gemini 3: standart model, o'ylash past, javob "thought" qismlarisiz yig'iladi
+{
+  const { configFromEnv: cfe, complete: comp } = await import('./ai');
+  const g = cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AIzaX' });
+  assert.equal(g.model, 'gemini-3.8-flash');
+  let sentBody: Record<string, any> = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const txt = await comp(g, 'sys', 'hi', { maxTokens: 300, fetchImpl: (async (_u: string, init: { body: string }) => { sentBody = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'thinking...', thought: true }, { text: '{"reply":' }, { text: '"ok"}' }] } }] }) }; }) as never });
+  assert.equal(txt, '{"reply":"ok"}');
+  assert.equal(sentBody.generationConfig.thinkingConfig.thinkingLevel, 'low');
+  assert.ok(sentBody.generationConfig.maxOutputTokens >= 2048);
+  const old = cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AIzaX', AI_MODEL: 'gemini-2.5-flash' });
+  await comp(old, 's', 'u', { maxTokens: 300, fetchImpl: (async (_u: string, init: { body: string }) => { sentBody = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'x' }] } }] }) }; }) as never });
+  assert.equal(sentBody.generationConfig.thinkingConfig, undefined, 'eski modelga thinkingLevel yuborilmaydi');
+}

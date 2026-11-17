@@ -25,7 +25,7 @@ export function configFromEnv(env: Record<string, string | undefined> = process.
   const defaults: Record<Provider, { model: string; base: string }> = {
     anthropic: { model: 'claude-haiku-5-5', base: 'https://api.anthropic.com' },
     openai: { model: 'gpt-4o-mini', base: 'https://api.openai.com' },
-    gemini: { model: 'gemini-2.0-flash', base: 'https://generativelanguage.googleapis.com' },
+    gemini: { model: 'gemini-3.8-flash', base: 'https://generativelanguage.googleapis.com' },
     none: { model: '', base: '' },
   };
   const d = defaults[provider];
@@ -71,7 +71,9 @@ export async function complete(cfg: AiConfig, system: string, user: string, opts
   } else {
     url = `${cfg.baseUrl}/v1beta/models/${encodeURIComponent(cfg.model)}:generateContent`;
     headers = { ...headers, 'x-goog-api-key': cfg.key };
-    body = { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: { maxOutputTokens: maxTokens } };
+    // Gemini 3 "o'ylaydigan" modellar: o'ylash past darajada (tez va arzon); o'ylash tokenlari ham chegara ichida bo'lishi mumkin — zaxira beramiz
+    const g3 = /gemini-3/i.test(cfg.model);
+    body = { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: { maxOutputTokens: g3 ? Math.max(2048, maxTokens * 4) : maxTokens, ...(g3 ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) } };
   }
   try {
     const res = await f(url, { method: 'POST', headers, body: JSON.stringify(body), signal: ctl.signal });
@@ -83,7 +85,7 @@ export async function complete(cfg: AiConfig, system: string, user: string, opts
       throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`);
     }
     const j = (await res.json()) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    const text = cfg.provider === 'anthropic' ? j.content?.[0]?.text : cfg.provider === 'openai' ? j.choices?.[0]?.message?.content : j.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = cfg.provider === 'anthropic' ? j.content?.[0]?.text : cfg.provider === 'openai' ? j.choices?.[0]?.message?.content : (j.candidates?.[0]?.content?.parts ?? []).filter((p: { thought?: boolean; text?: string }) => !p.thought && typeof p.text === 'string').map((p: { text: string }) => p.text).join('');
     if (typeof text !== 'string' || !text.trim()) throw new AiError(502, 'AI bo‘sh javob berdi');
     return text.trim();
   } catch (e) {
