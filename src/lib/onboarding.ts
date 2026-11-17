@@ -1,8 +1,8 @@
 // Ro'yxatdan o'tishdan oldingi qisqa savolnoma (8 qadam, har biri bir bosish) va unga qarab shaxsiy reja.
-// Reja hisob-kitobi oshkora: bir CEFR darajasi (~1 IELTS band) uchun ~200 soat yo'naltirilgan mashg'ulot (Cambridge "guided learning
-// hours" bo'yicha keng tarqalgan taxmin). Natija "taxminiy" deb ko'rsatiladi — kafolat emas.
+// Reja hisob-kitobi oshkora: bitta band uchun ~150 soat (progress.ts dagi HOURS_PER_BAND — Cambridge/IELTS tavsiyasi 100–200 soat).
+// Natija "taxminiy" deb ko'rsatiladi — kafolat emas.
 import type { Cefr } from './levels';
-import { LEVEL_BAND } from './progress';
+import { HOURS_PER_BAND, LEVEL_BAND } from './progress';
 import { weeklyLessonTarget, type Goal } from './planPrefs';
 
 export type Why = 'abroad' | 'local' | 'career' | 'self';
@@ -22,7 +22,6 @@ export interface Answers {
   tutor: Tutor;
 }
 
-export const HOURS_PER_BAND = 200;
 const WEEKS: Record<When, number | null> = { m1: 4, m3: 12, m6: 24, later: 40, unknown: null };
 export const isExam = (g: Goal): boolean => g !== 'general';
 

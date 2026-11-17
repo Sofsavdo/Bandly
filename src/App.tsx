@@ -6,7 +6,9 @@ import { Header } from './components/Header';
 import { TabBar } from './components/TabBar';
 import { PaySheet } from './components/PaySheet';
 import { Toasts } from './components/Toasts';
-import { NAV_GROUPS } from './components/nav';
+import { sectionOf } from './components/nav';
+import { SubNav } from './components/SubNav';
+import { PlanRunBar } from './components/PlanRunBar';
 import { useT } from './i18n';
 import Home from './pages/Home';
 import Exam from './pages/Exam';
@@ -101,7 +103,8 @@ export default function App() {
   const hash = useHash();
   const t = useT();
   // Har sahifada bitta h1 (ekran o'quvchilar uchun): bo'lim nomi menyudan
-  const section = NAV_GROUPS.flatMap((g) => g.items).filter((n) => n.href === '#/' ? hash === '#/' || hash === '' : hash === n.href || hash.startsWith(n.href + '/')).sort((a, b) => b.href.length - a.href.length)[0];
+  const where = sectionOf(hash);
+  const section = where?.page;
   // Menyu bosilganda yangi sahifa har doim tepadan boshlansin
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
@@ -113,8 +116,9 @@ export default function App() {
   return (
     <>
       <Header hash={hash} />
-      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{page}</main>
+      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{where && where.section.children.some((c) => c.href === hash) && <SubNav items={where.section.children} hash={hash} />}{page}</main>
       <Footer />
+      <PlanRunBar hash={hash} />
       <TabBar hash={hash} />
       <Toasts />
       <PaySheet />

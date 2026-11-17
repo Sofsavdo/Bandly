@@ -615,3 +615,39 @@ table.data tr.idle td { opacity: .55; }
 .onboard-result h1.say { font-size: clamp(28px, 7vw, 40px); }
 .onboard-adult { flex-wrap: nowrap; align-items: flex-start; text-align: left; }
 .onboard-adult input { flex: none; margin-top: 3px; }
+
+/* Bo'lim ichidagi sahifalar (SubNav) */
+.subnav { display: flex; width: fit-content; max-width: 100%; margin: 0 0 14px; }
+.subnav a { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex: none; border-radius: 999px; padding: 8px 14px; font-weight: 650; font-size: 14px; color: inherit; text-decoration: none; }
+.subnav a.on { background: var(--inv); color: var(--on-inv); }
+@media (prefers-color-scheme: dark) { .subnav a.on { background: #fff; color: #14162b; } }
+
+/* Bugungi reja navbati (PlanRunBar) */
+.planrun { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 40; width: min(560px, calc(100% - 24px)); display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; border-radius: 22px; background: var(--surface); box-shadow: 0 18px 40px -16px rgba(20, 22, 43, .35); border: 1px solid var(--line-2); }
+.planrun .grow { flex: 1; min-width: 0; }
+.planrun small { display: block; color: var(--muted); font-weight: 650; font-size: 12px; }
+.planrun b { display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14.5px; }
+.planrun-dots { display: flex; flex-direction: column; gap: 3px; }
+.planrun-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.planrun-dots i.done, .planrun-dots i.now { background: var(--brand); }
+@media (min-width: 980px) { .planrun { bottom: 24px; } }
+.plan-go { width: 100%; justify-content: center; margin: 4px 0 12px; }
+
+/* Bosh sahifa: imtihon bloki */
+.exam-hero { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 20px; border-radius: 28px; margin-bottom: 16px; background: var(--inv); color: var(--on-inv); }
+.exam-hero .eh-main { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.eh-eye { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; opacity: .85; }
+.eh-days { margin: 0; font-weight: 650; }
+.eh-days b { font-family: var(--display); font-size: 44px; line-height: 1; margin-right: 4px; }
+.eh-set { color: inherit; font-weight: 650; display: inline-flex; gap: 6px; align-items: center; text-decoration: underline; }
+.eh-btn { background: rgba(255,255,255,.14); color: inherit; border: 0; }
+.eh-ring { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+.eh-ring b { font-family: var(--display); font-size: 24px; }
+.eh-ring small { font-size: 12px; opacity: .75; }
+@media (prefers-color-scheme: dark) { .exam-hero { background: #fff; color: #14162b; } .eh-btn { background: rgba(20,22,43,.08); } }
+.card .row.plan-meta:has(> .pill) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.row.plan-meta > .pill { justify-content: center; text-align: center; }
+.row.plan-meta > .btn { justify-content: center; }
+@media (min-width: 720px) { .card .row.plan-meta:has(> .pill) { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.planrun b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
+body.has-planrun main.container { padding-bottom: 96px; }

@@ -1,4 +1,4 @@
-import { BarChart3, Megaphone, Users, ChevronDown, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
+import { BarChart3, Megaphone, Users, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
 import { getAccount, onAccountChange } from '../lib/account';
 import { SignOutDialog } from './SignOutDialog';
 import { LangPicker } from './LangPicker';
@@ -8,7 +8,7 @@ import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
-import { NAV_GROUPS, PROFILE, isActive } from './nav';
+import { PROFILE, SECTIONS, isActive, sectionOf } from './nav';
 import { L } from '../i18n';
 
 function Stats() {
@@ -45,6 +45,7 @@ export function Header({ hash }: { hash: string }) {
     ...(role === 'admin' || role === 'creator' ? [{ href: '#/creator', icon: Megaphone, label: L('Hamkor kabineti') }] : []),
     ...(role === 'admin' || role === 'teacher' ? [{ href: '#/groups', icon: Users, label: L('Guruhlarim') }] : []),
   ];
+  const here = sectionOf(hash)?.section.id ?? null;
   useEffect(() => setOpen(false), [hash]);
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
   return (
@@ -53,12 +54,7 @@ export function Header({ hash }: { hash: string }) {
         <div className="container">
           <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={36} />{BRAND.name}</a>
           <nav className="nav" aria-label={t('nav.main')}>
-            {NAV_GROUPS.map((g) => (
-              <div key={g.id} className="nav-group">
-                {g.id !== 'main' && <span className="nav-label">{t(g.label)}</span>}
-                {g.items.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''} aria-current={isActive(hash, n.href) ? 'page' : undefined}><n.icon size={16} />{t(n.label)}</a>)}
-              </div>
-            ))}
+            {SECTIONS.map((sc) => <a key={sc.id} href={sc.item.href} className={here === sc.id ? 'active' : ''} aria-current={here === sc.id ? 'page' : undefined}><sc.item.icon size={16} />{t(sc.item.label)}</a>)}
             {extra.map((x) => <a key={x.href} href={x.href} className={isActive(hash, x.href) ? 'active' : ''}><x.icon size={16} />{x.label}</a>)}
           </nav>
           <div className="header-right">
@@ -80,15 +76,7 @@ export function Header({ hash }: { hash: string }) {
             </div>
             <div className="dstats"><Stats /></div>
             <LangPicker />
-            {NAV_GROUPS.map((g) => {
-              const here = g.items.some((n) => isActive(hash, n.href));
-              return (
-                <details key={g.id} className="dgroup" open={g.id === 'main' || here}>
-                  <summary>{t(g.label)}<ChevronDown size={18} /></summary>
-                  {g.items.map((n) => <a key={n.href} href={n.href} className={`dlink ${isActive(hash, n.href) ? 'active' : ''}`}><n.icon size={20} />{t(n.label)}</a>)}
-                </details>
-              );
-            })}
+            {SECTIONS.map((sc) => <a key={sc.id} href={sc.item.href} className={`dlink ${here === sc.id ? 'active' : ''}`}><sc.item.icon size={20} />{t(sc.item.label)}</a>)}
             {extra.map((x) => <a key={x.href} className={`dlink ${isActive(hash, x.href) ? 'active' : ''}`} href={x.href}><x.icon size={20} />{x.label}</a>)}
             <div className="dacct">
               <span>{acc ? <>{L('Hisob:')} <b>{acc.nickname}</b></> : L('Hisobga kirmagansiz')}</span>
