@@ -82,7 +82,7 @@ export async function complete(cfg: AiConfig, system: string, user: string, opts
       let why = '';
       try { const e = (await res.json()) as { error?: { type?: string; message?: string; status?: string } }; why = `${e.error?.type ?? e.error?.status ?? ''} ${String(e.error?.message ?? '').slice(0, 160)}`.trim(); } catch { /* bo'sh */ }
       console.error(`[ai] ${cfg.provider} ${cfg.model} → HTTP ${res.status}${why ? `: ${why}` : ''}`);
-      throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`);
+      throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 402 ? 'AI ustoz vaqtincha ishlamayapti: AI xizmati hisobida mablag‘ tugagan. Administratorga xabar berildi.' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`);
     }
     const j = (await res.json()) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     const text = cfg.provider === 'anthropic' ? j.content?.[0]?.text : cfg.provider === 'openai' ? j.choices?.[0]?.message?.content : (j.candidates?.[0]?.content?.parts ?? []).filter((p: { thought?: boolean; text?: string }) => !p.thought && typeof p.text === 'string').map((p: { text: string }) => p.text).join('');
