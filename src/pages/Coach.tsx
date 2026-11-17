@@ -28,6 +28,12 @@ const OPENERS = [
   L('Hello there! Let’s see if your English is as good as you think. Tell me about yourself in three sentences.'),
   L('Salom! Bugun sen gapirasan, men kulaman. Tell me, what annoys you the most in your city?'),
 ];
+// AI javob bermasa (provayder band yoki aloqa yo'q) — Bandi buni ovoz bilan aytadi, jim turib qolmaydi
+const SORRY = [
+  L('Uff, aloqam biroz qotib qoldi. Yana bir marta ayting-chi?'),
+  L('Kechirasiz, miyam bir soniya o‘chib qoldi. Qaytadan ayting!'),
+  L('Hmm, eshitolmay qoldim. Yana bir bor, iltimos.'),
+];
 const NATIVE_STT: Record<string, string> = { uz: 'uz-UZ', ru: 'ru-RU', kk: 'kk-KZ', ky: 'ky-KG', tg: 'tg-TJ', en: 'uz-UZ' };
 const nativeStt = (): string => NATIVE_STT[getLang()] ?? 'uz-UZ';
 const isNative = (t: string): boolean => /[А-Яа-яЁёҚқҒғЎўҲҳӮӯҶҷӢӣ]/.test(t) || /[‘’ʻ]|\b(men|sen|siz|salom|qanday|keling|yaxshi|bu|uchun|bilan|emas|ham|nima|gapir|ayt)\b/i.test(t);
@@ -124,7 +130,10 @@ export default function Coach() {
       if (turns.current.length % 8 === 0) loadMinutes();
       if (liveRef.current) await tutorSays(line);
     } catch (e) {
-      setErr((e as Error).message); setPhase('error');
+      // Bandi jim qolmaydi: qisqa ovozli uzr aytadi va yana tinglaydi (o'quvchi gapini qayta aytadi)
+      setErr((e as Error).message); pending.current = null;
+      turns.current = turns.current.slice(0, -1);
+      if (liveRef.current) { const line = SORRY[Math.floor(Math.random() * SORRY.length)]!; setEmotion('disappointed'); await tutorSays(line); } else setPhase('error');
     }
   };
 

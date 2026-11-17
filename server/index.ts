@@ -361,6 +361,7 @@ const httpServer = createServer(async (req, res) => {
       const r = await transcribe(stt, audio, String(req.headers['content-type'] ?? ''));
       const secs = r.seconds || audio.length / 4000; // so'z vaqti bo'lmasa — hajmdan taxmin
       recordStt(db, p.id, secs);
+      console.log(`[stt] ${secs.toFixed(1)}s til=${r.lang ?? '?'} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
       addCall(db, p.id, secs);
       recordAiCost(db, { playerId: p.id, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
       return send(res, 200, { text: r.text, lang: r.lang });
