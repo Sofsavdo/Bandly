@@ -6,6 +6,7 @@ import { estimate, loadSkills, saveSkill, setFor } from '../lib/skillCheck';
 import { recordTestAnswers } from '../lib/adaptive/record';
 import { say, stopSpeaking, ttsSupported } from '../lib/speech';
 import { useProfile } from '../lib/store';
+import { Illo } from '../components/Illo';
 
 type Phase = 'intro' | 'reading' | 'listening' | 'done';
 const MAX_PLAYS = 2;
@@ -63,9 +64,9 @@ export default function SkillCheck() {
 
   return (
     <div>
-      <section className="card">
-        <h2>Ko‘nikmalar tekshiruvi</h2>
-        <p>Daraja testi grammatika va so‘z boyligini o‘lchaydi. Bu tekshiruv esa <b>Reading</b> va <b>Listening</b> darajangizni alohida baholaydi — ular bir-biridan farq qilishi tabiiy.</p>
+      <section className="card page-head with-illo t-sky">
+        <h2>Ko‘nikmalar tekshiruvi</h2><Illo kind="headphones" size={124} />
+        <p>Reading va Listening darajangizni alohida baholaydi.</p>
         <p className="row"><span className="pill">To‘plam: {set.level}</span><span className="pill">~10 daqiqa</span>{p.level ? <span className="pill" style={{ whiteSpace: 'normal' }}>Daraja testi: {p.level}</span> : <a className="btn sm" href="#/placement">Avval daraja testi</a>}</p>
         <p className="muted" style={{ fontSize: 13 }}>Natija taxminiy (pilot, metodist tekshiruvi kutilmoqda): 4 savoldan kamida 3 tasi to‘g‘ri bo‘lsa — {set.level}, aks holda bir pog‘ona past deb olinadi. Bu rasmiy CEFR yoki IELTS natijasi emas.</p>
         {phase === 'intro' && <button className="btn primary" onClick={() => setPhase('reading')}>Boshlash <ArrowRight size={14} /></button>}

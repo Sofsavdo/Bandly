@@ -8,6 +8,7 @@ import { checkItem, type ItemAnswer } from '../lib/lessons';
 import { checkFix, dueMistakes, load, openMistakes, recordReview, RESOLVE_AFTER, type Mistake } from '../lib/mistakes';
 import { recordAnswer, logErrors } from '../lib/adaptive/store';
 import { addXp } from '../lib/store';
+import { Illo } from '../components/Illo';
 
 const SOURCE_UZ: Record<Mistake['source'], string> = { lesson: 'Dars', grammar: 'Grammar', writing: 'Yozish', coach: 'AI ustoz' };
 
@@ -84,9 +85,9 @@ export default function Mistakes() {
 
   return (
     <div>
-      <section className="card">
-        <h2>Xatolar ustida ishlash</h2>
-        <p>Darslar, Grammar, yozish va AI ustoz bilan suhbatda qilgan xatolaringiz shu yerga yig‘iladi va to‘g‘ri bajarmaguningizcha qaytib keladi: 1, 3 va 7 kundan keyin. Ketma-ket {RESOLVE_AFTER} marta to‘g‘ri javob bersangiz, xato “yengilgan” hisoblanadi.</p>
+      <section className="card page-head with-illo t-coral">
+        <h2>Xatolar ustida ishlash</h2><Illo kind="target" size={124} />
+        <p>Barcha bo‘limlardagi xatolaringiz shu yerga yig‘iladi va 1, 3, 7 kundan keyin qaytadi.</p>
         <p className="row"><span className="pill">Bugun: {queue.length}</span><span className="pill">Ochiq xatolar: {open.length}</span>{(stats.ok + stats.bad) > 0 && <span className="pill">Bu safar: {stats.ok} ✓ · {stats.bad} ✗</span>}</p>
       </section>
       {cur ? (

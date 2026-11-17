@@ -1,25 +1,27 @@
-import { ArrowRight, Bot, Clapperboard, PenLine, Compass, Map as MapIcon, Flame, Mic, Plus, Puzzle, Send, Star, Target, Timer, Zap } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Bot, ClipboardList, Compass, Flame, Gamepad2, ListChecks, LineChart, Plus, Puzzle, Send, Target, Timer, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { authConfig, getAccount } from '../lib/account';
-import { ALL_LESSONS } from '../content/lessons';
-import { Mascot } from '../components/Mascot';
+import { ALL_LESSONS, UNITS } from '../content/lessons';
 import { DailyCards } from '../components/DailyCards';
 import { ProgressCard } from '../components/ProgressCard';
 import { PlanCard } from '../components/PlanCard';
 import { QuestsCard } from '../components/QuestsCard';
-import { HeroShowcase } from '../components/HeroShowcase';
-import { TodayHero } from '../components/TodayHero';
+import { Illo } from '../components/Illo';
+import { PRing } from '../components/PRing';
+import { WeekBars } from '../components/WeekBars';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { vocab } from '../content/vocab';
 import { useProfile } from '../lib/store';
 import { LEVEL_INFO } from '../lib/levels';
+import { dayKey, displayStreak, levelProgress } from '../lib/game';
+import { loadProgress, nextLesson } from '../lib/lessons';
+import { openExamTab } from '../lib/examTab';
 
 const faq: [string, string][] = [
-  ['Nima bepul?', 'Darajani aniqlash testi, Mock Arena (Listening va Reading), so‘z o‘yinlari va darslarning bir qismi bepul. Narxlar va har bir tarifga nima kirishi — «Obuna turlari» sahifasida.'],
-  ['Qanday kiraman?', 'Telegram orqali, bir bosishda: parol va SMS kerak emas. Kirsangiz progress, reyting va obuna boshqa qurilmada ham ochiladi.'],
-  ['Speaking’da ovozim saqlanadimi?', 'Yo‘q. Ovoz yozib olinmaydi va saqlanmaydi. AI yoqilganda faqat suhbat matni yuboriladi.'],
-  ['Baholar rasmiy natijami?', 'Yo‘q. Barcha ballar taxminiy va tayyorgarlikni kuzatish uchun. Rasmiy natijani faqat imtihon markazi beradi.'],
-  ['“Qattiq” ustoz nima?', 'Ixtiyoriy, faqat 18+ tasdiqlash bilan: ustoz xatoingiz ustidan kuladi. Oila, din, millat, tashqi ko‘rinish haqida hech qachon gapirmaydi. Imtihon rejimida o‘chiq.'],
+  ['Nima bepul?', 'Darajani aniqlash testi, Mock Arena (Listening va Reading), so‘z o‘yinlari va darslarning bir qismi.'],
+  ['Qanday kiraman?', 'Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.'],
+  ['Ovozim saqlanadimi?', 'Yo‘q. Ovoz yozib olinmaydi; AI yoqilganda faqat suhbat matni yuboriladi.'],
+  ['Baholar rasmiymi?', 'Yo‘q, taxminiy. Rasmiy natijani faqat imtihon markazi beradi.'],
 ];
 
 /** preview=true — #/welcome: yangi foydalanuvchi ko'radigan sahifa (progressdan qat'i nazar; reklama havolasi uchun ham). */
@@ -28,72 +30,51 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   const lvl = p.level;
   const isNew = preview || (!lvl && p.xp === 0);
   const [bot, setBot] = useState<string | null>(null);
-  const signedIn = !!getAccount();
+  const acc = getAccount();
   useEffect(() => { void authConfig().then((c) => setBot(c.telegram?.bot ?? null)); }, []);
   const tests = readingTests.length + listeningTests.length;
-  const daysLeft = p.examDate ? Math.ceil((new Date(p.examDate).getTime() - Date.now()) / 86400000) : null;
-  const low = lvl === 'A1' || lvl === 'A2';
-  const more = [
-    { icon: Puzzle, title: 'Grammar', text: low ? 'Asoslar: to be, Present Simple' : 'Mavzular bo‘yicha mashq', href: '#/grammar' },
-    { icon: PenLine, title: 'Gap tuzish', text: 'Tarjima va so‘z tartibi', href: '#/practice' },
-    { icon: Clapperboard, title: 'Eshit va takrorla', text: 'Shadowing va dictant', href: '#/shadow' },
-    { icon: Zap, title: 'So‘z o‘yinlari', text: 'Poyga, juftlik, imlo', href: '#/games' },
-    { icon: Timer, title: 'Mock Arena', text: `${tests} ta bepul test`, href: '#/mocks' },
-    { icon: Mic, title: 'Speaking', text: 'IELTS Part 1–3', href: '#/exam/speaking' },
-  ];
 
   if (isNew) return (
     <div>
-      <section className="night hero2">
+      <section className="w-hero">
         <div>
-          <span className="eyebrow"><Zap size={15} /> General English · IELTS · CEFR · SAT</span>
-          <h1>Ingliz tilini <span className="grad-text">o‘yin kabi</span> o‘rganing — imtihonga ishonch bilan boring</h1>
-          <p className="lead">A1 dan C2 gacha darslar xaritasi, sizga moslashadigan kunlik reja, real formatdagi bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.</p>
+          <span className="eyebrow" style={{ whiteSpace: 'nowrap' }}>General English · IELTS · CEFR · SAT</span>
+          <h1>Ingliz tilini <span className="hl">o‘yin kabi</span> o‘rganing</h1>
+          <p className="lead">A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.</p>
           <div className="cta">
             <a className="btn primary lg" href="#/placement">Darajamni aniqlash <ArrowRight size={18} /></a>
-            <a className="btn ghost-light lg" href="#/mocks"><Timer size={18} /> Bepul mock test</a>
+            <a className="btn lg" href="#/mocks">Bepul mock test</a>
           </div>
-          <div className="proof">
-            <div><b>{ALL_LESSONS.length}</b><span>dars, A1–C2</span></div>
-            <div><b>{tests}</b><span>bepul mock test</span></div>
+          <div className="w-proof">
+            <div><b>{ALL_LESSONS.length}</b><span>dars</span></div>
+            <div><b>{tests}</b><span>bepul test</span></div>
             <div><b>{vocab.length}</b><span>so‘z</span></div>
             <div><b>3 daq</b><span>daraja testi</span></div>
           </div>
         </div>
-        <HeroShowcase />
+        <div className="w-art" aria-hidden="true">
+          <Illo kind="books" className="main" />
+          <Illo kind="headphones" className="a" />
+          <Illo kind="trophy" className="b" />
+          <span className="burst b1">Hello</span>
+          <span className="burst b2">Salom</span>
+        </div>
       </section>
 
-      <div className="bento">
-        <a className="b-lg" href="#/learn">
-          <span className="blob green"><MapIcon /></span>
-          <h3>Ingliz tili — darslar xaritasi</h3>
-          <p>Har dars: qisqa tushuntirish, mashq, gapirish va tekshiruv. Jon, combo, kunlik vazifalar va bo‘lim oxirida boss sinovi.</p>
-          <div className="b-foot"><span className="badge on">Boshlash bepul</span><ArrowRight size={18} /></div>
-        </a>
-        <a className="b-sm night" href="#/mocks">
-          <span className="blob red"><Timer /></span>
-          <h3>Mock Arena</h3>
-          <p>IELTS va CEFR formatidagi to‘liq testlar, taymer va izohlar bilan.</p>
-          <div className="b-foot"><span style={{ color: '#ffd28a' }}>Bepul</span><ArrowRight size={18} /></div>
-        </a>
-        <a className="b-md" href="#/exam">
-          <span className="blob orange"><Target /></span>
-          <h3>Imtihonga tayyorgarlik</h3>
-          <p>Reading, Listening, Writing, Speaking — AI baholash bilan.</p>
-          <div className="b-foot"><span className="muted">IELTS · CEFR · SAT</span><ArrowRight size={18} /></div>
-        </a>
-        <a className="b-md" href="#/coach">
-          <span className="blob blue"><Bot /></span>
-          <h3>AI ustoz</h3>
-          <p>O‘zbekcha tushuntiradi, xatoingizni topib, to‘g‘ri aytilishini ko‘rsatadi. 5 xil xarakter.</p>
-          <div className="b-foot"><span className="muted">Ovozli suhbat</span><ArrowRight size={18} /></div>
-        </a>
+      <div className="section-title" style={{ marginTop: 26 }}><h2>Nimani <em className="it">o‘rganasiz?</em></h2></div>
+      <div className="courses">
+        <a className="course c-coral tall" href="#/learn"><h3>Ingliz tili</h3><p>A1 dan C2 gacha darslar xaritasi</p><span className="go"><ArrowRight size={17} /></span><span className="tag">Boshlash bepul</span><Illo kind="books" /></a>
+        <a className="course c-butter" href="#/exam" onClick={() => openExamTab('ielts')}><h3>IELTS</h3><p>4 ko‘nikma, AI baho</p><span className="go"><ArrowRight size={17} /></span><Illo kind="target" /></a>
+        <a className="course c-mint" href="#/exam" onClick={() => openExamTab('cefr')}><h3>CEFR</h3><p>Multilevel</p><span className="go"><ArrowRight size={17} /></span><Illo kind="cap" /></a>
+        <a className="course c-sky" href="#/exam" onClick={() => openExamTab('sat')}><h3>SAT</h3><p>Reading & Writing</p><span className="go"><ArrowRight size={17} /></span><Illo kind="pencil" /></a>
+        <a className="course c-pink" href="#/coach"><h3>AI ustoz</h3><p>Ovozli suhbat</p><span className="go"><ArrowRight size={17} /></span><Illo kind="chat" /></a>
+        <a className="course c-lilac wide" href="#/mocks"><h3>Mock Arena</h3><p>{tests} ta test, taymer va izohlar</p><span className="go"><ArrowRight size={17} /></span><span className="tag">Bepul</span><Illo kind="clock" /></a>
       </div>
 
       {bot && (
         <a className="card tg-promo" href={`https://t.me/${bot}`} target="_blank" rel="noopener noreferrer">
           <span className="blob blue"><Send /></span>
-          <div><h3 style={{ margin: 0 }}>Telegram’da ham</h3><p className="muted" style={{ margin: '4px 0 0' }}>@{bot} — darslar va mock testlarni Telegram ichida oching.</p></div>
+          <div><h3 style={{ margin: 0 }}>Telegram’da ham</h3><p className="muted" style={{ margin: '4px 0 0' }}>@{bot}</p></div>
           <ArrowRight size={18} />
         </a>
       )}
@@ -105,32 +86,85 @@ export default function Home({ preview = false }: { preview?: boolean }) {
     </div>
   );
 
+  const streak = displayStreak(p, dayKey());
+  const lp = levelProgress(p.xp);
+  const progress = loadProgress();
+  const next = nextLesson(UNITS, progress, lvl);
+  const nl = next ? UNITS.find((u) => u.id === next.unitId)?.lessons.find((l) => l.id === next.lessonId) : null;
+  const nu = next ? UNITS.find((u) => u.id === next.unitId) : null;
+  const total = UNITS.reduce((s, u) => s + u.lessons.length, 0);
+  const passed = UNITS.flatMap((u) => u.lessons).filter((l) => progress[l.id]?.passedAt).length;
+  const left = Math.max(0, p.dailyGoal - p.dailyXp);
+  const h = new Date().getHours();
+  const hello = h < 12 ? 'Xayrli tong' : h < 18 ? 'Xayrli kun' : 'Xayrli kech';
+  const quick = [
+    { href: '#/learn', icon: BookOpenCheck, label: 'Darslar', c: 'var(--coral)' },
+    { href: '#/coach', icon: Bot, label: 'AI ustoz', c: 'var(--brand)' },
+    { href: '#/exam', icon: Target, label: 'Imtihon', c: 'var(--orange)' },
+    { href: '#/mocks', icon: Timer, label: 'Mock', c: 'var(--teal)' },
+    { href: '#/grammar', icon: Puzzle, label: 'Grammar', c: 'var(--blue)' },
+    { href: '#/games', icon: Gamepad2, label: 'O‘yinlar', c: 'var(--pink)' },
+    { href: '#/league', icon: Trophy, label: 'Liga', c: 'var(--yellow)' },
+    { href: '#/mistakes', icon: ClipboardList, label: 'Xatolar', c: 'var(--red)' },
+    { href: '#/homework', icon: ListChecks, label: 'Vazifa', c: 'var(--green)' },
+    { href: '#/results', icon: LineChart, label: 'Natijalar', c: 'var(--ink-2)' },
+  ];
+
   return (
     <div>
+      <div className="hello">
+        <span className="avatar sm" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
+        <div className="grow">
+          <h2>{hello}{acc?.nickname ? `, ${acc.nickname}` : ''}!</h2>
+          <small>{lvl ? `Daraja ${lvl}` : 'Daraja aniqlanmagan'} · {Math.round(lp.pct * 100)}% keyingi bosqichgacha</small>
+        </div>
+      </div>
+
       {!lvl && (
         <div className="banner">
-          <div><h3><Compass size={20} style={{ verticalAlign: -4 }} /> Darajangizni aniqlang</h3><p>3 daqiqalik test — shunga qarab kunlik reja tuziladi.</p></div>
-          <a className="btn lg" href="#/placement">Testni boshlash <ArrowRight size={18} /></a>
+          <div><h3><Compass size={20} style={{ verticalAlign: -4 }} /> Darajangizni aniqlang</h3><p>3 daqiqalik test — kunlik reja shunga qarab tuziladi.</p></div>
+          <a className="btn primary" href="#/placement">Boshlash <ArrowRight size={18} /></a>
         </div>
       )}
-      <TodayHero />
-      {!signedIn && <p className="notice">Progressingiz hozir faqat shu qurilmada. <a href="#/profile">Hisob oching</a> — XP va darslaringiz hisobga yoziladi va boshqa qurilmada ham ochiladi.</p>}
+
+      <section className="lvlcard">
+        <h3>{lvl ? `${lvl} · ${LEVEL_INFO[lvl].name}` : 'Bandly'} — {lp.level}-bosqich</h3>
+        <p>{left === 0 ? 'Bugungi maqsad bajarildi — seriya saqlandi!' : `Bugungi maqsadgacha ${left} XP`}</p>
+        <div className="slider" aria-label={`Bosqich: ${lp.into}/${lp.span} XP`}><i style={{ width: `${lp.pct * 100}%` }} /><b style={{ left: `${Math.max(4, Math.min(96, lp.pct * 100))}%` }} /></div>
+        <Illo kind="trophy" />
+      </section>
+
+      <nav className="quick" aria-label="Bo‘limlar">
+        {quick.map((q) => <a key={q.href} href={q.href}><span className="q-ico" style={{ color: q.c }}><q.icon /></span>{q.label}</a>)}
+      </nav>
+
+      <div className="dash2">
+        <a className="cont" href={nl ? `#/learn/${nl.id}` : '#/learn'}>
+          <small>{nl ? 'Davom ettirish' : 'Darslar'}</small>
+          <h3>{nl ? nl.titleUz : 'Darslar xaritasi'}</h3>
+          <p>{nu ? `${nu.level} · ${nu.titleUz}` : `${passed}/${total} dars o‘tildi`}</p>
+          <span className="btn primary sm">Boshlash <ArrowRight size={16} /></span>
+          <Illo kind="books" />
+        </a>
+        <div className="twin">
+          <a className="stat2 s-lilac" href="#/learn"><div className="s-top"><span><BookOpenCheck size={20} /></span><span className="go"><ArrowRight size={15} /></span></div><b>{passed}</b><small>/ {total} dars</small></a>
+          <a className="stat2 s-mint" href="#/league"><div className="s-top"><span><Flame size={20} /></span><span className="go"><ArrowRight size={15} /></span></div><b>{streak}</b><small>kunlik seriya</small></a>
+        </div>
+      </div>
+
+      <section className="card">
+        <div className="daytask">
+          <PRing value={p.dailyXp} max={p.dailyGoal} size={78} stroke={8} color="var(--coral)" label={`Kunlik maqsad ${p.dailyXp}/${p.dailyGoal} XP`}><b style={{ fontSize: 19 }}>{Math.round(Math.min(1, p.dailyXp / Math.max(1, p.dailyGoal)) * 100)}%</b></PRing>
+          <div><h3>Kunlik maqsad</h3><p>{Math.min(p.dailyXp, p.dailyGoal)} / {p.dailyGoal} XP · bu hafta {Object.entries(p.activity).filter(([k]) => Date.now() - new Date(k).getTime() < 7 * 86400000).reduce((s, [, v]) => s + v, 0)} XP</p></div>
+        </div>
+        <WeekBars activity={p.activity} />
+      </section>
+
+      {!acc && <p className="notice">Progress hozir faqat shu qurilmada. <a href="#/profile">Hisob oching</a> — boshqa qurilmada ham ochiladi.</p>}
       <PlanCard />
       <QuestsCard />
       <ProgressCard />
       <DailyCards />
-      <section className="card">
-        <details className="fold">
-          <summary>
-            <span className="eyebrow"><MapIcon size={15} /> Boshqa mashqlar</span>
-            {lvl && <span className="muted" style={{ marginLeft: 8, fontWeight: 500 }}>Daraja {lvl} · {LEVEL_INFO[lvl].name} · maqsad IELTS {p.target.toFixed(1)}{daysLeft !== null && daysLeft >= 0 ? ` · imtihongacha ${daysLeft} kun` : ''}</span>}
-          </summary>
-          <div className="path" style={{ marginTop: 10 }}>
-            {more.map((s) => <a key={s.title} className="path-step" href={s.href}><s.icon size={22} /><b>{s.title}</b><span>{s.text}</span></a>)}
-          </div>
-          <div className="row"><a className="btn sm" href="#/homework">Uyga vazifa</a><a className="btn sm" href="#/results">Natijalar</a><a className="btn sm" href="#/placement">Darajani qayta aniqlash</a></div>
-        </details>
-      </section>
     </div>
   );
 }

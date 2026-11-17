@@ -5,6 +5,8 @@ import { useProfile } from '../lib/store';
 import { ReadinessCard } from '../components/ReadinessCard';
 import { CefrPrep } from '../components/CefrPrep';
 import { SatPrep } from '../components/SatPrep';
+import { Illo } from '../components/Illo';
+import { takeExamTab, type ExamTab } from '../lib/examTab';
 
 const skills = [
   { href: '#/exam/reading', icon: BookOpen, tone: 'blue', title: 'Reading', text: 'Matn va savollar, taymer, dalil izohlari', free: true },
@@ -15,16 +17,16 @@ const skills = [
 
 export default function Exam() {
   const p = useProfile();
-  const [tab, setTab] = useState<'ielts' | 'sat' | 'cefr'>('ielts');
+  const [tab, setTab] = useState<ExamTab>(takeExamTab);
   return (
     <div>
-      <div className="card night page-head">
-        <h2>Imtihon tayyorgarligi {p.plan.exam && <span className="badge on">{p.planUntil.exam ? 'Obuna faol' : 'Demo'}</span>}</h2>
-        <p className="muted" style={{ margin: '4px 0 10px', fontSize: 14 }}>Reading va Listening testlari bepul. Writing, Speaking va AI baholash — Exam Preparation va All Access tariflarida.</p>
+      <div className="card page-head with-illo t-butter">
+        <h2>Imtihonga <em className="it">tayyorgarlik</em> {p.plan.exam && <span className="badge on">{p.planUntil.exam ? 'Obuna faol' : 'Demo'}</span>}</h2>
+        <p style={{ margin: '4px 0 6px' }}>Reading va Listening — bepul. Writing, Speaking va AI baho — tarifda.</p>
         <div className="seg seg-dark" role="tablist" aria-label="Imtihon">
           {(['ielts', 'cefr', 'sat'] as const).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{k.toUpperCase()}</button>)}
         </div>
-        
+        <Illo kind="target" size={128} />
       </div>
       {tab === 'cefr' && <CefrPrep />}
       {tab === 'sat' && <SatPrep />}

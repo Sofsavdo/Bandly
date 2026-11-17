@@ -7,7 +7,7 @@ import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
-import { NAV_GROUPS, PRIMARY_NAV, PROFILE, isActive } from './nav';
+import { NAV_GROUPS, SIDE_NAV, PROFILE, isActive } from './nav';
 
 function Stats() {
   const t = useT();
@@ -41,15 +41,15 @@ export function Header({ hash }: { hash: string }) {
     <>
       <header className="app-header">
         <div className="container">
-          <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={38} />{BRAND.name}</a>
+          <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={36} />{BRAND.name}</a>
           <nav className="nav" aria-label={t('nav.main')}>
-            {PRIMARY_NAV.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''}><n.icon size={16} />{t(n.label)}</a>)}
+            {SIDE_NAV.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''}><n.icon size={16} />{t(n.label)}</a>)}
           </nav>
           <div className="header-right">
             <Stats />
             <a className="btn primary sm header-cta" href="#/pricing">{t('cta.plans')}</a>
             <a className="icon-btn desk-only" href={PROFILE.href} aria-label={t('nav.profile')}><User size={18} /></a>
-            <button className="icon-btn menu-btn" aria-label={t('nav.menu')} onClick={() => setOpen(true)}><Menu size={20} /></button>
+            <button className="icon-btn menu-btn" aria-label={t('nav.menu')} onClick={() => setOpen(true)}><Menu size={20} /><span className="lbl">Barcha bo‘limlar</span></button>
           </div>
         </div>
       </header>

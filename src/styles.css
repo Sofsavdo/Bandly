@@ -1,6 +1,6 @@
 /* =========================================================
    Bandly dizayn tizimi
-   Shriftlar: Unbounded (sarlavhalar), Inter (matn). Ikonkalar: lucide.
+   Shriftlar: Outfit (sarlavhalar), Inter (matn). Ikonkalar: lucide.
    ========================================================= */
 :root {
   --bg: #f5f6fb; --surface: #ffffff; --surface-2: #f0f2f9; --ink: #0c1020; --ink-2: #444b66; --muted: #7a8199;
@@ -12,7 +12,7 @@
   --r-xl: 28px; --r-lg: 22px; --r: 16px; --r-sm: 12px;
   --shadow-1: 0 1px 2px rgba(12,16,32,.04), 0 10px 30px rgba(12,16,32,.06);
   --shadow-2: 0 2px 4px rgba(12,16,32,.06), 0 18px 44px rgba(12,16,32,.12);
-  --display: 'Unbounded', 'Inter Variable', system-ui, sans-serif;
+  --display: 'Outfit Variable', 'Inter Variable', system-ui, sans-serif;
   --body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --header-h: 68px;
 }

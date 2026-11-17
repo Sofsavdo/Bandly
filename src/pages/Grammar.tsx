@@ -8,6 +8,7 @@ import { addXp, recordReview, useProfile } from '../lib/store';
 import { recordGrammarItem } from '../lib/adaptive/record';
 import { addMistake } from '../lib/mistakes';
 import { nodeForGrammarTopic, taxonomyOfNode } from '../content/curriculum/inventory';
+import { Illo } from '../components/Illo';
 
 const FREE_TOPICS: string[] = ['To be va there is', 'Artikllar'];
 const MISTAKES = 'Xatolarim';
@@ -54,8 +55,8 @@ export default function Grammar() {
 
   return (
     <div>
-      <div className="card">
-        <h2>Grammar</h2>
+      <div className="card page-head with-illo t-sky">
+        <h2>Grammar</h2><Illo kind="pencil" size={124} />
         {profile.level ? <p className="evidence">Sizning darajangiz: <b>{profile.level}</b>. “{FOR_YOU}” bo‘limida aynan sizga mos savollar bor.</p> : <p className="evidence"><a href="#/placement">Darajangizni aniqlang</a>: sizga mos savollar tanlab beriladi.</p>}
         <p>Har javobdan keyin o‘zbekcha tushuntirish chiqadi. Noto‘g‘ri javoblar "{MISTAKES}" bo‘limida takrorlanadi.</p>
         <div className="tabs">

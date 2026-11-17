@@ -12,6 +12,8 @@ import { localDayKey } from '../lib/adaptive/store';
 import { saveResult } from '../lib/storage';
 import { LessonSpeak } from '../components/LessonSpeak';
 import { LessonWrite } from '../components/LessonWrite';
+import { Illo } from '../components/Illo';
+import { PRing } from '../components/PRing';
 
 type Step = 'learn' | 'practice' | 'speak' | 'write' | 'check' | 'result';
 const STEP_UZ: Record<Exclude<Step, 'result'>, string> = { learn: 'Tushuntirish', practice: 'Mashq', speak: 'Gapirish', write: 'Yozish', check: 'Tekshiruv' };
@@ -125,13 +127,14 @@ export default function LessonPage({ id }: { id: string }) {
         <span className="hud-hearts" aria-label={`${play.hearts} ta jon`}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
         {play.combo >= 2 && <span className="hud-combo" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
       </div>
-      <section className="card" style={{ marginTop: 10 }}>
-        <p className="row"><span className={`lvl-tag ${unit.level}`}>{unit.level}</span><span className="pill">{unit.titleUz}</span><span className="pill">{lesson.minutes} daq</span><span className="pill">Pilot · metodist tekshiruvi kutilmoqda</span></p>
-        <h2>{lesson.titleUz}</h2>
-        <p><b>Maqsad:</b> {lesson.objectiveUz}</p>
-        <div className="tabs" role="tablist">
+      <section className="card page-head with-illo" style={{ marginTop: 10 }}>
+        <small className="muted" style={{ fontWeight: 650 }}>{unit.level} · {unit.titleUz} · {lesson.minutes} daq</small>
+        <h2 style={{ margin: '4px 0 6px' }}>{lesson.titleUz}</h2>
+        <p style={{ margin: '0 0 12px' }}>{lesson.objectiveUz}</p>
+        <Illo kind="books" size={124} />
+        <div className="chips" role="tablist" style={{ margin: 0 }}>
           {(['learn', 'practice', 'speak', ...(lesson.writing ? ['write' as const] : []), 'check'] as const).map((s, i) => (
-            <button key={s} role="tab" aria-selected={step === s} className={`chipbtn ${step === s || (step === 'result' && s === 'check') ? 'on' : ''}`} onClick={() => setStep(s)}>{i + 1}. {STEP_UZ[s]}</button>
+            <button key={s} role="tab" aria-selected={step === s} className={`chip ${step === s || (step === 'result' && s === 'check') ? 'on' : ''}`} onClick={() => setStep(s)}>{i + 1}. {STEP_UZ[s]}</button>
           ))}
         </div>
       </section>
@@ -206,15 +209,20 @@ export default function LessonPage({ id }: { id: string }) {
 
       {step === 'result' && result && (
         <section className="card">
-          <h3>{result.passed ? 'Dars o‘zlashtirildi!' : 'Hali biroz mashq kerak'}</h3>
-          <p className="row"><span className="pill">{result.correct}/{result.total} to‘g‘ri</span><span className="pill">{Math.round(result.rate * 100)}%</span>{gained > 0 && <span className="pill">+{gained} XP</span>}{play.maxCombo >= 2 && <span className="pill"><Flame size={13} /> eng uzun combo ×{play.maxCombo}</span>}</p>
+          <div className="result-hero">
+            <PRing value={result.correct} max={result.total} size={112} stroke={11} color={result.passed ? 'var(--green)' : 'var(--coral)'} label={`${result.correct}/${result.total} to‘g‘ri`}><b style={{ fontSize: 28 }}>{Math.round(result.rate * 100)}%</b></PRing>
+            <div><h2 style={{ margin: 0 }}>{result.passed ? 'Dars o‘zlashtirildi!' : 'Hali biroz mashq kerak'}</h2><p className="muted" style={{ margin: '4px 0 0' }}>{result.correct}/{result.total} to‘g‘ri{gained > 0 ? ` · +${gained} XP` : ''}</p></div>
+            {result.passed && <Illo kind="trophy" size={96} />}
+          </div>
+          {play.maxCombo >= 2 && <p className="row"><span className="pill"><Flame size={13} /> eng uzun combo ×{play.maxCombo}</span></p>}
+          <details className="fold"><summary>Javoblarni ko‘rish</summary>
           {lesson.check.map((it, i) => <ItemView key={i} item={it} value={cAns[i]} revealed onChange={() => undefined} />)}
+          </details>
           <div className="row" style={{ marginTop: 14 }}>
             <button className="btn" onClick={retry}><RotateCcw size={14} /> Qayta topshirish</button>
             {result.passed && next && <a className="btn primary" href={`#/learn/${next.lesson.id}`}>Keyingi dars: {next.lesson.titleUz} <ArrowRight size={14} /></a>}
             {!result.passed && <button className="btn" onClick={() => setStep('learn')}>Tushuntirishni qayta o‘qish</button>}
           </div>
-          <p className="muted" style={{ fontSize: 13 }}>Natija qurilmangizda saqlandi va bosh sahifadagi “Bugungi reja”ga ta’sir qiladi.</p>
         </section>
       )}
     </div>

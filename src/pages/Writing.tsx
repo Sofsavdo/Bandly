@@ -10,6 +10,7 @@ import { analyzeTask2, analyzeWriting, type Task2Report, type WritingReport } fr
 import { fmt, useCountdown } from '../components/hooks';
 import { addXp } from '../lib/store';
 import { saveResult } from '../lib/storage';
+import { Illo } from '../components/Illo';
 
 type Tab = 'practice' | 'types' | 'topics';
 
@@ -56,8 +57,8 @@ export default function Writing() {
 
   return (
     <div>
-      <div className="card">
-        <h2>Writing</h2>
+      <div className="card page-head with-illo t-butter">
+        <h2>Writing</h2><Illo kind="pencil" size={124} />
         <div className="tabs" role="tablist">
           <button className={`btn ${tab === 'practice' ? 'primary' : ''}`} onClick={() => setTab('practice')}><PenLine size={15} /> Mashq</button>
           <button className={`btn ${tab === 'types' ? 'primary' : ''}`} onClick={() => setTab('types')}><Layers size={15} /> Insho turlari va xatolar</button>

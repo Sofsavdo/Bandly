@@ -1,5 +1,5 @@
 import { BookOpen, Headphones } from 'lucide-react';
-import { Tile } from '../components/Tile';
+import { Illo } from '../components/Illo';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { loadResults } from '../lib/storage';
 import { levelIndex } from '../lib/levels';
@@ -12,21 +12,29 @@ export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kin
   const tests = p.level ? [...all].sort((a, b) => Math.abs(levelIndex(a.level) - levelIndex(p.level)) - Math.abs(levelIndex(b.level) - levelIndex(p.level))) : all;
   const near = (l: typeof all[number]['level']) => !!p.level && Math.abs(levelIndex(l) - levelIndex(p.level)) <= 1;
   const results = loadResults();
+  const Icon = kind === 'reading' ? BookOpen : Headphones;
   return (
     <div>
-      <div className="card">
-        <h2>{kind === 'reading' ? 'Reading' : 'Listening'} testlari</h2>
-        <p>Testni tanlang. Har bir test imtihon taymeri va to‘liq tahlil bilan keladi. <span className="badge on">Bepul</span></p>
-        {p.level ? <p className="evidence">Darajangiz: <b>{p.level}</b>. Sizga mos testlar birinchi ko‘rsatilgan.</p> : <p className="evidence"><a href="#/placement">Darajangizni aniqlang</a>: testlar sizga moslab tartiblanadi.</p>}
+      <div className={`card page-head with-illo ${kind === 'reading' ? 't-sky' : 't-coral'}`}>
+        <h2 style={{ margin: 0 }}>{kind === 'reading' ? 'Reading' : 'Listening'} <em className="it">testlari</em></h2>
+        <p style={{ margin: '6px 0 0' }}>Taymer va to‘liq tahlil bilan. <span className="badge on">Bepul</span></p>
+        {!p.level && <p className="evidence" style={{ margin: '6px 0 0' }}><a href="#/placement">Darajangizni aniqlang</a> — testlar sizga moslab tartiblanadi.</p>}
+        <Illo kind={kind === 'reading' ? 'books' : 'headphones'} size={128} />
       </div>
-      <div className="grid">
+      <div className="lrows">
         {tests.map((t, i) => {
           const mine = results.filter((r) => r.title === t.title);
           const best = mine.length ? mine.reduce((a, b) => (b.correct > a.correct ? b : a)) : null;
           return (
-            <Tile key={t.id} href={`#/${track}/${kind}/${t.id}`} icon={kind === 'reading' ? BookOpen : Headphones} tone={kind === 'reading' ? 'blue' : 'red'}
-              title={<>{t.title.replace(/^(Reading|Listening) mini-test \d+: /, '')} {t.exam === 'cefr' ? <span className="lvl-tag B2">CEFR</span> : <span className={`lvl-tag ${t.level}`}>{t.level}</span>}</>} text={`Test ${i + 1} · ${t.questions.length} savol · ${t.minutes} daqiqa${near(t.level) ? ' · Sizga mos' : ''}`}
-              badge={best ? <span className="badge on">Eng yaxshi: {best.correct}/{best.total}</span> : <span className="badge">Hali yechilmagan</span>} />
+            <a key={t.id} className="lrow" href={`#/${track}/${kind}/${t.id}`}>
+              <span className={`sq ${['sky', 'coral', 'lilac', 'mint', 'butter', 'peach'][i % 6]}`}><Icon /></span>
+              <span className="grow">
+                <small>{t.exam === 'cefr' ? 'CEFR' : `IELTS · ${t.level}`}{near(t.level) ? ' · sizga mos' : ''}</small>
+                <b>{t.title.replace(/^(Reading|Listening) mini-test \d+: /, '')}</b>
+                <span className="lbar"><i style={{ width: best ? `${(best.correct / best.total) * 100}%` : '0%' }} /></span>
+              </span>
+              <span className="meta">{t.minutes} daq<br />{best ? `${best.correct}/${best.total}` : `${t.questions.length} savol`}</span>
+            </a>
           );
         })}
       </div>

@@ -3,10 +3,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import '@fontsource-variable/inter';
-import '@fontsource/unbounded/600.css';
-import '@fontsource/unbounded/700.css';
+import '@fontsource-variable/outfit';
 import './styles.css';
-import './design2.css'; // Design 2.0 qatlami (tokenlar va komponentlar)
+import './design3.css'; // Design 3.0 qatlami: pastel ranglar, qora pill tugmalar, yon panel
 import { startSync } from './lib/account';
 import { initPay } from './lib/pay';
 

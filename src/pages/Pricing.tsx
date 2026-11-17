@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '../config';
 import { fmtDate, fmtSum, payConfig, startPurchase, type PayConfig } from '../lib/pay';
 import { setPlan, useProfile } from '../lib/store';
+import { Illo } from '../components/Illo';
 
 const ICON: Record<PlanId, typeof Bot> = { general: Bot, exam: Target, all: Crown };
 const TONE: Record<PlanId, string> = { general: 'blue', exam: 'red', all: 'orange' };
@@ -28,14 +29,15 @@ export default function Pricing() {
   const demoOn = (id: PlanId) => SALE_PLANS.find((x) => x.id === id)!.tracks.every((t) => p.plan[t]);
   return (
     <div>
-      <div className="card pricing-head">
-        <h2 style={{ margin: 0 }}>Tariflar</h2>
-        <p style={{ margin: '6px 0 12px' }}>Mock testlar va daraja testi — bepul. Obuna AI ustoz va to‘liq bo‘limlarni ochadi.</p>
+      <div className="card page-head with-illo t-mint pricing-head">
+        <h2 style={{ margin: 0 }}>Tarif <em className="it">tanlang</em></h2>
+        <p style={{ margin: '6px 0 12px' }}>Mock testlar bepul. Obuna AI ustoz va to‘liq bo‘limlarni ochadi.</p>
         <div className="price-tabs" role="tablist" aria-label="Muddat">
           {SALE_PERIODS.map((x) => <button key={x.days} role="tab" aria-selected={x.days === days} className={x.days === days ? 'on' : ''} onClick={() => setDays(x.days)}>{x.label}{x.note && <small> {x.note}</small>}</button>)}
         </div>
         {!live && <p className="note muted">Demo rejim: to‘lov hali ulanmagan.</p>}
         {ai === false && <p className="note muted"><Info size={14} /> AI imkoniyatlari tez orada — limitlar AI yoqilgan kundan hisoblanadi.</p>}
+        <Illo kind="star" size={124} />
       </div>
 
       <div className="plans4">

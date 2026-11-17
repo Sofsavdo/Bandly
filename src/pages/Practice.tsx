@@ -9,6 +9,7 @@ import { saveResult } from '../lib/storage';
 import { addXp, getProfile, recordReview, useProfile } from '../lib/store';
 import { recordPracticeItem } from '../lib/adaptive/record';
 import { shuffle } from '../lib/vocabGame';
+import { Illo } from '../components/Illo';
 
 const KINDS: { id: Kind | 'mix'; label: string; hint: string }[] = [
   { id: 'mix', label: 'Aralash', hint: 'Hamma turdan' },
@@ -117,9 +118,9 @@ export default function Practice() {
   if (!queue) {
     return (
       <div>
-        <div className="card">
-          <h2>Gap tuzish va xatolar ustida ishlash</h2>
-          <p>Ustoz kabi ishlaydi: javobingizni tekshiradi, xatoni <del>qizil</del>, to‘g‘risini <ins>yashil</ins> ko‘rsatadi, nima uchun xatoligini o‘zbekcha tushuntiradi va <b>yaxshiroq variant</b> taklif qiladi.</p>
+        <div className="card page-head with-illo t-mint">
+          <h2>Gap tuzish va xatolar ustida ishlash</h2><Illo kind="pencil" size={124} />
+          <p>Javobingizni tekshiradi, xatoni <del>qizil</del>, to‘g‘risini <ins>yashil</ins> ko‘rsatadi va o‘zbekcha tushuntiradi.</p>
           {!p.level && <p className="evidence"><a href="#/placement">Darajangizni aniqlang</a>: mashqlar sizga mos tanlanadi.</p>}
           <h3>Daraja</h3>
           <div className="tabs">{CEFR.map((l) => <button key={l} className={`btn ${l === level ? 'primary' : ''}`} onClick={() => setLevel(l)}>{l}{p.level === l ? ' ★' : ''}</button>)}</div>

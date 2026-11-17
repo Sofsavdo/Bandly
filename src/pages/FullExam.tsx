@@ -6,6 +6,7 @@ import { roundHalf } from '../lib/progress';
 import { recordMock } from '../lib/history';
 import { loadResults, type ResultRecord } from '../lib/storage';
 import { useProfile } from '../lib/store';
+import { Illo } from '../components/Illo';
 
 const KEY = 'bandly.fullexam.v1';
 interface State { startedAt: number; listeningId: string; readingId: string; writingDone: boolean }
@@ -70,8 +71,8 @@ export default function FullExam() {
 
   return (
     <div>
-      <div className="card">
-        <h2><ClipboardCheck size={22} style={{ verticalAlign: -4 }} /> To‘liq imtihon ({doneN}/4)</h2>
+      <div className="card page-head with-illo t-butter">
+        <h2><ClipboardCheck size={22} style={{ verticalAlign: -4 }} /> To‘liq imtihon ({doneN}/4)</h2><Illo kind="clock" size={124} />
         <div className="bar" style={{ margin: '10px 0' }}><i style={{ width: `${(doneN / 4) * 100}%` }} /></div>
         <div className="exam-steps">
           {parts.map((x, i) => (
