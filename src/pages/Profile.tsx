@@ -18,6 +18,7 @@ import { PRing } from '../components/PRing';
 import { WeekBars } from '../components/WeekBars';
 import { LangPicker } from '../components/LangPicker';
 import { InviteCard } from '../components/InviteCard';
+import { JoinGroupCard } from '../components/JoinGroupCard';
 import { L } from '../i18n';
 
 export default function Profile() {
@@ -50,6 +51,7 @@ export default function Profile() {
       </div>
       {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice">{p.brokenStreak?.value}  {L('kunlik seriya uzildi. 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, tiklanadi (30 kunda bir marta).')}</p>}
       <InviteCard />
+      <JoinGroupCard />
       <section className="card"><h3 style={{ margin: 0 }}>{L('Bu hafta')}</h3><WeekBars activity={p.activity} /></section>
 
       <ProgressCard />

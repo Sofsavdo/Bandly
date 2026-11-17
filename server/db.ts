@@ -5,6 +5,7 @@ import { ensureXpTables } from './xp';
 import { ensureReminderColumns } from './reminders';
 import { ensureI18nTables } from './i18n';
 import { ensureReferralColumns } from './referral';
+import { ensureGroupTables } from './groups';
 import { ensureLeagueTables } from './league';
 import { vocab } from '../src/content/vocab';
 
@@ -110,6 +111,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   ensureReminderColumns(db);
   ensureI18nTables(db);
   ensureReferralColumns(db);
+  ensureGroupTables(db);
   ensureLeagueTables(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;

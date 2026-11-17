@@ -24,6 +24,7 @@ import { runReminders, setRemind } from './reminders';
 import { analytics } from './analytics';
 import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
+import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
 import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
@@ -117,7 +118,8 @@ createServer(async (req, res) => {
     // Proksi (Railway va boshqalar) orqasida haqiqiy IP birinchi X-Forwarded-For qiymatida
     const fwd = TRUST_PROXY ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '';
     const ip = fwd || (req.socket.remoteAddress ?? 'x');
-    if (limited(ip)) return send(res, 429, { error: trServer(db, reqLang(req), 'Juda ko‘p so‘rov') });
+    // Chegara faqat API uchun: sahifa, skript va shrift fayllari sanalmaydi (aks holda bir necha marta yangilash sahifani to'sib qo'yadi)
+    if ((req.url ?? '').startsWith('/api/') && limited(ip)) return send(res, 429, { error: trServer(db, reqLang(req), 'Juda ko‘p so‘rov') });
     const url = new URL(req.url ?? '/', 'http://x');
     if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
     if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
@@ -186,6 +188,24 @@ createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/creator') {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['creator']);
       return send(res, 200, { me: creatorStats(db, me.id), all: me.role === 'admin' ? creatorsOverview(db) : null, bot: botUsername });
+    }
+    // ---- Guruhlar (B2B): o'qituvchi — yaratish va hisobot; o'quvchi — kod bilan qo'shilish ----
+    if (url.pathname === '/api/groups' || url.pathname.startsWith('/api/groups/')) {
+      const tk = String(req.headers['x-token'] ?? '');
+      const gp = url.pathname.split('/').slice(3); // ['', 'join'] | [id] | [id, 'members', pid]
+      if (req.method === 'POST' && gp[0] === 'join') { const b = await readJson(req); return send(res, 200, joinGroup(db, byToken(db, tk).id, String(b.code ?? ''))); }
+      if (req.method === 'GET' && gp[0] === 'mine') return send(res, 200, { groups: joinedGroups(db, byToken(db, tk).id) });
+      if (req.method === 'POST' && gp[0] === 'leave') { const b = await readJson(req); leaveGroup(db, byToken(db, tk).id, Number(b.id)); return send(res, 200, { ok: true }); }
+      const me = requireRole(db, tk, ['teacher']);
+      const admin = me.role === 'admin';
+      if (req.method === 'GET' && gp.length === 0) return send(res, 200, { groups: myGroups(db, me.id) });
+      if (req.method === 'POST' && gp.length === 0) { const b = await readJson(req); return send(res, 200, createGroup(db, me.id, String(b.name ?? ''))); }
+      const gid = Number(gp[0]);
+      if (!Number.isInteger(gid)) throw new ApiError(404, 'Topilmadi');
+      if (req.method === 'GET' && gp.length === 1) return send(res, 200, groupReport(db, gid, me.id, admin));
+      if (req.method === 'DELETE' && gp.length === 1) { archiveGroup(db, gid, me.id, admin); return send(res, 200, { ok: true }); }
+      if (req.method === 'DELETE' && gp[1] === 'members') { removeMember(db, gid, me.id, admin, Number(gp[2])); return send(res, 200, { ok: true }); }
+      throw new ApiError(404, 'Topilmadi');
     }
     // ---- Admin analitikasi ----
     if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
