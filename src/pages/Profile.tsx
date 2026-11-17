@@ -65,7 +65,7 @@ export default function Profile() {
           </div>
         ) : <>
           <JoinForm onJoined={(a) => setAcc(a)} text={L('Kirsangiz hozirgi XP, darslar va natijalaringiz hisobingizga yoziladi va boshqa qurilmada ham ochiladi.')} />
-          <button className="btn sm danger" style={{ marginTop: 10 }} onClick={() => setBye(true)}><LogOut size={14} />  {L('Qurilmani tozalash va boshidan boshlash')}</button>
+          <button className="btn sm danger btn-wrap" style={{ marginTop: 10 }} onClick={() => setBye(true)}><LogOut size={14} />  {L('Qurilmani tozalash va boshidan boshlash')}</button>
         </>}
         {bye && <SignOutDialog onClose={() => setBye(false)} />}
         {acc && tgOn && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text={L('Hisobingizni Telegram\'ga bog‘lang: XP va obuna saqlanadi, keyin istalgan qurilmada Telegram orqali kirasiz.')} /></div>}

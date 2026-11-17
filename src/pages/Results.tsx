@@ -33,7 +33,7 @@ export default function Results() {
             <div className="bigband">{last ? last.value.toFixed(1) : '—'}</div>
             <p className="evidence">{last3 ? `${mocks.length}-Mock` : L('Daraja aniqlash')}{delta !== null ? <> · <b className={delta >= 0 ? 'ok' : 'bad'}>{delta >= 0 ? '+' : ''}{delta.toFixed(1)}</b></> : null}</p>
           </div>
-          <div className="skills" style={{ minWidth: 280, flex: 1, maxWidth: 460 }}>
+          <div className="skills res-skills">
             {(['listening', 'reading', 'speaking'] as const).map((k) => <div key={k} className="skill"><span>{KIND[k]}</span><b>{(last3?.[k] ?? sb[k])?.toFixed(1) ?? '—'}</b></div>)}
             <div className="skill"><span>{L('Maqsad')}</span><b>{p.target.toFixed(1)}</b></div>
           </div>

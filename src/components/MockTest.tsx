@@ -239,6 +239,12 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
             anchorPrefix={`q-${testId}-`}
             current={submitted ? null : current}
           />
+          {!submitted && (
+            <div className="qlist-end">
+              <span className="muted">{L('Javob berilgan: {0}/{1}', [ids.length - missing.length, ids.length])}</span>
+              <button type="button" className="btn primary lg" onClick={() => setConfirm(true)}>{L('Topshirish')}</button>
+            </div>
+          )}
         </div>
       </div>
 

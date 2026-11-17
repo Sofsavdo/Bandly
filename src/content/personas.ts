@@ -1,5 +1,5 @@
 // The Bandly AI personalities (display data shared by client and server). Behaviour prompts live server-side in server/coach.ts.
-export type PersonaId = 'friendly' | 'strict' | 'examiner' | 'savage' | 'comedy' | 'debate';
+export type PersonaId = 'bandi' | 'friendly' | 'strict' | 'examiner' | 'savage' | 'comedy' | 'debate';
 export type CoachEmotion = 'neutral' | 'happy' | 'laugh' | 'angry' | 'disappointed' | 'impressed' | 'serious' | 'sarcastic';
 export const COACH_EMOTIONS: CoachEmotion[] = ['neutral', 'happy', 'laugh', 'angry', 'disappointed', 'impressed', 'serious', 'sarcastic'];
 
@@ -16,6 +16,7 @@ export interface PersonaInfo {
 }
 
 export const PERSONAS: PersonaInfo[] = [
+  { id: 'bandi', name: 'Bandi', nameUz: 'Bandi', descUz: 'Ovozli suhbatdosh: hazillashadi, kuladi, kesatadi, bahslashadi va xatolaringizni ustidan kuladi. 18+ tasdiqlaganlarga so‘kinadi ham.', audienceUz: 'AI ustoz ovozli suhbati', adultOnly: false, examSafe: false, accent: '#7b61ff', voice: { pitch: 1, rate: 1.02 } },
   { id: 'friendly', name: 'Friendly Coach', nameUz: 'Mehribon murabbiy', descUz: 'Sabrli va qo‘llab-quvvatlaydi. Xatoni yumshoq tuzatadi, qisqa gaplar bilan gapiradi.', audienceUz: 'Boshlovchilar, o‘ziga ishonchi past bo‘lganlar', adultOnly: false, examSafe: false, accent: '#12b76a', voice: { pitch: 1.1, rate: 0.9 } },
   { id: 'strict', name: 'Strict Teacher', nameUz: 'Qattiqqo‘l ustoz', descUz: 'Shirin gap yo‘q: har bir xatoni ushlaydi, to‘g‘risini qaytartiradi va ko‘proq talab qiladi.', audienceUz: 'Tez natija istaganlar', adultOnly: false, examSafe: false, accent: '#0f172a', voice: { pitch: 0.95, rate: 1.0 } },
   { id: 'examiner', name: 'Strict Examiner', nameUz: 'Qattiqqo‘l imtihonchi', descUz: 'IELTS imtihonchisidek jiddiy: hazilsiz, qisqa va aniq. Fikr-mulohazani suhbat oxirida beradi.', audienceUz: 'IELTS va imtihonga tayyorlanuvchilar', adultOnly: false, examSafe: true, accent: '#1f5cff', voice: { pitch: 0.95, rate: 0.95 } },
