@@ -21,8 +21,15 @@ window.fetch = (input, init) => {
 
 // Avval til lug'ati, keyin ilova modullari: modul darajasidagi matnlar ham tanlangan tilda hosil bo'ladi
 void initI18n().then(async () => {
-  const content = import.meta.glob('./content/**/*.ts');
-  const mods = await Promise.all(Object.entries(content).filter(([p]) => !p.endsWith('.test.ts')).map(([, load]) => load()));
+  // Faqat ilova allaqachon ishlatadigan ma'lumot modullari (javob kalitlari bor modullar bu ro'yxatga KIRMAYDI)
+  const mods = await Promise.all([
+    import('./content/lessons'), import('./content/vocab'), import('./content/roasts'), import('./content/writingGuide'), import('./content/mockTests'),
+    import('./content/curriculum/inventory'), import('./content/curriculum/pilot'), import('./content/mockShared'), import('./content/speakingModels'),
+    import('./content/speakingEasy'), import('./content/speaking'), import('./content/scenes'), import('./content/practice'), import('./content/placement'),
+    import('./content/grammar'), import('./content/writing'), import('./content/tips'), import('./content/skillCheck'), import('./content/personas'),
+    import('./content/listeningTests'), import('./content/readingTests'), import('./content/examFormats'), import('./content/lines'), import('./content/vocabWriting'),
+    import('./content/satPractice'),
+  ]);
   for (const m of mods) for (const v of Object.values(m as Record<string, unknown>)) deepTranslate(v);
   const [{ default: App }, { startSync }, { initPay }, { bootTelegram }, { pullIfNewer, startCloud }, { loadRemoteContent }] = await Promise.all([
     import('./App'), import('./lib/account'), import('./lib/pay'), import('./lib/telegram'), import('./lib/cloud'), import('./content/remote'),

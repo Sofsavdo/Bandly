@@ -12,6 +12,7 @@ import { recordTestAnswers } from '../lib/adaptive/record';
 import { clearAttempt, createAttempt, isExpired, loadAttempt, remainingSeconds, saveAttempt, setAnswer, submitAttempt, toggleFlag, unanswered, type ExamAttempt } from '../lib/examAttempt';
 import { fmt } from './hooks';
 import { QuestionList } from './QuestionList';
+import { L } from '../i18n';
 
 const hasFull = (): boolean => { try { return !!localStorage.getItem('bandly.fullexam.v1'); } catch { return false; } };
 
@@ -85,7 +86,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     let stop = false;
     setGradeErr('');
     fetch('/api/mock/grade', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': getAccount()?.token ?? '' }, body: JSON.stringify({ kind, testId, answers: attempt.answers, attemptId: String(attempt.startedAt) }) })
-      .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? `Xato ${r.status}`); return j as { graded: Graded; correct: number }; })
+      .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? L('Xato {0}', [r.status])); return j as { graded: Graded; correct: number }; })
       .then(({ graded, correct }) => {
         if (stop) return;
         update((a) => {
@@ -99,7 +100,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
           return { ...a, graded, recorded: true };
         });
       })
-      .catch((e: Error) => { if (!stop) setGradeErr(e.message === 'Failed to fetch' ? 'Server bilan aloqa yo‘q' : e.message); });
+      .catch((e: Error) => { if (!stop) setGradeErr(e.message === 'Failed to fetch' ? L('Server bilan aloqa yo‘q') : e.message); });
     return () => { stop = true; };
   }, [attempt?.status, attempt?.graded, gradeTry, kind, testId, title, questions, table, level, update]);
 
@@ -117,7 +118,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
   // Ekran o'quvchi uchun faqat 10 / 5 / 1 daqiqada e'lon
   useEffect(() => {
     if (!started || submitted) return;
-    if (left_ === 600 || left_ === 300 || left_ === 60) setAnnounce(`${left_ / 60} daqiqa qoldi`);
+    if (left_ === 600 || left_ === 300 || left_ === 60) setAnnounce(L('{0} daqiqa qoldi', [left_ / 60]));
   }, [left_, started, submitted]);
 
   const go = useCallback((id: number) => {
@@ -154,14 +155,14 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
       <div className="card">
         <h2>{title}</h2>
         {intro}
-        <p className="pill">{questions.length} ta savol · {minutes} daqiqa{level ? ` · ${level} daraja` : ''}</p>
+        <p className="pill">{questions.length}  {L('ta savol ·')} {minutes}  {L('daqiqa')}{level ? L(' · {0} daraja', [level]) : ''}</p>
         <ul className="rules" style={{ marginTop: 10 }}>
-          <li>Imtihon rejimida menyu yashiriladi; javoblar avtomatik saqlanadi — sahifa yangilansa ham davom etasiz.</li>
-          <li>Vaqt to‘xtamaydi: sahifani yopsangiz ham hisoblanadi, tugaganda test o‘zi topshiriladi.</li>
-          <li>Savolni belgilash (⚑), matnni bo‘yash va eslatma yozish mumkin. Klaviatura: Alt+N / Alt+P / Alt+F.</li>
+          <li>{L('Imtihon rejimida menyu yashiriladi; javoblar avtomatik saqlanadi — sahifa yangilansa ham davom etasiz.')}</li>
+          <li>{L('Vaqt to‘xtamaydi: sahifani yopsangiz ham hisoblanadi, tugaganda test o‘zi topshiriladi.')}</li>
+          <li>{L('Savolni belgilash (⚑), matnni bo‘yash va eslatma yozish mumkin. Klaviatura: Alt+N / Alt+P / Alt+F.')}</li>
         </ul>
         <div className="row" style={{ marginTop: 12 }}>
-          <button className="btn primary" onClick={begin}>Testni boshlash</button>
+          <button className="btn primary" onClick={begin}>{L('Testni boshlash')}</button>
         </div>
       </div>
     );
@@ -176,50 +177,51 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
 
   return (
     <div className={submitted ? '' : 'exam'}>
-      <div className="exam-bar card" role="region" aria-label="Imtihon boshqaruvi">
+      <div className="exam-bar card" role="region" aria-label={L('Imtihon boshqaruvi')}>
         <b className="exam-title">{title}</b>
         {!submitted && (
           <span className="exam-timer-wrap">
             {!hideTimer && <span className={`timer ${left_ <= 300 ? 'low' : left_ <= 600 ? 'warn' : ''}`} aria-hidden="true">{fmt(left_)}</span>}
-            <button type="button" className="icon-btn sm" onClick={() => setHideTimer((h) => !h)} aria-label={hideTimer ? 'Vaqtni ko‘rsatish' : 'Vaqtni yashirish'}>{hideTimer ? <Eye size={16} /> : <EyeOff size={16} />}</button>
+            <button type="button" className="icon-btn sm" onClick={() => setHideTimer((h) => !h)} aria-label={hideTimer ? L('Vaqtni ko‘rsatish') : L('Vaqtni yashirish')}>{hideTimer ? <Eye size={16} /> : <EyeOff size={16} />}</button>
           </span>
         )}
         <span className="sr-only" aria-live="polite">{announce}</span>
-        {!submitted && <span className="pill" title="Belgilangan savollar"><Flag size={13} /> {attempt.flags.length}</span>}
-        {!submitted && <button type="button" className="btn sm" onClick={() => setNotesOpen((o) => !o)} aria-expanded={notesOpen}><NotebookPen size={15} /><span className="hide-sm">Eslatma</span></button>}
+        {!submitted && <span className="pill" title={L('Belgilangan savollar')}><Flag size={13} /> {attempt.flags.length}</span>}
+        {!submitted && <button type="button" className="btn sm" onClick={() => setNotesOpen((o) => !o)} aria-expanded={notesOpen}><NotebookPen size={15} /><span className="hide-sm">{L('Eslatma')}</span></button>}
         {!submitted ? (
-          <button className="btn primary sm" onClick={() => setConfirm(true)}>Topshirish</button>
+          <button className="btn primary sm" onClick={() => setConfirm(true)}>{L('Topshirish')}</button>
         ) : (
-          <button className="btn sm" onClick={restart}>Qayta boshlash</button>
+          <button className="btn sm" onClick={restart}>{L('Qayta boshlash')}</button>
         )}
-        {!submitted && <span className="saved muted" aria-live="off">Saqlandi ✓</span>}
+        {!submitted && <span className="saved muted" aria-live="off">{L('Saqlandi ✓')}</span>}
       </div>
 
       {notesOpen && !submitted && (
         <div className="card">
-          <label htmlFor={`notes-${testId}`}><b>Eslatmalar</b> <span className="muted">(baholanmaydi)</span></label>
+          <label htmlFor={`notes-${testId}`}><b>{L('Eslatmalar')}</b> <span className="muted">{L('(baholanmaydi)')}</span></label>
           <textarea id={`notes-${testId}`} rows={4} style={{ width: '100%', marginTop: 6 }} value={attempt.notes} onChange={(e) => { const v = e.target.value; update((a) => ({ ...a, notes: v })); }} />
         </div>
       )}
 
       {submitted && (
         <div className="card">
-          {attempt.autoSubmitted && <p className="notice">Vaqt tugadi — javoblaringiz avtomatik topshirildi.</p>}
-          {hasFull() && <p><a className="btn sm primary" href="#/mocks/full">To‘liq imtihonga qaytish</a></p>}
-          {!graded && !gradeErr && <p className="muted" role="status">Natija hisoblanmoqda…</p>}
-          {!graded && gradeErr && <p className="notice" role="alert">Natijani olib bo‘lmadi: {gradeErr}. Javoblaringiz saqlangan. <button className="btn sm" onClick={() => setGradeTry((n) => n + 1)}>Qayta urinish</button></p>}
+          {attempt.autoSubmitted && <p className="notice">{L('Vaqt tugadi — javoblaringiz avtomatik topshirildi.')}</p>}
+          {hasFull() && <p><a className="btn sm primary" href="#/mocks/full">{L('To‘liq imtihonga qaytish')}</a></p>}
+          {!graded && !gradeErr && <p className="muted" role="status">{L('Natija hisoblanmoqda…')}</p>}
+          {!graded && gradeErr && <p className="notice" role="alert">{L('Natijani olib bo‘lmadi:')} {gradeErr}{L('. Javoblaringiz saqlangan.')} <button className="btn sm" onClick={() => setGradeTry((n) => n + 1)}>{L('Qayta urinish')}</button></p>}
           {graded && <><div className="score">{correct} / {questions.length}</div>
-          {scoring === 'raw' ? <p>To‘g‘ri javoblar: <b>{Math.round((correct / questions.length) * 100)}%</b>.</p> : <div>
-            Band: <b>{band.toFixed(1)}</b>
-            {level && rawBand > band && <p className="evidence">Bu test {level} darajali, shuning uchun band {BAND_CAP[level].toFixed(1)} dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.</p>}
+          {scoring === 'raw' ? <p>{L('To‘g‘ri javoblar:')} <b>{Math.round((correct / questions.length) * 100)}%</b>.</p> : <div>
+            
+            {L('Band:')} <b>{band.toFixed(1)}</b>
+            {level && rawBand > band && <p className="evidence">{L('Bu test')} {level}  {L('darajali, shuning uchun band')} {BAND_CAP[level].toFixed(1)}  {L('dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.')}</p>}
           </div>}</>}
         </div>
       )}
 
       {!submitted && (
-        <div className="exam-tabs" role="tablist" aria-label="Bo‘lim">
-          <button type="button" role="tab" aria-selected={pane === 'left'} className={pane === 'left' ? 'on' : ''} onClick={() => setPane('left')}>{kind === 'reading' ? 'Matn' : 'Audio'}</button>
-          <button type="button" role="tab" aria-selected={pane === 'right'} className={pane === 'right' ? 'on' : ''} onClick={() => setPane('right')}>Savollar ({ids.length - missing.length}/{ids.length})</button>
+        <div className="exam-tabs" role="tablist" aria-label={L('Bo‘lim')}>
+          <button type="button" role="tab" aria-selected={pane === 'left'} className={pane === 'left' ? 'on' : ''} onClick={() => setPane('left')}>{kind === 'reading' ? L('Matn') : 'Audio'}</button>
+          <button type="button" role="tab" aria-selected={pane === 'right'} className={pane === 'right' ? 'on' : ''} onClick={() => setPane('right')}>{L('Savollar (')}{ids.length - missing.length}/{ids.length})</button>
         </div>
       )}
       <div className={`split${submitted ? '' : ` pane-${pane}`}`}>
@@ -241,8 +243,8 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
       </div>
 
       {!submitted && (
-        <nav className="exam-nav" aria-label="Savollar paneli">
-          <button type="button" className="icon-btn" onClick={() => step(-1)} aria-label="Oldingi savol"><ChevronLeft size={18} /></button>
+        <nav className="exam-nav" aria-label={L('Savollar paneli')}>
+          <button type="button" className="icon-btn" onClick={() => step(-1)} aria-label={L('Oldingi savol')}><ChevronLeft size={18} /></button>
           <div className="exam-cells">
             {ids.map((id) => {
               const answered = !missing.includes(id);
@@ -250,26 +252,26 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
               return (
                 <button key={id} type="button" onClick={() => go(id)}
                   className={`cell${answered ? ' done' : ''}${flagged ? ' flag' : ''}${id === current ? ' now' : ''}`}
-                  aria-label={`Savol ${id}${answered ? ', javob berilgan' : ', javobsiz'}${flagged ? ', belgilangan' : ''}`}
+                  aria-label={L('Savol {0}{1}{2}', [id, answered ? L(', javob berilgan') : L(', javobsiz'), flagged ? L(', belgilangan') : ''])}
                   aria-current={id === current ? 'true' : undefined}>{id}</button>
               );
             })}
           </div>
-          <button type="button" className="icon-btn" onClick={() => step(1)} aria-label="Keyingi savol"><ChevronRight size={18} /></button>
+          <button type="button" className="icon-btn" onClick={() => step(1)} aria-label={L('Keyingi savol')}><ChevronRight size={18} /></button>
         </nav>
       )}
 
       {confirm && !submitted && (
         <div className="exam-dialog-backdrop" role="presentation">
           <div className="card exam-dialog" role="dialog" aria-modal="true" aria-labelledby={`sub-${testId}`}>
-            <h3 id={`sub-${testId}`}>Testni topshirasizmi?</h3>
-            <p>Javob berilgan: <b>{ids.length - missing.length} / {ids.length}</b> · Qolgan vaqt: <b>{fmt(left_)}</b></p>
-            {missing.length > 0 && <p className="evidence">Javobsiz: {missing.join(', ')}</p>}
-            {attempt.flags.length > 0 && <p className="evidence">Belgilangan: {attempt.flags.join(', ')}</p>}
-            <p className="evidence">Topshirgandan keyin javoblarni o‘zgartirib bo‘lmaydi.</p>
+            <h3 id={`sub-${testId}`}>{L('Testni topshirasizmi?')}</h3>
+            <p>{L('Javob berilgan:')} <b>{ids.length - missing.length} / {ids.length}</b>  {L('· Qolgan vaqt:')} <b>{fmt(left_)}</b></p>
+            {missing.length > 0 && <p className="evidence">{L('Javobsiz:')} {missing.join(', ')}</p>}
+            {attempt.flags.length > 0 && <p className="evidence">{L('Belgilangan:')} {attempt.flags.join(', ')}</p>}
+            <p className="evidence">{L('Topshirgandan keyin javoblarni o‘zgartirib bo‘lmaydi.')}</p>
             <div className="row">
-              <button type="button" className="btn" onClick={() => setConfirm(false)} autoFocus>Qaytish</button>
-              <button type="button" className="btn primary" onClick={() => { setAttempt(finalize(attempt, false)); setConfirm(false); }}>Topshirish</button>
+              <button type="button" className="btn" onClick={() => setConfirm(false)} autoFocus>{L('Qaytish')}</button>
+              <button type="button" className="btn primary" onClick={() => { setAttempt(finalize(attempt, false)); setConfirm(false); }}>{L('Topshirish')}</button>
             </div>
           </div>
         </div>

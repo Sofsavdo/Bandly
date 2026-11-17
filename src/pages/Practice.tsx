@@ -10,16 +10,17 @@ import { addXp, getProfile, recordReview, useProfile } from '../lib/store';
 import { recordPracticeItem } from '../lib/adaptive/record';
 import { shuffle } from '../lib/vocabGame';
 import { Illo } from '../components/Illo';
+import { L } from '../i18n';
 
 const KINDS: { id: Kind | 'mix'; label: string; hint: string }[] = [
-  { id: 'mix', label: 'Aralash', hint: 'Hamma turdan' },
-  { id: 'translate', label: 'Tarjima', hint: "O'zbekchadan inglizchaga" },
-  { id: 'fix', label: 'Xatoni toping', hint: 'Xatoli gapni tuzating' },
-  { id: 'use', label: 'O‘z gapingiz', hint: 'Berilgan qolipda gap tuzing' },
-  { id: 'upgrade', label: 'Kuchaytiring', hint: 'Gapni band oshiradigan qilib yozing' },
-  { id: 'build', label: 'So‘z tartibi', hint: "So'zlardan gap yig'ing" },
+  { id: 'mix', label: 'Aralash', hint: L('Hamma turdan') },
+  { id: 'translate', label: L('Tarjima'), hint: "O'zbekchadan inglizchaga" },
+  { id: 'fix', label: L('Xatoni toping'), hint: L('Xatoli gapni tuzating') },
+  { id: 'use', label: L('O‘z gapingiz'), hint: L('Berilgan qolipda gap tuzing') },
+  { id: 'upgrade', label: 'Kuchaytiring', hint: L('Gapni band oshiradigan qilib yozing') },
+  { id: 'build', label: L('So‘z tartibi'), hint: L('So\'zlardan gap yig\'ing') },
 ];
-const KIND_NAME: Record<Kind, string> = { translate: 'Tarjima', fix: 'Xatoni toping', use: 'O‘z gapingiz', upgrade: 'Kuchaytiring', build: 'So‘z tartibi' };
+const KIND_NAME: Record<Kind, string> = { translate: L('Tarjima'), fix: L('Xatoni toping'), use: L('O‘z gapingiz'), upgrade: 'Kuchaytiring', build: L('So‘z tartibi') };
 const SIZE = 8;
 const FREE_PER_DAY = 5;
 
@@ -39,21 +40,21 @@ function Diff({ ops }: { ops: DiffOp[] }) {
 }
 
 function Feedback({ e, r, answer }: { e: Exercise; r: Result; answer: string }) {
-  const head = r.verdict === 'correct' ? { icon: <CheckCircle2 size={20} />, text: 'To‘g‘ri!', cls: 'ok' } : r.verdict === 'close' ? { icon: <Lightbulb size={20} />, text: 'Deyarli to‘g‘ri', cls: 'near' } : { icon: <CircleAlert size={20} />, text: 'Hali to‘g‘ri emas', cls: 'no' };
+  const head = r.verdict === 'correct' ? { icon: <CheckCircle2 size={20} />, text: L('To‘g‘ri!'), cls: 'ok' } : r.verdict === 'close' ? { icon: <Lightbulb size={20} />, text: L('Deyarli to‘g‘ri'), cls: 'near' } : { icon: <CircleAlert size={20} />, text: L('Hali to‘g‘ri emas'), cls: 'no' };
   const open = e.kind === 'use' || e.kind === 'upgrade';
   return (
     <div className={`fb ${head.cls}`}>
-      <div className="fb-head">{head.icon}<b>{head.text}</b>{r.verdict === 'correct' && <span className="pill">+{xpFor('correct')} XP</span>}{r.verdict === 'close' && <span className="pill">+{xpFor('close')} XP</span>}</div>
-      <div className="fb-block"><small>Sizning javobingiz</small>{r.diff && !open ? <Diff ops={r.diff} /> : <p>{answer || '—'}</p>}</div>
-      {r.typos.map(([a, b]) => <p key={a} className="fb-line">Imlo: <del>{a}</del> → <ins>{b}</ins></p>)}
+      <div className="fb-head">{head.icon}<b>{head.text}</b>{r.verdict === 'correct' && <span className="pill">+{xpFor('correct')}  {L('XP')}</span>}{r.verdict === 'close' && <span className="pill">+{xpFor('close')}  {L('XP')}</span>}</div>
+      <div className="fb-block"><small>{L('Sizning javobingiz')}</small>{r.diff && !open ? <Diff ops={r.diff} /> : <p>{answer || '—'}</p>}</div>
+      {r.typos.map(([a, b]) => <p key={a} className="fb-line">{L('Imlo:')} <del>{a}</del> → <ins>{b}</ins></p>)}
       {r.issues.map((i) => <div key={i.id} className="fb-line"><b><del>{i.wrong}</del> → <ins>{i.right}</ins></b><br /><span>{i.ruleUz}</span></div>)}
       {r.notes.map((n) => <p key={n} className="fb-line">• {n}</p>)}
       {r.style.map((n) => <p key={n} className="fb-line">• {n}</p>)}
       {r.verdict !== 'correct' || open ? (
-        <div className="fb-block good"><small>{open ? 'Namuna javob' : 'To‘g‘ri variant'}</small><p>{open ? e.model : r.closest}</p></div>
+        <div className="fb-block good"><small>{open ? L('Namuna javob') : L('To‘g‘ri variant')}</small><p>{open ? e.model : r.closest}</p></div>
       ) : null}
-      {e.better && <div className="fb-block up"><small><Sparkles size={13} /> Yaxshiroq variant (band ↑)</small><p>{e.better}</p></div>}
-      <p className="fb-why"><b>Nima uchun:</b> {e.explainUz}</p>
+      {e.better && <div className="fb-block up"><small><Sparkles size={13} />  {L('Yaxshiroq variant (band ↑)')}</small><p>{e.better}</p></div>}
+      <p className="fb-why"><b>{L('Nima uchun:')}</b> {e.explainUz}</p>
     </div>
   );
 }
@@ -106,7 +107,7 @@ export default function Practice() {
     if (!queue) return;
     if (i + 1 >= queue.length) {
       const good = log.filter((l) => l.v === 'correct').length;
-      saveResult({ kind: 'practice', title: `Gap tuzish (${level})`, correct: good, total: queue.length });
+      saveResult({ kind: 'practice', title: L('Gap tuzish ({0})', [level]), correct: good, total: queue.length });
       if (good === queue.length) addXp(15);
       setI(queue.length); return;
     }
@@ -119,19 +120,19 @@ export default function Practice() {
     return (
       <div>
         <div className="card page-head with-illo t-mint">
-          <h2>Gap tuzish va xatolar ustida ishlash</h2><Illo kind="pencil" size={124} />
-          <p>Javobingizni tekshiradi, xatoni <del>qizil</del>, to‘g‘risini <ins>yashil</ins> ko‘rsatadi va o‘zbekcha tushuntiradi.</p>
-          {!p.level && <p className="evidence"><a href="#/placement">Darajangizni aniqlang</a>: mashqlar sizga mos tanlanadi.</p>}
-          <h3>Daraja</h3>
+          <h2>{L('Gap tuzish va xatolar ustida ishlash')}</h2><Illo kind="pencil" size={124} />
+          <p>{L('Javobingizni tekshiradi, xatoni')} <del>{L('qizil')}</del>{L(', to‘g‘risini')} <ins>{L('yashil')}</ins>  {L('ko‘rsatadi va o‘zbekcha tushuntiradi.')}</p>
+          {!p.level && <p className="evidence"><a href="#/placement">{L('Darajangizni aniqlang')}</a>{L(': mashqlar sizga mos tanlanadi.')}</p>}
+          <h3>{L('Daraja')}</h3>
           <div className="tabs">{CEFR.map((l) => <button key={l} className={`btn ${l === level ? 'primary' : ''}`} onClick={() => setLevel(l)}>{l}{p.level === l ? ' ★' : ''}</button>)}</div>
           <p className="evidence">{LEVEL_INFO[level].name}: {LEVEL_INFO[level].desc}</p>
-          <h3>Mashq turi</h3>
+          <h3>{L('Mashq turi')}</h3>
           <div className="kinds">
             {KINDS.map((k) => <button key={k.id} className={`kindbtn ${k.id === kind ? 'on' : ''}`} onClick={() => setKind(k.id)}><b>{k.label}</b><span>{k.hint}</span></button>)}
           </div>
           <div className="row" style={{ marginTop: 16 }}>
-            <button className="btn primary lg" onClick={start}>Boshlash ({SIZE} ta) <ArrowRight size={18} /></button>
-            {!unlocked && <span className="evidence">Bugun bepul: {Math.max(0, FREE_PER_DAY - freeUsed())} ta mashq. Grammar obunasi bilan cheksiz.</span>}
+            <button className="btn primary lg" onClick={start}>{L('Boshlash (')}{SIZE}  {L('ta)')} <ArrowRight size={18} /></button>
+            {!unlocked && <span className="evidence">{L('Bugun bepul:')} {Math.max(0, FREE_PER_DAY - freeUsed())}  {L('ta mashq. Grammar obunasi bilan cheksiz.')}</span>}
           </div>
         </div>
         {lockedNow && <LockCard track="grammar" reason="Bugungi bepul mashqlar tugadi. Grammar obunasi bilan cheklovsiz davom eting." />}
@@ -149,17 +150,17 @@ export default function Practice() {
           <div className="stage-center">
             <Illo kind="pencil" size={96} />
             <div className="score">{good} / {queue.length}</div>
-            <p className="lead">+{xp} XP{good === queue.length ? ' · mukammal natija: +15 XP bonus' : ''}</p>
+            <p className="lead">+{xp}  {L('XP')}{good === queue.length ? L(' · mukammal natija: +15 XP bonus') : ''}</p>
           </div>
         </div>
         {wrong.length > 0 && (
           <div className="card">
-            <h3>Ustida ishlash kerak</h3>
+            <h3>{L('Ustida ishlash kerak')}</h3>
             {wrong.map(({ e }) => <div key={e.id} className="fb-block good"><small>{KIND_NAME[e.kind]} · {e.topic}</small><p>{e.shown ?? e.promptUz}</p><p><b>{e.model}</b></p><p className="evidence">{e.explainUz}</p></div>)}
-            <p className="evidence">Bu mashqlar keyingi safar birinchi bo‘lib qaytadi.</p>
+            <p className="evidence">{L('Bu mashqlar keyingi safar birinchi bo‘lib qaytadi.')}</p>
           </div>
         )}
-        <div className="row"><button className="btn primary" onClick={start}>Yana mashq</button><button className="btn" onClick={() => setQueue(null)}>Sozlamalar</button></div>
+        <div className="row"><button className="btn primary" onClick={start}>{L('Yana mashq')}</button><button className="btn" onClick={() => setQueue(null)}>{L('Sozlamalar')}</button></div>
       </div>
     );
   }
@@ -177,7 +178,7 @@ export default function Practice() {
         <div className="bar" style={{ margin: '12px 0' }}><i style={{ width: `${((i + (res ? 1 : 0)) / queue.length) * 100}%` }} /></div>
         <div className="prompt-row">
           <div>
-            <p className="evidence" style={{ margin: 0 }}>{cur!.kind === 'translate' ? 'Inglizchaga tarjima qiling' : cur!.kind === 'build' ? "So'zlardan to'g'ri gap tuzing" : cur!.promptUz}</p>
+            <p className="evidence" style={{ margin: 0 }}>{cur!.kind === 'translate' ? L('Inglizchaga tarjima qiling') : cur!.kind === 'build' ? L('So\'zlardan to\'g\'ri gap tuzing') : cur!.promptUz}</p>
             {cur!.kind === 'translate' || cur!.kind === 'build' ? <p className="ptext">{cur!.promptUz}</p> : null}
             {cur!.shown && <p className="ptext shown">{cur!.shown}</p>}
           </div>
@@ -185,18 +186,18 @@ export default function Practice() {
 
         {cur!.kind === 'build' && (
           <>
-            <div className="built" aria-live="polite">{picked.length ? picked.map((k, idx) => <button key={idx} className="tile-w" disabled={!!res} onClick={() => setPicked(picked.filter((_, n) => n !== idx))}>{bank.find((b) => b.k === k)!.w}</button>) : <span className="evidence">So‘zlarni bosib gap tuzing</span>}</div>
+            <div className="built" aria-live="polite">{picked.length ? picked.map((k, idx) => <button key={idx} className="tile-w" disabled={!!res} onClick={() => setPicked(picked.filter((_, n) => n !== idx))}>{bank.find((b) => b.k === k)!.w}</button>) : <span className="evidence">{L('So‘zlarni bosib gap tuzing')}</span>}</div>
             <div className="wordbank">{bank.map((b) => <button key={b.k} className="tile-w" disabled={!!res || picked.includes(b.k)} onClick={() => setPicked([...picked, b.k])}>{b.w}</button>)}</div>
           </>
         )}
         {showText && (
-          <textarea className="answer" rows={cur!.kind === 'use' || cur!.kind === 'upgrade' ? 3 : 2} value={text} disabled={!!res} placeholder="Javobingizni inglizcha yozing..." onChange={(e) => setText(e.target.value)}
+          <textarea className="answer" rows={cur!.kind === 'use' || cur!.kind === 'upgrade' ? 3 : 2} value={text} disabled={!!res} placeholder={L('Javobingizni inglizcha yozing...')} onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!res) submit(); } }} />
         )}
-        {!res ? <button className="btn primary" disabled={cur!.kind === 'build' ? picked.length === 0 : !text.trim()} onClick={submit}>Tekshirish</button> : <button className="btn primary" onClick={next}>{i + 1 >= queue.length ? 'Natijani ko‘rish' : 'Keyingisi'} <ArrowRight size={16} /></button>}
+        {!res ? <button className="btn primary" disabled={cur!.kind === 'build' ? picked.length === 0 : !text.trim()} onClick={submit}>{L('Tekshirish')}</button> : <button className="btn primary" onClick={next}>{i + 1 >= queue.length ? L('Natijani ko‘rish') : 'Keyingisi'} <ArrowRight size={16} /></button>}
       </div>
       {res && <Feedback e={cur!} r={res.r} answer={res.answer} />}
-      <p className="evidence">Qoidaviy tekshiruv (AI emas).</p>
+      <p className="evidence">{L('Qoidaviy tekshiruv (AI emas).')}</p>
     </div>
   );
 }

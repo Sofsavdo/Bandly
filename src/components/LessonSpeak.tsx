@@ -2,6 +2,7 @@ import { Mic, Square, Volume2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { accuracy, verdict } from '../lib/shadow';
 import { listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
+import { L } from '../i18n';
 
 /** Speaking step: listen to each example sentence, say it, see which words were recognised.
  *  Browser speech recognition is used; it is NOT a pronunciation score and is not saved to mastery (device-dependent, unverified). */
@@ -24,16 +25,16 @@ export function LessonSpeak({ sentences }: { sentences: string[] }) {
       setSaid((s) => ({ ...s, [i]: r.text }));
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan. Brauzer sozlamalarida ruxsat bering.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? 'Nutqni tanish xizmati bilan aloqa yo‘q.' : 'Nutqni tanib bo‘lmadi, qayta urinib ko‘ring.');
+      setErr(code === 'denied' ? L('Mikrofonga ruxsat berilmagan. Brauzer sozlamalarida ruxsat bering.') : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? L('Nutqni tanish xizmati bilan aloqa yo‘q.') : L('Nutqni tanib bo‘lmadi, qayta urinib ko‘ring.'));
     } finally { setActive(null); setInterim(''); }
   };
 
   if (!stt) {
-    return <p className="muted">Brauzer nutqni tanimaydi — Chrome yoki Edge’da oching.</p>;
+    return <p className="muted">{L('Brauzer nutqni tanimaydi — Chrome yoki Edge’da oching.')}</p>;
   }
   return (
     <div>
-      <p className="muted">Eshiting, so‘ng mikrofonni bosib ayting.</p>
+      <p className="muted">{L('Eshiting, so‘ng mikrofonni bosib ayting.')}</p>
       {sentences.map((s, i) => {
         const res = said[i] !== undefined ? accuracy(s, said[i]!) : null;
         const v = res ? verdict(res.pct) : null;
@@ -44,13 +45,13 @@ export function LessonSpeak({ sentences }: { sentences: string[] }) {
               <b>{s}</b>
             </p>
             {active === i
-              ? <button type="button" className="btn sm primary" onClick={() => endRef.current?.()}><Square size={14} /> Tugatdim</button>
-              : <button type="button" className="btn sm" disabled={active !== null} onClick={() => void listen(i)}><Mic size={14} /> Aytish</button>}
-            {active === i && <p className="muted">Tinglayapman… {interim}</p>}
+              ? <button type="button" className="btn sm primary" onClick={() => endRef.current?.()}><Square size={14} />  {L('Tugatdim')}</button>
+              : <button type="button" className="btn sm" disabled={active !== null} onClick={() => void listen(i)}><Mic size={14} />  {L('Aytish')}</button>}
+            {active === i && <p className="muted">{L('Tinglayapman…')} {interim}</p>}
             {res && v && (
               <p style={{ marginTop: 6 }}>
                 <span className={v.tone === 'no' ? 'bad' : 'ok'}>{v.label} · {res.pct}%</span>
-                <span className="muted"> — tanildi: “{said[i] || '…'}”{res.missing.length ? ` · tushib qolgan/boshqacha: ${res.missing.join(', ')}` : ''}</span>
+                <span className="muted">  {L('— tanildi: “')}{said[i] || '…'}”{res.missing.length ? ` · tushib qolgan/boshqacha: ${res.missing.join(', ')}` : ''}</span>
               </p>
             )}
           </div>

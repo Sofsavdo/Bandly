@@ -4,6 +4,7 @@
 //   = To'g'ri tartibdagi gap | izoh          (so'zlar avtomatik aralashtiriladi)
 // Izoh (oxirgi qism) — o'quvchi javobdan keyin ko'radigan tushuntirish.
 import type { Item } from '../content/lessons/types';
+import { L } from '../i18n';
 
 export interface DslError { line: number; message: string }
 
@@ -21,24 +22,24 @@ export function parseItems(text: string): { items: Item[]; errors: DslError[] } 
     const kind = line[0]; const parts = line.slice(1).split('|').map((p) => p.trim());
     const err = (message: string) => errors.push({ line: i + 1, message });
     if (kind === '?') {
-      if (parts.length < 4) return err('Tanlov savolida kamida: savol | 2 ta variant | izoh');
+      if (parts.length < 4) return err(L('Tanlov savolida kamida: savol | 2 ta variant | izoh'));
       const explainUz = parts.pop()!; const prompt = parts.shift()!;
       const answer = parts.findIndex((p) => p.startsWith('*'));
-      if (answer < 0) return err('To‘g‘ri variant oldiga * qo‘ying');
-      if (parts.filter((p) => p.startsWith('*')).length > 1) return err('Faqat bitta to‘g‘ri variant bo‘lishi kerak');
+      if (answer < 0) return err(L('To‘g‘ri variant oldiga * qo‘ying'));
+      if (parts.filter((p) => p.startsWith('*')).length > 1) return err(L('Faqat bitta to‘g‘ri variant bo‘lishi kerak'));
       items.push({ kind: 'choice', prompt, options: parts.map((p) => p.replace(/^\*/, '').trim()), answer, explainUz });
     } else if (kind === '_') {
-      if (parts.length < 3) return err('Bo‘sh joy savolida: gap ___ bilan | javob(lar) | izoh');
-      if (!parts[0]!.includes('___')) return err('Gapda ___ (uchta pastki chiziq) bo‘lishi kerak');
+      if (parts.length < 3) return err(L('Bo‘sh joy savolida: gap ___ bilan | javob(lar) | izoh'));
+      if (!parts[0]!.includes('___')) return err(L('Gapda ___ (uchta pastki chiziq) bo‘lishi kerak'));
       const accept = parts[1]!.split(';').map((x) => x.trim()).filter(Boolean);
-      if (!accept.length) return err('Kamida bitta javob kerak');
+      if (!accept.length) return err(L('Kamida bitta javob kerak'));
       items.push({ kind: 'gap', prompt: parts[0]!, accept, explainUz: parts[2]! });
     } else if (kind === '=') {
-      if (parts.length < 2) return err('Tartib savolida: to‘g‘ri gap | izoh');
+      if (parts.length < 2) return err(L('Tartib savolida: to‘g‘ri gap | izoh'));
       const answer = parts[0]!.replace(/[.!?]+$/, '');
-      if (answer.split(/\s+/).length < 3) return err('Gapda kamida 3 ta so‘z bo‘lsin');
+      if (answer.split(/\s+/).length < 3) return err(L('Gapda kamida 3 ta so‘z bo‘lsin'));
       items.push({ kind: 'order', words: shuffleWords(answer), answer, explainUz: parts[1]! });
-    } else err('Qator ?, _ yoki = bilan boshlanishi kerak');
+    } else err(L('Qator ?, _ yoki = bilan boshlanishi kerak'));
   });
   return { items, errors };
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LISTENING_TABLE, READING_ACADEMIC_TABLE, READING_GENERAL_TABLE, overallBand, rawToBand } from '../lib/band';
 import { Illo } from '../components/Illo';
+import { L } from '../i18n';
 
 const bands = Array.from({ length: 19 }, (_, i) => i / 2);
 
@@ -11,7 +12,7 @@ function Overall() {
   const fields: [keyof typeof v, string][] = [['l', 'Listening'], ['r', 'Reading'], ['w', 'Writing'], ['s', 'Speaking']];
   return (
     <div className="card page-head with-illo t-mint">
-      <h3>Umumiy band kalkulyatori</h3>
+      <h3>{L('Umumiy band kalkulyatori')}</h3>
       <div className="row">
         {fields.map(([k, label]) => (
           <label key={k}>{label}{' '}
@@ -19,8 +20,8 @@ function Overall() {
           </label>
         ))}
       </div>
-      <p className="big">Overall: {o.toFixed(1)}</p>
-      <p className="evidence">IELTS qoidasi: 4 ball o‘rtachasi 0.5 ga yaxlitlanadi (.25 yuqoriga .5 ga, .75 yuqoriga keyingi butunga).</p>
+      <p className="big">{L('Overall:')} {o.toFixed(1)}</p>
+      <p className="evidence">{L('IELTS qoidasi: 4 ball o‘rtachasi 0.5 ga yaxlitlanadi (.25 yuqoriga .5 ga, .75 yuqoriga keyingi butunga).')}</p>
     </div>
   );
 }
@@ -29,12 +30,12 @@ function Raw() {
   const [raw, setRaw] = useState(30);
   return (
     <div className="card">
-      <h3>To‘g‘ri javoblar → band (Listening / Reading)</h3>
-      <label>40 tadan to‘g‘ri javoblar: <input type="number" min={0} max={40} value={raw} onChange={(e) => setRaw(Math.max(0, Math.min(40, Number(e.target.value) || 0)))} /></label>
+      <h3>{L('To‘g‘ri javoblar → band (Listening / Reading)')}</h3>
+      <label>{L('40 tadan to‘g‘ri javoblar:')} <input type="number" min={0} max={40} value={raw} onChange={(e) => setRaw(Math.max(0, Math.min(40, Number(e.target.value) || 0)))} /></label>
       <ul>
-        <li>Listening: <b>{rawToBand(raw, LISTENING_TABLE).toFixed(1)}</b></li>
-        <li>Reading Academic: <b>{rawToBand(raw, READING_ACADEMIC_TABLE).toFixed(1)}</b></li>
-        <li>Reading General Training: <b>{rawToBand(raw, READING_GENERAL_TABLE).toFixed(1)}</b></li>
+        <li>{L('Listening:')} <b>{rawToBand(raw, LISTENING_TABLE).toFixed(1)}</b></li>
+        <li>{L('Reading Academic:')} <b>{rawToBand(raw, READING_ACADEMIC_TABLE).toFixed(1)}</b></li>
+        <li>{L('Reading General Training:')} <b>{rawToBand(raw, READING_GENERAL_TABLE).toFixed(1)}</b></li>
       </ul>
     </div>
   );
@@ -43,7 +44,7 @@ function Raw() {
 export default function Tools() {
   return (
     <div>
-      <div className="card"><h2>Bepul asboblar</h2><Illo kind="books" size={124} /><p>Ro‘yxatdan o‘tish shart emas.</p></div>
+      <div className="card"><h2>{L('Bepul asboblar')}</h2><Illo kind="books" size={124} /><p>{L('Ro‘yxatdan o‘tish shart emas.')}</p></div>
       <Overall />
       <Raw />
     </div>

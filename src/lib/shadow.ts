@@ -1,5 +1,6 @@
 import { diffTokens, normalize, type DiffOp } from './practice';
 import type { RetellPoint } from '../content/scenes';
+import { L } from '../i18n';
 
 const toks = (s: string): string[] => normalize(s).split(' ').filter(Boolean);
 
@@ -18,7 +19,7 @@ export function accuracy(target: string, said: string): Accuracy {
 }
 
 export const verdict = (pct: number): { label: string; tone: 'ok' | 'near' | 'no' } =>
-  pct >= 90 ? { label: 'A’lo', tone: 'ok' } : pct >= 75 ? { label: 'Yaxshi', tone: 'ok' } : pct >= 55 ? { label: 'O‘rtacha', tone: 'near' } : { label: 'Ustida ishlang', tone: 'no' };
+  pct >= 90 ? { label: L('A’lo'), tone: 'ok' } : pct >= 75 ? { label: L('Yaxshi'), tone: 'ok' } : pct >= 55 ? { label: L('O‘rtacha'), tone: 'near' } : { label: 'Ustida ishlang', tone: 'no' };
 
 const STOP = new Set(['this', 'that', 'with', 'have', 'from', 'your', 'what', 'will', 'would', 'could', 'there', 'their', 'they', 'them', 'then', 'than', 'been', 'were', 'when', 'which', 'about', 'into', 'some', 'very', 'just', 'also', 'does', 'should', 'might', 'while', 'where', 'because']);
 const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };

@@ -1,5 +1,6 @@
 import type { Exercise } from '../content/practice';
 import { findIssues, styleIssues, type Issue } from './grammarCheck';
+import { L } from '../i18n';
 
 export type Verdict = 'correct' | 'close' | 'wrong';
 export interface DiffOp { t: 'same' | 'extra' | 'missing' | 'sub'; user?: string; want?: string }
@@ -68,14 +69,14 @@ const accepted = (e: Exercise): string[] => [e.model, ...(e.accept ?? [])];
 export function check(e: Exercise, answer: string): Result {
   const text = answer.trim();
   const base: Result = { verdict: 'wrong', diff: null, closest: e.model, issues: findIssues(text), style: e.kind === 'build' ? [] : styleIssues(text), notes: [], typos: [] };
-  if (!text) return { ...base, notes: ['Javob yozilmagan.'] };
+  if (!text) return { ...base, notes: [L('Javob yozilmagan.')] };
 
   if (e.kind === 'use' || e.kind === 'upgrade') {
     const words = text.split(/\s+/).filter(Boolean).length;
     for (const m of e.must ?? []) if (!new RegExp(m.re, 'i').test(text)) base.notes.push(m.hintUz);
     for (const m of e.mustNot ?? []) if (new RegExp(m.re, 'i').test(text)) base.notes.push(m.hintUz);
-    if (e.minWords && words < e.minWords) base.notes.push(`Gap juda qisqa: ${words} ta so'z, kamida ${e.minWords} ta kerak.`);
-    if (e.kind === 'upgrade' && e.shown && normalize(text) === normalize(e.shown)) base.notes.push("Gapni o'zgartirmadingiz: asl gapni yaxshilash kerak.");
+    if (e.minWords && words < e.minWords) base.notes.push(L('Gap juda qisqa: {0} ta so\'z, kamida {1} ta kerak.', [words, e.minWords]));
+    if (e.kind === 'upgrade' && e.shown && normalize(text) === normalize(e.shown)) base.notes.push(L('Gapni o\'zgartirmadingiz: asl gapni yaxshilash kerak.'));
     if (base.notes.length) return { ...base, verdict: 'wrong' };
     return { ...base, verdict: base.issues.length || base.style.length ? 'close' : 'correct' };
   }

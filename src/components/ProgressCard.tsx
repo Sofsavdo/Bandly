@@ -2,6 +2,7 @@ import { Clock, Target, TrendingUp } from 'lucide-react';
 import { gain, lastDays, skillBands, studyPlan } from '../lib/progress';
 import { loadResults } from '../lib/storage';
 import { useProfile } from '../lib/store';
+import { L } from '../i18n';
 
 const SKILL: Record<string, string> = { reading: 'Reading', listening: 'Listening', speaking: 'Speaking' };
 
@@ -22,15 +23,15 @@ export function ProgressCard() {
     <section className="card progress-card">
       <div className="myplan-head">
         <div>
-          <span className="eyebrow"><TrendingUp size={15} /> Sizning o‘sishingiz</span>
+          <span className="eyebrow"><TrendingUp size={15} />  {L('Sizning o‘sishingiz')}</span>
           <h2 style={{ margin: '4px 0' }}>{base.toFixed(1)} → <span className="lvl-inline">{cur.toFixed(1)}</span> → {p.target.toFixed(1)}</h2>
           <p className="evidence">
-            {delta > 0 ? <b className="ok">+{delta.toFixed(1)} band o‘sdi.</b> : delta < 0 ? 'Hozircha pasayish: yana mashq qiling.' : 'Mashq qilgan sari o‘sish shu yerda ko‘rinadi.'}
+            {delta > 0 ? <b className="ok">+{delta.toFixed(1)}  {L('band o‘sdi.')}</b> : delta < 0 ? L('Hozircha pasayish: yana mashq qiling.') : L('Mashq qilgan sari o‘sish shu yerda ko‘rinadi.')}
           </p>
         </div>
-        <div className="gainbadge" title="Hozirgi taxminiy band">{cur.toFixed(1)}</div>
+        <div className="gainbadge" title={L('Hozirgi taxminiy band')}>{cur.toFixed(1)}</div>
       </div>
-      <div className="journey" aria-label="Maqsad sari yo‘l">
+      <div className="journey" aria-label={L('Maqsad sari yo‘l')}>
         <div className="bar"><i style={{ width: pct(cur) }} /></div>
         <div className="journey-marks"><span>{base.toFixed(1)}</span><span>{tgt.toFixed(1)}</span></div>
       </div>
@@ -40,11 +41,11 @@ export function ProgressCard() {
         ))}
       </div>
       <div className="plan-note">
-        <p><Target size={15} style={{ verticalAlign: -2 }} /> Maqsadga yetish uchun taxminan <b>{plan.hours} soat</b> mashq kerak (o‘rtacha 1 band ≈ 150 soat). {p.examDate && plan.daysLeft !== null ? <>Imtihongacha <b>{plan.daysLeft} kun</b>: kuniga <b>~{plan.minutesPerDay} daqiqa</b>.</> : <>Kuniga <b>{plan.minutesPerDay} daqiqa</b> bilan ~<b>{plan.weeksNeeded} hafta</b>.</>}</p>
-        {!plan.realistic && <p className="warn">Muddat qisqa: bu tezlik real bo‘lmasligi mumkin. Maqsad yoki sanani qayta ko‘rib chiqing.</p>}
-        {plan.hours > 0 && <p><Clock size={15} style={{ verticalAlign: -2 }} /> Birinchi navbatda: <b>{plan.focus.map((k) => SKILL[k]).join(' → ')}</b> (eng pasti birinchi).</p>}
+        <p><Target size={15} style={{ verticalAlign: -2 }} />  {L('Maqsadga yetish uchun taxminan')} <b>{plan.hours}  {L('soat')}</b>  {L('mashq kerak (o‘rtacha 1 band ≈ 150 soat).')} {p.examDate && plan.daysLeft !== null ? <>{L('Imtihongacha')} <b>{plan.daysLeft}  {L('kun')}</b>{L(': kuniga')} <b>~{plan.minutesPerDay}  {L('daqiqa')}</b>.</> : <>{L('Kuniga')} <b>{plan.minutesPerDay}  {L('daqiqa')}</b>  {L('bilan ~')}<b>{plan.weeksNeeded}  {L('hafta')}</b>.</>}</p>
+        {!plan.realistic && <p className="warn">{L('Muddat qisqa: bu tezlik real bo‘lmasligi mumkin. Maqsad yoki sanani qayta ko‘rib chiqing.')}</p>}
+        {plan.hours > 0 && <p><Clock size={15} style={{ verticalAlign: -2 }} />  {L('Birinchi navbatda:')} <b>{plan.focus.map((k) => SKILL[k]).join(' → ')}</b>  {L('(eng pasti birinchi).')}</p>}
       </div>
-      <div className="spark" aria-label="Oxirgi 14 kun faolligi">
+      <div className="spark" aria-label={L('Oxirgi 14 kun faolligi')}>
         {days.map((d) => <i key={d.day} title={`${d.day}: ${d.xp} XP`} style={{ height: `${Math.max(6, (d.xp / max) * 44)}px`, opacity: d.xp ? 1 : 0.25 }} />)}
       </div>
     </section>

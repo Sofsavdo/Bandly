@@ -10,10 +10,11 @@ import { isUnlocked, type ProgressMap } from '../lib/lessons';
 import { loadBoss } from '../lib/boss';
 import { useProfile } from '../lib/store';
 import { Prop, ZONES, type PropKind, type ZoneTheme } from './mapArt';
+import { L } from '../i18n';
 
 const LEVEL_NAME: Record<string, string> = { A1: 'Beginner', A2: 'Elementary', B1: 'Intermediate', B2: 'Upper-intermediate', C1: 'Advanced', C2: 'Proficiency' };
 const ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-const STATE_UZ: Record<NodeState, string> = { locked: 'yopiq', open: 'ochiq', current: 'hozirgi dars', passed: 'tugallangan', mastered: 'to‘liq o‘zlashtirilgan', revise: 'takrorlash vaqti keldi' };
+const STATE_UZ: Record<NodeState, string> = { locked: 'yopiq', open: 'ochiq', current: L('hozirgi dars'), passed: 'tugallangan', mastered: L('to‘liq o‘zlashtirilgan'), revise: L('takrorlash vaqti keldi') };
 
 // Geometriya: viewBox kengligi 400; x foizda, y pikselda (HTML tugunlar va SVG yo'l bir xil koordinatada).
 const STEP = 128, TOP = 196, BOTTOM = 100, UNIT_GAP = 60;
@@ -101,7 +102,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
         <div className="zone-badge" aria-hidden="true">{lv}</div>
         <div className="grow">
           <h3 id={`zone-${lv}`}>{t.name} <span>· {LEVEL_NAME[lv]}</span></h3>
-          <p>{t.sub}{assumed ? ' · o‘tilgan deb hisoblangan' : ''}{level === lv ? ' · sizning darajangiz' : ''}</p>
+          <p>{t.sub}{assumed ? L(' · o‘tilgan deb hisoblangan') : ''}{level === lv ? L(' · sizning darajangiz') : ''}</p>
         </div>
         <svg className="zone-ring" viewBox="0 0 56 56" aria-label={`${passedN} / ${lessons.length} dars`} role="img">
           <circle cx="28" cy="28" r={R} fill="none" stroke="currentColor" strokeOpacity=".15" strokeWidth="6" />
@@ -116,9 +117,9 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
             return (
               <li key={`t-${it.unit.id}`} className="zn trophy-wrap" style={{ left: `${it.x}%`, top: it.y }}>
                 {it.done
-                  ? <a className={`trophy boss ${it.won ? 'done' : 'ready'}`} href={`#/boss/${it.unit.id}`} aria-label={`${it.unit.titleUz}: boss sinovi${it.won ? ' — yutilgan' : ' — ochiq'}`}>{it.won ? <Trophy size={24} /> : <Swords size={24} />}</a>
-                  : <div className="trophy" role="img" aria-label={`${it.unit.titleUz}: boss sinovi barcha darslardan keyin ochiladi`}><Lock size={22} /></div>}
-                <span className="zn-label">{it.done && !it.won ? <b className="boss-tag">BOSS</b> : null}{it.unit.titleUz}</span>
+                  ? <a className={`trophy boss ${it.won ? 'done' : 'ready'}`} href={`#/boss/${it.unit.id}`} aria-label={`${it.unit.titleUz}: boss sinovi${it.won ? ' — yutilgan' : L(' — ochiq')}`}>{it.won ? <Trophy size={24} /> : <Swords size={24} />}</a>
+                  : <div className="trophy" role="img" aria-label={L('{0}: boss sinovi barcha darslardan keyin ochiladi', [it.unit.titleUz])}><Lock size={22} /></div>}
+                <span className="zn-label">{it.done && !it.won ? <b className="boss-tag">{L('BOSS')}</b> : null}{it.unit.titleUz}</span>
               </li>
             );
           }
@@ -127,10 +128,10 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
           return (
             <li key={it.lesson.id} className="zn" style={{ left: `${it.x}%`, top: it.y }}>
               {showSign && <span className="unit-sign" style={{ ['--dx' as string]: it.x < 50 ? '30px' : it.x > 50 ? '-30px' : '0px' }}>{it.unit.titleUz}</span>}
-              {it.state === 'current' && <span className={`you-pin${it.x > 50 ? ' left' : ''}`}><MapPin size={14} /> Siz shu yerdasiz</span>}
+              {it.state === 'current' && <span className={`you-pin${it.x > 50 ? ' left' : ''}`}><MapPin size={14} />  {L('Siz shu yerdasiz')}</span>}
               <button type="button" ref={it.state === 'current' ? curRef : undefined} className={`coin ${it.state}`}
                 onClick={() => onPick({ unit: it.unit, lesson: it.lesson, index: it.index, state: it.state })}
-                aria-label={`${it.index + 1}-dars: ${it.lesson.titleUz}, ${STATE_UZ[it.state]}${it.stars ? `, ${it.stars} yulduz` : ''}`}>
+                aria-label={L('{0}-dars: {1}, {2}{3}', [it.index + 1, it.lesson.titleUz, STATE_UZ[it.state], it.stars ? `, ${it.stars} yulduz` : ''])}>
                 <span className="coin-face">{Icon ? <Icon size={it.state === 'current' ? 30 : 24} strokeWidth={2.6} /> : <span className="num">{it.index + 1}</span>}</span>
               </button>
               {it.stars > 0 && <span className="zn-stars" aria-hidden="true">{[1, 2, 3].map((s) => <Star key={s} size={13} className={s <= it.stars ? 'on' : ''} />)}</span>}
@@ -139,7 +140,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
           );
         })}
       </ol>
-      <a className="zone-gate" href="#/skills" style={{ top: TOP - 62 }}><Flag2 /> {lv} darajasini tekshirish</a>
+      <a className="zone-gate" href="#/skills" style={{ top: TOP - 62 }}><Flag2 /> {lv}  {L('darajasini tekshirish')}</a>
     </section>
   );
 }
@@ -169,25 +170,25 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
         <div className="hud-lvl">
           <span className="hud-badge">L{lp.level}</span>
           <div className="grow">
-            <b>Bandly darajasi {lp.level}</b>
-            <div className="hud-bar" role="progressbar" aria-valuemin={0} aria-valuemax={lp.span} aria-valuenow={lp.into} aria-label="Bosqich XP"><i style={{ width: `${Math.round(lp.pct * 100)}%` }} /></div>
-            <span className="muted">{lp.into} / {lp.span} XP · ingliz tili: {level ?? 'aniqlanmagan'}</span>
+            <b>{L('Bandly darajasi')} {lp.level}</b>
+            <div className="hud-bar" role="progressbar" aria-valuemin={0} aria-valuemax={lp.span} aria-valuenow={lp.into} aria-label={L('Bosqich XP')}><i style={{ width: `${Math.round(lp.pct * 100)}%` }} /></div>
+            <span className="muted">{lp.into} / {lp.span}  {L('XP · ingliz tili:')} {level ?? 'aniqlanmagan'}</span>
           </div>
         </div>
         <div className="hud-chips">
-          <span className="chip-stat"><Flame size={16} /> {displayStreak(p, dayKey())} kun</span>{p.freezes > 0 && <span className="chip-stat" title="Seriya muzlatishlari: o‘tkazib yuborilgan kunni yopadi">❄ {p.freezes}</span>}
-          <span className="chip-stat"><Star size={16} /> {today}/{p.dailyGoal} XP</span>
+          <span className="chip-stat"><Flame size={16} /> {displayStreak(p, dayKey())}  {L('kun')}</span>{p.freezes > 0 && <span className="chip-stat" title={L('Seriya muzlatishlari: o‘tkazib yuborilgan kunni yopadi')}>❄ {p.freezes}</span>}
+          <span className="chip-stat"><Star size={16} /> {today}/{p.dailyGoal}  {L('XP')}</span>
         </div>
       </div>
 
       {[...levels].reverse().map((lv) => <Zone key={lv} lv={lv} progress={progress} currentId={currentId} level={level} onPick={setSel} curRef={curRef} />)}
 
-      {currentId && <a className="map-fab" href={`#/learn/${currentId}`}><Play size={18} /> Davom ettirish</a>}
+      {currentId && <a className="map-fab" href={`#/learn/${currentId}`}><Play size={18} />  {L('Davom ettirish')}</a>}
 
       {sel && (
         <div className="sheet-backdrop" role="presentation" onClick={() => setSel(null)}>
           <div className={`sheet card lv-${sel.unit.level}`} role="dialog" aria-modal="true" aria-labelledby="node-title" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="icon-btn sm sheet-x" onClick={() => setSel(null)} aria-label="Yopish"><X size={16} /></button>
+            <button type="button" className="icon-btn sm sheet-x" onClick={() => setSel(null)} aria-label={L('Yopish')}><X size={16} /></button>
             <div className="sheet-head">
               <span className={`coin mini ${sel.state}`} aria-hidden="true"><span className="coin-face">{sel.index + 1}</span></span>
               <div>
@@ -197,14 +198,14 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
             </div>
             <p>{sel.lesson.objectiveUz}</p>
             <div className="sheet-stats">
-              <div><b>{sel.lesson.minutes}</b><span>daqiqa</span></div>
-              <div><b>~{sel.lesson.check.length * 3 + 15}</b><span>XP</span></div>
-              <div><b>5</b><span>jon</span></div>
-              <div><b>{progress[sel.lesson.id] ? `${Math.round(progress[sel.lesson.id]!.best * 100)}%` : '—'}</b><span>eng yaxshi</span></div>
+              <div><b>{sel.lesson.minutes}</b><span>{L('daqiqa')}</span></div>
+              <div><b>~{sel.lesson.check.length * 3 + 15}</b><span>{L('XP')}</span></div>
+              <div><b>5</b><span>{L('jon')}</span></div>
+              <div><b>{progress[sel.lesson.id] ? `${Math.round(progress[sel.lesson.id]!.best * 100)}%` : '—'}</b><span>{L('eng yaxshi')}</span></div>
             </div>
             {sel.state === 'locked'
-              ? <p className="notice">Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.</p>
-              : <a className="btn primary block" href={`#/learn/${sel.lesson.id}`} autoFocus><Play size={16} /> {sel.state === 'passed' || sel.state === 'mastered' ? 'Takrorlash' : sel.state === 'revise' ? 'Takrorlashni boshlash' : 'Boshlash'}</a>}
+              ? <p className="notice">{L('Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.')}</p>
+              : <a className="btn primary block" href={`#/learn/${sel.lesson.id}`} autoFocus><Play size={16} /> {sel.state === 'passed' || sel.state === 'mastered' ? L('Takrorlash') : sel.state === 'revise' ? L('Takrorlashni boshlash') : L('Boshlash')}</a>}
           </div>
         </div>
       )}

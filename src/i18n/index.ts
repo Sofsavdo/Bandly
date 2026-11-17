@@ -51,8 +51,8 @@ export const getLang = (): Lang => lang;
 export const hasDict = (): boolean => lang === 'uz' || Object.keys(dict).length > 0;
 if (typeof document !== 'undefined') document.documentElement.lang = lang;
 
-type Vars = (string | number)[] | Record<string, string | number>;
-const fill = (s: string, vars?: Vars): string => (vars ? s.replace(/\{(\w+)\}/g, (m, k: string) => { const v = (vars as Record<string, string | number>)[k]; return v === undefined ? m : String(v); }) : s);
+type Vars = (string | number | null | undefined)[] | Record<string, string | number | null | undefined>;
+const fill = (s: string, vars?: Vars): string => (vars ? s.replace(/\{(\w+)\}/g, (m, k: string) => { const v = (vars as Record<string, unknown>)[k]; return v === undefined || v === null ? m : String(v); }) : s);
 
 /** Tarjima: manba (o'zbekcha) matn → joriy tildagi matn. {0}, {n} kabi o'rinlar to'ldiriladi. */
 export function L(src: string, vars?: Vars): string {

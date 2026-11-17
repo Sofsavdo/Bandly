@@ -1,5 +1,6 @@
 import { clearServerPlans, dropXpQueue, getProfile, takeXpQueue } from './store';
 import { onLogin, pushProgress, stageClear } from './cloud';
+import { L } from '../i18n';
 
 const KEY = 'bandly.account.v1';
 export interface Account { token: string; nickname: string; tg?: boolean }
@@ -63,9 +64,9 @@ export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown)
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
-  try { res = await fetch(path, init); } catch { throw new Error('Server bilan aloqa yo‘q'); }
+  try { res = await fetch(path, init); } catch { throw new Error(L('Server bilan aloqa yo‘q')); }
   const body = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new Error(body.error ?? `Xato ${res.status}`);
+  if (!res.ok) throw new Error(body.error ?? L('Xato {0}', [res.status]));
   return body;
 }
 

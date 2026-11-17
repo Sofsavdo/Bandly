@@ -1,4 +1,5 @@
 import { dayKey } from '../lib/game';
+import { L } from '../i18n';
 
 const WD = ['Ya', 'Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh'];
 
@@ -8,10 +9,10 @@ export function WeekBars({ activity }: { activity: Record<string, number> }) {
   const max = Math.max(30, ...days.map((d) => d.xp));
   const best = days.reduce((b, d) => (d.xp > b.xp ? d : b), days[0]!);
   return (
-    <div className="weekbars" role="img" aria-label={`Oxirgi 7 kun: ${days.map((d) => `${d.w} ${d.xp} XP`).join(', ')}`}>
+    <div className="weekbars" role="img" aria-label={L('Oxirgi 7 kun: {0}', [days.map((d) => `${d.w} ${d.xp} XP`).join(', ')])}>
       {days.map((d, i) => (
         <div key={d.k} className={`wb${i === 6 ? ' now' : d.xp > 0 ? ' has' : ''}`}>
-          <i style={{ height: `${Math.max(14, (d.xp / max) * 100)}%` }}>{d === best && d.xp > 0 && <em>{d.xp} XP</em>}</i>
+          <i style={{ height: `${Math.max(14, (d.xp / max) * 100)}%` }}>{d === best && d.xp > 0 && <em>{d.xp}  {L('XP')}</em>}</i>
           <small>{d.w}</small>
         </div>
       ))}

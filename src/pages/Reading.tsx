@@ -4,6 +4,7 @@ import { MockTest, type ExamLeftState } from '../components/MockTest';
 import type { PublicReadingTest as ReadingTest } from '../content/mockShared';
 import { READING_ACADEMIC_TABLE } from '../lib/band';
 import { addHighlight, segments, type HighlightRange } from '../lib/examAttempt';
+import { L } from '../i18n';
 
 /** Tanlangan matnni paragraf bo'yicha belgilar oralig'iga aylantiradi. */
 function selectionRanges(root: HTMLElement, range: Range): HighlightRange[] {
@@ -54,10 +55,10 @@ function Passage({ t, state }: { t: ReadingTest; state: ExamLeftState }) {
   return (
     <div className="passage">
       {canMark && (
-        <div className="row hl-tools" role="toolbar" aria-label="Matnni bo‘yash">
-          <button type="button" className="btn sm" onPointerDown={(e) => e.preventDefault()} onClick={mark} disabled={!hasSel}><Highlighter size={15} /> Tanlanganni bo‘yash</button>
-          {highlights.length > 0 && <button type="button" className="btn sm" onClick={clear}><Eraser size={15} /> Tozalash</button>}
-          <span className="muted" style={{ fontSize: 13 }}>Matnni belgilang, so‘ng “bo‘yash”ni bosing.</span>
+        <div className="row hl-tools" role="toolbar" aria-label={L('Matnni bo‘yash')}>
+          <button type="button" className="btn sm" onPointerDown={(e) => e.preventDefault()} onClick={mark} disabled={!hasSel}><Highlighter size={15} />  {L('Tanlanganni bo‘yash')}</button>
+          {highlights.length > 0 && <button type="button" className="btn sm" onClick={clear}><Eraser size={15} />  {L('Tozalash')}</button>}
+          <span className="muted" style={{ fontSize: 13 }}>{L('Matnni belgilang, so‘ng “bo‘yash”ni bosing.')}</span>
         </div>
       )}
       <div ref={root}>
@@ -88,7 +89,7 @@ export default function Reading({ test: t }: { test: ReadingTest }) {
       groups={t.groups}
       questions={t.questions}
       table={READING_ACADEMIC_TABLE}
-      intro={<p>{t.sections?.length ? `${t.sections.length} ta matn` : 'Bitta matn'} va {t.questions.length} ta savol{t.exam === 'cefr' ? ' — CEFR Multilevel uslubida (umumiy hajm va vaqt rasmiy formatga mos; ichki tuzilish Bandly’niki)' : t.sections?.length ? ' — haqiqiy IELTS Academic Reading formatida' : ''}. Vaqt tugagach test avtomatik yakunlanadi. Matnlar original mashq materiali (rasmiy IELTS emas).</p>}
+      intro={<p>{t.sections?.length ? L('{0} ta matn', [t.sections.length]) : L('Bitta matn')}  {L('va')} {t.questions.length}  {L('ta savol')}{t.exam === 'cefr' ? L(' — CEFR Multilevel uslubida (umumiy hajm va vaqt rasmiy formatga mos; ichki tuzilish Bandly’niki)') : t.sections?.length ? ' — haqiqiy IELTS Academic Reading formatida' : ''}{L('. Vaqt tugagach test avtomatik yakunlanadi. Matnlar original mashq materiali (rasmiy IELTS emas).')}</p>}
       left={(state) => <Passage t={t} state={state} />}
     />
   );

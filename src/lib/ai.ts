@@ -1,5 +1,6 @@
 import { getAccount } from './account';
 import type { Reaction } from '../content/roasts';
+import { L } from '../i18n';
 
 export interface Evaluation {
   bands: Record<string, number | null>;
@@ -18,16 +19,16 @@ export function aiEnabled(): Promise<boolean> {
 
 async function post<T>(path: string, body: Record<string, unknown>, timeoutMs: number): Promise<T> {
   const a = getAccount();
-  if (!a) throw new Error('AI uchun avval hisobingizga kiring');
+  if (!a) throw new Error(L('AI uchun avval hisobingizga kiring'));
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: a.token, ...body }), signal: ctl.signal });
     const j = (await res.json().catch(() => ({}))) as T & { error?: string };
-    if (!res.ok) throw new Error(j.error ?? `Xato ${res.status}`);
+    if (!res.ok) throw new Error(j.error ?? L('Xato {0}', [res.status]));
     return j;
   } catch (e) {
-    if ((e as Error).name === 'AbortError') throw new Error('AI javob bermadi');
+    if ((e as Error).name === 'AbortError') throw new Error(L('AI javob bermadi'));
     throw e;
   } finally { clearTimeout(t); }
 }

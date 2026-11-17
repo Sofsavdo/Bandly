@@ -7,6 +7,7 @@ import { FREE_GAMES_PER_DAY } from '../config';
 import type { Cefr } from './levels';
 import { LEVEL_BAND } from './progress';
 import { confetti, sfx } from './fx';
+import { L } from '../i18n';
 
 const KEY = 'bandly.profile.v1';
 
@@ -96,8 +97,8 @@ export function addXp(amount: number, source?: string): void {
   const keep = Object.keys(act).sort().slice(-90);
   commit({ ...r.profile, activity: Object.fromEntries(keep.map((k) => [k, act[k]])) });
   pushToast(`+${Math.round(amount)} XP`, 'xp');
-  if (r.levelUp) { pushToast(`Yangi daraja: ${r.levelUp}!`, 'level'); sfx('level'); confetti(90); }
-  r.unlocked.forEach((a) => { pushToast(`Yutuq: ${a.title}`, 'ach'); if (!r.levelUp) { sfx('ach'); confetti(50); } });
+  if (r.levelUp) { pushToast(L('Yangi daraja: {0}!', [r.levelUp]), 'level'); sfx('level'); confetti(90); }
+  r.unlocked.forEach((a) => { pushToast(L('Yutuq: {0}', [a.title]), 'ach'); if (!r.levelUp) { sfx('ach'); confetti(50); } });
 }
 
 /** Boss g'alabasi: hisoblagich (yutuqlar uchun) va XP bitta amalda — yutuq tekshiruvi yangi qiymatni ko'radi. */

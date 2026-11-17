@@ -5,24 +5,25 @@ import { effectiveMastery, stateOf, type MasteryState } from '../lib/adaptive/ma
 import { loadAdaptive } from '../lib/adaptive/store';
 import { TAXONOMY, type TaxonomyId } from '../lib/adaptive/taxonomy';
 import { loadSkills } from '../lib/skillCheck';
+import { L } from '../i18n';
 
-const STATE_UZ: Record<MasteryState, string> = { new: 'yangi', learning: 'o‘rganilmoqda', known: 'biladi', needs_revision: 'takrorlash kerak', mastered: 'o‘zlashtirilgan' };
+const STATE_UZ: Record<MasteryState, string> = { new: 'yangi', learning: L('o‘rganilmoqda'), known: 'biladi', needs_revision: L('takrorlash kerak'), mastered: L('o‘zlashtirilgan') };
 
 function SkillLine() {
   const s = loadSkills();
   return (
     <p className="row">
-      <span className="pill">Reading: {s.reading?.level ?? '—'}</span><span className="pill">Listening: {s.listening?.level ?? '—'}</span>
-      <a className="btn sm" style={{ whiteSpace: 'normal' }} href="#/skills">{s.reading || s.listening ? 'Qayta tekshirish' : 'Reading / Listening darajasini aniqlash'}</a>
+      <span className="pill">{L('Reading:')} {s.reading?.level ?? '—'}</span><span className="pill">{L('Listening:')} {s.listening?.level ?? '—'}</span>
+      <a className="btn sm" style={{ whiteSpace: 'normal' }} href="#/skills">{s.reading || s.listening ? L('Qayta tekshirish') : L('Reading / Listening darajasini aniqlash')}</a>
     </p>
   );
 }
 
 function titleOf(id: string): string {
   const l = ALL_LESSONS.find((x) => `ge.lesson.${x.lesson.id}` === id);
-  if (l) return `Dars: ${l.lesson.titleUz}`;
+  if (l) return L('Dars: {0}', [l.lesson.titleUz]);
   const n = ALL_NODES.find((x) => x.id === id);
-  if (n?.skill === 'vocabulary') return `So‘z boyligi · ${n.level}`;
+  if (n?.skill === 'vocabulary') return L('So‘z boyligi · {0}', [n.level]);
   return skillNodeTitle(id) ?? topicOfNode(id) ?? id;
 }
 
@@ -38,18 +39,18 @@ export function MasteryCard() {
   const topErrors = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
   return (
     <div className="card">
-      <span className="eyebrow"><Brain size={15} /> Bilim xaritam</span>
+      <span className="eyebrow"><Brain size={15} />  {L('Bilim xaritam')}</span>
       <SkillLine />
-      <p><a className="btn sm" href="#/mistakes">Xatolar ustida ishlash</a></p>
+      <p><a className="btn sm" href="#/mistakes">{L('Xatolar ustida ishlash')}</a></p>
       {rows.length === 0 ? (
-        <p className="muted">Hali ma’lumot yo‘q — birinchi mashqdan keyin chiqadi.</p>
+        <p className="muted">{L('Hali ma’lumot yo‘q — birinchi mashqdan keyin chiqadi.')}</p>
       ) : (
         <>
-          <p className="evidence">Javoblar, qiyinlik va unutish hisobga olinadi.</p>
+          <p className="evidence">{L('Javoblar, qiyinlik va unutish hisobga olinadi.')}</p>
           <div className="stack">
             {rows.map((r) => (
               <div key={r.id} className="skill" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 4 }}>
-                <span>{titleOf(r.id)} <span className="muted">· {STATE_UZ[r.state]} · {r.attempts} javob</span></span>
+                <span>{titleOf(r.id)} <span className="muted">· {STATE_UZ[r.state]} · {r.attempts}  {L('javob')}</span></span>
                 <b>{Math.round(r.eff * 100)}%</b>
                 <div className="bar" style={{ gridColumn: '1 / -1' }}><i style={{ width: `${Math.round(r.eff * 100)}%` }} /></div>
               </div>
@@ -57,7 +58,7 @@ export function MasteryCard() {
           </div>
           {topErrors.length > 0 && (
             <>
-              <h3 style={{ marginTop: 14 }}>Ko‘p takrorlanayotgan xatolar (oxirgi {s.errors.length} ta xato ichida)</h3>
+              <h3 style={{ marginTop: 14 }}>{L('Ko‘p takrorlanayotgan xatolar (oxirgi')} {s.errors.length}  {L('ta xato ichida)')}</h3>
               <p className="row">{topErrors.map(([t, c]) => <span key={t} className="pill">{TAXONOMY[t as TaxonomyId] ?? t} · {c}</span>)}</p>
             </>
           )}

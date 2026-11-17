@@ -3,13 +3,14 @@ import { vocabForLevel } from '../../content/vocab';
 import { isDue, isMastered } from '../../lib/srs';
 import { freeGamesLeft, hasAnyPlan, useProfile } from '../../lib/store';
 import { Illo } from '../../components/Illo';
+import { L } from '../../i18n';
 
 const games = [
-  { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: 'Jim qolma!', text: '60 soniya to‘xtamay gapiring — jim qolsangiz shar yoriladi' },
-  { href: '#/games/rush', icon: <Zap size={26} color="#ffb02e" />, cls: '', title: 'So‘z poygasi', text: '60 soniya, 3 jon, kombo ball' },
-  { href: '#/games/pairs', icon: <Puzzle size={26} color="#5cd6ff" />, cls: 'g2', title: 'Juftlik', text: 'So‘z va ma’noni juftlang' },
-  { href: '#/games/spell', icon: <BookOpen size={26} color="#ff8fb1" />, cls: 'g3', title: 'Imlo sinovi', text: 'Misol gapdan so‘zni yozing' },
-  { href: '#/duel', icon: <Swords size={26} color="#8bff9c" />, cls: 'g4', title: 'Duel', text: 'Do‘st bilan bir xil so‘zlarda' },
+  { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: 'Jim qolma!', text: L('60 soniya to‘xtamay gapiring — jim qolsangiz shar yoriladi') },
+  { href: '#/games/rush', icon: <Zap size={26} color="#ffb02e" />, cls: '', title: L('So‘z poygasi'), text: L('60 soniya, 3 jon, kombo ball') },
+  { href: '#/games/pairs', icon: <Puzzle size={26} color="#5cd6ff" />, cls: 'g2', title: 'Juftlik', text: L('So‘z va ma’noni juftlang') },
+  { href: '#/games/spell', icon: <BookOpen size={26} color="#ff8fb1" />, cls: 'g3', title: 'Imlo sinovi', text: L('Misol gapdan so‘zni yozing') },
+  { href: '#/duel', icon: <Swords size={26} color="#8bff9c" />, cls: 'g4', title: 'Duel', text: L('Do‘st bilan bir xil so‘zlarda') },
 ];
 
 export default function GamesHub() {
@@ -24,24 +25,24 @@ export default function GamesHub() {
   return (
     <div>
       <div className="card page-head with-illo t-pink">
-        <h2>So‘z o‘yinlari</h2><Illo kind="star" size={124} />
-        <p>Har bir o‘yin takrorlash tizimiga ulangan: bilmagan so‘zlar tezroq qaytadi.</p>
+        <h2>{L('So‘z o‘yinlari')}</h2><Illo kind="star" size={124} />
+        <p>{L('Har bir o‘yin takrorlash tizimiga ulangan: bilmagan so‘zlar tezroq qaytadi.')}</p>
         <p className="evidence">
-          {hasAnyPlan(p) ? 'Obunangiz bilan o‘yinlar cheksiz.' : `Bugun bepul o‘yinlar: ${left} ta qoldi (kuniga 2 ta). Istalgan obuna bilan cheksiz.`}
+          {hasAnyPlan(p) ? L('Obunangiz bilan o‘yinlar cheksiz.') : L('Bugun bepul o‘yinlar: {0} ta qoldi (kuniga 2 ta). Istalgan obuna bilan cheksiz.', [left])}
         </p>
         <div className="row">
-          <span className="pill">Yangi: {fresh}</span>
-          <span className="pill">Takrorlash vaqti: {due}</span>
-          <span className="pill">O‘zlashtirilgan: {mastered} / {vocab.length}</span>
+          <span className="pill">{L('Yangi:')} {fresh}</span>
+          <span className="pill">{L('Takrorlash vaqti:')} {due}</span>
+          <span className="pill">{L('O‘zlashtirilgan:')} {mastered} / {vocab.length}</span>
         </div>
       </div>
       <div className="grid compact">
         {games.map((g) => (
-          <a key={g.href} className={`gcard ${g.cls}`} href={g.href}><span className="gico">{g.icon}</span><h3>{g.title}</h3><p>{g.text}</p><span className="play">O‘ynash <ArrowRight size={16} /></span></a>
+          <a key={g.href} className={`gcard ${g.cls}`} href={g.href}><span className="gico">{g.icon}</span><h3>{g.title}</h3><p>{g.text}</p><span className="play">{L('O‘ynash')} <ArrowRight size={16} /></span></a>
         ))}
       </div>
       <div className="card">
-        <h3>Mavzular bo‘yicha o‘zlashtirish</h3>
+        <h3>{L('Mavzular bo‘yicha o‘zlashtirish')}</h3>
         <div className="topic-grid">
         {topics.map((t) => {
           const list = vocab.filter((w) => w.topic === t);

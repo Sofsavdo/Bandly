@@ -5,6 +5,7 @@ import type { PublicListeningTest as ListeningTest } from '../content/mockShared
 import { listeningTrack } from '../lib/clips';
 import { LISTENING_TABLE } from '../lib/band';
 import { bestVoice } from '../lib/speech';
+import { L } from '../i18n';
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
@@ -49,9 +50,9 @@ function FilePlayer({ file, seconds, practice, initialPlays = 0, onPlay }: { fil
     <div>
       <div className="row">
         <button className="btn primary" onClick={toggle} disabled={locked || (playing && !practice)}>
-          {playing ? <><Pause size={18} /> {practice ? 'Pauza' : 'Eshittirilmoqda…'}</> : <><Play size={18} /> {plays === 0 ? 'Audioni boshlash' : 'Davom ettirish'}</>}
+          {playing ? <><Pause size={18} /> {practice ? 'Pauza' : 'Eshittirilmoqda…'}</> : <><Play size={18} /> {plays === 0 ? L('Audioni boshlash') : L('Davom ettirish')}</>}
         </button>
-        {practice && plays > 0 && <button className="btn" onClick={restart}><RotateCcw size={16} /> Boshidan</button>}
+        {practice && plays > 0 && <button className="btn" onClick={restart}><RotateCcw size={16} />  {L('Boshidan')}</button>}
         <span className="pill">{mmss(pos)} / {mmss(total)}</span>
       </div>
       <div className="audio-bar" style={{ marginTop: 12 }}><i style={{ width: `${Math.min(100, (pos / total) * 100)}%`, transition: 'width .25s linear' }} /></div>
@@ -82,9 +83,9 @@ function BrowserPlayer({ test, practice }: { test: ListeningTest; practice: bool
   };
   return (
     <div>
-      <p className="notice">Tayyor audio topilmadi: brauzer ovozi ishlatiladi, sifati qurilmaga bog‘liq.</p>
-      {!supported && <p className="notice">Brauzeringiz ovoz sintezini qo‘llamaydi. Transkriptdan foydalaning.</p>}
-      <button className="btn primary" onClick={play} disabled={playing || locked || !supported}><Play size={18} /> {plays === 0 ? 'Audioni boshlash' : 'Qayta eshitish'}</button>
+      <p className="notice">{L('Tayyor audio topilmadi: brauzer ovozi ishlatiladi, sifati qurilmaga bog‘liq.')}</p>
+      {!supported && <p className="notice">{L('Brauzeringiz ovoz sintezini qo‘llamaydi. Transkriptdan foydalaning.')}</p>}
+      <button className="btn primary" onClick={play} disabled={playing || locked || !supported}><Play size={18} /> {plays === 0 ? L('Audioni boshlash') : L('Qayta eshitish')}</button>
     </div>
   );
 }
@@ -99,11 +100,11 @@ function Player({ test, state }: { test: ListeningTest; state: ExamLeftState }) 
   return (
     <div>
       <p><b>{test.context}</b></p>
-      {!practice && !submitted && playedBefore > 0 && <p className="notice">Audio bir marta eshittiriladi (imtihon qoidasi).</p>}
-      {track === undefined ? <p className="muted">Audio yuklanmoqda…</p> : track ? <FilePlayer key={practice ? 'p' : 'e'} file={track.file} seconds={track.seconds} practice={practice} initialPlays={practice ? 0 : playedBefore} onPlay={() => { if (!practice) state.update((a) => ({ ...a, audioPlays: a.audioPlays + 1 })); }} /> : <BrowserPlayer test={test} practice={practice} />}
-      <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={practice} onChange={(e) => setPractice(e.target.checked)} /> Mashq rejimi (pauza va qayta eshitish)</label></p>
-      <p className="evidence">Imtihon rejimida audio faqat bir marta eshittiriladi.</p>
-      {(submitted || practice) && <details open={submitted}><summary>Transkript</summary><Transcript test={test} /></details>}
+      {!practice && !submitted && playedBefore > 0 && <p className="notice">{L('Audio bir marta eshittiriladi (imtihon qoidasi).')}</p>}
+      {track === undefined ? <p className="muted">{L('Audio yuklanmoqda…')}</p> : track ? <FilePlayer key={practice ? 'p' : 'e'} file={track.file} seconds={track.seconds} practice={practice} initialPlays={practice ? 0 : playedBefore} onPlay={() => { if (!practice) state.update((a) => ({ ...a, audioPlays: a.audioPlays + 1 })); }} /> : <BrowserPlayer test={test} practice={practice} />}
+      <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={practice} onChange={(e) => setPractice(e.target.checked)} />  {L('Mashq rejimi (pauza va qayta eshitish)')}</label></p>
+      <p className="evidence">{L('Imtihon rejimida audio faqat bir marta eshittiriladi.')}</p>
+      {(submitted || practice) && <details open={submitted}><summary>{L('Transkript')}</summary><Transcript test={test} /></details>}
     </div>
   );
 }
@@ -123,8 +124,8 @@ function SoundCheck() {
   };
   return (
     <p className="row">
-      <button type="button" className="btn sm" onClick={beep}><Volume2 size={15} /> Ovozni tekshirish</button>
-      {heard && <span className="muted" style={{ fontSize: 13 }}>Ovoz eshitildimi? Eshitilmasa, naushnik yoki ovoz balandligini tekshiring.</span>}
+      <button type="button" className="btn sm" onClick={beep}><Volume2 size={15} />  {L('Ovozni tekshirish')}</button>
+      {heard && <span className="muted" style={{ fontSize: 13 }}>{L('Ovoz eshitildimi? Eshitilmasa, naushnik yoki ovoz balandligini tekshiring.')}</span>}
     </p>
   );
 }
@@ -142,7 +143,7 @@ export default function Listening({ test: t }: { test: ListeningTest }) {
       questions={t.questions}
       table={LISTENING_TABLE}
       testId={t.id}
-      intro={<><p>Audioni tinglab {t.questions.length} ta savolga javob bering. Audio tabiiy ovozda yozilgan va imtihon qoidasi bo‘yicha bir marta eshittiriladi (mashq rejimida pauza va qayta eshitish mumkin).</p><SoundCheck /></>}
+      intro={<><p>{L('Audioni tinglab')} {t.questions.length}  {L('ta savolga javob bering. Audio tabiiy ovozda yozilgan va imtihon qoidasi bo‘yicha bir marta eshittiriladi (mashq rejimida pauza va qayta eshitish mumkin).')}</p><SoundCheck /></>}
       left={(state) => <Player test={t} state={state} />}
     />
   );

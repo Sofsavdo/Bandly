@@ -1,3 +1,4 @@
+import { L } from '../i18n';
 // O'yin mexanikalari (GAMIFIED_LEARNING_SPEC.md §3) — sof funksiyalar, qurilmada saqlash.
 // XP mukofot, mastery emas: bu yerdagi hech narsa mastery'ni o'zgartirmaydi (mastery — src/lib/adaptive).
 
@@ -55,11 +56,11 @@ export function dailyQuests(q: QuestInput): Quest[] {
   const mk = (id: Quest['id'], titleUz: string, progress: number, target: number, href: string): Quest =>
     ({ id, titleUz, progress: Math.min(progress, target), target, href, done: progress >= target });
   const third = q.dueMistakes > 0
-    ? mk('mistakes', '3 ta xato ustida ishlang', q.mistakeAttemptsToday, 3, '#/mistakes')
-    : mk('game', '1 ta so‘z o‘yini o‘ynang', q.gamesToday, 1, '#/games');
+    ? mk('mistakes', L('3 ta xato ustida ishlang'), q.mistakeAttemptsToday, 3, '#/mistakes')
+    : mk('game', L('1 ta so‘z o‘yini o‘ynang'), q.gamesToday, 1, '#/games');
   return [
-    mk('lesson', '1 ta darsdan o‘ting', q.lessonsPassedToday, 1, '#/learn'),
-    mk('xp', `Kunlik maqsad: ${q.dailyGoal} XP`, q.dailyXp, q.dailyGoal, '#/learn'),
+    mk('lesson', L('1 ta darsdan o‘ting'), q.lessonsPassedToday, 1, '#/learn'),
+    mk('xp', L('Kunlik maqsad: {0} XP', [q.dailyGoal]), q.dailyXp, q.dailyGoal, '#/learn'),
     third,
   ];
 }
@@ -109,4 +110,4 @@ export function pace(p: Pace, now: number, choiceIdx: number | null): { pace: Pa
   const next = { lastAt: now, fast, sameIdx: choiceIdx, same };
   return { pace: next, suppress: fast >= FAST_RUN || same >= SAME_RUN };
 }
-export const SLOW_DOWN_UZ = 'Shoshilmang — o‘ylab javob bering';
+export const SLOW_DOWN_UZ = L('Shoshilmang — o‘ylab javob bering');

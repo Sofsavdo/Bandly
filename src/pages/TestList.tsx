@@ -4,6 +4,7 @@ import { listeningTests, readingTests } from '../content/mockTests';
 import { loadResults } from '../lib/storage';
 import { levelIndex } from '../lib/levels';
 import { useProfile } from '../lib/store';
+import { L } from '../i18n';
 
 export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kind: 'reading' | 'listening' }) {
   const p = useProfile();
@@ -16,9 +17,9 @@ export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kin
   return (
     <div>
       <div className={`card page-head with-illo ${kind === 'reading' ? 't-sky' : 't-coral'}`}>
-        <h2 style={{ margin: 0 }}>{kind === 'reading' ? 'Reading' : 'Listening'} <em className="it">testlari</em></h2>
-        <p style={{ margin: '6px 0 0' }}>Taymer va to‘liq tahlil bilan. <span className="badge on">Bepul</span></p>
-        {!p.level && <p className="evidence" style={{ margin: '6px 0 0' }}><a href="#/placement">Darajangizni aniqlang</a> — testlar sizga moslab tartiblanadi.</p>}
+        <h2 style={{ margin: 0 }}>{kind === 'reading' ? 'Reading' : 'Listening'} <em className="it">{L('testlari')}</em></h2>
+        <p style={{ margin: '6px 0 0' }}>{L('Taymer va to‘liq tahlil bilan.')} <span className="badge on">{L('Bepul')}</span></p>
+        {!p.level && <p className="evidence" style={{ margin: '6px 0 0' }}><a href="#/placement">{L('Darajangizni aniqlang')}</a>  {L('— testlar sizga moslab tartiblanadi.')}</p>}
         <Illo kind={kind === 'reading' ? 'books' : 'headphones'} size={128} />
       </div>
       <div className="lrows">
@@ -29,11 +30,11 @@ export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kin
             <a key={t.id} className="lrow" href={`#/${track}/${kind}/${t.id}`}>
               <span className={`sq ${['sky', 'coral', 'lilac', 'mint', 'butter', 'peach'][i % 6]}`}><Icon /></span>
               <span className="grow">
-                <small>{t.exam === 'cefr' ? 'CEFR' : `IELTS · ${t.level}`}{near(t.level) ? ' · sizga mos' : ''}</small>
+                <small>{t.exam === 'cefr' ? 'CEFR' : `IELTS · ${t.level}`}{near(t.level) ? L(' · sizga mos') : ''}</small>
                 <b>{t.title.replace(/^(Reading|Listening) mini-test \d+: /, '')}</b>
                 <span className="lbar"><i style={{ width: best ? `${(best.correct / best.total) * 100}%` : '0%' }} /></span>
               </span>
-              <span className="meta">{t.minutes} daq<br />{best ? `${best.correct}/${best.total}` : `${t.questions.length} savol`}</span>
+              <span className="meta">{t.minutes}  {L('daq')}<br />{best ? `${best.correct}/${best.total}` : `${t.questions.length} savol`}</span>
             </a>
           );
         })}

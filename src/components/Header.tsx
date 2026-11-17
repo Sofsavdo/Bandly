@@ -9,6 +9,7 @@ import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
 import { NAV_GROUPS, PROFILE, isActive } from './nav';
+import { L } from '../i18n';
 
 function Stats() {
   const t = useT();
@@ -50,7 +51,7 @@ export function Header({ hash }: { hash: string }) {
                 {g.items.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''} aria-current={isActive(hash, n.href) ? 'page' : undefined}><n.icon size={16} />{t(n.label)}</a>)}
               </div>
             ))}
-            {staff && <a href="#/studio" className={isActive(hash, '#/studio') ? 'active' : ''}><Pencil size={16} />Metodist kabineti</a>}
+            {staff && <a href="#/studio" className={isActive(hash, '#/studio') ? 'active' : ''}><Pencil size={16} />{L('Metodist kabineti')}</a>}
           </nav>
           <div className="header-right">
             <LangPicker compact />
@@ -80,12 +81,12 @@ export function Header({ hash }: { hash: string }) {
                 </details>
               );
             })}
-            {staff && <a className={`dlink ${isActive(hash, '#/studio') ? 'active' : ''}`} href="#/studio"><Pencil size={20} />Metodist kabineti</a>}
+            {staff && <a className={`dlink ${isActive(hash, '#/studio') ? 'active' : ''}`} href="#/studio"><Pencil size={20} />{L('Metodist kabineti')}</a>}
             <div className="dacct">
-              <span>{acc ? <>Hisob: <b>{acc.nickname}</b></> : 'Hisobga kirmagansiz'}</span>
+              <span>{acc ? <>{L('Hisob:')} <b>{acc.nickname}</b></> : L('Hisobga kirmagansiz')}</span>
               {acc
-                ? <button className="btn sm" onClick={() => { setOpen(false); setBye(true); }}><LogOut size={14} /> Chiqish</button>
-                : <a className="btn sm primary" href="#/profile"><LogIn size={14} /> Kirish</a>}
+                ? <button className="btn sm" onClick={() => { setOpen(false); setBye(true); }}><LogOut size={14} />  {L('Chiqish')}</button>
+                : <a className="btn sm primary" href="#/profile"><LogIn size={14} />  {L('Kirish')}</a>}
             </div>
           </aside>
         </>

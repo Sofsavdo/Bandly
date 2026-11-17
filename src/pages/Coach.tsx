@@ -12,11 +12,12 @@ import { personaLevel, useProfile } from '../lib/store';
 import { addMistake } from '../lib/mistakes';
 import { logErrors } from '../lib/adaptive/store';
 import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
+import { L } from '../i18n';
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
 type Lang = 'en-US' | 'uz-UZ';
-const PHASE_UZ: Record<Phase, string> = { idle: 'Navbat sizda', listening: 'Tinglayapman…', thinking: 'O‘ylayapman…', speaking: 'Gapiryapman…', error: 'Qayta urinib ko‘ring' };
-const OPENER = 'Salom! Men Bandly ustoziman. Keling, ingliz tilida gaplashamiz — qiynalsangiz, o‘zbekcha so‘rang. So, how are you today?';
+const PHASE_UZ: Record<Phase, string> = { idle: L('Navbat sizda'), listening: 'Tinglayapman…', thinking: L('O‘ylayapman…'), speaking: L('Gapiryapman…'), error: L('Qayta urinib ko‘ring') };
+const OPENER = L('Salom! Men Bandly ustoziman. Keling, ingliz tilida gaplashamiz — qiynalsangiz, o‘zbekcha so‘rang. So, how are you today?');
 const LANG_KEY = 'bandly.coach.lang';
 const PERSONA_BY_LEVEL: PersonaId[] = ['friendly', 'comedy', 'savage', 'savage'];
 const isUzbek = (t: string): boolean => /[‘’ʻ]|\b(men|siz|salom|qanday|keling|yaxshi|bu|uchun|bilan|emas|ham|nima|qiling|ayting|so‘z)\b/i.test(t);
@@ -113,7 +114,7 @@ export default function Coach() {
       if (r.text.trim()) await send(r.text);
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? 'Internet aloqasi uzildi.' : 'Nutqni tanib bo‘lmadi.');
+      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? 'Internet aloqasi uzildi.' : L('Nutqni tanib bo‘lmadi.'));
       setPhase('error');
     }
   }
@@ -122,12 +123,12 @@ export default function Coach() {
     <div className="tutor">
       <section className="tutor-call idle-call">
         <div className={`tutor-orb ${phase}`} aria-hidden="true"><span>B</span></div>
-        <h2>AI ustoz</h2>
-        <p>Ovozli suhbat: inglizcha gapiring, qiynalsangiz — o‘zbekcha so‘rang.</p>
-        {status && !status.coach && <p className="notice">AI ustoz tez orada ochiladi.</p>}
+        <h2>{L('AI ustoz')}</h2>
+        <p>{L('Ovozli suhbat: inglizcha gapiring, qiynalsangiz — o‘zbekcha so‘rang.')}</p>
+        {status && !status.coach && <p className="notice">{L('AI ustoz tez orada ochiladi.')}</p>}
         {!acc
-          ? <JoinForm onJoined={setAcc} text="Suhbat uchun hisobingizga kiring." />
-          : <button className="btn primary lg" disabled={!status?.coach} onClick={start}><Mic size={20} /> Suhbatni boshlash</button>}
+          ? <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />
+          : <button className="btn primary lg" disabled={!status?.coach} onClick={start}><Mic size={20} />  {L('Suhbatni boshlash')}</button>}
       </section>
     </div>
   );
@@ -138,10 +139,10 @@ export default function Coach() {
       <section className="tutor-call">
         <div className="tutor-top">
           <div className={`tutor-orb sm ${phase}`} aria-hidden="true"><span>B</span></div>
-          <div className="grow"><b>Bandly ustoz</b><small aria-live="polite">{PHASE_UZ[phase]}</small></div>
-          <div className="seg" role="group" aria-label="Siz gapiradigan til">
-            <button type="button" className={lang === 'en-US' ? 'on' : ''} onClick={() => pickLang('en-US')}>EN</button>
-            <button type="button" className={lang === 'uz-UZ' ? 'on' : ''} onClick={() => pickLang('uz-UZ')}>UZ</button>
+          <div className="grow"><b>{L('Bandly ustoz')}</b><small aria-live="polite">{PHASE_UZ[phase]}</small></div>
+          <div className="seg" role="group" aria-label={L('Siz gapiradigan til')}>
+            <button type="button" className={lang === 'en-US' ? 'on' : ''} onClick={() => pickLang('en-US')}>{L('EN')}</button>
+            <button type="button" className={lang === 'uz-UZ' ? 'on' : ''} onClick={() => pickLang('uz-UZ')}>{L('UZ')}</button>
           </div>
         </div>
         <div className="tutor-log" ref={logRef}>
@@ -154,26 +155,26 @@ export default function Coach() {
           {phase === 'listening' && <div className="bubble2 learner ghost">{interim || '…'}</div>}
           {phase === 'thinking' && <div className="bubble2 coach ghost">…</div>}
         </div>
-        {err && <p className="tutor-err">{err} {pending.current ? <button className="btn sm" onClick={() => void send(pending.current!.text, true)}>Qayta yuborish</button> : stt && <button className="btn sm" onClick={() => void listen()}>Qayta tinglash</button>}</p>}
+        {err && <p className="tutor-err">{err} {pending.current ? <button className="btn sm" onClick={() => void send(pending.current!.text, true)}>{L('Qayta yuborish')}</button> : stt && <button className="btn sm" onClick={() => void listen()}>{L('Qayta tinglash')}</button>}</p>}
         {typing && (
           <form className="tutor-type" onSubmit={(e) => { e.preventDefault(); void send(text); }}>
-            <input type="text" value={text} maxLength={800} placeholder="Inglizcha yoki o‘zbekcha yozing…" onChange={(e) => setText(e.target.value)} autoFocus />
-            <button className="btn primary" disabled={!text.trim() || phase === 'thinking'} aria-label="Yuborish"><Send size={18} /></button>
+            <input type="text" value={text} maxLength={800} placeholder={L('Inglizcha yoki o‘zbekcha yozing…')} onChange={(e) => setText(e.target.value)} autoFocus />
+            <button className="btn primary" disabled={!text.trim() || phase === 'thinking'} aria-label={L('Yuborish')}><Send size={18} /></button>
           </form>
         )}
         <div className="tutor-ctrl">
-          <button type="button" className="icon-btn" onClick={() => { setTyping((t) => !t); if (phase === 'listening') endRef.current?.(); }} aria-label="Yozib yuborish" aria-pressed={typing}><Keyboard size={20} /></button>
+          <button type="button" className="icon-btn" onClick={() => { setTyping((t) => !t); if (phase === 'listening') endRef.current?.(); }} aria-label={L('Yozib yuborish')} aria-pressed={typing}><Keyboard size={20} /></button>
           {stt && (
             <button type="button" className={`mic-big ${phase === 'listening' ? 'on' : ''}`} disabled={phase === 'thinking'}
               onClick={() => { if (phase === 'speaking') { sig.current.cancelled = true; stopSpeaking(); } void listen(); }}
-              aria-label={phase === 'listening' ? 'Tugatdim' : 'Gapirish'}>
+              aria-label={phase === 'listening' ? L('Tugatdim') : L('Gapirish')}>
               {phase === 'listening' ? <Square size={28} /> : <Mic size={30} />}
             </button>
           )}
-          <button type="button" className="icon-btn" onClick={() => { setVoiceOn((v) => !v); sig.current.cancelled = true; stopSpeaking(); }} aria-label={voiceOn ? 'Ovozni o‘chirish' : 'Ovozni yoqish'}>{voiceOn ? <Volume2 size={20} /> : <VolumeX size={20} />}</button>
-          <button type="button" className="icon-btn end" onClick={end} aria-label="Suhbatni tugatish"><PhoneOff size={20} /></button>
+          <button type="button" className="icon-btn" onClick={() => { setVoiceOn((v) => !v); sig.current.cancelled = true; stopSpeaking(); }} aria-label={voiceOn ? L('Ovozni o‘chirish') : L('Ovozni yoqish')}>{voiceOn ? <Volume2 size={20} /> : <VolumeX size={20} />}</button>
+          <button type="button" className="icon-btn end" onClick={end} aria-label={L('Suhbatni tugatish')}><PhoneOff size={20} /></button>
         </div>
-        {last?.reply?.correction && <span className="sr-only">Oxirgi tuzatish: {last.reply.correction.right}</span>}
+        {last?.reply?.correction && <span className="sr-only">{L('Oxirgi tuzatish:')} {last.reply.correction.right}</span>}
       </section>
     </div>
   );

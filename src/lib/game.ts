@@ -1,5 +1,6 @@
 import type { Profile } from './types';
 import { MASTERED_BOX } from './srs';
+import { L } from '../i18n';
 
 export const dayKey = (d: Date = new Date()): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -80,18 +81,18 @@ export interface Achievement {
 const masteredCount = (p: Profile): number => Object.values(p.srs).filter((c) => c.box >= MASTERED_BOX).length;
 
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'first-xp', title: 'Birinchi qadam', desc: 'Birinchi XP ni yig‘ing', check: (p) => p.xp > 0 },
-  { id: 'streak-3', title: '3 kunlik seriya', desc: 'Ketma-ket 3 kun mashq qiling', check: (p) => p.streak >= 3 },
-  { id: 'streak-7', title: 'Haftalik seriya', desc: 'Ketma-ket 7 kun mashq qiling', check: (p) => p.streak >= 7 },
-  { id: 'level-5', title: '5-daraja', desc: '5-darajaga yeting', check: (p) => levelFromXp(p.xp) >= 5 },
-  { id: 'words-10', title: '10 ta so‘z', desc: '10 ta so‘zni o‘zlashtiring', check: (p) => masteredCount(p) >= 10 },
-  { id: 'words-30', title: 'So‘z ustasi', desc: '30 ta so‘zni o‘zlashtiring', check: (p) => masteredCount(p) >= 30 },
-  { id: 'games-10', title: 'O‘yinchi', desc: '10 ta o‘yin o‘ynang', check: (p) => p.gamesPlayed >= 10 },
-  { id: 'daily-goal', title: 'Kunlik maqsad', desc: 'Kunlik XP maqsadini bajaring', check: (p) => p.dailyXp >= p.dailyGoal },
-  { id: 'streak-30', title: '30 kunlik seriya', desc: 'Ketma-ket 30 kun kunlik maqsadni bajaring', check: (p) => p.streak >= 30 },
-  { id: 'boss-1', title: 'Birinchi boss', desc: 'Birinchi bo‘lim boss sinovini yuting', check: (p) => (p.bossWins ?? 0) >= 1 },
-  { id: 'boss-5', title: 'Boss ovchisi', desc: '5 ta bo‘lim boss sinovini yuting', check: (p) => (p.bossWins ?? 0) >= 5 },
-  { id: 'level-10', title: '10-daraja', desc: 'Bandly darajasi 10 ga yeting', check: (p) => levelFromXp(p.xp) >= 10 },
+  { id: 'first-xp', title: 'Birinchi qadam', desc: L('Birinchi XP ni yig‘ing'), check: (p) => p.xp > 0 },
+  { id: 'streak-3', title: L('3 kunlik seriya'), desc: L('Ketma-ket 3 kun mashq qiling'), check: (p) => p.streak >= 3 },
+  { id: 'streak-7', title: L('Haftalik seriya'), desc: L('Ketma-ket 7 kun mashq qiling'), check: (p) => p.streak >= 7 },
+  { id: 'level-5', title: '5-daraja', desc: L('5-darajaga yeting'), check: (p) => levelFromXp(p.xp) >= 5 },
+  { id: 'words-10', title: L('10 ta so‘z'), desc: L('10 ta so‘zni o‘zlashtiring'), check: (p) => masteredCount(p) >= 10 },
+  { id: 'words-30', title: L('So‘z ustasi'), desc: L('30 ta so‘zni o‘zlashtiring'), check: (p) => masteredCount(p) >= 30 },
+  { id: 'games-10', title: L('O‘yinchi'), desc: L('10 ta o‘yin o‘ynang'), check: (p) => p.gamesPlayed >= 10 },
+  { id: 'daily-goal', title: L('Kunlik maqsad'), desc: L('Kunlik XP maqsadini bajaring'), check: (p) => p.dailyXp >= p.dailyGoal },
+  { id: 'streak-30', title: L('30 kunlik seriya'), desc: L('Ketma-ket 30 kun kunlik maqsadni bajaring'), check: (p) => p.streak >= 30 },
+  { id: 'boss-1', title: 'Birinchi boss', desc: L('Birinchi bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 1 },
+  { id: 'boss-5', title: 'Boss ovchisi', desc: L('5 ta bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 5 },
+  { id: 'level-10', title: '10-daraja', desc: L('Bandly darajasi 10 ga yeting'), check: (p) => levelFromXp(p.xp) >= 10 },
 ];
 
 export interface XpResult {

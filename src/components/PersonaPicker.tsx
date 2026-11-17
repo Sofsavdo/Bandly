@@ -1,5 +1,6 @@
 import { LEVELS } from '../content/roasts';
 import { setPersona, useProfile } from '../lib/store';
+import { L } from '../i18n';
 
 export function PersonaPicker() {
   const p = useProfile();
@@ -16,8 +17,8 @@ export function PersonaPicker() {
           );
         })}
       </div>
-      <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={p.adult} onChange={(e) => setPersona(e.target.checked ? p.roastLevel : Math.min(p.roastLevel, 1), e.target.checked)} /> Men 18 yoshdan oshganman va qattiq so‘kishni o‘zim xohlayman</label></p>
-      <p className="evidence">Qattiq rejimlar (18+): ustoz xatolaringiz ustidan kuladi, shaxsiyatga tegmaydi.</p>
+      <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={p.adult} onChange={(e) => setPersona(e.target.checked ? p.roastLevel : Math.min(p.roastLevel, 1), e.target.checked)} />  {L('Men 18 yoshdan oshganman va qattiq so‘kishni o‘zim xohlayman')}</label></p>
+      <p className="evidence">{L('Qattiq rejimlar (18+): ustoz xatolaringiz ustidan kuladi, shaxsiyatga tegmaydi.')}</p>
     </div>
   );
 }

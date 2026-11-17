@@ -1,5 +1,6 @@
 import { getAccount } from './account';
 import type { CoachEmotion, PersonaId } from '../content/personas';
+import { L } from '../i18n';
 
 export interface CoachReply { reply: string; question: string | null; emotion: CoachEmotion; correction: { wrong: string; right: string; whyUz: string; errorType: string | null } | null; persona: PersonaId; notice: string | null }
 export interface CoachStatus { ai: boolean; coach: boolean }
@@ -15,16 +16,16 @@ export const newTurnId = (): string => `t-${Date.now().toString(36)}-${Math.rand
 /** One coach turn. The same turnId may be retried safely: the server never calls the AI provider twice for it. */
 export async function coachSay(body: { persona: PersonaId; mode: 'practice' | 'exam'; adult: boolean; level: string | null; history: { role: 'learner' | 'coach'; text: string }[]; text: string; turnId: string }, timeoutMs = 20_000): Promise<CoachReply> {
   const a = getAccount();
-  if (!a) throw new Error('Avval laqab tanlang');
+  if (!a) throw new Error(L('Avval laqab tanlang'));
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const res = await fetch('/api/ai/coach', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: a.token, ...body }), signal: ctl.signal });
     const j = (await res.json().catch(() => ({}))) as CoachReply & { error?: string };
-    if (!res.ok) throw new Error(j.error ?? `Xato ${res.status}`);
+    if (!res.ok) throw new Error(j.error ?? L('Xato {0}', [res.status]));
     return j;
   } catch (e) {
-    if ((e as Error).name === 'AbortError') throw new Error('AI javob bermadi (vaqt tugadi). Qayta urinib ko‘ring.');
+    if ((e as Error).name === 'AbortError') throw new Error(L('AI javob bermadi (vaqt tugadi). Qayta urinib ko‘ring.'));
     throw e;
   } finally { clearTimeout(t); }
 }

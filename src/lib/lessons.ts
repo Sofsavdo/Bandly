@@ -1,6 +1,7 @@
 // Lesson engine: deterministic checking, mastery-check scoring and local progress. Pure functions + a small localStorage store.
 import type { Item, Lesson, Unit, WritingTask } from '../content/lessons/types';
 import { findIssues, type Issue } from './grammarCheck';
+import { L } from '../i18n';
 
 export const PASS_RATE = 0.8; // mastery check pass mark (hypothesis; reviewed with the curriculum)
 
@@ -45,7 +46,7 @@ export function validateLesson(l: Lesson): string[] {
   for (const [i, it] of [...l.practice, ...l.check].entries()) {
     if (!it.explainUz.trim()) p.push(`${l.id} item ${i}: no explanation`);
     if (it.kind === 'choice') { if (it.answer < 0 || it.answer >= it.options.length) p.push(`${l.id} item ${i}: answer index out of range`); if (new Set(it.options).size !== it.options.length) p.push(`${l.id} item ${i}: duplicate options`); }
-    if (it.kind === 'gap') { if (!it.prompt.includes('___')) p.push(`${l.id} item ${i}: gap prompt lacks ___`); if (!it.accept.length) p.push(`${l.id} item ${i}: no accepted answer`); }
+    if (it.kind === 'gap') { if (!it.prompt.includes('___')) p.push(L('{0} item {1}: gap prompt lacks ___', [l.id, i])); if (!it.accept.length) p.push(`${l.id} item ${i}: no accepted answer`); }
     if (it.kind === 'order') { const w = normalize(it.words.join(' ')).split(' ').sort().join(' '); const a = normalize(it.answer).split(' ').sort().join(' '); if (w !== a) p.push(`${l.id} item ${i}: words do not form the answer`); }
   }
   if (l.writing) {

@@ -3,6 +3,7 @@ import { easyPart1Topics, easyPart2Cards, hardPart3 } from '../content/speakingE
 import type { Cefr } from './levels';
 import type { Reaction } from '../content/roasts';
 import { reactTo, type Level } from './roast';
+import { L } from '../i18n';
 
 export type Wait = 'answer' | 'prep' | 'monologue' | 'end';
 export interface Step { say: string; wait: Wait; part: 0 | 1 | 2 | 3; /** Oldingi javobga ustoz reaksiyasi (hissiyot bilan) */ reaction?: Reaction }
@@ -123,7 +124,7 @@ export class Examiner {
           return { say: `Thank you. Now I am going to give you a topic, and I would like you to talk about it for ${this.easy ? 'about one minute' : 'one to two minutes'}. You have one minute to think. Here is your topic. ${this.card.title} ${pts}`, wait: 'prep', part: 2, reaction };
         }
         this.phase = 'done';
-        return { say: 'Thank you very much. That is the end of the speaking test.', wait: 'end', part: 3, reaction };
+        return { say: L('Thank you very much. That is the end of the speaking test.'), wait: 'end', part: 3, reaction };
       }
       case 'p2': {
         this.take(text, seconds, latencyMs);
@@ -146,7 +147,7 @@ export class Examiner {
         return { say: `Thank you. Now let us talk about some more general questions related to this topic. ${this.currentQ}`, wait: 'answer', part: 3 };
       }
       default:
-        return { say: 'The test is finished.', wait: 'end', part: 3 };
+        return { say: L('The test is finished.'), wait: 'end', part: 3 };
     }
   }
 
@@ -197,11 +198,11 @@ export function summarize(turns: TurnStat[], timed: boolean): Summary {
   const lexical = tokens.length < 30 ? 5 : lexicalRatio >= 0.65 ? 7 : lexicalRatio >= 0.55 ? 6.5 : lexicalRatio >= 0.47 ? 6 : lexicalRatio >= 0.4 ? 5.5 : 5;
 
   const notes: string[] = [];
-  if (avgWords < 12) notes.push('Javoblar qisqa. Har savolga 2–3 gap bilan javob bering va sababini qo‘shing.');
-  if (fillerPer100 > 6) notes.push(`To‘ldiruvchi tovushlar ("um", "uh") ko‘p: har 100 so‘zga ${fillerPer100.toFixed(1)} ta.`);
-  if (avgLatencySec !== null && avgLatencySec > 4) notes.push('Javob berishdan oldin uzoq o‘ylayapsiz. Qisqa "Well, ..." bilan boshlab vaqt yutish mumkin.');
-  if (wpm !== null && wpm < 70) notes.push('Nutq tezligi past. Fikrni to‘xtamasdan davom ettirishga harakat qiling.');
-  if (lexicalRatio < 0.47 && tokens.length >= 30) notes.push('So‘zlar takrorlanyapti. Sinonimlar va aniqroq so‘zlar ishlating.');
-  if (!notes.length) notes.push('Yaxshi tezlik va xilma-xillik. Endi grammatika va talaffuzni AI ustoz bilan sinash vaqti.');
+  if (avgWords < 12) notes.push(L('Javoblar qisqa. Har savolga 2–3 gap bilan javob bering va sababini qo‘shing.'));
+  if (fillerPer100 > 6) notes.push(L('To‘ldiruvchi tovushlar ("um", "uh") ko‘p: har 100 so‘zga {0} ta.', [fillerPer100.toFixed(1)]));
+  if (avgLatencySec !== null && avgLatencySec > 4) notes.push(L('Javob berishdan oldin uzoq o‘ylayapsiz. Qisqa "Well, ..." bilan boshlab vaqt yutish mumkin.'));
+  if (wpm !== null && wpm < 70) notes.push(L('Nutq tezligi past. Fikrni to‘xtamasdan davom ettirishga harakat qiling.'));
+  if (lexicalRatio < 0.47 && tokens.length >= 30) notes.push(L('So‘zlar takrorlanyapti. Sinonimlar va aniqroq so‘zlar ishlating.'));
+  if (!notes.length) notes.push(L('Yaxshi tezlik va xilma-xillik. Endi grammatika va talaffuzni AI ustoz bilan sinash vaqti.'));
   return { answers: real.length, words, avgWords, wpm, fillerPer100, avgLatencySec, lexicalRatio, fluencyBand: clamp(fluency, 4, 7.5), lexicalBand: lexical, notes };
 }
