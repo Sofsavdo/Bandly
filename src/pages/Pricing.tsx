@@ -1,50 +1,88 @@
-import { Check, Puzzle, Target, Timer } from 'lucide-react';
+import { Check, Crown, Gift, Info, Sparkles, Target, Bot } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { PLANS } from '../config';
+import { SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '../config';
 import { fmtDate, fmtSum, payConfig, startPurchase, type PayConfig } from '../lib/pay';
 import { setPlan, useProfile } from '../lib/store';
 
+const ICON: Record<PlanId, typeof Bot> = { general: Bot, exam: Target, all: Crown };
+const TONE: Record<PlanId, string> = { general: 'blue', exam: 'red', all: 'orange' };
+
+/** Tariflar sahifasi (MONETIZATION_SPEC §7): FREE + General English / Exam Preparation / All Access, 1 / 3 / 12 oy. */
 export default function Pricing() {
   const p = useProfile();
   const [cfg, setCfg] = useState<PayConfig | null>(null);
+  const [ai, setAi] = useState<boolean | null>(null);
   const [days, setDays] = useState(30);
-  useEffect(() => { void payConfig().then(setCfg); }, []);
+  useEffect(() => {
+    void payConfig().then(setCfg);
+    void fetch('/api/ai/status').then((r) => r.json()).then((j: { enabled?: boolean }) => setAi(!!j.enabled)).catch(() => setAi(false));
+  }, []);
   const live = !!cfg?.enabled;
-  const per = cfg?.periods.find((x) => x.days === days) ?? cfg?.periods[0];
+  const per = SALE_PERIODS.find((x) => x.days === days)!;
+  const priceOf = (id: PlanId) => cfg?.periods.find((x) => x.days === days)?.prices[id] ?? periodPrice(SALE_PLANS.find((x) => x.id === id)!.monthlyUzs, days);
+  const activeUntil = (id: PlanId): number | null => {
+    const tr = SALE_PLANS.find((x) => x.id === id)!.tracks.filter((t) => t !== 'mocks');
+    const us = tr.map((t) => p.planUntil[t] ?? 0);
+    return us.every((u) => u > Date.now()) ? Math.min(...us) : null;
+  };
+  const demoOn = (id: PlanId) => SALE_PLANS.find((x) => x.id === id)!.tracks.every((t) => p.plan[t]);
   return (
     <div>
-      <div className="card">
-        <h2>Obuna turlari</h2>
-        <p>Kerakli yo‘nalishni tanlang va faqat shuning uchun to‘lang. Istalgan obuna bilan so‘z o‘yinlari cheksiz.</p>
-        {live ? (
-          <>
-            <div className="price-tabs" role="tablist">{cfg!.periods.map((x) => <button key={x.days} className={x.days === days ? 'on' : ''} onClick={() => setDays(x.days)}>{x.label}</button>)}</div>
-            <p className="evidence">To‘lov bank kartasiga o‘tkazma orqali: summa va karta raqami ko‘rsatiladi, o‘tkazma qilingach obuna avtomatik yoqiladi. Obuna avtomatik yangilanmaydi.</p>
-          </>
-        ) : (
-          <p className="notice">Demo rejim: to‘lov hali ulanmagan. Narxlar namunaviy. “Yoqish” tugmasi bo‘limni faqat shu qurilmada ochadi.</p>
-        )}
+      <div className="card pricing-head">
+        <h2 style={{ margin: 0 }}>Tariflar</h2>
+        <p style={{ margin: '6px 0 12px' }}>Mock Arena testlari, darajani aniqlash va so‘z o‘yinlari — bepul. Obuna AI ustoz, AI baholash va to‘liq bo‘limlarni ochadi.</p>
+        <div className="price-tabs" role="tablist" aria-label="Muddat">
+          {SALE_PERIODS.map((x) => <button key={x.days} role="tab" aria-selected={x.days === days} className={x.days === days ? 'on' : ''} onClick={() => setDays(x.days)}>{x.label}{x.note && <small> {x.note}</small>}</button>)}
+        </div>
+        {!live && <p className="notice" style={{ marginTop: 10 }}>To‘lov hali ulanmagan: narxlar haqiqiy, lekin “Demo” tugmasi bo‘limni faqat shu qurilmada ochadi.</p>}
+        {ai === false && <p className="notice" style={{ marginTop: 10 }}><Info size={15} style={{ verticalAlign: -2 }} /> AI ustoz va AI baholash hozir ishga tushirilmoqda. Ular yoqilgunga qadar obuna darslar, grammar va imtihon bo‘limlarini ochadi; AI limitlari AI yoqilgan kundan hisoblanadi.</p>}
       </div>
-      <div className="tracks">
-        {PLANS.map((pl) => {
-          const on = p.plan[pl.id];
-          const until = p.planUntil[pl.id];
-          const price = per?.prices[pl.id];
+
+      <div className="plans4">
+        <div className="card plan free">
+          <span className="blob green"><Gift /></span>
+          <h3 style={{ margin: 0 }}>Bepul</h3>
+          <div className="price">0 so‘m</div>
+          <ul>
+            {['Mock Arena: Reading va Listening testlari', 'Darajani aniqlash testi', 'A1–C2 darslar xaritasi (sinov davrida bepul)', 'Kuniga 2 ta so‘z o‘yini'].map((f) => <li key={f}><Check size={16} />{f}</li>)}
+          </ul>
+          <a className="btn" href="#/placement">Bepul boshlash</a>
+        </div>
+
+        {SALE_PLANS.map((pl) => {
+          const Icon = ICON[pl.id];
+          const price = priceOf(pl.id);
+          const until = activeUntil(pl.id);
+          const monthlyEq = days === 30 ? null : Math.round(price / (days === 90 ? 3 : 12) / 100) * 100;
           return (
-            <div key={pl.id} className="card plan">
-              <span className={`blob ${pl.id === 'exam' ? 'red' : pl.id === 'grammar' ? 'blue' : 'orange'}`}>{pl.id === 'exam' ? <Target /> : pl.id === 'grammar' ? <Puzzle /> : <Timer />}</span>
+            <div key={pl.id} className={`card plan ${pl.recommended ? 'rec' : ''}`}>
+              {pl.recommended && <span className="rec-badge"><Sparkles size={13} /> Tavsiya etiladi</span>}
+              <span className={`blob ${TONE[pl.id]}`}><Icon /></span>
               <h3 style={{ margin: 0 }}>{pl.title}</h3>
               <p style={{ margin: 0, color: 'var(--muted)' }}>{pl.short}</p>
               <div>
-                {live && price ? <div className="price">{fmtSum(price)} so‘m <span className="evidence">/ {per!.label}</span></div> : <><div className="price">{pl.priceUzs.toLocaleString('ru-RU')} so‘m <span className="evidence">/ oy</span></div><span className="badge">namunaviy narx</span></>}
-                {live && on && until && <span className="badge on">Faol: {fmtDate(until)} gacha</span>}
+                <div className="price">{fmtSum(price)} so‘m <span className="evidence">/ {per.label}</span></div>
+                {monthlyEq && <span className="evidence">oyiga ≈ {fmtSum(monthlyEq)} so‘m</span>}
+                {until && <span className="badge on" style={{ marginLeft: 6 }}>Faol: {fmtDate(until)} gacha</span>}
               </div>
               <ul>{pl.features.map((f) => <li key={f}><Check size={16} />{f}</li>)}</ul>
-              {live ? <button className="btn primary" onClick={() => startPurchase(pl.id, days)}>{on ? 'Uzaytirish' : 'Sotib olish'}</button>
-                : <button className={`btn ${on ? '' : 'primary'}`} onClick={() => setPlan(pl.id, !on)}>{on ? 'Demo obunani o‘chirish' : 'Demo: yoqish'}</button>}
+              {pl.id === 'exam' && <p className="evidence" style={{ fontSize: 13 }}>Jonli suhbat daqiqasi General English’dagidan kam: imtihonga tayyorgarlikda asosiy vaqt 14 daqiqagacha bo‘lgan, baholanadigan to‘liq Speaking mocklarga ketadi.</p>}
+              {live
+                ? <button className={`btn ${pl.recommended ? 'primary' : ''}`} onClick={() => startPurchase(pl.id, days)}>{until ? 'Uzaytirish' : 'Sotib olish'}</button>
+                : <button className="btn" onClick={() => { const on = demoOn(pl.id); pl.tracks.forEach((t) => setPlan(t, !on)); }}>{demoOn(pl.id) ? 'Demo: o‘chirish' : 'Demo: yoqish'}</button>}
             </div>
           );
         })}
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>To‘lov qanday ishlaydi</h3>
+        <ul className="plain">
+          <li>To‘lov bank kartasiga o‘tkazma orqali: ilova aniq summa va karta raqamini ko‘rsatadi, o‘tkazma qilingach obuna bir necha soniyada o‘zi yoqiladi.</li>
+          <li>Obuna avtomatik yangilanmaydi — muddat tugagach, xohlasangiz qayta to‘laysiz.</li>
+          <li>Obuna hisobingizga yoziladi: boshqa qurilmada ham shu hisob bilan kirasiz.</li>
+          <li>Barcha ballar taxminiy; rasmiy natijani faqat imtihon markazi beradi.</li>
+        </ul>
       </div>
     </div>
   );

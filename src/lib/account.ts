@@ -1,4 +1,5 @@
 import { clearServerPlans, getProfile } from './store';
+import { onLogin, pushProgress, stageClear } from './cloud';
 
 const KEY = 'bandly.account.v1';
 export interface Account { token: string; nickname: string; tg?: boolean }
@@ -26,8 +27,11 @@ const KEEP = new Set(['bandly.lang', 'bandly.sound', 'bandly.tg']);
  * Chiqish. wipe=true — bu qurilmadagi barcha Bandly ma'lumotlari (progress, XP, natijalar, xatolar) ham o'chiriladi:
  * sayt yangi foydalanuvchiga qanday ko'rinsa, shunday ochiladi. Hisobdagi obuna va reyting serverda qoladi.
  */
-export function signOut(wipe: boolean): void {
+export async function signOut(wipe: boolean): Promise<void> {
+  const had = !!getAccount();
+  if (had) await pushProgress(); // progress hisobda qoladi
   logout();
+  if (had) stageClear(); // hisob progressi qurilmada qolmaydi — qayta kirganda yuklanadi
   if (wipe) {
     for (const st of [localStorage, sessionStorage]) {
       try { Object.keys(st).filter((k) => k.startsWith('bandly.') && !KEEP.has(k)).forEach((k) => st.removeItem(k)); } catch { /* */ }
@@ -48,6 +52,7 @@ export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown)
   const body = kind === 'webapp' ? { initData: payload, link } : { user: payload, link };
   const r = await call<Account & { linked: boolean }>(kind === 'webapp' ? '/api/auth/telegram/webapp' : '/api/auth/telegram', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   setAccount({ token: r.token, nickname: r.nickname, tg: true });
+  await onLogin();
   void syncNow();
   return r;
 }
@@ -63,6 +68,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 export async function joinLeague(nickname: string): Promise<Account> {
   const a = await call<Account>('/api/join', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nickname }) });
   setAccount(a);
+  await onLogin(); // qurilmadagi progress yangi hisobga yoziladi
   void syncNow();
   return a;
 }
@@ -112,5 +118,6 @@ export async function restoreAccount(code: string): Promise<Account> {
   const me = await call<{ nickname: string }>('/api/me', { headers: { 'x-token': token } });
   const a = { token, nickname: me.nickname };
   setAccount(a);
+  await onLogin();
   return a;
 }

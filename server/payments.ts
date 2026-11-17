@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import type { TrackId } from '../src/lib/types';
 import { ApiError, byToken } from './db';
 import { HamyonError, type HamyonApi } from './hamyon';
-import { PERIODS, TRACKS, priceFor } from './pricing';
+import { PERIODS, isPlan, priceFor, tracksOf } from './pricing';
 
 export const OPEN = ['pending', 'prepared'] as const;
 const OPEN_SQL = OPEN.map((s) => `'${s}'`).join(',');
@@ -12,7 +12,7 @@ export const MAX_PER_HOUR = 10;
 const DAY = 86_400_000;
 
 export interface PaymentRow {
-  id: string; player_id: number; track: TrackId; days: number; amount: number;
+  id: string; player_id: number; track: string; days: number; amount: number;
   hamyon_payment_id: string | null; hamyon_amount: number | null; card: string | null; status: string;
   expire_at: number | null; error: string | null; note: string | null; created_at: number; paid_at: number | null; checked_at: number | null;
 }
@@ -33,23 +33,24 @@ export function extend(db: DatabaseSync, playerId: number, track: TrackId, days:
   return until;
 }
 
-export function entitlements(db: DatabaseSync, token: string, now = Date.now()): { subs: Record<TrackId, number | null>; now: number; nickname: string } {
+export function entitlements(db: DatabaseSync, token: string, now = Date.now()): { subs: Record<TrackId, number | null>; plan: 'all' | 'exam' | 'general' | null; now: number; nickname: string } {
   const p = byToken(db, token);
   const rows = db.prepare('SELECT track, until FROM subscriptions WHERE player_id = ?').all(p.id) as { track: TrackId; until: number }[];
   const subs = { exam: null, grammar: null, mocks: null } as Record<TrackId, number | null>;
   for (const r of rows) if (r.until > now) subs[r.track] = r.until;
-  return { subs, now, nickname: p.nickname };
+  const plan = subs.exam && subs.grammar ? 'all' : subs.exam ? 'exam' : subs.grammar ? 'general' : null;
+  return { subs, plan, now, nickname: p.nickname };
 }
 
 export async function createPayment(db: DatabaseSync, api: HamyonApi, token: string, track: string, days: number, now = Date.now(), env: NodeJS.ProcessEnv = process.env) {
   const p = byToken(db, token);
-  if (!TRACKS.includes(track as TrackId)) throw new ApiError(400, 'Noma’lum yo‘nalish');
+  if (!isPlan(track)) throw new ApiError(400, 'Noma’lum tarif');
   if (!PERIODS.some((x) => x.days === days)) throw new ApiError(400, 'Noma’lum muddat');
   const open = (db.prepare(`SELECT COUNT(*) AS n FROM payments WHERE player_id = ? AND status IN (${OPEN_SQL}) AND created_at > ?`).get(p.id, now - 7 * 60_000) as { n: number }).n;
   if (open >= MAX_OPEN_PER_PLAYER) throw new ApiError(429, 'Ochiq to‘lovlaringiz ko‘p. Avval bittasini yakunlang yoki bekor qiling.');
   const hour = (db.prepare('SELECT COUNT(*) AS n FROM payments WHERE player_id = ? AND created_at > ?').get(p.id, now - 3_600_000) as { n: number }).n;
   if (hour >= MAX_PER_HOUR) throw new ApiError(429, 'Juda ko‘p urinish. Bir ozdan keyin qayta urinib ko‘ring.');
-  const amount = priceFor(track as TrackId, days, env);
+  const amount = priceFor(track, days, env);
   const id = randomBytes(12).toString('hex');
   // Avval yozib olamiz: Hamyonning prepare chaqiruvi create javobidan oldin kelib qolishi mumkin
   db.prepare('INSERT INTO payments (id, player_id, track, days, amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run(id, p.id, track, days, amount, 'pending', now);
@@ -78,7 +79,7 @@ export function applyResult(db: DatabaseSync, id: string, status: 'paid' | 'canc
     // Faqat ochiq (yoki kech kelgan: bekor/muddati o'tgan) to'lov yetkaziladi
     const r = db.prepare(`UPDATE payments SET status = 'success', paid_at = ? WHERE id = ? AND status IN (${OPEN_SQL}, 'cancelled', 'expired')`).run(now, id);
     if (Number(r.changes) === 0) return 'already';
-    extend(db, p.player_id, p.track, p.days, now);
+    for (const t of tracksOf(p.track)) extend(db, p.player_id, t, p.days, now); // tarif bir nechta bo'limni ochadi
     return 'delivered';
   }
   const r = db.prepare(`UPDATE payments SET status = 'cancelled', note = ? WHERE id = ? AND status IN (${OPEN_SQL})`).run(opts.reason ?? '', id);
@@ -147,11 +148,13 @@ export function markPrepared(db: DatabaseSync, id: string, hamyonId: string | un
 
 /** Qo'llab-quvvatlash: qo'lda obuna berish (to'lov kelmay qolgan hollar uchun). */
 export function grant(db: DatabaseSync, nickname: string, track: string, days: number, now = Date.now()): number {
-  if (!TRACKS.includes(track as TrackId)) throw new ApiError(400, 'Noma’lum yo‘nalish');
+  if (!tracksOf(track).length) throw new ApiError(400, 'Noma’lum tarif yoki yo‘nalish');
   if (!Number.isFinite(days) || days < 1 || days > 400) throw new ApiError(400, 'Muddat 1–400 kun');
   const pl = db.prepare('SELECT id FROM players WHERE lower(nickname) = lower(?)').get(nickname) as { id: number } | undefined;
   if (!pl) throw new ApiError(404, 'Foydalanuvchi topilmadi');
-  return extend(db, pl.id, track as TrackId, Math.floor(days), now);
+  let until = 0;
+  for (const t of tracksOf(track)) until = Math.max(until, extend(db, pl.id, t, Math.floor(days), now));
+  return until;
 }
 
 export const recent = (db: DatabaseSync, limit = 100) => db.prepare('SELECT p.id, pl.nickname, p.track, p.days, p.amount, p.hamyon_amount, p.status, p.note, p.error, p.created_at, p.paid_at FROM payments p JOIN players pl ON pl.id = p.player_id ORDER BY p.created_at DESC LIMIT ?').all(limit);

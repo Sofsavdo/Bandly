@@ -93,7 +93,37 @@ export function createDb(path = ':memory:'): DatabaseSync {
   const cols = (db.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map((c) => c.name);
   if (!cols.includes('tg_id')) db.exec('ALTER TABLE players ADD COLUMN tg_id INTEGER');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_tg ON players (tg_id) WHERE tg_id IS NOT NULL');
+  // Hisob progressi (2026-11-17): o'quvchining qurilmadagi ma'lumotlari hisobga saqlanadi — boshqa qurilmada kirsa ham ko'rinadi
+  db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;
+}
+
+export const PROGRESS_MAX = 600_000; // bayt (JSON)
+/** Hisob progressini o'qiydi (yo'q bo'lsa data = null). */
+export function getProgress(db: DatabaseSync, token: string): { data: Record<string, string> | null; rev: number; updated_at: number } {
+  const p = byToken(db, token);
+  const r = db.prepare('SELECT data, rev, updated_at FROM progress WHERE player_id = ?').get(p.id) as { data: string; rev: number; updated_at: number } | undefined;
+  return r ? { data: JSON.parse(r.data) as Record<string, string>, rev: r.rev, updated_at: r.updated_at } : { data: null, rev: 0, updated_at: 0 };
+}
+/**
+ * Hisob progressini yozadi. baseRev — mijoz oxirgi ko'rgan versiya: boshqa qurilma yangiroq versiya yozgan bo'lsa 409
+ * (mijoz avval yangisini oladi) — shunda eski qurilma yangi progressni ustidan yozib yubormaydi.
+ */
+export function putProgress(db: DatabaseSync, token: string, data: unknown, baseRev: number, now = Date.now()): { rev: number } {
+  const p = byToken(db, token);
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new ApiError(400, 'Noto‘g‘ri ma’lumot');
+  const clean: Record<string, string> = {};
+  for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+    if (!/^bandly\.[\w.:-]{1,80}$/.test(k) || typeof v !== 'string') throw new ApiError(400, 'Noto‘g‘ri kalit');
+    clean[k] = v;
+  }
+  const json = JSON.stringify(clean);
+  if (json.length > PROGRESS_MAX) throw new ApiError(413, 'Progress juda katta');
+  const cur = db.prepare('SELECT rev FROM progress WHERE player_id = ?').get(p.id) as { rev: number } | undefined;
+  if (cur && Number(baseRev) !== cur.rev) throw new ApiError(409, 'Progress boshqa qurilmada yangilangan');
+  const rev = (cur?.rev ?? 0) + 1;
+  db.prepare('INSERT INTO progress (player_id, data, rev, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(player_id) DO UPDATE SET data = excluded.data, rev = excluded.rev, updated_at = excluded.updated_at').run(p.id, json, rev, now);
+  return { rev };
 }
 
 /**

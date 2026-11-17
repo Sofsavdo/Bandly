@@ -1,9 +1,10 @@
 import { getAccount } from './account';
 import { applyServerPlans, getProfile } from './store';
 import type { TrackId } from './types';
+import type { PlanId } from '../config';
 
-export interface PayConfig { enabled: boolean; demo: boolean; periods: { days: number; label: string; prices: Record<TrackId, number> }[] }
-export interface PayView { id: string; status: 'pending' | 'prepared' | 'success' | 'cancelled' | 'failed' | 'expired'; track: TrackId; days: number; amount: number; pay_amount: number | null; card: string | null; expire_at: number; expires_in: number }
+export interface PayConfig { enabled: boolean; demo: boolean; periods: { days: number; label: string; note?: string | null; prices: Record<PlanId, number> }[] }
+export interface PayView { id: string; status: 'pending' | 'prepared' | 'success' | 'cancelled' | 'failed' | 'expired'; track: string; days: number; amount: number; pay_amount: number | null; card: string | null; expire_at: number; expires_in: number }
 
 export const PAY_EVENT = 'bandly:pay';
 const OPEN_KEY = 'bandly.pay.open';
@@ -36,7 +37,7 @@ export async function refreshEntitlements(): Promise<void> {
   }
 }
 
-export const createPayment = (track: TrackId, days: number): Promise<PayView> =>
+export const createPayment = (track: PlanId, days: number): Promise<PayView> =>
   api<PayView>('/api/pay/create', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: getAccount()?.token ?? '', track, days }) });
 export const payStatus = (id: string): Promise<PayView> => api<PayView>(`/api/pay/status/${id}`, { headers: hdr() });
 export const payCancel = (id: string): Promise<PayView> => api<PayView>(`/api/pay/cancel/${id}`, { method: 'POST', headers: hdr() });
@@ -45,7 +46,7 @@ export const rememberOpen = (id: string | null): void => { try { if (id) localSt
 export const openPaymentId = (): string | null => { try { return localStorage.getItem(OPEN_KEY); } catch { return null; } };
 
 /** Sotib olish oynasini ochadi (hisob bo'lmasa, avval laqab so'raydi). */
-export function startPurchase(track: TrackId, days = 30): void {
+export function startPurchase(track: PlanId, days = 30): void {
   window.dispatchEvent(new CustomEvent(PAY_EVENT, { detail: { track, days } }));
 }
 

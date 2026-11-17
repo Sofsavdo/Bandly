@@ -1,10 +1,9 @@
 import { Check, Clock, Copy, CreditCard, Loader2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PLANS } from '../config';
+import { SALE_PLANS, TRACK_NAME, type PlanId } from '../config';
 import { getAccount, type Account } from '../lib/account';
 import { confetti, sfx } from '../lib/fx';
 import { PAY_EVENT, createPayment, fmtSum, openPaymentId, payCancel, payConfig, payStatus, refreshEntitlements, rememberOpen, type PayView } from '../lib/pay';
-import type { TrackId } from '../lib/types';
 import { BRAND } from '../brand';
 import { JoinForm } from './JoinForm';
 
@@ -21,14 +20,14 @@ const groupCard = (c: string) => c.replace(/\s+/g, '').replace(/(\d{4})(?=\d)/g,
 export function PaySheet() {
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>('creating');
-  const [want, setWant] = useState<{ track: TrackId; days: number } | null>(null);
+  const [want, setWant] = useState<{ track: PlanId; days: number } | null>(null);
   const [pay, setPay] = useState<PayView | null>(null);
   const [err, setErr] = useState('');
   const [left, setLeft] = useState(0);
   const [note, setNote] = useState('');
   const deadline = useRef(0);
 
-  const begin = useCallback(async (w: { track: TrackId; days: number }) => {
+  const begin = useCallback(async (w: { track: PlanId; days: number }) => {
     setErr(''); setStage('creating');
     try {
       const v = await createPayment(w.track, w.days);
@@ -38,7 +37,7 @@ export function PaySheet() {
 
   useEffect(() => {
     const on = (e: Event) => {
-      const w = (e as CustomEvent<{ track: TrackId; days: number }>).detail;
+      const w = (e as CustomEvent<{ track: PlanId; days: number }>).detail;
       setWant(w); setOpen(true); setPay(null); setNote('');
       if (!getAccount()) setStage('account'); else void begin(w);
     };
@@ -85,7 +84,8 @@ export function PaySheet() {
   }, [stage, pay]);
 
   if (!open) return null;
-  const plan = want ? PLANS.find((p) => p.id === (pay?.track ?? want.track)) : null;
+  const key = pay?.track ?? want?.track;
+  const plan = key ? (SALE_PLANS.find((p) => p.id === key) ?? { title: TRACK_NAME[key as keyof typeof TRACK_NAME] ?? 'Obuna' }) : null;
   const close = () => { if (stage === 'pending') setNote('To‘lov fonda kuzatiladi: o‘tkazma qilsangiz, obuna avtomatik yoqiladi.'); setOpen(false); };
   const cancel = async () => {
     if (!pay || !window.confirm('To‘lovni bekor qilasizmi?')) return;
@@ -105,7 +105,7 @@ export function PaySheet() {
 
         {stage === 'account' && want && (
           <div>
-            <p className="evidence">Obuna hisobingizga bog‘lanadi. Avval laqab tanlang (parol shart emas).</p>
+            <p className="evidence">Obuna hisobingizga bog‘lanadi. Avval hisobingizga kiring.</p>
             <JoinForm text="Obuna hisobingizga yoziladi: boshqa qurilmada ham shu hisob bilan kirasiz." onJoined={(_a: Account) => void begin(want)} />
           </div>
         )}
@@ -144,7 +144,7 @@ export function PaySheet() {
         {stage === 'success' && (
           <div className="center">
             <span className="paid-ico"><Check size={34} /></span>
-            <p>Obunangiz yoqildi{pay ? ` (${pay.days === 30 ? '1 oy' : `${pay.days / 30} oy`})` : ''}. Omad!</p>
+            <p>Obunangiz yoqildi{pay ? ` (${pay.days === 365 ? '12 oy' : `${Math.round(pay.days / 30)} oy`})` : ''}. Omad!</p>
             <button className="btn primary" onClick={() => setOpen(false)}>Davom etish</button>
           </div>
         )}
