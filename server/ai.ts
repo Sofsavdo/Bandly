@@ -14,7 +14,7 @@ export function detectProvider(name: string, key: string): Provider {
   if (/^(gemini|google)/.test(n)) return 'gemini';
   const k = key.trim();
   if (k.startsWith('sk-ant-')) return 'anthropic';
-  if (k.startsWith('AIza')) return 'gemini';
+  if (k.startsWith('AIza') || k.startsWith('AQ.')) return 'gemini'; // AQ. — Google'ning yangi "auth" kalitlari (2026-05 dan)
   if (k.startsWith('sk-')) return 'openai';
   return 'none';
 }

@@ -149,3 +149,5 @@ console.log('ai.test: OK');
   await comp(old, 's', 'u', { maxTokens: 300, fetchImpl: (async (_u: string, init: { body: string }) => { sentBody = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'x' }] } }] }) }; }) as never });
   assert.equal(sentBody.generationConfig.thinkingConfig, undefined, 'eski modelga thinkingLevel yuborilmaydi');
 }
+
+assert.equal((await import('./ai')).configFromEnv({ AI_API_KEY: 'AQ.Ab12' }).provider, 'gemini', 'yangi Gemini auth kaliti (AQ.) tanildi');
