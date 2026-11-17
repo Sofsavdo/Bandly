@@ -46,7 +46,7 @@ export default function Challenge() {
       const r = await listenTurn({
         silenceMs: Number.isFinite(lim) ? lim : ROUND_MS * 2,
         noSpeechMs: Number.isFinite(lim) ? lim + START_GRACE_MS : ROUND_MS * 2,
-        maxMs: ROUND_MS, lang: 'en-US', signal: sig.current, endRef,
+        maxMs: ROUND_MS, lang: 'en-US', signal: sig.current, endRef, live: true,
         onInterim: (t) => { setLive(t); lastVoice.current = Date.now(); },
         onStatus: (s) => { if (s === 'speech') lastVoice.current = Date.now(); },
       });

@@ -29,7 +29,7 @@ import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
 import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
-import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
+import { AiError, aiOffReason, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
@@ -117,7 +117,7 @@ function readJson(req: IncomingMessage, limit = 2048): Promise<Record<string, un
   });
 }
 
-createServer(async (req, res) => {
+const httpServer = createServer(async (req, res) => {
   try {
     // Proksi (Railway va boshqalar) orqasida haqiqiy IP birinchi X-Forwarded-For qiymatida
     const fwd = TRUST_PROXY ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '';
@@ -511,10 +511,19 @@ createServer(async (req, res) => {
     console.error(e);
     return send(res, 500, { error: 'Server xatosi' });
   }
-}).listen(PORT, HOST, () => console.log(`Bandly: http://${HOST}:${PORT} (AI: ${ai.provider}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'})`));
+});
+httpServer.listen(PORT, HOST, () => console.log(`Bandly: http://${HOST}:${PORT} (AI: ${ai.provider}${aiOffReason() ? ` — ${aiOffReason()}` : ''}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'})`));
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)
 if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runLeagueNotices(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/league'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Liga natijasi yuborildi: %s ta', n); }).catch((e) => console.warn('liga xabari xato', (e as Error).message)); }, 10 * 60_000);
 if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
+
+// Railway yangi versiyani ishga tushirganda eskisiga SIGTERM yuboradi: so'rovlarni tugatib, bazani yopib, toza chiqamiz
+for (const sig of ['SIGTERM', 'SIGINT'] as const) {
+  process.on(sig, () => {
+    httpServer.close(() => { try { db.close(); } catch { /* allaqachon yopilgan */ } process.exit(0); });
+    setTimeout(() => process.exit(0), 8000).unref();
+  });
+}

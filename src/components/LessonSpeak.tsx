@@ -1,19 +1,23 @@
 import { Mic, Square, Volume2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { serverSttReady } from '../lib/voiceTurn';
 import { accuracy, verdict } from '../lib/shadow';
 import { listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
 import { L } from '../i18n';
 
 /** Speaking step: listen to each example sentence, say it, see which words were recognised.
  *  Browser speech recognition is used; it is NOT a pronunciation score and is not saved to mastery (device-dependent, unverified). */
-export function LessonSpeak({ sentences }: { sentences: string[] }) {
+/** onDone: har bir gap kamida bir marta aytilganda (keyingi qadam shundan keyin ochiladi). */
+export function LessonSpeak({ sentences, onDone }: { sentences: string[]; onDone?: () => void }) {
   const [active, setActive] = useState<number | null>(null);
   const [interim, setInterim] = useState('');
   const [said, setSaid] = useState<Record<number, string>>({});
   const [err, setErr] = useState('');
   const endRef = useRef<(() => void) | null>(null);
   const sig = useRef({ cancelled: false });
-  const stt = typeof window !== 'undefined' && sttSupported();
+  const stt = typeof window !== 'undefined' && (serverSttReady() || sttSupported());
+  const allSaid = sentences.every((_, i) => said[i] !== undefined);
+  useEffect(() => { if (allSaid || !stt) onDone?.(); }, [allSaid, stt]); // eslint-disable-line react-hooks/exhaustive-deps
   const tts = typeof window !== 'undefined' && ttsSupported();
 
   const listen = async (i: number) => {
@@ -36,6 +40,7 @@ export function LessonSpeak({ sentences }: { sentences: string[] }) {
     <div>
       <p className="muted">{L('Eshiting, so‘ng mikrofonni bosib ayting.')}</p>
       {sentences.map((s, i) => {
+        if (i > 0 && said[i - 1] === undefined) return null; // ketma-ket: oldingi gap aytilmaguncha keyingisi ko'rinmaydi
         const res = said[i] !== undefined ? accuracy(s, said[i]!) : null;
         const v = res ? verdict(res.pct) : null;
         return (

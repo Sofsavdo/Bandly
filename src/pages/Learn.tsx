@@ -56,7 +56,7 @@ export default function Learn() {
               <div className="unit-head"><span className={`lvl-tag ${u.level}`}>{u.level}</span><h3>{u.titleUz}</h3><span className="muted" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600 }}>{done}/{u.lessons.length}</span></div>
               <div className="lcards">
                 {u.lessons.map((l, i) => {
-                  const open = isUnlocked(u, i, progress);
+                  const open = isUnlocked(u, i, progress, { units: UNITS, level: p.level });
                   const pr = progress[l.id];
                   const best = pr ? Math.round(pr.best * 100) : 0;
                   const body = (

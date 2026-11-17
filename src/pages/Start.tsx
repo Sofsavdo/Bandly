@@ -7,7 +7,7 @@ import { getAccount, type Account } from '../lib/account';
 import { CEFR, type Cefr } from '../lib/levels';
 import { buildPlan, isExam, loadAnswers, saveAnswers, targetBand, type Answers, type Skill, type Tutor, type When, type Why } from '../lib/onboarding';
 import { MINUTES, savePrefs, type Goal } from '../lib/planPrefs';
-import { setPersona, setTarget, useProfile } from '../lib/store';
+import { getProfile, setPersona, setTarget, useProfile } from '../lib/store';
 import { L } from '../i18n';
 
 type StepId = 'goal' | 'why' | 'when' | 'target' | 'level' | 'hard' | 'minutes' | 'tutor';
@@ -64,7 +64,7 @@ export default function Start() {
     window.scrollTo({ top: 0 });
   };
 
-  if (done && a.goal && a.level && a.minutes && a.tutor) return <Result a={a as Answers} acc={acc} onJoined={setAcc} onRedo={() => { setDone(false); setI(0); }} />;
+  if (done && a.goal && a.level && a.minutes && a.tutor) return <Result a={a as Answers} acc={acc} onJoined={(x) => { setAcc(x); if (!getProfile().level) setTimeout(() => { window.location.hash = '#/placement'; }, 300); }} onRedo={() => { setDone(false); setI(0); }} />;
 
   const opts = (list: { id: string; label: string; sub?: string }[], key: keyof Answers, current: unknown) => (
     <div className="opts" key={step}>

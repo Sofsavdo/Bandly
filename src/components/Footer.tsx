@@ -15,7 +15,6 @@ export function Footer() {
             <a href="#/learn">{t('nav.learn')}</a><a href="#/exam">{t('nav.exam')}</a><a href="#/mocks">{t('nav.mocks')}</a><a href="#/pricing">{t('nav.pricing')}</a>
           </nav>
         </div>
-        <p className="disclaimer">{BRAND.disclaimer}</p>
       </div>
     </footer>
   );
