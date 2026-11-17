@@ -7,7 +7,7 @@ import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
 import { hasVoice, listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
-import { playUz } from '../lib/tts';
+import { playPrepared, prepareUz } from '../lib/tts';
 import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
 import { useProfile } from '../lib/store';
 import { BandiAvatar } from '../components/BandiAvatar';
@@ -41,16 +41,29 @@ const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(s % 60).padS
 
 interface Turn { role: 'learner' | 'coach'; text: string }
 
-/** Ustoz gapini aytadi: avval neyron ovoz (o'zbek va ingliz tilini biladi), bo'lmasa brauzer ovozi. */
-async function speakLine(text: string, signal: { cancelled: boolean }): Promise<void> {
-  const parts = text.length <= 270 ? [text] : text.split(/(?<=[.!?])\s+/).reduce<string[]>((a, s) => { const l = a.length - 1; if (l >= 0 && (a[l]! + ' ' + s).length <= 270) a[l] += ' ' + s; else a.push(s.slice(0, 270)); return a; }, []);
-  for (const part of parts) {
+/** Javobni gaplarga bo'ladi (birinchi bo'lak qisqa — Bandi tezroq gapira boshlasin). */
+export function chunkReply(text: string): string[] {
+  const sents = text.split(/(?<=[.!?…])\s+/).map((x) => x.trim()).filter(Boolean);
+  const out: string[] = [];
+  for (const s of sents) { const l = out.length - 1; if (l >= 1 && (out[l]! + ' ' + s).length <= 220) out[l] += ' ' + s; else out.push(s.slice(0, 270)); }
+  return out.length ? out : [text.slice(0, 270)];
+}
+
+/** Ustoz gapini aytadi: neyron ovoz gapma-gap — birinchi gap tayyor bo'lishi bilan chalinadi, keyingisi shu payt tayyorlanadi.
+ *  Neyron ovoz bo'lmasa — brauzer ovozi. */
+async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 'happy' | 'angry' | 'laugh' = 'happy'): Promise<void> {
+  const parts = chunkReply(text);
+  let next = prepareUz(parts[0]!, emotion, 'coach', 0);
+  for (let i = 0; i < parts.length; i++) {
     if (signal.cancelled) return;
-    if (await playUz(part, 'happy', signal, 'coach')) continue;
-    if (!ttsSupported()) return;
-    const nat = isNative(part) ? nativeStt() : null;
+    const url = await next;
+    if (i + 1 < parts.length) next = prepareUz(parts[i + 1]!, emotion, 'coach', i + 1);
+    if (url && !signal.cancelled) { await playPrepared(url, signal); continue; }
+    if (url) URL.revokeObjectURL(url);
+    if (!ttsSupported() || signal.cancelled) return;
+    const nat = isNative(parts[i]!) ? nativeStt() : null;
     const ok = nat && hasVoice(nat.slice(0, 2));
-    await say(part, signal, ok ? nat! : 'en-GB', { pitch: 1, rate: 0.98, volume: 1 });
+    await say(parts[i]!, signal, ok ? nat! : 'en-GB', { pitch: 1, rate: 0.98, volume: 1 });
   }
 }
 
@@ -64,7 +77,9 @@ export default function Coach() {
   const setPhase = (ph: Phase) => { phaseRef.current = ph; setPhaseState(ph); };
   const [err, setErr] = useState('');
   const [lvl, setLvl] = useState(0);
-  const [emotion, setEmotion] = useState<CoachEmotion>('neutral');
+  const [emotion, setEmotionState] = useState<CoachEmotion>('neutral');
+  const emoRef = useRef<CoachEmotion>('neutral');
+  const setEmotion = (e: CoachEmotion) => { emoRef.current = e; setEmotionState(e); };
   const [secs, setSecs] = useState(0);
   const [serverDown, setServerDown] = useState(false);
   const [minutes, setMinutes] = useState<{ subscribed: boolean; left: number; total: number } | null>(null);
@@ -87,7 +102,7 @@ export default function Coach() {
     setPhase('speaking');
     const s = { cancelled: false }; sig.current = s;
     const stopWatch = server ? await watchBargeIn(() => { s.cancelled = true; stopSpeaking(); }) : () => undefined;
-    try { await speakLine(line, s); } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } finally { stopWatch(); }
+    try { await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy'); } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } finally { stopWatch(); }
     if (!liveRef.current) return;
     setPhase('idle');
     if (canListen) void listen();

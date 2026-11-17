@@ -101,7 +101,7 @@ async function completeOnce(cfg: AiConfig, system: string, user: string, opts: C
     headers = { ...headers, 'x-goog-api-key': cfg.key };
     // Gemini 3 "o'ylaydigan" modellar: o'ylash past darajada (tez va arzon); o'ylash tokenlari ham chegara ichida bo'lishi mumkin — zaxira beramiz
     const g3 = /gemini-3/i.test(cfg.model) && !/lite/i.test(cfg.model); // Flash-Lite: o'ylash sozlamasisiz (tez)
-    body = { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: { maxOutputTokens: g3 ? Math.max(2048, maxTokens * 4) : maxTokens, ...(g3 ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) } };
+    body = { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], safetySettings: [{ category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' }], generationConfig: { maxOutputTokens: g3 ? Math.max(2048, maxTokens * 4) : maxTokens, ...(g3 ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) } };
   }
   try {
     const res = await f(url, { method: 'POST', headers, body: JSON.stringify(body), signal: ctl.signal });
