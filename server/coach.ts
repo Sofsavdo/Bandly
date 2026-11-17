@@ -101,7 +101,7 @@ export const SAFE_FALLBACK: CoachReply = { reply: FALLBACKS[0]![0], question: FA
 export async function coachTurn(cfg: AiConfig, persona: PersonaId, history: CoachTurn[], learnerText: string, opts: { level?: string | null; mode: CoachMode; native?: string; adult?: boolean }, call: CompleteOpts = {}): Promise<CoachReply> {
   if (!learnerText.trim()) throw new AiError(400, 'Javob bo‘sh');
   const { system, user } = buildPrompt(persona, history, learnerText, opts);
-  let parsed = parseCoachReply(await complete(cfg, system, user, { maxTokens: 350, ...call }));
+  let parsed = parseCoachReply(await complete(cfg, system, user, { maxTokens: 260, ...call }));
   // Bir marta qayta urinish: format buzilgan yoki taqiqlangan so'z bo'lsa (tayyor gapga o'tishdan oldin)
   if (!parsed) parsed = parseCoachReply(await complete(cfg, system, `${user}\n\nYour previous answer was rejected (invalid JSON or a forbidden word). Answer again: valid JSON only, no slurs, nothing about family, religion or nationality.`, { maxTokens: 350, ...call }).catch(() => ''));
   if (!parsed) return fallbackReply(history);

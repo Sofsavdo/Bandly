@@ -22,13 +22,16 @@ let current: HTMLAudioElement | null = null;
 export const stopUz = (): void => { if (current) { current.pause(); current = null; } };
 
 /** Ovozni oldindan tayyorlaydi (serverdan oladi), lekin chalmaydi. null — xizmat o'chiq/limit/xato. part>0 — shu javobning davomi (limitga qayta sanalmaydi). */
+/** Oxirgi rad etish sababi: 429 — kunlik ovoz limiti tugadi. */
+export let lastTtsStatus = 0;
 export async function prepareUz(text: string, emotion: Emotion, feature?: 'coach', part = 0): Promise<string | null> {
   const acc = getAccount();
   if (!acc || !(await uzTtsEnabled())) return null;
   try {
     const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: acc.token, text, emotion, feature, part, ...STYLE[emotion] }), signal: AbortSignal.timeout(12_000) });
+    lastTtsStatus = r.status;
     return r.ok ? URL.createObjectURL(await r.blob()) : null;
-  } catch { return null; }
+  } catch { lastTtsStatus = 0; return null; }
 }
 
 /** Tayyor ovozni chaladi (signal bekor qilsa — to'xtaydi). */
