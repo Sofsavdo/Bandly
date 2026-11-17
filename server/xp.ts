@@ -3,6 +3,7 @@
 // Server o'zi tekshira oladigan natijalar (Mock Arena baholash) XP'ni to'g'ridan-to'g'ri server beradi.
 import type { DatabaseSync } from 'node:sqlite';
 import { byToken } from './db';
+import { joinWeek } from './league';
 
 export const XP_SOURCES = ['lesson', 'boss', 'game', 'exam', 'grammar', 'practice', 'mistakes', 'placement', 'quest', 'other', 'mock'] as const;
 export type XpSource = (typeof XP_SOURCES)[number];
@@ -33,6 +34,7 @@ export function awardXp(db: DatabaseSync, playerId: number, eventId: string, sou
   if (accepted > 0) {
     db.prepare('UPDATE players SET xp = xp + ?, updated_at = ? WHERE id = ?').run(accepted, now, playerId);
     db.prepare('INSERT INTO xp_log (player_id, ts, delta) VALUES (?, ?, ?)').run(playerId, now, accepted);
+    joinWeek(db, playerId, now); // haftalik liga: faol o'quvchi o'z darajasidagi guruhga qo'shiladi
   }
   return accepted;
 }

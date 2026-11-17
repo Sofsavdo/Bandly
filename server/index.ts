@@ -16,6 +16,7 @@ import { elevenLabsFromEnv, synthesize as elSynthesize } from './elevenlabs';
 import { writeFileSync as writeFile, mkdirSync as mkdir } from 'node:fs';
 import { archive, contentVersion, createLesson, createUnit, history, publish, publishedUnits, reorder, restore, saveLesson, saveUnit, seedContent, studioTree } from './content';
 import { awardXp, submitXp } from './xp';
+import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
@@ -229,6 +230,7 @@ createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, sync(db, String(b.token ?? ''), Number(b.xp), Number(b.streak)));
     }
+    if (req.method === 'GET' && url.pathname === '/api/league') return send(res, 200, leagueView(db, byToken(db, String(req.headers['x-token'] ?? '')).id));
     if (req.method === 'GET' && url.pathname === '/api/leaderboard') {
       const period = url.searchParams.get('period') === 'all' ? 'all' : 'week';
       const token = req.headers['x-token'];

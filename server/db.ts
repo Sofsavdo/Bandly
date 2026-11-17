@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { ensureXpTables } from './xp';
+import { ensureLeagueTables } from './league';
 import { vocab } from '../src/content/vocab';
 
 export const MAX_DELTA_PER_SYNC = 400; // bitta so'rovda qabul qilinadigan eng ko'p XP (aldovga qarshi)
@@ -102,6 +103,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   db.exec('CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id INTEGER NOT NULL REFERENCES players(id), token_hash TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, last_seen INTEGER NOT NULL, revoked_at INTEGER)');
   db.exec('CREATE INDEX IF NOT EXISTS sessions_player ON sessions (player_id)');
   ensureXpTables(db);
+  ensureLeagueTables(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;
 }

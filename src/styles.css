@@ -698,3 +698,21 @@ ul.plain { margin: 0; padding-left: 18px; } ul.plain li { margin: 4px 0; font-si
 .studio-field textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
 .import-panel { width: min(94vw, 720px); }
 .lesson-media { margin: 6px 0 14px; }
+@media (max-width: 520px) {
+  .price-tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; }
+  .price-tabs button { padding: 8px 6px; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+}
+
+/* ---------- Haftalik ligalar ---------- */
+.league-head { display: flex; gap: 12px; align-items: center; }
+.league-badge { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; color: #fff; box-shadow: 0 5px 0 rgba(0,0,0,.18); flex: none; }
+.league-tiers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0; }
+.league-tiers i { height: 6px; border-radius: 3px; }
+.league-rows { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.league-rows li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; }
+.league-rows li.up { background: color-mix(in srgb, var(--green) 9%, transparent); }
+.league-rows li.down { background: color-mix(in srgb, #e5484d 9%, transparent); }
+.league-rows li.me { outline: 2px solid var(--brand); font-weight: 700; }
+.league-rows .rk { width: 24px; text-align: right; }
+.league-rows .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.league-rows .xp { font-variant-numeric: tabular-nums; }
