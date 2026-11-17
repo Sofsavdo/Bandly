@@ -13,7 +13,7 @@ export function ReadinessCard() {
   const r = readiness(loadResults(), p.target, p.examDate);
   return (
     <div className="card">
-      <span className="eyebrow"><Target size={15} /> IELTS tayyorgarligi (taxminiy)</span>
+      <span className="eyebrow"><Target size={15} /> IELTS tayyorgarligi</span>
       <div className="stack">
         {(['reading', 'listening', 'speaking'] as const).map((k) => (
           <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderTop: '1px solid var(--line)' }}>

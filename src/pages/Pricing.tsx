@@ -82,7 +82,6 @@ export default function Pricing() {
           <li>To‘lov bank kartasiga o‘tkazma orqali: ilova aniq summa va karta raqamini ko‘rsatadi, o‘tkazma qilingach obuna bir necha soniyada o‘zi yoqiladi.</li>
           <li>Obuna avtomatik yangilanmaydi — muddat tugagach, xohlasangiz qayta to‘laysiz.</li>
           <li>Obuna hisobingizga yoziladi: boshqa qurilmada ham shu hisob bilan kirasiz.</li>
-          <li>Barcha ballar taxminiy; rasmiy natijani faqat imtihon markazi beradi.</li>
         </ul>
         </details>
       </div>

@@ -37,7 +37,6 @@ export default function Results() {
             <div className="skill"><span>Maqsad</span><b>{p.target.toFixed(1)}</b></div>
           </div>
         </div>
-        <p className="evidence">Taxminiy ballar: qurilmadagi natijalardan hisoblangan, rasmiy IELTS natijasi emas.</p>
       </div>
       <MasteryCard />
       <div className="card">

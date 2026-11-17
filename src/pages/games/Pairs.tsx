@@ -71,7 +71,7 @@ export default function Pairs() {
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
         <h2>Juftlik</h2>
-        <p>Chapdagi inglizcha so‘zni tanlang, keyin o‘ng tomondan uning o‘zbekcha ma’nosini toping. Tez va xatosiz bo‘lsa ko‘proq XP.</p>
+        <p>So‘z va ma’noni juftlang.</p>
         <button className="btn primary" onClick={start}>Boshlash</button>
       </div>
     );

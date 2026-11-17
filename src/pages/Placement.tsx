@@ -132,7 +132,6 @@ export default function Placement() {
           <button className="btn lg" onClick={() => { setAnswers({}); setSaved(false); }}>Qayta topshirish</button>
         </div>
       </div>
-      <p className="evidence">Natija taxminiy va rasmiy IELTS ballini bildirmaydi.</p>
     </div>
   );
 }

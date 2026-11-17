@@ -91,8 +91,7 @@ export default function WordRush() {
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
         <h2>So‘z poygasi</h2>
-        <p>60 soniyada iloji boricha ko‘p so‘zni toping. 3 ta jon bor. Ketma-ket to‘g‘ri javoblar ballni 5 martagacha oshiradi.</p>
-        <p className="evidence">Takrorlash tizimi sizga hali yaxshi bilmagan so‘zlarni ko‘proq beradi.</p>
+        <p>60 soniya, 3 jon.</p>
         <button className="btn primary" onClick={start}>Boshlash</button>
       </div>
     );

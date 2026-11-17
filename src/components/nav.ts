@@ -32,9 +32,9 @@ const by = (h: string): NavItem => NAV.find((n) => n.href === h)!;
 /** Menyu guruhlari: har bir sahifa bitta joyda; guruhlar yig'iladi (joriy sahifa guruhi ochiq turadi). */
 export interface NavGroup { id: string; label: Key; items: NavItem[] }
 export const NAV_GROUPS: NavGroup[] = [
-  { id: 'main', label: 'nav.group.main', items: [HOME, by('#/learn'), by('#/coach')] },
+  { id: 'main', label: 'nav.group.main', items: [HOME, by('#/learn'), by('#/grammar'), by('#/coach')] },
   { id: 'exam', label: 'nav.group.exam', items: [by('#/exam'), by('#/mocks'), RESULTS, TOOLS] },
-  { id: 'practice', label: 'nav.group.practice', items: [by('#/grammar'), PRACTICE, SHADOW, MISTAKES, HOMEWORK, by('#/games')] },
+  { id: 'practice', label: 'nav.group.practice', items: [PRACTICE, SHADOW, MISTAKES, HOMEWORK, by('#/games')] },
   { id: 'compete', label: 'nav.group.compete', items: [by('#/league'), by('#/duel')] },
   { id: 'account', label: 'nav.group.account', items: [PROFILE, PRICING] },
 ];

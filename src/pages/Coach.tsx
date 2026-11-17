@@ -1,62 +1,81 @@
-import { Bot, Lock, Mic, Send, Square, Volume2, VolumeX } from 'lucide-react';
+// AI ustoz: ovozli suhbat (qo'ng'iroq kabi). O'zbekcha va inglizcha: ustoz o'quvchi qaysi tilda gapirsa, shu tilda javob beradi.
+// Xarakter har safar tanlanmaydi — Profil → Sozlamalar'dagi tanlov ishlatiladi. Ovoz: serverdagi neyron ovoz, bo'lmasa brauzer ovozi.
+import { Keyboard, Mic, PhoneOff, Send, Square, Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { JoinForm } from '../components/JoinForm';
-import { PERSONAS, personaById, type CoachEmotion, type PersonaId } from '../content/personas';
+import type { PersonaId } from '../content/personas';
 import { getAccount, type Account } from '../lib/account';
-import { coachSay, coachStatus, newTurnId, prosodyFor, type CoachReply, type CoachStatus } from '../lib/coach';
-import { listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
-import { useProfile } from '../lib/store';
+import { coachSay, coachStatus, newTurnId, type CoachReply, type CoachStatus } from '../lib/coach';
+import { hasVoice, listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
+import { playUz } from '../lib/tts';
+import { personaLevel, useProfile } from '../lib/store';
 import { addMistake } from '../lib/mistakes';
 import { logErrors } from '../lib/adaptive/store';
 import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
-import { Illo } from '../components/Illo';
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
-const PHASE_UZ: Record<Phase, string> = { idle: 'Navbat sizda', listening: 'Tinglayapman…', thinking: 'O‘ylayapman…', speaking: 'Gapiryapman…', error: 'Xato' };
-const EMO_UZ: Record<CoachEmotion, string> = { neutral: 'xotirjam', happy: 'xursand', laugh: 'kulyapti', angry: 'jahli chiqdi', disappointed: 'hafsalasi pir', impressed: 'hayratda', serious: 'jiddiy', sarcastic: 'kinoyali' };
-const OPENERS: Record<PersonaId, string> = {
-  friendly: 'Hi! I’m your coach. Tell me a little about yourself. What’s your name and where are you from?',
-  examiner: 'Good afternoon. My name is Bandi. Can you tell me your full name, please? … Thank you. Do you work or are you a student?',
-  savage: 'Oh great, another “I am agree” champion? Prove me wrong. Tell me about your weekend — in proper English, please.',
-  comedy: 'Hey hey! Quick question: if your phone could talk, what would it complain about the most?',
-  debate: 'Here’s my claim: homework should be banned in schools. I bet you can’t change my mind. Go ahead.',
-};
+type Lang = 'en-US' | 'uz-UZ';
+const PHASE_UZ: Record<Phase, string> = { idle: 'Navbat sizda', listening: 'Tinglayapman…', thinking: 'O‘ylayapman…', speaking: 'Gapiryapman…', error: 'Qayta urinib ko‘ring' };
+const OPENER = 'Salom! Men Bandly ustoziman. Keling, ingliz tilida gaplashamiz — qiynalsangiz, o‘zbekcha so‘rang. So, how are you today?';
+const LANG_KEY = 'bandly.coach.lang';
+const PERSONA_BY_LEVEL: PersonaId[] = ['friendly', 'comedy', 'savage', 'savage'];
+const isUzbek = (t: string): boolean => /[‘’ʻ]|\b(men|siz|salom|qanday|keling|yaxshi|bu|uchun|bilan|emas|ham|nima|qiling|ayting|so‘z)\b/i.test(t);
 
 interface Msg { role: 'learner' | 'coach'; text: string; reply?: CoachReply }
 
+/** Ustoz gapini aytadi: avval neyron ovoz (o'zbek va ingliz tilini biladi), bo'lmasa brauzer ovozi. */
+async function speakLine(text: string, signal: { cancelled: boolean }): Promise<void> {
+  const parts = text.length <= 270 ? [text] : text.split(/(?<=[.!?])\s+/).reduce<string[]>((a, s) => { const l = a.length - 1; if (l >= 0 && (a[l]! + ' ' + s).length <= 270) a[l] += ' ' + s; else a.push(s.slice(0, 270)); return a; }, []);
+  for (const part of parts) {
+    if (signal.cancelled) return;
+    if (await playUz(part, 'happy', signal)) continue;
+    if (!ttsSupported()) return;
+    const uz = isUzbek(part) && hasVoice('uz');
+    await say(part, signal, uz ? 'uz-UZ' : 'en-GB', { pitch: 1, rate: 0.95, volume: 1 });
+  }
+}
+
 export default function Coach() {
   const p = useProfile();
+  const persona = p.adult ? PERSONA_BY_LEVEL[personaLevel(p)] ?? 'friendly' : personaLevel(p) === 1 ? 'comedy' : 'friendly';
   const [status, setStatus] = useState<CoachStatus | null>(null);
   const [acc, setAcc] = useState<Account | null>(() => getAccount());
-  const [persona, setPersona] = useState<PersonaId>('friendly');
-  const [mode, setMode] = useState<'practice' | 'exam'>('practice');
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [phase, setPhase] = useState<Phase>('idle');
   const [err, setErr] = useState('');
   const [text, setText] = useState('');
+  const [typing, setTyping] = useState(false);
   const [interim, setInterim] = useState('');
   const [voiceOn, setVoiceOn] = useState(true);
+  const [lang, setLang] = useState<Lang>(() => { try { return localStorage.getItem(LANG_KEY) === 'uz-UZ' ? 'uz-UZ' : 'en-US'; } catch { return 'en-US'; } });
   const endRef = useRef<(() => void) | null>(null);
+  const sig = useRef({ cancelled: false });
   const pending = useRef<{ text: string; turnId: string } | null>(null);
+  const live = useRef(false);
+  const logRef = useRef<HTMLDivElement | null>(null);
+  const msgsRef = useRef<Msg[]>(msgs); msgsRef.current = msgs;
   const started = msgs.length > 0;
-  const info = personaById(persona)!;
   const stt = typeof window !== 'undefined' && sttSupported();
-  const tts = typeof window !== 'undefined' && ttsSupported();
 
-  useEffect(() => { void coachStatus().then(setStatus); return () => stopSpeaking(); }, []);
+  useEffect(() => { void coachStatus().then(setStatus); return () => { live.current = false; sig.current.cancelled = true; stopSpeaking(); }; }, []);
+  useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' }); }, [msgs, interim]);
+  const pickLang = (l: Lang) => { setLang(l); try { localStorage.setItem(LANG_KEY, l); } catch { /* ignore */ } };
 
-  const speak = async (line: string, emo: CoachEmotion) => {
-    if (!voiceOn || !tts) return;
-    setPhase('speaking');
-    const pr = prosodyFor(info.voice, emo);
-    try { await say(line, { cancelled: false }, 'en-GB', pr); } finally { setPhase((ph) => (ph === 'speaking' ? 'idle' : ph)); }
+  /** Ustoz gapiradi, keyin (ovozli rejimda) avtomatik ravishda o'quvchini tinglaydi — qo'ng'iroqdagidek. */
+  const tutorSays = async (line: string) => {
+    if (voiceOn) { setPhase('speaking'); sig.current = { cancelled: false }; try { await speakLine(line, sig.current); } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } }
+    if (!live.current) return;
+    setPhase('idle');
+    if (stt && voiceOn && !typing) void listen();
   };
 
   const start = () => {
-    const opener = OPENERS[mode === 'exam' ? 'examiner' : persona];
-    setMsgs([{ role: 'coach', text: opener }]);
-    void speak(opener, 'neutral');
+    live.current = true;
+    setMsgs([{ role: 'coach', text: OPENER }]);
+    void tutorSays(OPENER);
   };
+
+  const end = () => { live.current = false; sig.current.cancelled = true; endRef.current?.(); stopSpeaking(); setMsgs([]); setPhase('idle'); setErr(''); pending.current = null; };
 
   const send = async (learnerText: string, retry = false) => {
     const t = learnerText.trim();
@@ -67,109 +86,95 @@ export default function Coach() {
     if (!retry) setMsgs((m) => [...m, { role: 'learner', text: t }]);
     setText(''); setPhase('thinking');
     try {
-      const history = msgs.map((m) => ({ role: m.role, text: m.text }));
-      const r = await coachSay({ persona, mode, adult: p.adult, level: p.level, history, text: turn.text, turnId: turn.turnId });
+      const history = msgsRef.current.map((m) => ({ role: m.role, text: m.text }));
+      const r = await coachSay({ persona, mode: 'practice', adult: p.adult, level: p.level, history, text: turn.text, turnId: turn.turnId });
       pending.current = null;
       if (r.correction) {
         const tax: TaxonomyId[] = r.correction.errorType && isTaxonomyId(r.correction.errorType) ? [r.correction.errorType] : [];
         logErrors(tax);
-        try { addMistake('coach', { kind: 'fix', wrong: r.correction.wrong, right: r.correction.right, whyUz: r.correction.whyUz }, tax); } catch { /* not a usable pair */ }
+        try { addMistake('coach', { kind: 'fix', wrong: r.correction.wrong, right: r.correction.right, whyUz: r.correction.whyUz }, tax); } catch { /* juftlik yaroqsiz */ }
       }
       const line = [r.reply, r.question].filter(Boolean).join(' ');
       setMsgs((m) => [...m, { role: 'coach', text: line, reply: r }]);
-      setPhase('idle');
-      await speak(line, r.emotion);
+      await tutorSays(line);
     } catch (e) {
       setErr((e as Error).message); setPhase('error');
     }
   };
 
-  const listen = async () => {
+  async function listen() {
     if (phase === 'listening') { endRef.current?.(); return; }
     stopSpeaking(); setErr(''); setInterim(''); setPhase('listening');
     try {
-      const r = await listenTurn({ silenceMs: 1500, maxMs: 45_000, noSpeechMs: 8000, lang: 'en-US', onInterim: setInterim, signal: { cancelled: false }, endRef });
-      setInterim(''); setPhase('idle');
+      const r = await listenTurn({ silenceMs: 1600, maxMs: 45_000, noSpeechMs: 9000, lang, onInterim: setInterim, signal: { cancelled: false }, endRef });
+      setInterim('');
+      if (!live.current) return;
+      setPhase('idle');
       if (r.text.trim()) await send(r.text);
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : 'Nutqni tanib bo‘lmadi. Yozib yuborishingiz mumkin.');
+      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? 'Internet aloqasi uzildi.' : 'Nutqni tanib bo‘lmadi.');
       setPhase('error');
     }
-  };
+  }
 
-  const corrections = msgs.flatMap((m) => (m.reply?.correction ? [m.reply.correction] : []));
-
-  return (
-    <div>
-      <section className="card page-head with-illo t-pink">
-        <h2><Bot size={22} /> AI ustoz</h2><Illo kind="chat" size={124} />
-        <p>Xarakter tanlang va ingliz tilida gaplashing — ustoz xatoni tuzatib, keyingi savolni beradi.</p>
+  if (!started) return (
+    <div className="tutor">
+      <section className="tutor-call idle-call">
+        <div className={`tutor-orb ${phase}`} aria-hidden="true"><span>B</span></div>
+        <h2>AI ustoz</h2>
+        <p>Ovozli suhbat: inglizcha gapiring, qiynalsangiz — o‘zbekcha so‘rang.</p>
         {status && !status.coach && <p className="notice">AI ustoz tez orada ochiladi.</p>}
-        <p><a className="btn sm" href="#/challenge">Jim qolma! — 60 soniyalik gapirish o‘yini</a></p>
-        <p className="muted" style={{ fontSize: 13 }}>Ovozli suhbat navbatma-navbat, brauzer orqali.</p>
+        {!acc
+          ? <JoinForm onJoined={setAcc} text="Suhbat uchun hisobingizga kiring." />
+          : <button className="btn primary lg" disabled={!status?.coach} onClick={start}><Mic size={20} /> Suhbatni boshlash</button>}
       </section>
+    </div>
+  );
 
-      {!started && (
-        <section className="card">
-          <h3>Xarakterni tanlang</h3>
-          <div className="stack">
-            {PERSONAS.map((x) => {
-              const locked = x.adultOnly && !p.adult;
-              return (
-                <button key={x.id} type="button" className={`opt ${persona === x.id ? 'sel' : ''}`} style={{ borderLeft: `6px solid ${x.accent}` }} disabled={locked} onClick={() => setPersona(x.id)}>
-                  <b>{locked && <Lock size={14} />} {x.nameUz} · {x.name}</b>
-                  <div className="evidence">{x.descUz}</div>
-                  <div className="muted" style={{ fontSize: 13 }}>{locked ? 'Ochish uchun Profil → “Men 18 yoshdan oshganman” ni belgilang.' : x.audienceUz}</div>
-                </button>
-              );
-            })}
+  const last = [...msgs].reverse().find((m) => m.reply?.correction);
+  return (
+    <div className="tutor">
+      <section className="tutor-call">
+        <div className="tutor-top">
+          <div className={`tutor-orb sm ${phase}`} aria-hidden="true"><span>B</span></div>
+          <div className="grow"><b>Bandly ustoz</b><small aria-live="polite">{PHASE_UZ[phase]}</small></div>
+          <div className="seg" role="group" aria-label="Siz gapiradigan til">
+            <button type="button" className={lang === 'en-US' ? 'on' : ''} onClick={() => pickLang('en-US')}>EN</button>
+            <button type="button" className={lang === 'uz-UZ' ? 'on' : ''} onClick={() => pickLang('uz-UZ')}>UZ</button>
           </div>
-          <p className="row" style={{ marginTop: 12 }}>
-            <button type="button" className={`chipbtn ${mode === 'practice' ? 'on' : ''}`} onClick={() => setMode('practice')}>Mashq</button>
-            <button type="button" className={`chipbtn ${mode === 'exam' ? 'on' : ''}`} onClick={() => setMode('exam')}>Imtihon rejimi (faqat qattiqqo‘l imtihonchi)</button>
-          </p>
-          {!acc
-            ? <JoinForm onJoined={setAcc} text="AI ustoz bilan gaplashish uchun hisobingizga kiring (kunlik limit hisobingizga yoziladi)." />
-            : <button className="btn primary" disabled={!status?.coach} onClick={start}>Suhbatni boshlash</button>}
-        </section>
-      )}
-
-      {started && (
-        <section className="card" style={{ borderTop: `6px solid ${info.accent}` }}>
-          <p className="row">
-            <span className="pill" style={{ whiteSpace: 'normal' }}><Bot size={14} /> {mode === 'exam' ? 'Qattiqqo‘l imtihonchi' : info.nameUz}</span>
-            <span className="pill" aria-live="polite">{PHASE_UZ[phase]}</span>
-            {tts && <button type="button" className="btn sm" onClick={() => { setVoiceOn((v) => !v); stopSpeaking(); }} aria-label={voiceOn ? 'Ovozni o‘chirish' : 'Ovozni yoqish'}>{voiceOn ? <Volume2 size={14} /> : <VolumeX size={14} />}</button>}
-          </p>
-          <div className="stack" style={{ maxHeight: 420, overflowY: 'auto' }}>
-            {msgs.map((m, i) => (
-              <div key={i} className="q" style={{ textAlign: m.role === 'learner' ? 'right' : 'left' }}>
-                <p style={{ margin: 0 }}><b>{m.role === 'learner' ? 'Siz' : 'Ustoz'}{m.reply ? ` · ${EMO_UZ[m.reply.emotion]}` : ''}:</b> {m.text}</p>
-                {m.reply?.notice && <p className="muted" style={{ fontSize: 13 }}>{m.reply.notice}</p>}
-                {m.reply?.correction && <p style={{ fontSize: 14 }}><span className="bad">«{m.reply.correction.wrong}»</span> → <span className="ok">«{m.reply.correction.right}»</span> <span className="muted">{m.reply.correction.whyUz}</span></p>}
-              </div>
-            ))}
-            {phase === 'listening' && <p className="muted">{interim || '…'}</p>}
-          </div>
-          {err && <p className="bad">{err} {pending.current && <button className="btn sm" onClick={() => void send(pending.current!.text, true)}>Qayta yuborish</button>}</p>}
-          <div className="row" style={{ marginTop: 10 }}>
-            {stt && <button type="button" className={`btn ${phase === 'listening' ? 'primary' : ''}`} disabled={phase === 'thinking'} onClick={() => void listen()}>{phase === 'listening' ? <><Square size={16} /> Tugatdim</> : <><Mic size={16} /> Gapirish</>}</button>}
-            {phase === 'speaking' && <button type="button" className="btn" onClick={() => { stopSpeaking(); setPhase('idle'); }}>Ustozni to‘xtatish</button>}
-          </div>
-          <form className="row" style={{ marginTop: 8 }} onSubmit={(e) => { e.preventDefault(); void send(text); }}>
-            <input type="text" value={text} maxLength={800} placeholder="Yoki inglizcha yozing…" onChange={(e) => setText(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
-            <button className="btn" disabled={!text.trim() || phase === 'thinking'} aria-label="Yuborish"><Send size={16} /></button>
-          </form>
-          <button type="button" className="btn" style={{ marginTop: 12 }} onClick={() => { stopSpeaking(); setMsgs([]); setPhase('idle'); setErr(''); pending.current = null; }}>Suhbatni tugatish</button>
-          {corrections.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <h3>Bu suhbatdagi tuzatishlar</h3>
-              <ul>{corrections.map((c, i) => <li key={i}><span className="bad">{c.wrong}</span> → <span className="ok">{c.right}</span> <span className="muted">{c.whyUz}</span></li>)}</ul>
+        </div>
+        <div className="tutor-log" ref={logRef}>
+          {msgs.map((m, i) => (
+            <div key={i} className={`bubble2 ${m.role}`}>
+              {m.text}
+              {m.reply?.correction && <div className="fix"><s>{m.reply.correction.wrong}</s> → <b>{m.reply.correction.right}</b>{m.reply.correction.whyUz && <span> · {m.reply.correction.whyUz}</span>}</div>}
             </div>
+          ))}
+          {phase === 'listening' && <div className="bubble2 learner ghost">{interim || '…'}</div>}
+          {phase === 'thinking' && <div className="bubble2 coach ghost">…</div>}
+        </div>
+        {err && <p className="tutor-err">{err} {pending.current ? <button className="btn sm" onClick={() => void send(pending.current!.text, true)}>Qayta yuborish</button> : stt && <button className="btn sm" onClick={() => void listen()}>Qayta tinglash</button>}</p>}
+        {typing && (
+          <form className="tutor-type" onSubmit={(e) => { e.preventDefault(); void send(text); }}>
+            <input type="text" value={text} maxLength={800} placeholder="Inglizcha yoki o‘zbekcha yozing…" onChange={(e) => setText(e.target.value)} autoFocus />
+            <button className="btn primary" disabled={!text.trim() || phase === 'thinking'} aria-label="Yuborish"><Send size={18} /></button>
+          </form>
+        )}
+        <div className="tutor-ctrl">
+          <button type="button" className="icon-btn" onClick={() => { setTyping((t) => !t); if (phase === 'listening') endRef.current?.(); }} aria-label="Yozib yuborish" aria-pressed={typing}><Keyboard size={20} /></button>
+          {stt && (
+            <button type="button" className={`mic-big ${phase === 'listening' ? 'on' : ''}`} disabled={phase === 'thinking'}
+              onClick={() => { if (phase === 'speaking') { sig.current.cancelled = true; stopSpeaking(); } void listen(); }}
+              aria-label={phase === 'listening' ? 'Tugatdim' : 'Gapirish'}>
+              {phase === 'listening' ? <Square size={28} /> : <Mic size={30} />}
+            </button>
           )}
-        </section>
-      )}
+          <button type="button" className="icon-btn" onClick={() => { setVoiceOn((v) => !v); sig.current.cancelled = true; stopSpeaking(); }} aria-label={voiceOn ? 'Ovozni o‘chirish' : 'Ovozni yoqish'}>{voiceOn ? <Volume2 size={20} /> : <VolumeX size={20} />}</button>
+          <button type="button" className="icon-btn end" onClick={end} aria-label="Suhbatni tugatish"><PhoneOff size={20} /></button>
+        </div>
+        {last?.reply?.correction && <span className="sr-only">Oxirgi tuzatish: {last.reply.correction.right}</span>}
+      </section>
     </div>
   );
 }

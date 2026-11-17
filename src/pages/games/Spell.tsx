@@ -64,7 +64,7 @@ export default function Spell() {
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="pencil" size={96} /></div>
         <h2>Imlo sinovi</h2>
-        <p>O‘zbekcha ma’no va misol gap beriladi, siz inglizcha so‘zni yozasiz. Talaffuzni eshitish tugmasi ham bor.</p>
+        <p>Ma’noga qarab inglizcha so‘zni yozing.</p>
         <button className="btn primary" onClick={start}>Boshlash</button>
       </div>
     );

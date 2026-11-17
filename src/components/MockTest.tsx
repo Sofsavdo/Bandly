@@ -209,8 +209,8 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
           {!graded && !gradeErr && <p className="muted" role="status">Natija hisoblanmoqda…</p>}
           {!graded && gradeErr && <p className="notice" role="alert">Natijani olib bo‘lmadi: {gradeErr}. Javoblaringiz saqlangan. <button className="btn sm" onClick={() => setGradeTry((n) => n + 1)}>Qayta urinish</button></p>}
           {graded && <><div className="score">{correct} / {questions.length}</div>
-          {scoring === 'raw' ? <p>To‘g‘ri javoblar: <b>{Math.round((correct / questions.length) * 100)}%</b>. <span className="muted">Bu Bandly mashq testi: rasmiy Multilevel balli hisoblanmaydi (rasmiy shkala va o‘tkazish jadvali e’lon qilinmagan).</span></p> : <div>
-            Taxminiy band: <b>{band.toFixed(1)}</b> <span className="pill">40 ballik shkalaga keltirilgan, rasmiy natija emas</span>
+          {scoring === 'raw' ? <p>To‘g‘ri javoblar: <b>{Math.round((correct / questions.length) * 100)}%</b>.</p> : <div>
+            Band: <b>{band.toFixed(1)}</b>
             {level && rawBand > band && <p className="evidence">Bu test {level} darajali, shuning uchun band {BAND_CAP[level].toFixed(1)} dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.</p>}
           </div>}</>}
         </div>

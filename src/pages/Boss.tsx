@@ -79,7 +79,7 @@ export default function Boss({ unitId }: { unitId: string }) {
             <li><Trophy size={15} /> O‘tish uchun kamida {Math.round(BOSS_PASS * 100)}% to‘g‘ri javob</li>
             <li><Flame size={15} /> Birinchi g‘alaba +{BOSS_XP_FIRST} XP, keyingilari +{BOSS_XP_REPEAT} XP</li>
           </ul>
-          <p className="muted" style={{ fontSize: 13 }}>Boss ixtiyoriy: keyingi bo‘lim darslari baribir ochiq. Chiqib ketsangiz, 24 soat ichida shu joydan davom ettirasiz.</p>
+          <p className="muted" style={{ fontSize: 13 }}>Ixtiyoriy sinov.</p>
           {record && <p className="row" style={{ justifyContent: 'center' }}><span className="pill">Urinishlar: {record.attempts}</span><span className="pill">Eng yaxshi: {Math.round(record.best * 100)}%</span>{record.passedAt && <span className="pill boss-won"><Trophy size={13} /> Yutilgan</span>}</p>}
           <div className="row" style={{ justifyContent: 'center' }}>
             {resumable && <button className="btn primary" onClick={() => start(false)}>Davom ettirish ({answered}/{resumable.refs.length}) <ArrowRight size={14} /></button>}

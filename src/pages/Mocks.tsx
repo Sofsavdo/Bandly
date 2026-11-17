@@ -43,7 +43,6 @@ export default function Mocks() {
           </a>
         ))}
       </div>
-      <p className="evidence" style={{ marginTop: 12 }}>Ballar taxminiy, rasmiy natija emas.</p>
     </div>
   );
 }

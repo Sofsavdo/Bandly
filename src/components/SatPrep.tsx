@@ -59,8 +59,7 @@ export function SatPrep() {
         <p className="muted" style={{ fontSize: 13 }}>Manbalar: {F.sources.map((x, i) => <span key={x.url}>{i ? ' · ' : ''}<a href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>
       </div>
       <div className="card">
-        <h3>Bandly mashqi (rasmiy emas)</h3>
-        <p className="muted" style={{ fontSize: 13 }}>Bandly mashq savollari (rasmiy College Board materiali emas).</p>
+        <h3>Mashq</h3>
         <p className="row">
           <button type="button" className={`chipbtn ${set === 'rw' ? 'on' : ''}`} onClick={() => setSet('rw')}>Reading and Writing · {SAT_RW.length} savol</button>
           <button type="button" className={`chipbtn ${set === 'math' ? 'on' : ''}`} onClick={() => setSet('math')}>Math · {SAT_MATH.length} savol</button>

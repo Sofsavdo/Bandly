@@ -9,7 +9,6 @@ export function EvalCard({ ev, title = 'AI baho' }: { ev: Evaluation; title?: st
   return (
     <div className="card">
       <h3 style={{ marginTop: 0 }}>{title}: <span className="big">{ev.overall.toFixed(1)}</span></h3>
-      <p className="evidence">AI bahosi taxminiy va rasmiy imtihon natijasi emas.</p>
       <div className="row">
         {Object.entries(ev.bands).map(([k, v]) => <span key={k} className="pill">{LABEL[k] ?? k}: <b>{v === null ? 'baholanmaydi' : v.toFixed(1)}</b></span>)}
       </div>

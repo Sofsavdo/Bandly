@@ -73,7 +73,7 @@ function PlanBody() {
   const update = (np: PlanPrefs) => { setPrefs(np); savePrefs(np); };
   return (
     <section className="card">
-      <h3><CalendarCheck size={18} /> Bugungi reja <span className="pill">taxminiy · {plan.reduce((s, t) => s + t.minutes, 0)} daqiqa</span></h3>
+      <h3><CalendarCheck size={18} /> Bugungi reja <span className="pill">{plan.reduce((s, t) => s + t.minutes, 0)} daqiqa</span></h3>
       <p className="row">
         <span className="pill">Maqsad: {GOALS.find((g) => g.id === prefs.goal)!.labelUz}</span>
         <span className="pill">Kuniga {prefs.minutes} daq</span>
@@ -96,7 +96,7 @@ function PlanBody() {
       {load.suggestMore && <p className="muted" style={{ fontSize: 14 }}>Oxirgi {rv.days} kunda rejaning {Math.round((rv.rate ?? 0) * 100)}% ini bajardingiz — zo‘r! Xohlasangiz, “Rejani sozlash”da kunlik vaqtni oshiring.</p>}
       {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>Ko‘nikmalar tekshiruvi bo‘yicha {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(' va ')} umumiy darajangizdan past — rejada unga ko‘proq joy beriladi.</p>}
       {prefs.goal === 'sat' && <a className="path-step" href="#/exam"><b>SAT mashqi</b><span>Imtihon → SAT: Reading and Writing va Math savollari</span></a>}
-      {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>CEFR Multilevel</b><span>Imtihon → CEFR: format va yozma ish mashqi (rasmiy so‘z hajmida)</span></a>}
+      {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>CEFR Multilevel</b><span>Imtihon → CEFR: format va yozma ish mashqi</span></a>}
       {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>Xatolar ustida ishlash · {mistakesDue} ta</b><span>Avval qilgan xatolaringiz takrorlash vaqti keldi — eng foydali 5 daqiqa.</span></a>}
       {plan.length === 0 && <p className="muted">Bugun uchun yangi vazifa topilmadi. Grammar bo‘limida mashq qilib ko‘ring.</p>}
       <div className="stack">

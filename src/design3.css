@@ -498,3 +498,42 @@ html, body { overflow-x: clip; }
   .exam-tabs { margin-bottom: 8px; }
   .exam-tabs button { height: 40px; }
 }
+
+/* ---------- AI ustoz: ovozli suhbat ekrani ---------- */
+.tutor-call { position: relative; display: flex; flex-direction: column; border-radius: var(--r-xl); background: linear-gradient(180deg, var(--lilac-50), var(--surface) 60%); box-shadow: var(--shadow-1); padding: 18px; min-height: min(640px, calc(100dvh - 150px)); }
+.tutor-call.idle-call { align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 36px 20px; }
+.tutor-call.idle-call h2 { margin: 8px 0 0; } .tutor-call.idle-call p { color: var(--ink-2); max-width: 420px; margin: 0 0 8px; }
+.tutor-orb { position: relative; display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #a996ff, var(--brand) 60%, var(--brand-700)); color: #fff; font-family: var(--display); font-weight: 700; font-size: 52px; box-shadow: 0 24px 50px -20px color-mix(in srgb, var(--brand) 80%, transparent); }
+.tutor-orb.sm { width: 48px; height: 48px; font-size: 20px; box-shadow: none; flex: none; }
+.tutor-orb::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; border: 3px solid transparent; }
+.tutor-orb.speaking::after { border-color: var(--peach); animation: pulse 1s ease-out infinite; }
+.tutor-orb.listening::after { border-color: var(--mint); animation: pulse 1.2s ease-out infinite; }
+.tutor-orb.thinking { animation: bm-pulse 1.2s ease-in-out infinite; }
+.tutor-top { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-2); }
+.tutor-top .grow { flex: 1; min-width: 0; } .tutor-top b { display: block; } .tutor-top small { color: var(--muted); font-weight: 600; }
+.tutor-top .seg button { padding: 7px 12px; height: 32px; }
+.tutor-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 14px 2px; min-height: 220px; max-height: 52dvh; }
+.bubble2 { max-width: 86%; padding: 11px 15px; border-radius: 20px; font-size: 15.5px; line-height: 1.45; }
+.bubble2.coach { align-self: flex-start; background: var(--surface); box-shadow: var(--shadow-1); border-bottom-left-radius: 6px; }
+.bubble2.learner { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 6px; }
+.bubble2.ghost { opacity: .6; }
+.bubble2 .fix { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 13.5px; color: var(--ink-2); }
+.bubble2 .fix s { color: var(--red); } .bubble2 .fix b { color: var(--ok-ink); }
+.tutor-err { color: var(--red); font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tutor-type { display: flex; gap: 8px; margin-bottom: 10px; } .tutor-type input { flex: 1; min-width: 0; }
+.tutor-ctrl { display: flex; align-items: center; justify-content: center; gap: 18px; padding-top: 8px; }
+.mic-big { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--inv); color: var(--on-inv); cursor: pointer; box-shadow: 0 16px 30px -12px rgba(20,22,43,.55); transition: transform .12s; }
+.mic-big.on { background: var(--coral); color: #fff; animation: bm-pulse 1.2s ease-in-out infinite; }
+.mic-big:disabled { opacity: .5; }
+.icon-btn.end { background: var(--coral-50); color: var(--red); }
+.topic-card { position: relative; display: flex; flex-direction: column; gap: 2px; max-width: 520px; padding: 16px 56px 16px 18px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-1); }
+.topic-card small { color: var(--muted); font-weight: 650; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+.topic-card b { font-family: var(--display); font-size: 19px; letter-spacing: -.02em; }
+.topic-card span { color: var(--ink-2); font-size: 14px; }
+.topic-card .icon-btn { position: absolute; right: 12px; top: 12px; width: 36px; height: 36px; box-shadow: none; background: var(--surface-2); }
+@media (max-width: 979px) {
+  .tutor-call { min-height: calc(100dvh - 210px); padding: 14px; }
+  .tutor-log { max-height: none; min-height: 0; }
+  .tutor-call:not(.idle-call) { height: calc(100dvh - 210px); }
+}
+.challenge-start .seg button { padding: 7px 11px; font-size: 13.5px; }

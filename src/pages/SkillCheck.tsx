@@ -68,7 +68,6 @@ export default function SkillCheck() {
         <h2>Ko‘nikmalar tekshiruvi</h2><Illo kind="headphones" size={124} />
         <p>Reading va Listening darajangizni alohida baholaydi.</p>
         <p className="row"><span className="pill">To‘plam: {set.level}</span><span className="pill">~10 daqiqa</span>{p.level ? <span className="pill" style={{ whiteSpace: 'normal' }}>Daraja testi: {p.level}</span> : <a className="btn sm" href="#/placement">Avval daraja testi</a>}</p>
-        <p className="muted" style={{ fontSize: 13 }}>Natija taxminiy (pilot, metodist tekshiruvi kutilmoqda): 4 savoldan kamida 3 tasi to‘g‘ri bo‘lsa — {set.level}, aks holda bir pog‘ona past deb olinadi. Bu rasmiy CEFR yoki IELTS natijasi emas.</p>
         {phase === 'intro' && <button className="btn primary" onClick={() => setPhase('reading')}>Boshlash <ArrowRight size={14} /></button>}
       </section>
 
@@ -88,7 +87,6 @@ export default function SkillCheck() {
           <h3><Headphones size={18} /> Listening · {set.listening.title}</h3>
           {tts ? (
             <>
-              <p className="muted">Matnni {MAX_PLAYS} martagacha eshitishingiz mumkin. Ovoz brauzer sintezatori orqali (sifati qurilmaga bog‘liq).</p>
               <button className="btn" disabled={plays >= MAX_PLAYS || playing} onClick={() => void play()}><Play size={14} /> {playing ? 'O‘qilmoqda…' : `Eshitish (${MAX_PLAYS - plays} marta qoldi)`}</button>
               <Questions items={set.listening.questions} answers={lAns} show={false} onPick={(i, v) => setLAns((a) => { const n = [...a]; n[i] = v; return n; })} />
               <button className="btn primary" disabled={plays === 0 || lAns.filter((x) => x !== undefined).length < set.listening.questions.length} onClick={finishListening}>Natijani ko‘rish</button>
