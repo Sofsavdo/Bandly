@@ -16,7 +16,7 @@ export function SignOutDialog({ onClose }: { onClose: () => void }) {
           <button className="icon-btn" aria-label="Yopish" onClick={onClose}><X size={18} /></button>
         </div>
         {acc
-          ? <p>Siz <b>{acc.nickname}</b> hisobidasiz. Obuna, XP va reyting hisobingizda saqlanadi.</p>
+          ? <p>Siz <b>{acc.nickname}</b> hisobidasiz. XP, darslar, natijalar va obuna hisobingizda saqlanadi: chiqqaningizda ular bu qurilmadan olinadi va qayta kirganingizda (istalgan qurilmada) qaytadi.</p>
           : <p>Siz hisobga kirmagansiz: progressingiz faqat shu qurilmada saqlangan.</p>}
         {acc && !acc.tg && (
           <p className="notice">Bu hisob Telegram’ga bog‘lanmagan. Keyin qayta kirish uchun <b>hisob kodi</b> kerak bo‘ladi — chiqishdan oldin uni saqlab qo‘ying.{' '}
@@ -24,10 +24,12 @@ export function SignOutDialog({ onClose }: { onClose: () => void }) {
           </p>
         )}
         <div className="stack so-actions">
-          {acc && <button className="btn" onClick={() => signOut(false)}><LogOut size={16} /> <span>Hisobdan chiqish<small>Darslar progressi shu qurilmada qoladi</small></span></button>}
-          <button className="btn danger" onClick={() => { if (window.confirm(acc ? 'Hisobdan chiqib, bu qurilmadagi darslar progressi, natijalar va xatolar o‘chirilsinmi?' : 'Bu qurilmadagi barcha progress, XP va natijalar o‘chiriladi. Hisob ochilmagani uchun ularni qaytarib bo‘lmaydi. Davom etasizmi?')) signOut(true); }}>
-            <Trash2 size={16} /> <span>{acc ? 'Chiqish va qurilmani tozalash' : 'Qurilmani tozalash'}<small>Sayt yangi foydalanuvchidagidek ochiladi</small></span>
-          </button>
+          {acc
+            ? <button className="btn primary" onClick={() => void signOut(false)}><LogOut size={16} /> <span>Hisobdan chiqish<small>Progress hisobda saqlanadi</small></span></button>
+            : <button className="btn danger" onClick={() => { if (window.confirm('Bu qurilmadagi barcha progress, XP va natijalar o‘chiriladi. Hisob ochilmagani uchun ularni qaytarib bo‘lmaydi. Davom etasizmi?')) void signOut(true); }}>
+              <Trash2 size={16} /> <span>Qurilmani tozalash<small>Sayt yangi foydalanuvchidagidek ochiladi</small></span>
+            </button>}
+          {!acc && <p className="muted" style={{ fontSize: 13 }}>Progressni saqlab qolmoqchi bo‘lsangiz, avval hisob oching: hozirgi natijalaringiz unga yoziladi.</p>}
         </div>
       </div>
     </>

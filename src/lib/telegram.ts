@@ -38,7 +38,7 @@ export async function bootTelegram(): Promise<void> {
   window.addEventListener('hashchange', syncBack); syncBack();
   // Avtomatik kirish (Telegram ichida parol ham, tugma ham kerak emas)
   if (!getAccount() || !sessionStorage.getItem('bandly.tg.auth')) {
-    try { await loginTelegram('webapp', wa.initData); sessionStorage.setItem('bandly.tg.auth', '1'); } catch { /* server Telegram'ni hali sozlamagan bo'lishi mumkin — sayt baribir ishlaydi */ }
+    try { sessionStorage.setItem('bandly.tg.auth', '1'); await loginTelegram('webapp', wa.initData); } catch { try { sessionStorage.removeItem('bandly.tg.auth'); } catch { /* */ } /* server Telegram'ni hali sozlamagan bo'lishi mumkin — sayt baribir ishlaydi */ }
   }
 }
 

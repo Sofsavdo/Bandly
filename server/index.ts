@@ -1,12 +1,12 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, aiCostSummary, byToken, createDb, loginTelegram, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_MAX, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
-import { PERIODS, TRACKS, priceFor } from './pricing';
+import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
@@ -108,6 +108,11 @@ createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, join(db, String(b.nickname ?? '')));
     }
+    if (url.pathname === '/api/progress') {
+      const token = String(req.headers['x-token'] ?? '');
+      if (req.method === 'GET') return send(res, 200, getProgress(db, token));
+      if (req.method === 'PUT') { const b = await readJson(req, PROGRESS_MAX + 4096); return send(res, 200, putProgress(db, token, b.data, Number(b.rev))); }
+    }
     if (req.method === 'POST' && url.pathname === '/api/sync') {
       const b = await readJson(req);
       return send(res, 200, sync(db, String(b.token ?? ''), Number(b.xp), Number(b.streak)));
@@ -197,7 +202,7 @@ createServer(async (req, res) => {
     }
     // ---------------- To'lov (Hamyon) ----------------
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
-      return send(res, 200, { enabled: !!hapi, demo: DEMO, periods: PERIODS.map((p) => ({ days: p.days, label: p.label, prices: Object.fromEntries(TRACKS.map((t) => [t, priceFor(t, p.days)])) })) });
+      return send(res, 200, { enabled: !!hapi, demo: DEMO, periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
     if (req.method === 'GET' && url.pathname === '/api/me') return send(res, 200, entitlements(db, String(req.headers['x-token'] ?? '')));
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {

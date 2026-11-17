@@ -402,7 +402,7 @@ ins { color: var(--ok); text-decoration: none; font-weight: 700; background: col
 .pay-steps { margin: 8px 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; line-height: 1.6; }
 .paid-ico { width: 68px; height: 68px; border-radius: 50%; background: var(--green-50); color: var(--ok); display: inline-grid; place-items: center; margin: 12px 0; }
 .spin { animation: spin 1s linear infinite; vertical-align: -3px; } @keyframes spin { to { transform: rotate(360deg); } }
-.price-tabs { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 4px; margin: 6px 0 14px; }
+.price-tabs { display: inline-flex; flex-wrap: wrap; background: var(--surface-2); border-radius: 999px; padding: 4px; margin: 6px 0 14px; }
 .price-tabs button { border: 0; background: transparent; padding: 8px 18px; border-radius: 999px; font-weight: 700; cursor: pointer; color: var(--ink-2); }
 .price-tabs button.on { background: var(--brand); color: #fff; }
 
@@ -671,3 +671,15 @@ html[data-tg='1'] .site-footer, html[data-tg='1'] .header-cta { display: none; }
 .so-actions .btn { width: 100%; justify-content: flex-start; white-space: normal; text-align: left; padding-top: 10px; padding-bottom: 10px; }
 .so-actions .btn span { display: flex; flex-direction: column; }
 .so-actions .btn small { font-weight: 500; color: var(--muted); font-size: 12.5px; }
+
+/* ---------- Tariflar ---------- */
+.plans4 { display: grid; gap: 14px; grid-template-columns: 1fr; margin: 14px 0; }
+@media (min-width: 720px) { .plans4 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1180px) { .plans4 { grid-template-columns: repeat(4, 1fr); } }
+.plans4 .plan { position: relative; margin: 0; }
+.plans4 .plan .btn { margin-top: auto; }
+.plans4 .plan.rec { border: 2px solid var(--brand); box-shadow: 0 10px 30px color-mix(in srgb, var(--brand) 18%, transparent); }
+.rec-badge { position: absolute; top: -12px; right: 16px; display: inline-flex; align-items: center; gap: 5px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
+.price-tabs button small { font-size: 11px; font-weight: 700; color: var(--green); }
+.price-tabs button.on small { color: inherit; opacity: .85; }
+ul.plain { margin: 0; padding-left: 18px; } ul.plain li { margin: 4px 0; font-size: 14.5px; }

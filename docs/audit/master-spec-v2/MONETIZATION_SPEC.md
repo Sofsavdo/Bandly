@@ -42,6 +42,17 @@ OD-08 (plan ↔ feature mapping), OD-09 (credits, ceilings), OD-11 (internationa
 A UZS "market benchmark" price set (39 000 / 49 000 / 89 000 / 149 000 per month; annual = 10× monthly) exists in the sources. It includes a Grammar-only tier, which the architecture rejects, so it is kept only as a competitor-price reference. Fair-use rule: even "unlimited" marketing language needs an internal limit; recommended not to sell unlimited AI voice. Credits in the source (5 min speaking = 5, 1 writing = 5, deep grammar = 1, plan = 1, objective checks = 0) are illustrative; real credit prices come from `credit_prices` and verified provider costs.
 
 ## 7. Owner pricing decision (2026-11-15) — starting tariff, subject to a 30-day price test
+
+> **Live on the site from 2026-11-17 (owner instruction "tarif rejalarni … shunga o‘zgartir").** This supersedes OD-25 item 8 for prices.
+> - **Where it is defined:** `src/config.ts` `SALE_PLANS` / `SALE_PERIODS` / `periodPrice`.
+> - **How to change a price:** set `PLAN_PRICE_GENERAL`, `PLAN_PRICE_EXAM` or `PLAN_PRICE_ALL` (monthly price in so‘m) in Railway, with no code change.
+> - **What each plan opens:**
+>   - GENERAL opens grammar;
+>   - EXAM opens exam;
+>   - ALL ACCESS opens both;
+>   - Mock Arena stays free.
+> - **Old subscriptions:** existing single-track subscriptions keep working; they are no longer sold.
+> - **Not yet enforced:** per-plan AI monthly allowances (voice minutes, assessments). AI is not connected yet; the pricing page says so.
 Source: owner message. Competitor prices quoted by the owner (Trylab 39 000 / 69 000, Flamona 43 000 / 69 000, PrepGo 82 500, Scorify 49 000 / 129 000, BandMate Pro 199 000 so‘m/month; GoPrep US App Store $19.99 / $29.99 quarter / $79.99 year) are **owner-supplied, not re-verified here [S]**.
 
 | Plan | 1 month | 3 months (≈ −10 %) | 12 months (2 months free) | USD anchor (other countries) |

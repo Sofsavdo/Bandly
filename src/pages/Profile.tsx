@@ -4,7 +4,7 @@ import { authConfig, getAccount, onAccountChange, restoreAccount } from '../lib/
 import { JoinForm } from '../components/JoinForm';
 import { SignOutDialog } from '../components/SignOutDialog';
 import { fmtDate, refreshEntitlements } from '../lib/pay';
-import { TRACK_NAME } from '../config';
+import { SALE_PLANS, TRACK_NAME } from '../config';
 import { setSound, sfx, soundOn } from '../lib/fx';
 import { LEVEL_INFO } from '../lib/levels';
 import { ACHIEVEMENTS, levelProgress, dayKey, displayStreak, repairOpen } from '../lib/game';
@@ -59,15 +59,21 @@ export default function Profile() {
             <button className="btn sm" onClick={() => setBye(true)}><LogOut size={14} /> Chiqish</button>
           </div>
         ) : <>
-          <JoinForm onJoined={(a) => setAcc(a)} text="Kirsangiz reyting, duel, AI ustoz va obuna hisobingizga yoziladi va boshqa qurilmada ham ochiladi." />
+          <JoinForm onJoined={(a) => setAcc(a)} text="Kirsangiz hozirgi XP, darslar va natijalaringiz hisobingizga yoziladi va boshqa qurilmada ham ochiladi." />
           <button className="btn sm danger" style={{ marginTop: 10 }} onClick={() => setBye(true)}><LogOut size={14} /> Qurilmani tozalash va boshidan boshlash</button>
         </>}
         {bye && <SignOutDialog onClose={() => setBye(false)} />}
         {acc && tgOn && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text="Hisobingizni Telegram'ga bog‘lang: XP va obuna saqlanadi, keyin istalgan qurilmada Telegram orqali kirasiz." /></div>}
         <h4 style={{ margin: '14px 0 4px' }}>Obunalar</h4>
-        {(['exam', 'grammar', 'mocks'] as const).map((t) => (
-          <p key={t} style={{ margin: '4px 0' }}>{TRACK_NAME[t]}: {p.planUntil[t] && p.planUntil[t]! > Date.now() ? <b className="ok">faol, {fmtDate(p.planUntil[t]!)} gacha</b> : p.plan[t] ? <span>demo</span> : <span className="evidence">obuna yo‘q</span>}</p>
-        ))}
+        {(() => {
+          const now = Date.now(); const u = p.planUntil;
+          const on = (t: 'exam' | 'grammar') => !!u[t] && u[t]! > now;
+          const id = on('exam') && on('grammar') ? 'all' : on('exam') ? 'exam' : on('grammar') ? 'general' : null;
+          const pl = SALE_PLANS.find((x) => x.id === id);
+          if (pl) { const until = Math.min(...pl.tracks.filter((t) => t !== 'mocks').map((t) => u[t]!)); return <p style={{ margin: '4px 0' }}>Tarif: <b className="ok">{pl.title}</b>, {fmtDate(until)} gacha</p>; }
+          const demo = (['exam', 'grammar'] as const).filter((t) => p.plan[t]);
+          return <p style={{ margin: '4px 0' }}>{demo.length ? <>Demo: {demo.map((t) => TRACK_NAME[t]).join(', ')} (faqat shu qurilmada)</> : <span className="evidence">Bepul tarif.</span>} <a href="#/pricing">Tariflar</a></p>;
+        })()}
         <details className="fold" style={{ marginTop: 10 }}>
           <summary>Eski hisob kodi</summary>
           {acc && !acc.tg && <div className="row"><button className="btn sm" onClick={async () => { await navigator.clipboard.writeText(acc.token).catch(() => {}); setMsg('Hisob kodi nusxalandi. Xavfsiz joyda saqlang, hech kimga bermang.'); }}>Hisob kodini nusxalash</button></div>}

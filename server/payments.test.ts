@@ -2,18 +2,25 @@ import assert from 'node:assert/strict';
 import { ApiError, createDb, join } from './db';
 import { HamyonError, hamyonApi, hamyonConfigFromEnv, hamyonSign, verifySign, type Created, type HamyonApi, type HamyonStatus } from './hamyon';
 import { MAX_OPEN_PER_PLAYER, applyResult, cancelPayment, createPayment, entitlements, extend, findByCallback, grant, markPrepared, reconcile, statusFor } from './payments';
-import { monthlyPrice, priceFor } from './pricing';
+import { monthlyPrice, priceFor, tracksOf } from './pricing';
 
 const DAY = 86_400_000;
 const T0 = Date.UTC(2026, 0, 1);
 const cfg = { shopId: '77', shopKey: 'secret', baseUrl: 'https://h.test' };
 
 // ---- Narx ----
-assert.equal(priceFor('exam', 30, {}), 149_000);
-assert.equal(priceFor('grammar', 90, {}), 198_000, '3 oy = 2.5 oylik, 1000 ga yaxlitlangan');
-assert.equal(priceFor('mocks', 30, { PRICE_MOCKS: '120000' }), 120_000);
-assert.equal(monthlyPrice('exam', { PRICE_EXAM: 'abc' }), 149_000, 'noto‘g‘ri env e’tiborsiz');
+// Owner tariflari (MONETIZATION_SPEC §7): 1 oy / 3 oy (−10%, mingga pastga) / 12 oy (10 × oylik)
+assert.deepEqual([30, 90, 365].map((d) => priceFor('general', d, {})), [69_000, 186_000, 690_000]);
+assert.deepEqual([30, 90, 365].map((d) => priceFor('exam', d, {})), [99_000, 267_000, 990_000]);
+assert.deepEqual([30, 90, 365].map((d) => priceFor('all', d, {})), [129_000, 348_000, 1_290_000]);
+assert.equal(priceFor('general', 30, { PLAN_PRICE_GENERAL: '59000' }), 59_000, 'narx Railway’dan almashtiriladi');
+assert.equal(monthlyPrice('exam', { PLAN_PRICE_EXAM: 'abc' }), 99_000, 'noto‘g‘ri env e’tiborsiz');
+assert.equal(monthlyPrice('exam', { PRICE_EXAM: '149000' }), 99_000, 'eski PRICE_* o‘zgaruvchilari yangi tariflarga ta’sir qilmaydi');
 assert.throws(() => priceFor('exam', 7, {}));
+assert.deepEqual(tracksOf('all'), ['exam', 'grammar', 'mocks']);
+assert.deepEqual(tracksOf('general'), ['grammar', 'mocks']);
+assert.deepEqual(tracksOf('grammar'), ['grammar'], 'eski to‘lov yozuvi');
+assert.deepEqual(tracksOf('hack'), []);
 
 // ---- Imzo ----
 assert.equal(hamyonSign(cfg, 'p1', '79000'), hamyonSign(cfg, 'p1', 79000));
@@ -62,11 +69,11 @@ const db = createDb(':memory:');
 const a = join(db, 'Ali', T0), b = join(db, 'Vali', T0);
 const f = fake();
 
-const pay1 = await createPayment(db, f.api, a.token, 'grammar', 30, T0, {});
+const pay1 = await createPayment(db, f.api, a.token, 'general', 30, T0, { PLAN_PRICE_GENERAL: '79000' });
 assert.equal(pay1.status, 'pending'); assert.equal(pay1.pay_amount, 79_000); assert.equal(pay1.card, '8600111122223333'); assert.equal(pay1.expires_in, 300);
 assert.equal(entitlements(db, a.token, T0).subs.grammar, null, 'to‘lovdan oldin obuna yo‘q');
 // Boshqa foydalanuvchi bir xil summa so'rasa, 1 so'm qo'shiladi
-const pay2 = await createPayment(db, f.api, b.token, 'grammar', 30, T0, {});
+const pay2 = await createPayment(db, f.api, b.token, 'general', 30, T0, { PLAN_PRICE_GENERAL: '79000' });
 assert.equal(pay2.pay_amount, 79_001);
 // Boshqa odamning to'lovini ko'ra olmaydi
 await assert.rejects(statusFor(db, f.api, '77', b.token, pay1.id, T0), (e: ApiError) => e.status === 404);
@@ -84,7 +91,7 @@ assert.equal(applyResult(db, pay1.id, 'paid', { paidAmount: 79_000 }, T0 + 5000)
 assert.equal(entitlements(db, a.token, T0 + 3000).subs.grammar, T0 + 2000 + 30 * DAY);
 assert.equal(applyResult(db, 'nope', 'paid', {}), 'missing');
 // Obuna tugamay turib yana sotib olinsa, muddat ustiga qo'shiladi
-const pay3 = await createPayment(db, f.api, a.token, 'grammar', 90, T0 + 10_000, {});
+const pay3 = await createPayment(db, f.api, a.token, 'general', 90, T0 + 10_000, { PLAN_PRICE_GENERAL: '79000' });
 applyResult(db, pay3.id, 'paid', { paidAmount: pay3.pay_amount! }, T0 + 20_000);
 assert.equal(entitlements(db, a.token, T0 + 30_000).subs.grammar, T0 + 2000 + 30 * DAY + 90 * DAY);
 // Tugagan obuna ko'rinmaydi
@@ -103,12 +110,12 @@ assert.equal(applyResult(db, pay4.id, 'cancel', {}), 'already');
 
 // Cheklov: bir vaqtda ko'p ochiq to'lov ochib bo'lmaydi
 const c = join(db, 'Gulnora', T0);
-for (let i = 0; i < MAX_OPEN_PER_PLAYER; i++) await createPayment(db, f.api, c.token, 'mocks', 30, T0, {});
-await assert.rejects(createPayment(db, f.api, c.token, 'mocks', 30, T0, {}), (e: ApiError) => e.status === 429);
+for (let i = 0; i < MAX_OPEN_PER_PLAYER; i++) await createPayment(db, f.api, c.token, 'general', 30, T0, {});
+await assert.rejects(createPayment(db, f.api, c.token, 'general', 30, T0, {}), (e: ApiError) => e.status === 429);
 // Noto'g'ri kirishlar
 await assert.rejects(createPayment(db, f.api, c.token, 'hack', 30, T0, {}), (e: ApiError) => e.status === 400);
-await assert.rejects(createPayment(db, f.api, c.token, 'mocks', 1, T0, {}), (e: ApiError) => e.status === 400);
-await assert.rejects(createPayment(db, f.api, 'yolgon', 'mocks', 30, T0, {}), (e: ApiError) => e.status === 401);
+await assert.rejects(createPayment(db, f.api, c.token, 'general', 1, T0, {}), (e: ApiError) => e.status === 400);
+await assert.rejects(createPayment(db, f.api, 'yolgon', 'general', 30, T0, {}), (e: ApiError) => e.status === 401);
 
 // Hamyon create yiqilsa: to'lov 'failed', foydalanuvchiga tushunarli xato
 const d = join(db, 'Dilnoza', T0);
@@ -129,9 +136,9 @@ async function one(status: HamyonStatus, nick: string) {
   const settled = await reconcile(d2, fake({ status }).api, '77', T0 + 10 * 60_000);
   return { settled, sub: entitlements(d2, u.token, T0 + 11 * 60_000).subs.exam, id: pp.id, d2 };
 }
-const paid = await one({ status: 'paid', amount: 149_000, shop_id: '77' }, 'Farid');
+const paid = await one({ status: 'paid', amount: 99_000, shop_id: '77' }, 'Farid');
 assert.equal(paid.settled, 1); assert.ok(paid.sub, 'yo‘qolgan callback reconcile orqali yetkazildi');
-const otherShop = await one({ status: 'paid', amount: 149_000, shop_id: '999' }, 'Hasan');
+const otherShop = await one({ status: 'paid', amount: 99_000, shop_id: '999' }, 'Hasan');
 assert.equal(otherShop.settled, 0); assert.equal(otherShop.sub, null, 'boshqa do‘kon javobi e‘tiborsiz');
 const wrongAmt = await one({ status: 'paid', amount: 1000, shop_id: '77' }, 'Jamol');
 assert.equal(wrongAmt.sub, null, 'summa mos kelmasa yetkazilmaydi');
@@ -139,7 +146,7 @@ const expired = await one({ status: 'cancel', amount: 0, shop_id: '77' }, 'Karim
 assert.equal(expired.settled, 1); assert.equal(expired.sub, null);
 assert.equal((expired.d2.prepare('SELECT status FROM payments WHERE id = ?').get(expired.id) as { status: string }).status, 'cancelled');
 // Juda yangi to'lov (2 daqiqadan kam) reconcile da tekshirilmaydi
-{ const d3 = createDb(':memory:'); const u = join(d3, 'Lola', T0); await createPayment(d3, f.api, u.token, 'exam', 30, T0, {}); assert.equal(await reconcile(d3, fake({ status: { status: 'paid', amount: 149_000, shop_id: '77' } }).api, '77', T0 + 30_000), 0); }
+{ const d3 = createDb(':memory:'); const u = join(d3, 'Lola', T0); await createPayment(d3, f.api, u.token, 'exam', 30, T0, {}); assert.equal(await reconcile(d3, fake({ status: { status: 'paid', amount: 99_000, shop_id: '77' } }).api, '77', T0 + 30_000), 0); }
 const h1 = join(db, 'Hasan', T0);
 const ph = await createPayment(db, f.api, h1.token, 'exam', 30, T0, {});
 
@@ -154,4 +161,19 @@ assert.equal(until, T0 + 30 * DAY);
 assert.throws(() => grant(db, 'yoq', 'mocks', 30), (e: ApiError) => e.status === 404);
 assert.throws(() => grant(db, 'hasan', 'mocks', 9999), (e: ApiError) => e.status === 400);
 assert.equal(extend(db, 1, 'exam', 1, T0) > T0, true);
+// ALL ACCESS bitta to'lov bilan uchala bo'limni ochadi; entitlements tarifni ko'rsatadi
+{
+  const d4 = createDb(':memory:'); const u = join(d4, 'Nodira', T0);
+  const pa = await createPayment(d4, fake({}).api, u.token, 'all', 90, T0, {});
+  assert.equal(pa.amount, 348_000); assert.equal(pa.track, 'all');
+  assert.equal(applyResult(d4, pa.id, 'paid', { paidAmount: pa.pay_amount! }, T0 + 1000), 'delivered');
+  const e = entitlements(d4, u.token, T0 + 2000);
+  assert.deepEqual([e.subs.exam, e.subs.grammar, e.subs.mocks].map((x) => x === T0 + 1000 + 90 * DAY), [true, true, true]);
+  assert.equal(e.plan, 'all');
+  const v = join(d4, 'Bek', T0); grant(d4, 'Bek', 'exam', 30, T0);
+  assert.equal(entitlements(d4, v.token, T0).plan, 'exam');
+  grant(d4, 'Bek', 'general', 30, T0);
+  assert.equal(entitlements(d4, v.token, T0).plan, 'all', 'exam + general = hammasi');
+  await assert.rejects(createPayment(d4, fake({}).api, u.token, 'grammar', 30, T0, {}), (er: ApiError) => er.status === 400, 'eski bo‘limni alohida sotib bo‘lmaydi');
+}
 console.log('payments.test: OK');

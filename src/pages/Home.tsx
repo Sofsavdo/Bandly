@@ -1,6 +1,6 @@
 import { ArrowRight, Bot, Clapperboard, PenLine, Compass, Map as MapIcon, Flame, Mic, Plus, Puzzle, Send, Star, Target, Timer, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { authConfig } from '../lib/account';
+import { authConfig, getAccount } from '../lib/account';
 import { ALL_LESSONS } from '../content/lessons';
 import { Mascot } from '../components/Mascot';
 import { DailyCards } from '../components/DailyCards';
@@ -28,6 +28,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   const lvl = p.level;
   const isNew = preview || (!lvl && p.xp === 0);
   const [bot, setBot] = useState<string | null>(null);
+  const signedIn = !!getAccount();
   useEffect(() => { void authConfig().then((c) => setBot(c.telegram?.bot ?? null)); }, []);
   const tests = readingTests.length + listeningTests.length;
   const daysLeft = p.examDate ? Math.ceil((new Date(p.examDate).getTime() - Date.now()) / 86400000) : null;
@@ -96,6 +97,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <a className="btn lg" href="#/placement">Testni boshlash <ArrowRight size={18} /></a>
         </div>
       )}
+      {!signedIn && <p className="notice">Progressingiz hozir faqat shu qurilmada. <a href="#/profile">Hisob oching</a> — XP va darslaringiz hisobga yoziladi va boshqa qurilmada ham ochiladi.</p>}
       <PlanCard />
       <QuestsCard />
       <ProgressCard />
