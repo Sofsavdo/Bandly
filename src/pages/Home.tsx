@@ -17,6 +17,7 @@ import { LEVEL_INFO } from '../lib/levels';
 import { dayKey, displayStreak, levelProgress } from '../lib/game';
 import { loadProgress, nextLesson } from '../lib/lessons';
 import { openExamTab } from '../lib/examTab';
+import { loadAnswers } from '../lib/onboarding';
 import { L } from '../i18n';
 
 const faq: [string, string][] = [
@@ -34,6 +35,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   const acc = getAccount();
   useEffect(() => { void authConfig().then((c) => setBot(c.telegram?.bot ?? null)); }, []);
   const tests = readingTests.length + listeningTests.length;
+  const onboarded = !!loadAnswers();
 
   if (isNew) return (
     <div>
@@ -43,8 +45,10 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <h1>{L('Ingliz tilini')} <span className="hl">{L('o‘yin kabi')}</span>  {L('o‘rganing')}</h1>
           <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
           <div className="cta">
-            <a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a>
-            <a className="btn lg" href="#/mocks">{L('Bepul mock test')}</a>
+            {onboarded
+              ? <a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a>
+              : <a className="btn primary lg" href="#/start">{L('Shaxsiy reja tuzish')} <ArrowRight size={18} /></a>}
+            <a className="btn lg" href={onboarded ? '#/start' : '#/placement'}>{onboarded ? L('Mening rejam') : L('Darajamni aniqlash')}</a>
           </div>
           <div className="w-proof">
             <div><b>{ALL_LESSONS.length}</b><span>{L('dars')}</span></div>

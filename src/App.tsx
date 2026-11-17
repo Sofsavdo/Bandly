@@ -13,6 +13,7 @@ import Exam from './pages/Exam';
 import Mocks from './pages/Mocks';
 import Pricing from './pages/Pricing';
 import Placement from './pages/Placement';
+import Start from './pages/Start';
 import Practice from './pages/Practice';
 import FullExam from './pages/FullExam';
 import Homework from './pages/Homework';
@@ -74,6 +75,7 @@ const routes: Record<string, () => ReactNode> = {
   '#/duel': () => <DuelHub />,
   '#/profile': () => <Profile />,
   '#/placement': () => <Placement />,
+  '#/start': () => <Start />,
   '#/practice': () => <Practice />,
   '#/homework': () => <Homework />,
   '#/results': () => <Results />,
