@@ -7,7 +7,7 @@ import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
-import { NAV_GROUPS, SIDE_NAV, PROFILE, isActive } from './nav';
+import { NAV_GROUPS, PROFILE, isActive } from './nav';
 
 function Stats() {
   const t = useT();
@@ -43,13 +43,19 @@ export function Header({ hash }: { hash: string }) {
         <div className="container">
           <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={36} />{BRAND.name}</a>
           <nav className="nav" aria-label={t('nav.main')}>
-            {SIDE_NAV.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''}><n.icon size={16} />{t(n.label)}</a>)}
+            {NAV_GROUPS.map((g) => (
+              <div key={g.id} className="nav-group">
+                {g.id !== 'main' && <span className="nav-label">{t(g.label)}</span>}
+                {g.items.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''} aria-current={isActive(hash, n.href) ? 'page' : undefined}><n.icon size={16} />{t(n.label)}</a>)}
+              </div>
+            ))}
+            {staff && <a href="#/studio" className={isActive(hash, '#/studio') ? 'active' : ''}><Pencil size={16} />Metodist kabineti</a>}
           </nav>
           <div className="header-right">
             <Stats />
             <a className="btn primary sm header-cta" href="#/pricing">{t('cta.plans')}</a>
             <a className="icon-btn desk-only" href={PROFILE.href} aria-label={t('nav.profile')}><User size={18} /></a>
-            <button className="icon-btn menu-btn" aria-label={t('nav.menu')} onClick={() => setOpen(true)}><Menu size={20} /><span className="lbl">Barcha bo‘limlar</span></button>
+            <button className="icon-btn menu-btn" aria-label={t('nav.menu')} onClick={() => setOpen(true)}><Menu size={20} /></button>
           </div>
         </div>
       </header>

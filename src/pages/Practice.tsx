@@ -1,7 +1,7 @@
+import type { Mood } from '../components/Mascot';
 import { ArrowRight, CheckCircle2, CircleAlert, Lightbulb, Sparkles, Target } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { LockCard } from '../components/Gate';
-import { Mascot, type Mood } from '../components/Mascot';
 import { exercises, type Exercise, type Kind } from '../content/practice';
 import { CEFR, LEVEL_INFO, fits, type Cefr } from '../lib/levels';
 import { check, xpFor, type DiffOp, type Result } from '../lib/practice';
@@ -147,7 +147,7 @@ export default function Practice() {
       <div>
         <div className="stage">
           <div className="stage-center">
-            <Mascot mood={good >= queue.length / 2 ? 'happy' : 'sad'} size={110} />
+            <Illo kind="pencil" size={96} />
             <div className="score">{good} / {queue.length}</div>
             <p className="lead">+{xp} XP{good === queue.length ? ' · mukammal natija: +15 XP bonus' : ''}</p>
           </div>
@@ -176,7 +176,6 @@ export default function Practice() {
         </div>
         <div className="bar" style={{ margin: '12px 0' }}><i style={{ width: `${((i + (res ? 1 : 0)) / queue.length) * 100}%` }} /></div>
         <div className="prompt-row">
-          <Mascot mood={mood} size={84} />
           <div>
             <p className="evidence" style={{ margin: 0 }}>{cur!.kind === 'translate' ? 'Inglizchaga tarjima qiling' : cur!.kind === 'build' ? "So'zlardan to'g'ri gap tuzing" : cur!.promptUz}</p>
             {cur!.kind === 'translate' || cur!.kind === 'build' ? <p className="ptext">{cur!.promptUz}</p> : null}

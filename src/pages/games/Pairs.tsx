@@ -1,6 +1,7 @@
+import type { Mood } from '../../components/Mascot';
 import { useEffect, useRef, useState } from 'react';
+import { Illo } from '../../components/Illo';
 import { vocabById, vocabForLevel } from '../../content/vocab';
-import { Mascot, type Mood } from '../../components/Mascot';
 import { LockCard } from '../../components/Gate';
 import { fmt } from '../../components/hooks';
 import { pickSession } from '../../lib/srs';
@@ -68,7 +69,7 @@ export default function Pairs() {
   if (phase === 'intro') {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot mood="idle" size={110} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
         <h2>Juftlik</h2>
         <p>Chapdagi inglizcha so‘zni tanlang, keyin o‘ng tomondan uning o‘zbekcha ma’nosini toping. Tez va xatosiz bo‘lsa ko‘proq XP.</p>
         <button className="btn primary" onClick={start}>Boshlash</button>
@@ -80,7 +81,7 @@ export default function Pairs() {
     const total = Object.values(mistakes).reduce((a, b) => a + b, 0);
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot mood="happy" size={110} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
         <h2>Hammasi topildi!</h2>
         <p>Vaqt: {fmt(elapsed)} · Xatolar: {total} · <b>+{earned} XP</b></p>
         <div className="row" style={{ justifyContent: 'center' }}>
@@ -95,7 +96,6 @@ export default function Pairs() {
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <span className="timer">{fmt(elapsed)}</span>
-        <Mascot mood={mood} size={56} />
         <span className="pill">{matched.length} / {words.length}</span>
       </div>
       <div className="pairs" style={{ marginTop: 10 }}>

@@ -186,7 +186,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
         )}
         <span className="sr-only" aria-live="polite">{announce}</span>
         {!submitted && <span className="pill" title="Belgilangan savollar"><Flag size={13} /> {attempt.flags.length}</span>}
-        {!submitted && <button type="button" className="btn sm" onClick={() => setNotesOpen((o) => !o)} aria-expanded={notesOpen}><NotebookPen size={15} /> Eslatma</button>}
+        {!submitted && <button type="button" className="btn sm" onClick={() => setNotesOpen((o) => !o)} aria-expanded={notesOpen}><NotebookPen size={15} /><span className="hide-sm">Eslatma</span></button>}
         {!submitted ? (
           <button className="btn primary sm" onClick={() => setConfirm(true)}>Topshirish</button>
         ) : (

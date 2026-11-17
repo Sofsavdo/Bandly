@@ -1,8 +1,9 @@
+import type { Mood } from '../../components/Mascot';
 import { Heart } from 'lucide-react';
+import { Illo } from '../../components/Illo';
 import { useMemo, useRef, useState } from 'react';
 import { vocabById, vocabForLevel } from '../../content/vocab';
 import { lines, pickLine } from '../../content/lines';
-import { Mascot, type Mood } from '../../components/Mascot';
 import { LockCard } from '../../components/Gate';
 import { fmt, useCountdown } from '../../components/hooks';
 import { pickSession } from '../../lib/srs';
@@ -88,7 +89,7 @@ export default function WordRush() {
   if (phase === 'intro') {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot mood="idle" size={110} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
         <h2>So‘z poygasi</h2>
         <p>60 soniyada iloji boricha ko‘p so‘zni toping. 3 ta jon bor. Ketma-ket to‘g‘ri javoblar ballni 5 martagacha oshiradi.</p>
         <p className="evidence">Takrorlash tizimi sizga hali yaxshi bilmagan so‘zlarni ko‘proq beradi.</p>
@@ -102,7 +103,7 @@ export default function WordRush() {
     const set = acc >= 80 ? lines.end.good : acc >= 50 ? lines.end.ok : lines.end.bad;
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot mood={acc >= 50 ? 'happy' : 'sad'} size={110} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
         <h2>{pickLine(set)}</h2>
         <p className="score">{score} ball</p>
         <p>To‘g‘ri: {stats.current.correct} / {stats.current.total} ({acc}%) · <b>+{earned} XP</b></p>
@@ -128,7 +129,6 @@ export default function WordRush() {
         <span className="combo">x{1 + Math.min(4, Math.floor(combo / 3))} · {score}</span>
       </div>
       <div className="hero" style={{ margin: '10px 0' }}>
-        <Mascot mood={mood} size={84} />
         <div><div className="bubble">{msg}</div></div>
       </div>
       <div className="pill">{dir === 'en' ? 'Ma’nosini toping' : 'Inglizchasini toping'}</div>

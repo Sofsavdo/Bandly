@@ -28,12 +28,14 @@
   --display: 'Outfit Variable', 'Inter Variable', system-ui, sans-serif;
   --body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --side-w: 248px;
+  --inv: #14162b; --on-inv: #ffffff; /* qora pill sirtlar: tungi rejimda oq */
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0d0e1c; --surface: #171931; --surface-2: #1e2140; --ink: #f2f3fb; --ink-2: #c1c4dc; --muted: #8e93b3;
     --line: #272a4d; --line-2: #1f2242;
     --brand-50: #262150; --lilac-50: #24204d; --butter-50: #2f2a17; --peach-50: #33231b; --coral-50: #35201d; --mint-50: #13302c; --sky-50: #182647; --pink-50: #31193a; --green-50: #12302a;
+    --inv: #ffffff; --on-inv: #14162b;
     --shadow-1: 0 1px 2px rgba(0,0,0,.3), 0 14px 34px -14px rgba(0,0,0,.6); --shadow-2: 0 2px 4px rgba(0,0,0,.35), 0 26px 56px -20px rgba(0,0,0,.7);
   }
 }
@@ -58,8 +60,8 @@ em.it { font-style: italic; font-weight: 500; }
 .btn { height: 48px; padding: 0 22px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 650; box-shadow: none; letter-spacing: -.005em; }
 .btn:hover { border-color: color-mix(in srgb, var(--ink) 40%, var(--line)); transform: translateY(-1px); }
 .btn:active { transform: translateY(1px) scale(.99); }
-.btn.primary, .btn.dark { background: var(--ink); border-color: var(--ink); color: #fff; box-shadow: 0 12px 24px -12px rgba(20,22,43,.55); }
-.btn.primary:hover, .btn.dark:hover { background: #262a4f; border-color: #262a4f; box-shadow: 0 16px 28px -12px rgba(20,22,43,.6); }
+.btn.primary, .btn.dark { background: var(--inv); border-color: var(--inv); color: var(--on-inv); box-shadow: 0 12px 24px -12px rgba(20,22,43,.55); }
+.btn.primary:hover, .btn.dark:hover { background: color-mix(in srgb, var(--inv) 86%, var(--brand)); border-color: transparent; box-shadow: 0 16px 28px -12px rgba(20,22,43,.6); }
 @media (prefers-color-scheme: dark) { .btn.primary, .btn.dark { background: #fff; border-color: #fff; color: #14162b; } .btn.primary:hover, .btn.dark:hover { background: #e9e9f6; border-color: #e9e9f6; } }
 .btn.accent { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 12px 24px -12px color-mix(in srgb, var(--brand) 80%, transparent); }
 .btn.accent:hover { background: var(--brand-600); border-color: var(--brand-600); }
@@ -73,7 +75,7 @@ em.it { font-style: italic; font-weight: 500; }
 .btn.danger { background: var(--coral-50); border-color: transparent; color: var(--red); }
 .icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--surface); box-shadow: var(--shadow-1); }
 .chipbtn { border-width: 1.5px; font-weight: 650; }
-.chipbtn.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.chipbtn.on { background: var(--inv); border-color: var(--inv); color: var(--on-inv); }
 @media (prefers-color-scheme: dark) { .chipbtn.on { background: #fff; border-color: #fff; color: #14162b; } }
 .chipbtn:hover { border-color: var(--ink); }
 
@@ -123,7 +125,7 @@ a.tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); border-
 .blob.red svg { color: var(--coral); } .blob.blue svg { color: var(--blue); } .blob.orange svg { color: var(--orange); } .blob.yellow svg { color: var(--yellow); }
 .blob.purple svg { color: var(--brand); } .blob.green svg { color: var(--teal); } .blob.ink svg { color: var(--ink); }
 @media (prefers-color-scheme: dark) { .blob { background: var(--surface-2) !important; } }
-.go { width: 42px; height: 42px; background: var(--ink); color: #fff; }
+.go { width: 42px; height: 42px; background: var(--inv); color: var(--on-inv); }
 .go svg { transform: rotate(-45deg); }
 a.tile:hover .go { transform: rotate(0) scale(1.06); }
 @media (prefers-color-scheme: dark) { .go { background: #fff; color: #14162b; } }
@@ -143,7 +145,7 @@ a.tile:hover .go { transform: rotate(0) scale(1.06); }
   .nav a { padding: 11px 14px; border-radius: 16px; font-size: 14.5px; color: var(--ink-2); gap: 12px; }
   .nav a svg { width: 19px; height: 19px; }
   .nav a:hover { background: var(--surface-2); color: var(--ink); }
-  .nav a.active { background: var(--ink); color: #fff; }
+  .nav a.active { background: var(--inv); color: var(--on-inv); }
   .nav a.active svg { color: var(--peach); }
   .header-right { margin: 0; flex-direction: column; align-items: stretch; gap: 10px; }
   .app-header .stats { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
@@ -172,7 +174,7 @@ a.tile:hover .go { transform: rotate(0) scale(1.06); }
 
 .drawer { border-radius: 30px 0 0 30px; }
 .drawer a.dlink { border-radius: 16px; }
-.drawer a.dlink.active { background: var(--ink); color: #fff; }
+.drawer a.dlink.active { background: var(--inv); color: var(--on-inv); }
 @media (prefers-color-scheme: dark) { .drawer a.dlink.active { background: #fff; color: #14162b; } }
 
 /* ---------- Brend belgisi ---------- */
@@ -187,7 +189,7 @@ svg.brandmark.talking { animation: bm-pulse 1.4s ease-in-out infinite; }
 .seg { display: inline-flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; background: var(--surface); border: 0; border-radius: 999px; padding: 5px; gap: 4px; box-shadow: var(--shadow-1); }
 .seg::-webkit-scrollbar, .tabs::-webkit-scrollbar { display: none; }
 .seg button { white-space: nowrap; flex: none; border-radius: 999px; padding: 9px 18px; font-weight: 650; }
-.seg button.on { background: var(--ink); color: #fff; box-shadow: none; }
+.seg button.on { background: var(--inv); color: var(--on-inv); box-shadow: none; }
 @media (prefers-color-scheme: dark) { .seg button.on { background: #fff; color: #14162b; } }
 .seg.seg-dark { margin-top: 10px; }
 .tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 8px; }
@@ -204,7 +206,7 @@ svg.brandmark.talking { animation: bm-pulse 1.4s ease-in-out infinite; }
 .chips::-webkit-scrollbar { display: none; }
 .chips > * { flex: none; }
 .chip { display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 18px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-weight: 650; cursor: pointer; white-space: nowrap; }
-.chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.chip.on { background: var(--inv); border-color: var(--inv); color: var(--on-inv); }
 @media (prefers-color-scheme: dark) { .chip.on { background: #fff; border-color: #fff; color: #14162b; } }
 
 /* ---------- Progress halqasi ---------- */
@@ -212,7 +214,7 @@ svg.brandmark.talking { animation: bm-pulse 1.4s ease-in-out infinite; }
 .pring > svg { position: absolute; inset: 0; transform: rotate(-90deg); }
 .pring b { font-family: var(--display); font-weight: 700; letter-spacing: -.03em; line-height: 1; }
 .pring span { display: block; font-size: 11px; color: var(--muted); font-weight: 650; }
-.pring.dark { background: var(--ink); border-radius: 50%; } .pring.dark b { color: #fff; }
+.pring.dark { background: var(--inv); border-radius: 50%; } .pring.dark b { color: var(--on-inv); }
 
 /* ---------- Haftalik ustunlar ---------- */
 .weekbars { display: grid; grid-template-columns: repeat(7, 1fr); align-items: end; gap: 8px; height: 150px; margin-top: 10px; }
@@ -220,7 +222,7 @@ svg.brandmark.talking { animation: bm-pulse 1.4s ease-in-out infinite; }
 .weekbars .wb i { position: relative; width: 100%; max-width: 38px; border-radius: 999px; background: repeating-linear-gradient(135deg, var(--surface-2) 0 6px, var(--line) 6px 8px); border: 1.5px solid var(--line); min-height: 18px; }
 .weekbars .wb.now i { background: var(--brand); border-color: var(--brand); }
 .weekbars .wb.has i { background: var(--lilac); border-color: var(--lilac); }
-.weekbars .wb i em { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 11.5px; font-weight: 700; background: var(--ink); color: #fff; padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+.weekbars .wb i em { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 11.5px; font-weight: 700; background: var(--inv); color: var(--on-inv); padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
 .weekbars .wb small { font-size: 11.5px; color: var(--muted); font-weight: 600; }
 
 /* ---------- Bosh sahifa: yangi mehmon ---------- */
@@ -357,7 +359,7 @@ a.lcard:hover { transform: translateY(-2px); }
 .gcard.g2 { background: var(--mint-50); } .gcard.g3 { background: var(--peach-50); } .gcard.g4 { background: var(--butter-50); }
 .gcard h3 { color: var(--ink); } .gcard p { color: var(--ink-2); }
 .gcard .gico { background: var(--surface); color: var(--ink); border-radius: 50%; }
-.gcard .play { background: var(--ink); color: #fff; }
+.gcard .play { background: var(--inv); color: var(--on-inv); }
 
 /* ---------- Turli bloklar: yangi palitraga moslash ---------- */
 .step { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); } .step::before { color: var(--brand); } .step h3 { color: var(--ink); } .step p { color: var(--ink-2); }
@@ -367,7 +369,7 @@ a.lcard:hover { transform: translateY(-2px); }
 .path-step { border: 0; background: var(--surface-2); border-radius: 20px; }
 a.path-step:hover { border-color: transparent; background: var(--lilac-50); }
 .plan-step { border: 0; border-radius: 20px; }
-.plan-step .n { background: var(--ink); }
+.plan-step .n { background: var(--inv); color: var(--on-inv); }
 .banner { border-radius: var(--r-lg); background: var(--butter-50) !important; color: var(--ink) !important; border: 0; }
 .banner h3, .banner p { color: var(--ink) !important; }
 .opt { border-radius: 20px; border-width: 2px; font-weight: 600; }
@@ -377,7 +379,7 @@ a.path-step:hover { border-color: transparent; background: var(--lilac-50); }
 .stage { border: 0; background: radial-gradient(120% 100% at 50% 0%, var(--lilac-50) 0%, var(--surface) 70%); }
 .toast { background: var(--ink); } .toast.t-level { background: var(--brand); } .toast.t-ach { background: var(--yellow); color: #14162b; }
 .plans4 .plan { border-radius: var(--r-lg); }
-.plans4 .plan.rec { background: var(--ink); color: #fff; border: 0; }
+.plans4 .plan.rec { background: var(--inv); color: var(--on-inv); border: 0; }
 .plans4 .plan.rec h3, .plans4 .plan.rec .price { color: #fff; } .plans4 .plan.rec p, .plans4 .plan.rec li, .plans4 .plan.rec .evidence { color: rgba(255,255,255,.78) !important; }
 .plans4 .plan.rec li svg { color: var(--peach); }
 .plans4 .plan.rec .btn.primary { background: var(--peach); border-color: var(--peach); color: #14162b; }
@@ -386,11 +388,11 @@ a.path-step:hover { border-color: transparent; background: var(--lilac-50); }
 @media (prefers-color-scheme: dark) { .plans4 .plan.rec { background: var(--brand-700); } }
 .price-tabs { background: var(--surface); border-radius: 999px; padding: 5px; box-shadow: var(--shadow-1); border: 0; }
 .price-tabs button { border-radius: 999px; }
-.price-tabs button.on { background: var(--ink); color: #fff; }
+.price-tabs button.on { background: var(--inv); color: var(--on-inv); }
 @media (prefers-color-scheme: dark) { .price-tabs button.on { background: #fff; color: #14162b; } }
 .league-rows li { border-radius: 18px; }
 .league-rows li.me { background: var(--lilac-50); }
-.exam-cells .cell.now { background: var(--ink); color: #fff; }
+.exam-cells .cell.now { background: var(--inv); color: var(--on-inv); }
 .site-footer { background: var(--surface); border-top: 0; }
 .tg-promo { background: var(--sky-50); box-shadow: none; }
 .hw-card, .daily-card { border-radius: var(--r-lg); }
@@ -428,3 +430,71 @@ a.path-step:hover { border-color: transparent; background: var(--lilac-50); }
 .hl:not(.box) { color: #14162b; }
 .weekbars .wb i em { background: #14162b; color: #fff; }
 @media (prefers-color-scheme: dark) { .weekbars .wb i em { background: #fff; color: #14162b; } }
+
+/* Yon panel: barcha bo'limlar guruhlab (menyu bitta joyda) */
+.nav-group { display: contents; }
+.nav-label { display: block; padding: 12px 14px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+@media (min-width: 980px) {
+  .app-header .menu-btn { display: none; }
+  .nav a { padding: 8px 14px; font-size: 14px; }
+  .app-header .container { gap: 10px; }
+}
+
+/* Sensorli ekranlar: "hover" holati barmoqdan keyin yopishib qolmasin (test javobi keyingi savolda belgilangandek ko'rinmasin), ekran sakramasin */
+@media (hover: none) {
+  .btn:hover, a.tile:hover, .course:hover, .cont:hover, a.lcard:hover, a.lrow:hover, a.gcard:hover, .path-step:hover, a.plan-step[href]:hover,
+  .opt:hover:not(:disabled), .tile-w:hover:not(:disabled) { transform: none; }
+  .opt:hover:not(:disabled):not(.sel):not(.right):not(.bad), .tile-w:hover:not(:disabled), .chipbtn:not(.on):hover, .btn:not(.primary):not(.dark):not(.accent):hover { border-color: var(--line); }
+}
+.opt:focus:not(:focus-visible) { outline: none; }
+
+/* Daraja testi: savol va javoblar telefonda bitta ekranga sig'sin */
+.placement-q { font-family: var(--display); font-size: clamp(19px, 3vw, 26px); font-weight: 650; letter-spacing: -.02em; line-height: 1.3; text-align: center; margin: 14px auto 6px; max-width: 720px; }
+@media (max-width: 640px) {
+  .stage { padding: 16px 14px; border-radius: 24px; }
+  .stage.placement .level-steps { margin: 10px 0 0; gap: 5px; }
+  .stage.placement .level-steps i { height: 30px; }
+  .stage.placement .level-steps i.now { transform: none; }
+  .stage.placement .opts { gap: 8px; margin-top: 10px; }
+  .stage.placement .opt { padding: 12px 14px; font-size: 15.5px; }
+  .stage-center { gap: 12px; padding: 8px 0 4px; }
+}
+@media (min-width: 980px) {
+  .app-header .header-cta { display: none !important; } /* Tariflar menyuning o'zida */
+  .nav a { padding: 7px 12px; font-size: 13.5px; gap: 10px; border-radius: 12px; }
+  .nav a svg { width: 17px; height: 17px; }
+  .nav-label { padding: 10px 12px 3px; font-size: 10.5px; }
+  .app-header .container { padding: 18px 12px 14px; }
+}
+@media (min-width: 980px) and (max-height: 960px) { .nav a { padding: 6px 12px; } .nav-label { padding-top: 6px; } .app-header .container { gap: 8px; padding-top: 14px; } }
+@media (min-width: 980px) and (max-height: 800px) { .nav a { padding: 4px 12px; font-size: 13px; } .nav-label { padding-top: 4px; } }
+
+/* Kontrast tuzatishlari (avtomatik tekshiruvdan keyin) */
+:root { --muted: #6c7190; --ok-ink: #127a55; }
+@media (prefers-color-scheme: dark) { :root { --muted: #9a9fc0; --ok-ink: #5fd6a5; } }
+.avatar, .burst { color: #14162b; }
+.course.c-coral { background: #e2513e; }
+.course .tag { color: #14162b; }
+.badge.on, .lvl-tag.A1, .lvl-tag.A2 { color: var(--ok-ink); }
+.price-tabs button small { color: var(--ok-ink); }
+.price-tabs button.on small { color: inherit; }
+.you-pin { background: var(--inv); color: var(--on-inv); }
+.hw-n { color: var(--muted); opacity: .5; }
+html, body { overflow-x: clip; }
+
+/* Imtihon rejimi: Design 3.0 ranglari, telefonda ixcham boshqaruv paneli */
+.exam .btn.primary { background: var(--inv); border-color: var(--inv); color: var(--on-inv); }
+.exam-tabs button { border-radius: 999px !important; }
+.exam-tabs button.on { background: var(--inv) !important; border-color: var(--inv) !important; color: var(--on-inv) !important; }
+.exam-cells .cell { border-radius: 12px; }
+.exam-cells .cell.done { background: var(--lilac-50); border-color: var(--lilac); color: var(--ink); }
+@media (max-width: 599px) {
+  .hide-sm { display: none; }
+  .exam-bar { flex-wrap: wrap; gap: 6px 8px; padding: 10px 12px; margin-bottom: 10px; }
+  .exam-bar .exam-title { flex-basis: 100%; font-size: 13px; }
+  .exam-bar .timer { font-size: 18px; }
+  .exam-bar .btn.sm { height: 34px; padding: 0 12px; }
+  .exam-bar .btn.primary.sm { margin-left: auto; }
+  .exam-tabs { margin-bottom: 8px; }
+  .exam-tabs button { height: 40px; }
+}

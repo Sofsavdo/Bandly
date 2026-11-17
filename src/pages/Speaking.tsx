@@ -1,4 +1,5 @@
 import { Lightbulb, Mic, ShieldCheck, Sparkles } from 'lucide-react';
+import { Illo } from '../components/Illo';
 import { useEffect, useRef, useState } from 'react';
 import { EvalCard } from '../components/EvalCard';
 import { JoinForm } from '../components/JoinForm';
@@ -166,7 +167,7 @@ export default function Speaking() {
       <div>
         <div className="stage">
           <div className="hero">
-            <Mascot mood="think" size={120} />
+            <Illo kind="mic" size={96} />
             <div>
               <span className="eyebrow"><Mic size={15} /> Jonli ovozli suhbat</span>
               <h2 style={{ marginBottom: 8 }}>Speaking: ustoz bilan suhbat</h2>
@@ -213,7 +214,7 @@ export default function Speaking() {
     return (
       <div>
         <div className="card hero">
-          <Mascot mood="happy" size={96} />
+          <Illo kind="trophy" size={90} />
           <div>
             <h2 style={{ margin: 0 }}>Suhbat tugadi</h2>
             <p style={{ margin: '4px 0' }}>+30 XP. Quyidagi baho <b>taxminiy</b>: faqat javob uzunligi, to‘xtashlar va so‘z xilma-xilligi bo‘yicha.</p>
@@ -280,7 +281,7 @@ export default function Speaking() {
           <button className="btn sm" onClick={abort}>Tugatish</button>
         </div>
         <div className="stage-center">
-          <div className={`mascot-wrap ${status}`}><Mascot mood={mood} size={150} talking={status === 'speaking'} /></div>
+          <div className={`mascot-wrap ${status}`}><Mascot mood={mood} size={104} talking={status === 'speaking'} /></div>
           {reaction && <div className="bubble" style={{ maxWidth: 640 }}><b>{reaction.uz}</b><div className="evidence">{reaction.en}</div></div>}
           <div className="say">{caption}</div>
           {hint && <p className="hint-uz"><b>O‘zbekcha:</b> {hint}</p>}

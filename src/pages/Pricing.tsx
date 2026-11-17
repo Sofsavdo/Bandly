@@ -68,7 +68,6 @@ export default function Pricing() {
                 {until && <span className="badge on" style={{ marginLeft: 6 }}>Faol: {fmtDate(until)} gacha</span>}
               </div>
               <ul>{pl.features.map((f) => <li key={f}><Check size={16} />{f}</li>)}</ul>
-              {pl.id === 'exam' && <p className="evidence" style={{ fontSize: 13 }}>Suhbat daqiqasi kamroq: vaqt baholanadigan Speaking mocklarga ketadi.</p>}
               {live
                 ? <button className={`btn ${pl.recommended ? 'primary' : ''}`} onClick={() => startPurchase(pl.id, days)}>{until ? 'Uzaytirish' : 'Sotib olish'}</button>
                 : <button className="btn" onClick={() => { const on = demoOn(pl.id); pl.tracks.forEach((t) => setPlan(t, !on)); }}>{demoOn(pl.id) ? 'Demo: o‘chirish' : 'Demo: yoqish'}</button>}
