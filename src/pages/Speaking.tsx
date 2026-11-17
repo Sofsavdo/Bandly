@@ -225,7 +225,7 @@ export default function Speaking() {
           </div>
         </div>
         {aiEval && <EvalCard ev={aiEval} title="AI baho (suhbat matni bo‘yicha)" />}
-        {aiState === 'error' && <p className="notice">AI baho berolmadi: {aiErr}. Quyidagi qoidaviy tahlil ishlaydi.</p>}
+        {aiState === 'error' && <p className="notice">AI baho berolmadi: {aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">Tariflar</a></>}. Quyidagi qoidaviy tahlil ishlaydi.</p>}
         <div className="card">
           <table className="data">
             <tbody>

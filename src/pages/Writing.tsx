@@ -165,7 +165,7 @@ export default function Writing() {
             </p>
             {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI baholash uchun hisobingizga kiring (kunlik limit hisobingizga yoziladi)." />}
             {aiOn && acct && <p className="evidence">AI baholashda insho matni AI provayderiga yuboriladi.</p>}
-            {aiErr && <p className="notice">{aiErr}</p>}
+            {aiErr && <p className="notice">{aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">Tariflar</a></>}</p>}
             {aiEval && <EvalCard ev={aiEval} title="AI baho" />}
           </div>
 

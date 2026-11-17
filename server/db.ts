@@ -336,6 +336,10 @@ export function refundAi(db: DatabaseSync, playerId: number, bucket: string, now
   const day = (bucket ? `${bucket}:` : '') + new Date(now).toISOString().slice(0, 10);
   db.prepare('UPDATE ai_usage SET calls = MAX(0, calls - 1) WHERE player_id = ? AND day = ?').run(playerId, day);
 }
+/** Umumiy kunlik AI chegarasidan bitta chaqiruvni qaytaradi (provayder xato berganda). */
+export function refundGlobalAi(db: DatabaseSync, now = Date.now()): void {
+  db.prepare('UPDATE ai_global_usage SET calls = MAX(0, calls - 1) WHERE day = ?').run(new Date(now).toISOString().slice(0, 10));
+}
 export function refundGlobalVoiceChars(db: DatabaseSync, chars: number, now = Date.now()): void {
   db.prepare('UPDATE ai_global_usage SET calls = MAX(0, calls - ?) WHERE day = ?').run(chars, `voice-chars:${new Date(now).toISOString().slice(0, 10)}`);
 }

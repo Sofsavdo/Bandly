@@ -18,7 +18,7 @@ export function aiEnabled(): Promise<boolean> {
 
 async function post<T>(path: string, body: Record<string, unknown>, timeoutMs: number): Promise<T> {
   const a = getAccount();
-  if (!a) throw new Error('AI uchun avval laqab tanlang');
+  if (!a) throw new Error('AI uchun avval hisobingizga kiring');
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), timeoutMs);
   try {

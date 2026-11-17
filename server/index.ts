@@ -1,6 +1,6 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, PROGRESS_MAX, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_MAX, refundGlobalAi, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -8,6 +8,7 @@ import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
+import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
 
@@ -135,7 +136,7 @@ createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, submitDuel(db, String(b.token ?? ''), dm[1], Number(b.score), Number(b.correct), Number(b.ms)));
     }
-    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none', provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0 });
+    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, configured: ai.provider !== 'none' });
     if (req.method === 'POST' && url.pathname === '/api/ai/coach') {
       if (ai.provider === 'none') throw new AiError(503, 'AI ustoz hali ulanmagan');
       const b = await readJson(req, 16_384);
@@ -157,21 +158,31 @@ createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname.startsWith('/api/ai/')) {
       if (ai.provider === 'none') throw new AiError(503, 'AI yoqilmagan');
       const b = await readJson(req, 16_384);
-      useAi(db, String(b.token ?? '')); // token va kunlik limit
+      const token = String(b.token ?? '');
+      const now = Date.now();
       if (url.pathname === '/api/ai/followup') {
-        const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
-        if (lv === 0) return send(res, 200, { question: await followUp(ai, String(b.question ?? ''), String(b.answer ?? '')), reaction: null });
-        return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3));
+        const player = byToken(db, token);
+        useGlobalAi(db, COACH_GLOBAL_DAILY, now);   // platforma kunlik chegarasi (belgilanmagan bo'lsa — yopiq)
+        useAi(db, token, now);                      // o'quvchining kunlik limiti
+        try {
+          const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
+          if (lv === 0) return send(res, 200, { question: await followUp(ai, String(b.question ?? ''), String(b.answer ?? '')), reaction: null });
+          return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3));
+        } catch (e) { refundAi(db, player.id, '', now); refundGlobalAi(db, now); throw e; }
       }
-      if (url.pathname === '/api/ai/speaking') {
-        const turns = Array.isArray(b.turns) ? b.turns.slice(0, 12).map((t) => ({ q: String((t as { q?: unknown }).q ?? ''), text: String((t as { text?: unknown }).text ?? '') })) : [];
-        if (!turns.some((t) => t.text.trim().length > 10)) throw new ApiError(400, 'Baholash uchun javoblar yetarli emas');
-        return send(res, 200, await evaluateSpeaking(ai, turns));
-      }
-      if (url.pathname === '/api/ai/writing') {
-        const text = String(b.text ?? '');
-        if (text.trim().split(/\s+/).length < 30) throw new ApiError(400, 'Matn juda qisqa (kamida 30 so‘z)');
-        return send(res, 200, await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? ''), text));
+      if (url.pathname === '/api/ai/speaking' || url.pathname === '/api/ai/writing') {
+        const kind = url.pathname.endsWith('writing') ? 'writing' : 'speaking';
+        // Kiritishni pul sarflashdan OLDIN tekshiramiz
+        const turns = Array.isArray(b.turns) ? b.turns.slice(0, 12).map((t) => ({ q: String((t as { q?: unknown }).q ?? '').slice(0, 500), text: String((t as { text?: unknown }).text ?? '').slice(0, 3000) })) : [];
+        const text = String(b.text ?? '').slice(0, 8000);
+        if (kind === 'speaking' && !turns.some((t) => t.text.trim().length > 10)) throw new ApiError(400, 'Baholash uchun javoblar yetarli emas');
+        if (kind === 'writing' && text.trim().split(/\s+/).length < 30) throw new ApiError(400, 'Matn juda qisqa (kamida 30 so‘z)');
+        const q = useAssessment(db, token, kind, now);  // server obunasi + oylik kvota (EXAM 10, ALL 20)
+        try { useGlobalAi(db, COACH_GLOBAL_DAILY, now); } catch (e) { refundAssessment(db, q.playerId, kind, now); throw e; }
+        try {
+          const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text);
+          return send(res, 200, { ...r, quota: { used: q.used, limit: q.limit } });
+        } catch (e) { refundAssessment(db, q.playerId, kind, now); refundGlobalAi(db, now); throw e; }
       }
       return send(res, 404, { error: 'Topilmadi' });
     }
@@ -204,7 +215,7 @@ createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
       return send(res, 200, { enabled: !!hapi, demo: DEMO, periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
-    if (req.method === 'GET' && url.pathname === '/api/me') return send(res, 200, entitlements(db, String(req.headers['x-token'] ?? '')));
+    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); return send(res, 200, { ...e, ai: assessmentUsage(db, byToken(db, tk).id) }); }
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {
       if (!hapi) throw new ApiError(503, 'To‘lov hali ulanmagan');
       const b = await readJson(req);
