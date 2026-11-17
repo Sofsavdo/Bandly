@@ -1,4 +1,5 @@
 import { clearServerPlans, dropXpQueue, getProfile, takeXpQueue } from './store';
+import { getRef } from './referral';
 import { onLogin, pushProgress, stageClear } from './cloud';
 import { L } from '../i18n';
 
@@ -54,7 +55,8 @@ export const authConfig = (): Promise<AuthConfig> => (cfg ??= fetch('/api/auth/c
 /** Telegram ma'lumoti bilan kirish. Qurilmada eski (laqabli) hisob bo'lsa, u Telegram'ga bog'lanadi — XP va obuna saqlanadi. */
 export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown): Promise<Account & { linked: boolean }> {
   const link = getAccount()?.token;
-  const body = kind === 'webapp' ? { initData: payload, link } : { user: payload, link };
+  const ref = getRef();
+  const body = kind === 'webapp' ? { initData: payload, link, ref } : { user: payload, link, ref };
   const r = await call<Account & { linked: boolean }>(kind === 'webapp' ? '/api/auth/telegram/webapp' : '/api/auth/telegram', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   setAccount({ token: r.token, nickname: r.nickname, tg: true });
   await onLogin();
@@ -71,7 +73,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function joinLeague(nickname: string): Promise<Account> {
-  const a = await call<Account>('/api/join', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nickname }) });
+  const a = await call<Account>('/api/join', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nickname, ref: getRef() }) });
   setAccount(a);
   await onLogin(); // qurilmadagi progress yangi hisobga yoziladi
   void syncNow();

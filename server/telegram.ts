@@ -91,17 +91,17 @@ export async function tgApi<T = unknown>(token: string, method: string, body: un
 }
 
 /** Mini App havolasi: ?tg=1 Telegram rejimini yoqadi, r= — ochiladigan sahifa. */
-export const appUrl = (publicUrl: string, route = '/'): string => `${publicUrl}/?tg=1&r=${encodeURIComponent(route)}`;
+export const appUrl = (publicUrl: string, route = '/', ref?: string): string => `${publicUrl}/?tg=1&r=${encodeURIComponent(route)}${ref ? `&ref=${encodeURIComponent(ref)}` : ''}`;
 
 /** /start va boshqa xabarlarga javob: Mini App tugmalari. */
-export function startReply(chatId: number, publicUrl: string, firstName?: string, tr: Tr = same): Record<string, unknown> {
+export function startReply(chatId: number, publicUrl: string, firstName?: string, tr: Tr = same, ref?: string): Record<string, unknown> {
   const hi = firstName ? tr('Salom, {0}!').replace('{0}', firstName.slice(0, 32)) : tr('Salom!');
   return {
     chat_id: chatId,
     text: `${hi} ${tr('Bandly — ingliz tili darslari, IELTS / CEFR / SAT tayyorgarligi va bepul mock testlar.')}\n\n${tr('Quyidagi tugma bilan ilovani shu yerning o‘zida oching. Hisobingiz Telegram orqali avtomatik ulanadi.')}`,
     reply_markup: { inline_keyboard: [
-      [{ text: `📚 ${tr('Bandly’ni ochish')}`, web_app: { url: appUrl(publicUrl, '/') } }],
-      [{ text: `⏱ ${tr('Bepul mock test')}`, web_app: { url: appUrl(publicUrl, '/mocks') } }, { text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: { url: appUrl(publicUrl, '/placement') } }],
+      [{ text: `📚 ${tr('Bandly’ni ochish')}`, web_app: { url: appUrl(publicUrl, '/', ref) } }],
+      [{ text: `⏱ ${tr('Bepul mock test')}`, web_app: { url: appUrl(publicUrl, '/mocks', ref) } }, { text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: { url: appUrl(publicUrl, '/placement', ref) } }],
     ] },
   };
 }
@@ -126,5 +126,6 @@ export function handleUpdate(update: unknown, publicUrl: string, trFor: (lang?: 
   if (/^\/mock\b/.test(text)) {
     return { method: 'sendMessage', body: { chat_id: msg.chat.id, text: tr('Bepul mock testlar: Listening va Reading, imtihon taymeri va avtomatik baho bilan.'), reply_markup: { inline_keyboard: [[{ text: `⏱ ${tr('Mock testni ochish')}`, web_app: { url: appUrl(publicUrl, '/mocks') } }]] } } };
   }
-  return { method: 'sendMessage', body: startReply(msg.chat.id, publicUrl, msg.from?.first_name, tr) };
+  const ref = text.match(/^\/start\s+ref_([a-z2-9]{6,10})\b/)?.[1]; // t.me/bot?start=ref_KOD
+  return { method: 'sendMessage', body: startReply(msg.chat.id, publicUrl, msg.from?.first_name, tr, ref) };
 }

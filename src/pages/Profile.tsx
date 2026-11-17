@@ -17,6 +17,7 @@ import { ProgressCard } from '../components/ProgressCard';
 import { PRing } from '../components/PRing';
 import { WeekBars } from '../components/WeekBars';
 import { LangPicker } from '../components/LangPicker';
+import { InviteCard } from '../components/InviteCard';
 import { L } from '../i18n';
 
 export default function Profile() {
@@ -48,6 +49,7 @@ export default function Profile() {
         <div className="ptile"><PRing value={p.gamesPlayed} max={Math.max(10, p.gamesPlayed)} color="var(--brand)" label={L('O‘yinlar')}><b>{p.gamesPlayed}</b></PRing><div><b>{L('O‘yinlar')}</b><small>{L('o‘ynalgan')}</small></div></div>
       </div>
       {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice">{p.brokenStreak?.value}  {L('kunlik seriya uzildi. 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, tiklanadi (30 kunda bir marta).')}</p>}
+      <InviteCard />
       <section className="card"><h3 style={{ margin: 0 }}>{L('Bu hafta')}</h3><WeekBars activity={p.activity} /></section>
 
       <ProgressCard />

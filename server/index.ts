@@ -22,6 +22,7 @@ import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
 import { analytics } from './analytics';
+import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
@@ -125,6 +126,7 @@ createServer(async (req, res) => {
       try { u = url.pathname.endsWith('/webapp') ? verifyInitData(String(b.initData ?? ''), bot.token) : verifyWidget((b.user ?? {}) as Record<string, unknown>, bot.token); }
       catch (e) { if (e instanceof TgAuthError) throw new ApiError(401, e.message); throw e; }
       const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
+      if (r.created) attachReferral(db, byToken(db, r.token).id, b.ref); // taklif havolasi orqali kelgan bo'lsa
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
@@ -149,7 +151,9 @@ createServer(async (req, res) => {
       // Telegram ulangach yangi hisob faqat Telegram orqali ochiladi (OD-05); mavjud hisoblar ishlashda davom etadi
       if (bot) throw new ApiError(410, 'Hisob endi Telegram orqali ochiladi');
       const b = await readJson(req);
-      return send(res, 200, join(db, String(b.nickname ?? '')));
+      const jr = join(db, String(b.nickname ?? ''));
+      attachReferral(db, byToken(db, jr.token).id, b.ref);
+      return send(res, 200, jr);
     }
     // ---- Darslar kontenti: o'quvchilar uchun e'lon qilingan versiya ----
     if (req.method === 'GET' && url.pathname === '/api/content') {
@@ -171,6 +175,11 @@ createServer(async (req, res) => {
       const d = dictFor(db, i18nM[1]);
       if (url.searchParams.get('v') === d.v) { res.writeHead(304); return void res.end(); }
       return send(res, 200, d);
+    }
+    // ---- Referal: taklif kodi va statistika ----
+    if (req.method === 'GET' && url.pathname === '/api/referral') {
+      const p = byToken(db, String(req.headers['x-token'] ?? ''));
+      return send(res, 200, { ...refStats(db, p.id), bot: botUsername });
     }
     // ---- Admin analitikasi ----
     if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
@@ -275,7 +284,10 @@ createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url.pathname === '/api/xp') {
       const b = await readJson(req, 16_384);
-      return send(res, 200, submitXp(db, String(req.headers['x-token'] ?? ''), b.events));
+      const tk = String(req.headers['x-token'] ?? '');
+      const out = submitXp(db, tk, b.events);
+      maybeRewardReferral(db, byToken(db, tk).id); // taklif qilingan o'quvchi birinchi darsni bajargan bo'lsa — ikkalasiga XP
+      return send(res, 200, out);
     }
     if (url.pathname === '/api/progress') {
       const token = String(req.headers['x-token'] ?? '');

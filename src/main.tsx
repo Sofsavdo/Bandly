@@ -6,6 +6,9 @@ import '@fontsource-variable/outfit';
 import './styles.css';
 import './design3.css'; // Design 3.0 qatlami: pastel ranglar, qora pill tugmalar, yon panel
 import { deepTranslate, getLang, initI18n } from './i18n';
+import { captureRef } from './lib/referral';
+
+captureRef(); // taklif havolasi (Telegram URL'ni tozalashidan oldin)
 
 // Server so'rovlariga til sarlavhasi: server xabarlari (xatolar va h.k.) shu tilda qaytadi
 const nativeFetch = window.fetch.bind(window);

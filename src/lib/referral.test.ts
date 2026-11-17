@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+const mem = new Map<string, string>();
+(globalThis as { localStorage?: unknown }).localStorage = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v), removeItem: (k: string) => void mem.delete(k) };
+const { captureRef, getRef } = await import('./referral');
+assert.equal(captureRef('https://b.uz/?ref=abc234x'), 'abc234x');
+assert.equal(getRef(), 'abc234x');
+assert.equal(captureRef('https://b.uz/#/welcome?ref=zz99zzq'), 'zz99zzq');
+assert.equal(captureRef('https://b.uz/?tg=1#tgWebAppStartParam=ref_qwe234r&x=1'), 'qwe234r');
+assert.equal(captureRef('https://b.uz/?ref=BAD'), null);
+assert.equal(getRef(Date.now() + 31 * 86_400_000), undefined, '30 kundan keyin eskiradi');
+console.log('referral (client): OK');

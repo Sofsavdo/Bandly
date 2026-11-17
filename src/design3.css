@@ -580,3 +580,5 @@ html, body { overflow-x: clip; }
 .fstep { display: grid; grid-template-columns: 120px 1fr 48px; align-items: center; gap: 10px; font-size: 14px; }
 .fstep i { height: 14px; border-radius: 99px; background: linear-gradient(90deg, var(--brand), var(--lilac)); min-width: 4px; }
 .fstep b { text-align: right; }
+.invite-link { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; border-radius: 14px; background: var(--surface-2); }
+.invite-link code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
