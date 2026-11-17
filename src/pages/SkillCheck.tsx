@@ -7,6 +7,7 @@ import { recordTestAnswers } from '../lib/adaptive/record';
 import { say, stopSpeaking, ttsSupported } from '../lib/speech';
 import { useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
+import { L } from '../i18n';
 
 type Phase = 'intro' | 'reading' | 'listening' | 'done';
 const MAX_PLAYS = 2;
@@ -65,36 +66,36 @@ export default function SkillCheck() {
   return (
     <div>
       <section className="card page-head with-illo t-sky">
-        <h2>Ko‘nikmalar tekshiruvi</h2><Illo kind="headphones" size={124} />
-        <p>Reading va Listening darajangizni alohida baholaydi.</p>
-        <p className="row"><span className="pill">To‘plam: {set.level}</span><span className="pill">~10 daqiqa</span>{p.level ? <span className="pill" style={{ whiteSpace: 'normal' }}>Daraja testi: {p.level}</span> : <a className="btn sm" href="#/placement">Avval daraja testi</a>}</p>
-        {phase === 'intro' && <button className="btn primary" onClick={() => setPhase('reading')}>Boshlash <ArrowRight size={14} /></button>}
+        <h2>{L('Ko‘nikmalar tekshiruvi')}</h2><Illo kind="headphones" size={124} />
+        <p>{L('Reading va Listening darajangizni alohida baholaydi.')}</p>
+        <p className="row"><span className="pill">{L('To‘plam:')} {set.level}</span><span className="pill">{L('~10 daqiqa')}</span>{p.level ? <span className="pill" style={{ whiteSpace: 'normal' }}>{L('Daraja testi:')} {p.level}</span> : <a className="btn sm" href="#/placement">{L('Avval daraja testi')}</a>}</p>
+        {phase === 'intro' && <button className="btn primary" onClick={() => setPhase('reading')}>{L('Boshlash')} <ArrowRight size={14} /></button>}
       </section>
 
       {phase === 'reading' && (
         <section className="card">
-          <h3><BookOpen size={18} /> Reading · {set.reading.title}</h3>
+          <h3><BookOpen size={18} />  {L('Reading ·')} {set.reading.title}</h3>
           <p style={{ whiteSpace: 'pre-line' }}>{set.reading.text}</p>
           <Questions items={set.reading.questions} answers={rAns} show={rShown} onPick={(i, v) => setRAns((a) => { const n = [...a]; n[i] = v; return n; })} />
           {!rShown
-            ? <button className="btn primary" disabled={rAns.filter((x) => x !== undefined).length < set.reading.questions.length} onClick={finishReading}>Javoblarni tekshirish</button>
-            : <button className="btn primary" onClick={() => setPhase('listening')}>Listening qismiga o‘tish <ArrowRight size={14} /></button>}
+            ? <button className="btn primary" disabled={rAns.filter((x) => x !== undefined).length < set.reading.questions.length} onClick={finishReading}>{L('Javoblarni tekshirish')}</button>
+            : <button className="btn primary" onClick={() => setPhase('listening')}>{L('Listening qismiga o‘tish')} <ArrowRight size={14} /></button>}
         </section>
       )}
 
       {phase === 'listening' && (
         <section className="card">
-          <h3><Headphones size={18} /> Listening · {set.listening.title}</h3>
+          <h3><Headphones size={18} />  {L('Listening ·')} {set.listening.title}</h3>
           {tts ? (
             <>
-              <button className="btn" disabled={plays >= MAX_PLAYS || playing} onClick={() => void play()}><Play size={14} /> {playing ? 'O‘qilmoqda…' : `Eshitish (${MAX_PLAYS - plays} marta qoldi)`}</button>
+              <button className="btn" disabled={plays >= MAX_PLAYS || playing} onClick={() => void play()}><Play size={14} /> {playing ? L('O‘qilmoqda…') : L('Eshitish ({0} marta qoldi)', [MAX_PLAYS - plays])}</button>
               <Questions items={set.listening.questions} answers={lAns} show={false} onPick={(i, v) => setLAns((a) => { const n = [...a]; n[i] = v; return n; })} />
-              <button className="btn primary" disabled={plays === 0 || lAns.filter((x) => x !== undefined).length < set.listening.questions.length} onClick={finishListening}>Natijani ko‘rish</button>
+              <button className="btn primary" disabled={plays === 0 || lAns.filter((x) => x !== undefined).length < set.listening.questions.length} onClick={finishListening}>{L('Natijani ko‘rish')}</button>
             </>
           ) : (
             <>
-              <p className="bad">Bu brauzer ovozli o‘qishni qo‘llamaydi, shuning uchun Listening qismini o‘tkazib bo‘lmaydi.</p>
-              <button className="btn" onClick={() => setPhase('done')}>Natijaga o‘tish</button>
+              <p className="bad">{L('Bu brauzer ovozli o‘qishni qo‘llamaydi, shuning uchun Listening qismini o‘tkazib bo‘lmaydi.')}</p>
+              <button className="btn" onClick={() => setPhase('done')}>{L('Natijaga o‘tish')}</button>
             </>
           )}
         </section>
@@ -102,18 +103,18 @@ export default function SkillCheck() {
 
       {(phase === 'done' || (phase === 'intro' && (prev.reading || prev.listening))) && (
         <section className="card">
-          <h3>{phase === 'done' ? 'Natija' : 'Oldingi natija'}</h3>
+          <h3>{phase === 'done' ? L('Natija') : L('Oldingi natija')}</h3>
           <div className="stack">
             {([
-              ['General English (grammatika + so‘z)', p.level ?? '—'],
+              [L('General English (grammatika + so‘z)'), p.level ?? '—'],
               [`Reading${skills.reading ? ` · ${skills.reading.correct}/${skills.reading.total}` : ''}`, skills.reading?.level ?? '—'],
               [`Listening${skills.listening ? ` · ${skills.listening.correct}/${skills.listening.total}` : ''}`, skills.listening?.level ?? '—'],
             ] as const).map(([k, v]) => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderTop: '1px solid var(--line)' }}><span>{k}</span><b>{v}</b></div>
             ))}
           </div>
-          <p className="muted" style={{ fontSize: 13 }}>Taxminiy daraja — Bugungi rejaga ta’sir qiladi.</p>
-          <div className="row"><a className="btn primary" href="#/learn">Darslarga o‘tish</a><a className="btn" href="#/">Bosh sahifa</a></div>
+          <p className="muted" style={{ fontSize: 13 }}>{L('Taxminiy daraja — Bugungi rejaga ta’sir qiladi.')}</p>
+          <div className="row"><a className="btn primary" href="#/learn">{L('Darslarga o‘tish')}</a><a className="btn" href="#/">{L('Bosh sahifa')}</a></div>
         </section>
       )}
     </div>

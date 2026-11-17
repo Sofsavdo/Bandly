@@ -5,6 +5,7 @@ import { checkWriting, wordCount, type WritingCheck } from '../lib/lessons';
 import { logErrors } from '../lib/adaptive/store';
 import { addMistake } from '../lib/mistakes';
 import type { TaxonomyId } from '../lib/adaptive/taxonomy';
+import { L } from '../i18n';
 
 // grammarCheck rule id → error type (only where the mapping is clear)
 const ISSUE_TAX: Record<string, TaxonomyId> = { '3sg': 'G.sva', dont3: 'G.sva', 'didnt-past': 'G.tense', 'more-adj': 'G.comparison', peoples: 'G.plural', informations: 'G.plural', 'am-study': 'G.tense', 'years-old': 'V.word_choice', 'listen-music': 'G.preposition', 'depend-of': 'G.preposition', 'married-with': 'G.preposition' };
@@ -21,21 +22,21 @@ export function LessonWrite({ task }: { task: WritingTask }) {
   };
   return (
     <div>
-      <p><b>Topshiriq:</b> {task.promptUz}</p>
-      <textarea className="answer" rows={5} style={{ width: '100%' }} value={text} placeholder="Inglizcha yozing…" onChange={(e) => { setText(e.target.value); setRes(null); }} />
-      <p className="muted" style={{ fontSize: 13 }}>{wordCount(text)} so‘z · talab: {task.maxWords ? `${task.minWords}–${task.maxWords}` : `kamida ${task.minWords}`}</p>
-      <button type="button" className="btn primary" disabled={!text.trim()} onClick={run}>Tekshirish</button>
+      <p><b>{L('Topshiriq:')}</b> {task.promptUz}</p>
+      <textarea className="answer" rows={5} style={{ width: '100%' }} value={text} placeholder={L('Inglizcha yozing…')} onChange={(e) => { setText(e.target.value); setRes(null); }} />
+      <p className="muted" style={{ fontSize: 13 }}>{wordCount(text)}  {L('so‘z · talab:')} {task.maxWords ? `${task.minWords}–${task.maxWords}` : `kamida ${task.minWords}`}</p>
+      <button type="button" className="btn primary" disabled={!text.trim()} onClick={run}>{L('Tekshirish')}</button>
       {res && (
         <div style={{ marginTop: 12 }}>
           <ul>
-            <li>{res.enoughWords && !res.tooLong ? <CheckCircle2 size={14} className="ok" /> : <XCircle size={14} className="bad" />} Hajm: {res.words} so‘z{res.tooLong ? ` (ko‘pi bilan ${task.maxWords})` : ''}</li>
+            <li>{res.enoughWords && !res.tooLong ? <CheckCircle2 size={14} className="ok" /> : <XCircle size={14} className="bad" />}  {L('Hajm:')} {res.words}  {L('so‘z')}{res.tooLong ? L(' (ko‘pi bilan {0})', [task.maxWords]) : ''}</li>
             {res.reqs.map((r) => <li key={r.labelUz}>{r.ok ? <CheckCircle2 size={14} className="ok" /> : <XCircle size={14} className="bad" />} {r.labelUz}</li>)}
             {res.forbidden.map((f) => <li key={f} className="bad"><XCircle size={14} /> {f}</li>)}
             {res.issues.map((i) => <li key={i.id + i.wrong}><XCircle size={14} className="bad" /> «{i.wrong}» → «{i.right}»: <span className="muted">{i.ruleUz}</span></li>)}
           </ul>
-          <p className={res.passed ? 'ok' : 'bad'}>{res.passed ? 'Topshiriq talablari bajarildi.' : 'Yuqoridagilarni tuzatib, qayta tekshiring.'}</p>
-          {task.model && <p><b>Namuna javob:</b> <span className="muted">{task.model}</span></p>}
-          <p className="muted" style={{ fontSize: 13 }}>Qoidaviy tekshiruv: asosiy xatolarni topadi.</p>
+          <p className={res.passed ? 'ok' : 'bad'}>{res.passed ? L('Topshiriq talablari bajarildi.') : L('Yuqoridagilarni tuzatib, qayta tekshiring.')}</p>
+          {task.model && <p><b>{L('Namuna javob:')}</b> <span className="muted">{task.model}</span></p>}
+          <p className="muted" style={{ fontSize: 13 }}>{L('Qoidaviy tekshiruv: asosiy xatolarni topadi.')}</p>
         </div>
       )}
     </div>

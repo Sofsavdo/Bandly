@@ -8,6 +8,7 @@ import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
+import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { gradeMock } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
@@ -21,13 +22,21 @@ import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
-import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
+import { runLeagueNotices } from './leagueNotify';
+import { MAX_AUDIO, recordStt, sttAllowed, sttConfigFromEnv, transcribe } from './stt';
+import { analytics } from './analytics';
+import { attachReferral, maybeRewardReferral, refStats } from './referral';
+import { creatorStats, creatorsOverview } from './creator';
+import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
+import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
+import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
 // AI Coach limits (env). Global ceiling is FAIL-CLOSED: unset or 0 = coach disabled even with a key (owner decision OD-09).
 const COACH_GLOBAL_DAILY = Number(process.env.AI_GLOBAL_DAILY_CALLS ?? 0);
 const STUDIO_VOICE_DAILY_CHARS = Number(process.env.STUDIO_VOICE_DAILY_CHARS ?? 20_000);
+const stt = sttConfigFromEnv(); // ElevenLabs Scribe (AI ustoz uchun nutqni tanish); bo'lmasa brauzer tanishi
 const COACH_DAILY_LIMIT = Number(process.env.AI_COACH_DAILY_LIMIT ?? 30);
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
@@ -56,6 +65,9 @@ function limited(ip: string): boolean {
   return ++h.n > 120;
 }
 
+let langsCache: { at: number; langs: string[] } | null = null; // tayyor tillar ro'yxati (5 daqiqa kesh)
+/** So'rov tili: ilova sarlavhasi (x-lang), bo'lmasa brauzer tili. */
+const reqLang = (req: IncomingMessage): string => String(req.headers['x-lang'] ?? String(req.headers['accept-language'] ?? '').split(/[,;-]/)[0] ?? '').toLowerCase();
 const send = (res: ServerResponse, status: number, body: unknown) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
   res.end(JSON.stringify(body));
@@ -110,7 +122,8 @@ createServer(async (req, res) => {
     // Proksi (Railway va boshqalar) orqasida haqiqiy IP birinchi X-Forwarded-For qiymatida
     const fwd = TRUST_PROXY ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '';
     const ip = fwd || (req.socket.remoteAddress ?? 'x');
-    if (limited(ip)) return send(res, 429, { error: 'Juda ko‘p so‘rov' });
+    // Chegara faqat API uchun: sahifa, skript va shrift fayllari sanalmaydi (aks holda bir necha marta yangilash sahifani to'sib qo'yadi)
+    if ((req.url ?? '').startsWith('/api/') && limited(ip)) return send(res, 429, { error: trServer(db, reqLang(req), 'Juda ko‘p so‘rov') });
     const url = new URL(req.url ?? '/', 'http://x');
     if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
     if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
@@ -120,6 +133,7 @@ createServer(async (req, res) => {
       try { u = url.pathname.endsWith('/webapp') ? verifyInitData(String(b.initData ?? ''), bot.token) : verifyWidget((b.user ?? {}) as Record<string, unknown>, bot.token); }
       catch (e) { if (e instanceof TgAuthError) throw new ApiError(401, e.message); throw e; }
       const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
+      if (r.created) attachReferral(db, byToken(db, r.token).id, b.ref); // taklif havolasi orqali kelgan bo'lsa
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
@@ -134,16 +148,19 @@ createServer(async (req, res) => {
       if (m?.chat?.type === 'private' && m.from?.id && /^\/(stop|remind)\b/.test(cmd)) {
         const on = cmd.startsWith('/remind');
         const ok = setRemind(db, m.from.id, on);
-        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: !ok ? 'Avval Bandly’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind' });
+        const lc = ((m.from as { language_code?: string }).language_code ?? '').split('-')[0];
+        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, !ok ? 'Avval Bandly’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind') });
       }
-      const reply = handleUpdate(upd, bot.publicUrl);
+      const reply = handleUpdate(upd, bot.publicUrl, (lc) => (t: string) => trServer(db, (lc ?? '').split('-')[0], t));
       return send(res, 200, reply ? { method: reply.method, ...reply.body } : {}); // javob webhook javobining o'zida yuboriladi
     }
     if (req.method === 'POST' && url.pathname === '/api/join') {
       // Telegram ulangach yangi hisob faqat Telegram orqali ochiladi (OD-05); mavjud hisoblar ishlashda davom etadi
       if (bot) throw new ApiError(410, 'Hisob endi Telegram orqali ochiladi');
       const b = await readJson(req);
-      return send(res, 200, join(db, String(b.nickname ?? '')));
+      const jr = join(db, String(b.nickname ?? ''));
+      attachReferral(db, byToken(db, jr.token).id, b.ref);
+      return send(res, 200, jr);
     }
     // ---- Darslar kontenti: o'quvchilar uchun e'lon qilingan versiya ----
     if (req.method === 'GET' && url.pathname === '/api/content') {
@@ -151,12 +168,80 @@ createServer(async (req, res) => {
       if (url.searchParams.get('v') === String(v)) return send(res, 200, { version: v, units: null }); // o'zgarmagan
       return send(res, 200, { version: v, units: publishedUnits(db) });
     }
+    // ---- Tarjimalar (ochiq): /api/i18n — tayyor tillar (qamrov ≥ 98%), /api/i18n/ru — lug'at ----
+    if (req.method === 'GET' && url.pathname === '/api/i18n') {
+      if (!langsCache || Date.now() - langsCache.at > 300_000) {
+        const cov = coverage(db);
+        langsCache = { at: Date.now(), langs: ['uz', ...Object.entries(cov).filter(([, c]) => c.total > 0 && c.done / c.total >= 0.98).map(([l]) => l)] };
+      }
+      return send(res, 200, { langs: langsCache.langs });
+    }
+    const i18nM = url.pathname.match(/^\/api\/i18n\/([a-z]{2})$/);
+    if (req.method === 'GET' && i18nM) {
+      if (!isTarget(i18nM[1])) return send(res, 404, { error: 'Topilmadi' });
+      const d = dictFor(db, i18nM[1]);
+      if (url.searchParams.get('v') === d.v) { res.writeHead(304); return void res.end(); }
+      return send(res, 200, d);
+    }
+    // ---- Referal: taklif kodi va statistika ----
+    if (req.method === 'GET' && url.pathname === '/api/referral') {
+      const p = byToken(db, String(req.headers['x-token'] ?? ''));
+      return send(res, 200, { ...refStats(db, p.id), bot: botUsername });
+    }
+    // ---- Hamkor kabineti (rol: creator; admin — barcha hamkorlar) ----
+    if (req.method === 'GET' && url.pathname === '/api/creator') {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['creator']);
+      return send(res, 200, { me: creatorStats(db, me.id), all: me.role === 'admin' ? creatorsOverview(db) : null, bot: botUsername });
+    }
+    // ---- Guruhlar (B2B): o'qituvchi — yaratish va hisobot; o'quvchi — kod bilan qo'shilish ----
+    if (url.pathname === '/api/groups' || url.pathname.startsWith('/api/groups/')) {
+      const tk = String(req.headers['x-token'] ?? '');
+      const gp = url.pathname.split('/').slice(3); // ['', 'join'] | [id] | [id, 'members', pid]
+      if (req.method === 'POST' && gp[0] === 'join') { const b = await readJson(req); return send(res, 200, joinGroup(db, byToken(db, tk).id, String(b.code ?? ''))); }
+      if (req.method === 'GET' && gp[0] === 'mine') return send(res, 200, { groups: joinedGroups(db, byToken(db, tk).id) });
+      if (req.method === 'POST' && gp[0] === 'leave') { const b = await readJson(req); leaveGroup(db, byToken(db, tk).id, Number(b.id)); return send(res, 200, { ok: true }); }
+      const me = requireRole(db, tk, ['teacher']);
+      const admin = me.role === 'admin';
+      if (req.method === 'GET' && gp.length === 0) return send(res, 200, { groups: myGroups(db, me.id) });
+      if (req.method === 'POST' && gp.length === 0) { const b = await readJson(req); return send(res, 200, createGroup(db, me.id, String(b.name ?? ''))); }
+      const gid = Number(gp[0]);
+      if (!Number.isInteger(gid)) throw new ApiError(404, 'Topilmadi');
+      if (req.method === 'GET' && gp.length === 1) return send(res, 200, groupReport(db, gid, me.id, admin));
+      if (req.method === 'DELETE' && gp.length === 1) { archiveGroup(db, gid, me.id, admin); return send(res, 200, { ok: true }); }
+      if (req.method === 'DELETE' && gp[1] === 'members') { removeMember(db, gid, me.id, admin, Number(gp[2])); return send(res, 200, { ok: true }); }
+      throw new ApiError(404, 'Topilmadi');
+    }
+    // ---- Admin analitikasi ----
+    if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
+      requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
+      return send(res, 200, analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))));
+    }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['methodologist']);
       const by = me.nickname;
       const p = url.pathname.slice('/api/studio/'.length).split('/');
       if (req.method === 'GET' && p[0] === 'tree') return send(res, 200, { units: studioTree(db), role: me.role });
+      // Tarjimalar: qamrov, ro'yxat, qo'lda tuzatish (metodist), AI tarjima (faqat admin — xarajatli)
+      if (p[0] === 'i18n') {
+        if (req.method === 'GET' && !p[1]) return send(res, 200, { coverage: coverage(db), ai: ai.provider !== 'none', rejected: Object.fromEntries(lastRejected) });
+        const b = req.method === 'GET' ? Object.fromEntries(url.searchParams) : await readJson(req, 20_000);
+        const lang = String(b.lang ?? '');
+        if (!isTarget(lang)) throw new ApiError(400, 'Til noto‘g‘ri');
+        if (req.method === 'GET' && p[1] === 'list') return send(res, 200, { items: listTranslations(db, lang, String(b.q ?? ''), 60, b.missing === '1') });
+        if (req.method === 'PUT' && p[1] === 'item') {
+          const src = String(b.src ?? ''), text = String(b.text ?? '').trim().slice(0, 4000);
+          if (!src || !text) throw new ApiError(400, 'Matn bo‘sh');
+          setTranslation(db, lang, src, text, 'human');
+          return send(res, 200, { ok: true });
+        }
+        if (req.method === 'POST' && p[1] === 'translate') {
+          if (me.role !== 'admin') throw new ApiError(403, 'Faqat admin');
+          if (ai.provider === 'none') throw new ApiError(503, 'AI sozlanmagan');
+          const r = await translateMissing(db, ai, lang, { onCost: (chars) => recordAiCost(db, { playerId: me.id, feature: 'i18n', provider: ai.provider, model: ai.model, units: Math.round(chars / 3), unitKind: 'tokens', costUsd: (chars / 3) * 6e-6, estimated: true }) });
+          return send(res, 200, r);
+        }
+      }
       // Fayl yuklash: hujjat → matn → (AI) → qoralama darslar; video → media URL
       if (req.method === 'POST' && p[0] === 'upload') {
         const name = String(url.searchParams.get('name') ?? '').slice(0, 120);
@@ -229,7 +314,10 @@ createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url.pathname === '/api/xp') {
       const b = await readJson(req, 16_384);
-      return send(res, 200, submitXp(db, String(req.headers['x-token'] ?? ''), b.events));
+      const tk = String(req.headers['x-token'] ?? '');
+      const out = submitXp(db, tk, b.events);
+      maybeRewardReferral(db, byToken(db, tk).id); // taklif qilingan o'quvchi birinchi darsni bajargan bo'lsa — ikkalasiga XP
+      return send(res, 200, out);
     }
     if (url.pathname === '/api/progress') {
       const token = String(req.headers['x-token'] ?? '');
@@ -259,7 +347,24 @@ createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, submitDuel(db, String(b.token ?? ''), dm[1], Number(b.score), Number(b.correct), Number(b.ms)));
     }
-    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, configured: ai.provider !== 'none' });
+    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, configured: ai.provider !== 'none', stt: !!stt });
+    if (req.method === 'GET' && url.pathname === '/api/coach/minutes') {
+      const tk = String(req.headers['x-token'] ?? ''); const pid = byToken(db, tk).id; const sub = entitlements(db, tk).plan !== null;
+      return send(res, 200, { subscribed: sub, total: Math.round(CALL_MONTH_SECONDS / 60), left: Math.floor(callLeft(db, pid, sub) / 60) });
+    }
+    // Nutqni tanish: brauzer yozib olgan bitta navbat (ovoz) → matn. Ovoz saqlanmaydi.
+    if (req.method === 'POST' && url.pathname === '/api/ai/stt') {
+      if (!stt) throw new ApiError(503, 'Ovozli tanish sozlanmagan');
+      const p = byToken(db, String(req.headers['x-token'] ?? ''));
+      sttAllowed(db, stt, p.id);
+      const audio = await readRaw(req, MAX_AUDIO + 1024);
+      const r = await transcribe(stt, audio, String(req.headers['content-type'] ?? ''));
+      const secs = r.seconds || audio.length / 4000; // so'z vaqti bo'lmasa — hajmdan taxmin
+      recordStt(db, p.id, secs);
+      addCall(db, p.id, secs);
+      recordAiCost(db, { playerId: p.id, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
+      return send(res, 200, { text: r.text, lang: r.lang });
+    }
     if (req.method === 'POST' && url.pathname === '/api/ai/coach') {
       if (ai.provider === 'none') throw new AiError(503, 'AI ustoz hali ulanmagan');
       const b = await readJson(req, 16_384);
@@ -274,7 +379,7 @@ createServer(async (req, res) => {
       const reply = await once(`${player.id}:${turnId}`, async () => {
         useGlobalAi(db, COACH_GLOBAL_DAILY);                       // platform ceiling first (fail-closed)
         useAi(db, token, Date.now(), COACH_DAILY_LIMIT, 'coach');  // per-learner daily limit
-        return coachTurn(ai, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode });
+        return coachTurn(ai, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']) });
       });
       return send(res, 200, { ...reply, persona: resolved.id, notice: resolved.downgraded });
     }
@@ -290,7 +395,7 @@ createServer(async (req, res) => {
         try {
           const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
           if (lv === 0) return send(res, 200, { question: await followUp(ai, String(b.question ?? ''), String(b.answer ?? '')), reaction: null });
-          return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3));
+          return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3, undefined, nativeOf(req.headers['x-lang'])));
         } catch (e) { refundAi(db, player.id, '', now); refundGlobalAi(db, now); throw e; }
       }
       if (url.pathname === '/api/ai/speaking' || url.pathname === '/api/ai/writing') {
@@ -303,7 +408,8 @@ createServer(async (req, res) => {
         const q = useAssessment(db, token, kind, now);  // server obunasi + oylik kvota (EXAM 10, ALL 20)
         try { useGlobalAi(db, COACH_GLOBAL_DAILY, now); } catch (e) { refundAssessment(db, q.playerId, kind, now); throw e; }
         try {
-          const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text);
+          const nat = nativeOf(req.headers['x-lang']);
+          const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns, undefined, nat) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text, undefined, nat);
           return send(res, 200, { ...r, quota: { used: q.used, limit: q.limit } });
         } catch (e) { refundAssessment(db, q.playerId, kind, now); refundGlobalAi(db, now); throw e; }
       }
@@ -321,16 +427,20 @@ createServer(async (req, res) => {
       // ElevenLabs: limit faqat yangi (xarajatli) javobga — kuniga VOICE_DAILY_ANSWERS ta + platforma kunlik belgilar chegarasi (OD-25).
       const paid = tts.provider === 'elevenlabs' && !isCached(tts, text, opts);
       const reserve = text.length + 16;
+      // AI ustoz suhbati: obunachining oylik daqiqalari tugaguncha kunlik 5 ta javob chegarasi qo'llanmaydi
+      const coachCall = b.feature === 'coach' && paid && callLeft(db, player.id, entitlements(db, token, now).plan !== null, now) > 0;
       const bucket = tts.provider === 'elevenlabs' ? 'voice' : 'tts';
       if (tts.provider !== 'elevenlabs') useAi(db, token, now, TTS_DAILY_LIMIT, 'tts');
+      else if (paid && coachCall) useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now);
       else if (paid) { useAi(db, token, now, VOICE_DAILY_ANSWERS, 'voice'); try { useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); } catch (e) { refundAi(db, player.id, 'voice', now); throw e; } }
       let out: Awaited<ReturnType<typeof synthesize>>;
       try { out = await synthesize(tts, text, opts); } catch (e) {
-        if (paid) { refundAi(db, player.id, bucket, now); refundGlobalVoiceChars(db, reserve, now); }
+        if (paid) { if (!coachCall) refundAi(db, player.id, bucket, now); refundGlobalVoiceChars(db, reserve, now); }
         throw e;
       }
       const { audio, cached, chars } = out;
-      if (!cached) recordAiCost(db, { playerId: player.id, feature: 'tts_feedback', provider: tts.provider, model: tts.model ?? tts.voice, units: chars, unitKind: 'chars', costUsd: estimateCostUsd(tts, chars) }, now);
+      if (b.feature === 'coach') addCall(db, player.id, ttsSeconds(chars || text.length), now);
+      if (!cached) recordAiCost(db, { playerId: player.id, feature: b.feature === 'coach' ? 'tts_coach' : 'tts_feedback', provider: tts.provider, model: tts.model ?? tts.voice, units: chars, unitKind: 'chars', costUsd: estimateCostUsd(tts, chars) }, now);
       res.writeHead(200, { 'content-type': 'audio/mpeg', 'content-length': audio.length, 'cache-control': 'private, max-age=86400', 'x-cache': cached ? 'hit' : 'miss' });
       return void res.end(audio);
     }
@@ -338,7 +448,7 @@ createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
       return send(res, 200, { enabled: !!hapi, demo: DEMO, periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
-    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid) }); }
+    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; const xl = reqLang(req); if (/^(uz|en|ru|kk|ky|tg)$/.test(xl)) db.prepare('UPDATE players SET lang = ? WHERE id = ?').run(xl, pid); return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid) }); }
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {
       if (!hapi) throw new ApiError(503, 'To‘lov hali ulanmagan');
       const b = await readJson(req);
@@ -367,7 +477,9 @@ createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/staff/role') {
       requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']);
       const b = await readJson(req);
-      return send(res, 200, setRole(db, String(b.nickname ?? ''), b.role ? 'methodologist' : null));
+      // role: 'methodologist' | 'creator' | 'teacher' (true — eski mijozlar uchun metodist), false/null — olib tashlash; admin faqat ADMIN_NICKNAMES orqali
+      const want = b.role === true ? 'methodologist' : typeof b.role === 'string' && ['methodologist', 'creator', 'teacher'].includes(b.role) ? b.role as 'methodologist' | 'creator' | 'teacher' : null;
+      return send(res, 200, setRole(db, String(b.nickname ?? ''), want));
     }
     if (url.pathname.startsWith('/api/admin/')) {
       if (!ADMIN_TOKEN || String(req.headers['x-admin'] ?? '') !== ADMIN_TOKEN) throw new ApiError(403, 'Taqiqlangan');
@@ -395,7 +507,7 @@ createServer(async (req, res) => {
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
-    if (e instanceof ApiError || e instanceof AiError || e instanceof TtsError) return send(res, e.status, { error: e.message });
+    if (e instanceof ApiError || e instanceof AiError || e instanceof TtsError) return send(res, e.status, { error: trServer(db, reqLang(req), e.message) });
     console.error(e);
     return send(res, 500, { error: 'Server xatosi' });
   }
@@ -403,5 +515,6 @@ createServer(async (req, res) => {
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)
-if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn')).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
+if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runLeagueNotices(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/league'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Liga natijasi yuborildi: %s ta', n); }).catch((e) => console.warn('liga xabari xato', (e as Error).message)); }, 10 * 60_000);
+if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);

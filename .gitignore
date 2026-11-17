@@ -4,3 +4,4 @@ dist
 .env.local
 server/data.sqlite*
 voice-demo-out
+pseudo-left.txt

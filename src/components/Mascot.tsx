@@ -1,13 +1,14 @@
 // Bandly brend belgisi (Design 3.0): binafsha kvadrat, sariq-shaftoli girih yulduzi va "B" monogrammasi.
 // Eski Mascot API saqlangan (mood, size, talking), shuning uchun barcha joylarda avtomatik almashadi.
 import { useId } from 'react';
+import { L } from '../i18n';
 
 export type Mood = 'idle' | 'happy' | 'sad' | 'angry' | 'think' | 'laugh' | 'listen' | 'impressed';
 
 export function Mascot({ size = 96, talking = false }: { mood?: Mood; size?: number; talking?: boolean }) {
   const id = useId().replace(/:/g, '');
   return (
-    <svg className={`mascot brandmark${talking ? ' talking' : ''}`} width={size} height={size} viewBox="0 0 100 100" role="img" aria-label="Bandly">
+    <svg className={`mascot brandmark${talking ? ' talking' : ''}`} width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={L('Bandly')}>
       <defs>
         <linearGradient id={`bg${id}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9a86ff" /><stop offset="1" stopColor="#5b42e6" /></linearGradient>
         <linearGradient id={`st${id}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffd65c" /><stop offset="1" stopColor="#ffb48a" /></linearGradient>

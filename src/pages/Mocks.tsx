@@ -4,6 +4,7 @@ import { listeningTests, readingTests } from '../content/mockTests';
 import { loadResults } from '../lib/storage';
 import { useProfile } from '../lib/store';
 import { openExamTab } from '../lib/examTab';
+import { L } from '../i18n';
 
 /** Mock Arena: bepul, avtomatik baholanadigan Reading va Listening mocklari; to'liq simulyatsiya (Writing/Speaking bilan) obunada. */
 export default function Mocks() {
@@ -16,21 +17,21 @@ export default function Mocks() {
   const ielts = (k: 'reading' | 'listening') => (k === 'reading' ? readingTests : listeningTests).filter((t) => t.exam !== 'cefr').length;
   const cefr = [...readingTests, ...listeningTests].filter((t) => t.exam === 'cefr').length;
   const rows = [
-    { href: '#/mocks/reading', icon: BookOpen, sq: 'sky', tag: 'IELTS · bepul', title: 'Reading testlari', meta: `${ielts('reading')} ta` },
-    { href: '#/mocks/listening', icon: Headphones, sq: 'coral', tag: 'IELTS · bepul', title: 'Listening testlari', meta: `${ielts('listening')} ta` },
-    { href: '#/exam', icon: GraduationCap, sq: 'mint', tag: 'CEFR Multilevel · bepul', title: 'CEFR mashq testlari', meta: `${cefr} ta`, tab: 'cefr' as const },
-    { href: '#/mocks/full', icon: FlaskConical, sq: 'lilac', tag: p.plan.mocks ? 'Obunada' : 'Obuna kerak', title: 'To‘liq imtihon simulyatsiyasi', meta: '4 bo‘lim' },
-    { href: '#/exam', icon: Target, sq: 'butter', tag: 'Tahlil', title: 'IELTS tayyorgarligim', meta: 'band' },
+    { href: '#/mocks/reading', icon: BookOpen, sq: 'sky', tag: L('IELTS · bepul'), title: L('Reading testlari'), meta: L('{0} ta', [ielts('reading')]) },
+    { href: '#/mocks/listening', icon: Headphones, sq: 'coral', tag: L('IELTS · bepul'), title: L('Listening testlari'), meta: L('{0} ta', [ielts('listening')]) },
+    { href: '#/exam', icon: GraduationCap, sq: 'mint', tag: L('CEFR Multilevel · bepul'), title: L('CEFR mashq testlari'), meta: L('{0} ta', [cefr]), tab: 'cefr' as const },
+    { href: '#/mocks/full', icon: FlaskConical, sq: 'lilac', tag: p.plan.mocks ? L('Obunada') : L('Obuna kerak'), title: L('To‘liq imtihon simulyatsiyasi'), meta: L('4 bo‘lim') },
+    { href: '#/exam', icon: Target, sq: 'butter', tag: L('Tahlil'), title: L('IELTS tayyorgarligim'), meta: L('band') },
   ];
   return (
     <div>
       <div className="card page-head with-illo">
-        <h2 style={{ margin: 0 }}>Mock <em className="it">Arena</em></h2>
-        <p style={{ margin: '6px 0 12px' }}>Imtihon sharoiti: taymer, avtomatik baho va izohlar.</p>
+        <h2 style={{ margin: 0 }}>{L('Mock')} <em className="it">{L('Arena')}</em></h2>
+        <p style={{ margin: '6px 0 12px' }}>{L('Imtihon sharoiti: taymer, avtomatik baho va izohlar.')}</p>
         <div className="row">
-          <span className="pill">Yechilgan {solved}/{total}</span>
-          <span className="pill">Urinish {res.length}</span>
-          <span className="pill">O‘rtacha {avg !== null ? avg.toFixed(1) : '—'}</span>
+          <span className="pill">{L('Yechilgan')} {solved}/{total}</span>
+          <span className="pill">{L('Urinish')} {res.length}</span>
+          <span className="pill">{L('O‘rtacha')} {avg !== null ? avg.toFixed(1) : '—'}</span>
         </div>
         <Illo kind="clock" size={128} />
       </div>

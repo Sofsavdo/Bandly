@@ -1,6 +1,7 @@
 // Bandly 3.0 tasvirlari: tekis (flat), yumshoq soyali jismlar — kitoblar, kubok, quloqchin, soat, mikrofon, suhbat,
 // shapka, nishon, karnay. Hammasi SVG (rasm yuklanmaydi), har qanday o'lchamda tiniq, kattalar uchun ham mos.
 import type { CSSProperties } from 'react';
+import { L } from '../i18n';
 
 export type IlloKind = 'books' | 'trophy' | 'headphones' | 'clock' | 'mic' | 'chat' | 'cap' | 'target' | 'megaphone' | 'pencil' | 'star' | 'map';
 
@@ -54,9 +55,9 @@ function Art({ kind }: { kind: IlloKind }) {
       <>
         <Shadow rx={38} />
         <path d="M10 26c0-8 6-14 14-14h46c8 0 14 6 14 14v24c0 8-6 14-14 14H40l-16 14V64h0c-8 0-14-6-14-14z" fill="#7b61ff" />
-        <text x="47" y="46" textAnchor="middle" fontFamily="Outfit Variable, Inter, sans-serif" fontWeight="700" fontSize="20" fill="#fff">Hello</text>
+        <text x="47" y="46" textAnchor="middle" fontFamily="Outfit Variable, Inter, sans-serif" fontWeight="700" fontSize="20" fill="#fff">{'Hello'}</text>
         <path d="M110 58c0-8-6-14-14-14H60c-8 0-14 6-14 14v18c0 8 6 14 14 14h28l14 12V90c5-2 8-7 8-14z" fill="#ffd65c" />
-        <text x="78" y="74" textAnchor="middle" fontFamily="Outfit Variable, Inter, sans-serif" fontWeight="700" fontSize="17" fill="#14162b">Salom</text>
+        <text x="78" y="74" textAnchor="middle" fontFamily="Outfit Variable, Inter, sans-serif" fontWeight="700" fontSize="17" fill="#14162b">{L('Salom')}</text>
       </>
     );
     case 'cap': return (

@@ -1,3 +1,4 @@
+import { L } from '../i18n';
 // "Jim qolma!" — Bandly's own timed speaking challenge (inspired by the general idea of time-limited speaking; no competitor assets).
 // Rules (documented, thresholds are gameplay HYPOTHESES to be tested — DR-12):
 //  - a round lasts ROUND_MS; the learner must keep speaking about a topic;
@@ -5,11 +6,11 @@
 //  - speech detection uses the browser's recogniser, whose own latency (~0.5–1.5 s) is part of the limit — hence pressure-free mode exists.
 export type ChallengeLevel = 'relaxed' | 'easy' | 'medium' | 'hard' | 'extreme';
 export const LEVELS: { id: ChallengeLevel; labelUz: string; silenceMs: number }[] = [
-  { id: 'relaxed', labelUz: 'Bosimsiz (yutqazish yo‘q)', silenceMs: Number.POSITIVE_INFINITY },
-  { id: 'easy', labelUz: 'Oson · 12 s', silenceMs: 12_000 },
-  { id: 'medium', labelUz: 'O‘rta · 10 s', silenceMs: 10_000 },
-  { id: 'hard', labelUz: 'Qiyin · 5 s', silenceMs: 5_000 },
-  { id: 'extreme', labelUz: 'Juda qiyin · 2.5 s', silenceMs: 2_500 },
+  { id: 'relaxed', labelUz: L('Bosimsiz (yutqazish yo‘q)'), silenceMs: Number.POSITIVE_INFINITY },
+  { id: 'easy', labelUz: L('Oson · 12 s'), silenceMs: 12_000 },
+  { id: 'medium', labelUz: L('O‘rta · 10 s'), silenceMs: 10_000 },
+  { id: 'hard', labelUz: L('Qiyin · 5 s'), silenceMs: 5_000 },
+  { id: 'extreme', labelUz: L('Juda qiyin · 2.5 s'), silenceMs: 2_500 },
 ];
 export const ROUND_MS = 60_000;
 export const START_GRACE_MS = 3_000; // extra time to start talking after the topic appears
@@ -46,31 +47,31 @@ export function tier(r: RoundResult): Tier {
 
 /** Reactions: kind by default; the savage set is used only for learners who confirmed 18+ (same rule as the AI Coach). Language mistakes only — never the person. */
 const REACT: Record<Tier, { kind: string; savage: string }> = {
-  silent: { kind: 'Boshlanishi qiyin bo‘ladi — keyingi safar birinchi gapni tayyorlab qo‘ying va to‘xtamang!', savage: 'Shu ham gapirishmi? Mikrofon ham zerikib uxlab qoldi. Qaytadan, bu safar jiddiy!' },
-  tryhard: { kind: 'Yaxshi urinish! Jim qolib qoldingiz — “Well…”, “Let me think…” kabi iboralar bilan vaqt yuting.', savage: 'Yarmida o‘chib qolding-ku, eshak! Jim turgandan ko‘ra “Well, actually…” deb boshla!' },
-  solid: { kind: 'Zo‘r! Raund oxirigacha gapirdingiz. Endi tezlikni va so‘z boyligini oshiramiz.', savage: 'Hm, tirik qolding. Hayronman. Lekin sekinroq gapirding — keyingi safar tezroq!' },
-  fluent: { kind: 'Ajoyib ravonlik! Daqiqasiga 90+ so‘z — bu juda yaxshi natija.', savage: 'Voy, miya ishlaydi-ku! Bugun so‘kmayman. Faqat bugun.' },
+  silent: { kind: L('Boshlanishi qiyin bo‘ladi — keyingi safar birinchi gapni tayyorlab qo‘ying va to‘xtamang!'), savage: L('Shu ham gapirishmi? Mikrofon ham zerikib uxlab qoldi. Qaytadan, bu safar jiddiy!') },
+  tryhard: { kind: L('Yaxshi urinish! Jim qolib qoldingiz — “Well…”, “Let me think…” kabi iboralar bilan vaqt yuting.'), savage: L('Yarmida o‘chib qolding-ku, eshak! Jim turgandan ko‘ra “Well, actually…” deb boshla!') },
+  solid: { kind: L('Zo‘r! Raund oxirigacha gapirdingiz. Endi tezlikni va so‘z boyligini oshiramiz.'), savage: L('Hm, tirik qolding. Hayronman. Lekin sekinroq gapirding — keyingi safar tezroq!') },
+  fluent: { kind: L('Ajoyib ravonlik! Daqiqasiga 90+ so‘z — bu juda yaxshi natija.'), savage: L('Voy, miya ishlaydi-ku! Bugun so‘kmayman. Faqat bugun.') },
 };
 export const reaction = (r: RoundResult, savage: boolean): string => (savage ? REACT[tier(r)].savage : REACT[tier(r)].kind);
 
 export const TOPICS: { band: 'low' | 'mid' | 'high'; en: string; uz: string }[] = [
-  { band: 'low', en: 'Describe your favourite food and how it is made.', uz: 'Sevimli taomingiz va u qanday tayyorlanishi' },
-  { band: 'low', en: 'Talk about your family.', uz: 'Oilangiz haqida' },
-  { band: 'low', en: 'Describe your typical day from morning to night.', uz: 'Odatiy kuningiz' },
-  { band: 'low', en: 'Talk about your best friend.', uz: 'Eng yaqin do‘stingiz' },
-  { band: 'low', en: 'Describe your home.', uz: 'Uyingiz' },
-  { band: 'low', en: 'What did you do last weekend?', uz: 'O‘tgan dam olish kunlari nima qildingiz?' },
-  { band: 'mid', en: 'Describe a trip that you will never forget.', uz: 'Unutilmas sayohatingiz' },
-  { band: 'mid', en: 'Is social media good or bad for young people? Why?', uz: 'Ijtimoiy tarmoqlar yoshlar uchun foydalimi?' },
-  { band: 'mid', en: 'Talk about a skill you want to learn and why.', uz: 'O‘rganmoqchi bo‘lgan ko‘nikmangiz' },
-  { band: 'mid', en: 'Describe a person who has influenced you.', uz: 'Sizga ta’sir qilgan inson' },
-  { band: 'mid', en: 'What would you do if you won a million dollars?', uz: 'Million dollar yutsangiz nima qilardingiz?' },
-  { band: 'mid', en: 'Compare life in a big city and in a village.', uz: 'Shahar va qishloq hayotini taqqoslang' },
-  { band: 'high', en: 'Should university education be free for everyone?', uz: 'Oliy ta’lim hamma uchun bepul bo‘lishi kerakmi?' },
-  { band: 'high', en: 'How will artificial intelligence change jobs in the next ten years?', uz: 'Sun’iy intellekt kasblarni qanday o‘zgartiradi?' },
-  { band: 'high', en: 'Is it better to work for a big company or to start your own business?', uz: 'Katta kompaniya yoki o‘z biznesingiz?' },
-  { band: 'high', en: 'What is the biggest environmental problem in your country and how can it be solved?', uz: 'Mamlakatingizdagi eng katta ekologik muammo' },
-  { band: 'high', en: 'Do rich countries have a duty to help poorer ones?', uz: 'Boy davlatlar kambag‘allarga yordam berishi shartmi?' },
+  { band: 'low', en: 'Describe your favourite food and how it is made.', uz: L('Sevimli taomingiz va u qanday tayyorlanishi') },
+  { band: 'low', en: 'Talk about your family.', uz: L('Oilangiz haqida') },
+  { band: 'low', en: 'Describe your typical day from morning to night.', uz: L('Odatiy kuningiz') },
+  { band: 'low', en: 'Talk about your best friend.', uz: L('Eng yaqin do‘stingiz') },
+  { band: 'low', en: 'Describe your home.', uz: L('Uyingiz') },
+  { band: 'low', en: 'What did you do last weekend?', uz: L('O‘tgan dam olish kunlari nima qildingiz?') },
+  { band: 'mid', en: 'Describe a trip that you will never forget.', uz: L('Unutilmas sayohatingiz') },
+  { band: 'mid', en: 'Is social media good or bad for young people? Why?', uz: L('Ijtimoiy tarmoqlar yoshlar uchun foydalimi?') },
+  { band: 'mid', en: 'Talk about a skill you want to learn and why.', uz: L('O‘rganmoqchi bo‘lgan ko‘nikmangiz') },
+  { band: 'mid', en: 'Describe a person who has influenced you.', uz: L('Sizga ta’sir qilgan inson') },
+  { band: 'mid', en: 'What would you do if you won a million dollars?', uz: L('Million dollar yutsangiz nima qilardingiz?') },
+  { band: 'mid', en: 'Compare life in a big city and in a village.', uz: L('Shahar va qishloq hayotini taqqoslang') },
+  { band: 'high', en: 'Should university education be free for everyone?', uz: L('Oliy ta’lim hamma uchun bepul bo‘lishi kerakmi?') },
+  { band: 'high', en: 'How will artificial intelligence change jobs in the next ten years?', uz: L('Sun’iy intellekt kasblarni qanday o‘zgartiradi?') },
+  { band: 'high', en: 'Is it better to work for a big company or to start your own business?', uz: L('Katta kompaniya yoki o‘z biznesingiz?') },
+  { band: 'high', en: 'What is the biggest environmental problem in your country and how can it be solved?', uz: L('Mamlakatingizdagi eng katta ekologik muammo') },
+  { band: 'high', en: 'Do rich countries have a duty to help poorer ones?', uz: L('Boy davlatlar kambag‘allarga yordam berishi shartmi?') },
   { band: 'high', en: 'Should children be allowed to use smartphones at school?', uz: 'Maktabda smartfon ruxsat etilishi kerakmi?' },
 ];
 export function pickTopic(level: string | null | undefined, rnd: () => number = Math.random) {

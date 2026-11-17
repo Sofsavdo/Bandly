@@ -6,10 +6,10 @@ import { tzDayStart } from './day';
 import { byToken } from './db';
 import { joinWeek } from './league';
 
-export const XP_SOURCES = ['lesson', 'boss', 'game', 'exam', 'grammar', 'practice', 'mistakes', 'placement', 'quest', 'other', 'mock'] as const;
+export const XP_SOURCES = ['lesson', 'boss', 'game', 'exam', 'grammar', 'practice', 'mistakes', 'placement', 'quest', 'other', 'mock', 'referral'] as const;
 export type XpSource = (typeof XP_SOURCES)[number];
 /** Kunlik chegaralar (UTC kun): bitta manbadan va jami. */
-export const SOURCE_DAILY: Record<XpSource, number> = { lesson: 400, boss: 200, game: 200, exam: 300, grammar: 200, practice: 200, mistakes: 150, placement: 30, quest: 60, other: 100, mock: 300 };
+export const SOURCE_DAILY: Record<XpSource, number> = { lesson: 400, boss: 200, game: 200, exam: 300, grammar: 200, practice: 200, mistakes: 150, placement: 30, quest: 60, other: 100, mock: 300, referral: 500 };
 export const EVENT_MAX = 150;
 export const TOTAL_DAILY = 1000;
 

@@ -11,6 +11,7 @@ import { fmt, useCountdown } from '../components/hooks';
 import { addXp } from '../lib/store';
 import { saveResult } from '../lib/storage';
 import { Illo } from '../components/Illo';
+import { L } from '../i18n';
 
 type Tab = 'practice' | 'types' | 'topics';
 
@@ -58,34 +59,34 @@ export default function Writing() {
   return (
     <div>
       <div className="card page-head with-illo t-butter">
-        <h2>Writing</h2><Illo kind="pencil" size={124} />
+        <h2>{L('Writing')}</h2><Illo kind="pencil" size={124} />
         <div className="tabs" role="tablist">
-          <button className={`btn ${tab === 'practice' ? 'primary' : ''}`} onClick={() => setTab('practice')}><PenLine size={15} /> Mashq</button>
-          <button className={`btn ${tab === 'types' ? 'primary' : ''}`} onClick={() => setTab('types')}><Layers size={15} /> Insho turlari va xatolar</button>
-          <button className={`btn ${tab === 'topics' ? 'primary' : ''}`} onClick={() => setTab('topics')}><BookOpenCheck size={15} /> 10 mavzu: namuna va so‘zlar</button>
+          <button className={`btn ${tab === 'practice' ? 'primary' : ''}`} onClick={() => setTab('practice')}><PenLine size={15} />  {L('Mashq')}</button>
+          <button className={`btn ${tab === 'types' ? 'primary' : ''}`} onClick={() => setTab('types')}><Layers size={15} />  {L('Insho turlari va xatolar')}</button>
+          <button className={`btn ${tab === 'topics' ? 'primary' : ''}`} onClick={() => setTab('topics')}><BookOpenCheck size={15} />  {L('10 mavzu: namuna va so‘zlar')}</button>
         </div>
       </div>
 
       {tab === 'types' && (
         <>
           <div className="card">
-            <h3>Task 2 insho turlari</h3>
-            <p className="evidence">Avval savol turini aniqlang — tuzilma shunga bog‘liq.</p>
+            <h3>{L('Task 2 insho turlari')}</h3>
+            <p className="evidence">{L('Avval savol turini aniqlang — tuzilma shunga bog‘liq.')}</p>
           </div>
           {essayTypes.map((e) => (
             <div className="card" key={e.id}>
               <h3 style={{ marginTop: 0 }}>{e.name}</h3>
-              <p className="evidence">Topshiriqda: {e.signals.map((s) => `“${s}”`).join(' · ')}</p>
-              <p><span className={`pill ${e.opinion === 'ha' ? 'ok' : ''}`}>O‘z fikringiz: {e.opinion === 'ha' ? 'talab etiladi' : 'asosiy emas'}</span></p>
+              <p className="evidence">{L('Topshiriqda:')} {e.signals.map((s) => `“${s}”`).join(' · ')}</p>
+              <p><span className={`pill ${e.opinion === 'ha' ? 'ok' : ''}`}>{L('O‘z fikringiz:')} {e.opinion === 'ha' ? L('talab etiladi') : L('asosiy emas')}</span></p>
               <ol className="pay-steps">{e.structure.map((s) => <li key={s}>{s}</li>)}</ol>
               <p className="fb-line">{e.frames.map((f) => <span key={f} className="chip-up">{f}</span>)}</p>
-              <p className="fb-line"><b>Maslahat:</b> {e.tipUz}</p>
+              <p className="fb-line"><b>{L('Maslahat:')}</b> {e.tipUz}</p>
             </div>
           ))}
           <div className="card">
-            <h3>Eng ko‘p uchraydigan xatolar</h3>
+            <h3>{L('Eng ko‘p uchraydigan xatolar')}</h3>
             {commonMistakes.map((m) => (
-              <div key={m.id} className="fb-block"><small>{m.title}</small><p>{m.why}</p><p className="ok" style={{ margin: 0 }}>To‘g‘risi: {m.fix}</p></div>
+              <div key={m.id} className="fb-block"><small>{m.title}</small><p>{m.why}</p><p className="ok" style={{ margin: 0 }}>{L('To‘g‘risi:')} {m.fix}</p></div>
             ))}
           </div>
         </>
@@ -94,8 +95,8 @@ export default function Writing() {
       {tab === 'topics' && (
         <>
           <div className="card">
-            <h3>10 asosiy mavzu</h3>
-            <p className="evidence">Mavzu tanlang: savol, reja, namuna va kalit so‘zlar.</p>
+            <h3>{L('10 asosiy mavzu')}</h3>
+            <p className="evidence">{L('Mavzu tanlang: savol, reja, namuna va kalit so‘zlar.')}</p>
             <div className="kinds">
               {writingTopics.map((t) => <button key={t.id} className={`kindbtn ${t.id === topicId ? 'on' : ''}`} onClick={() => setTopicId(t.id)}><b>{t.title}</b><span>{essayTypes.find((e) => e.id === t.type)!.name.split(' (')[0]}</span></button>)}
             </div>
@@ -107,24 +108,24 @@ export default function Writing() {
                 <div className="card">
                   <h3 style={{ marginTop: 0 }}>{t.title}</h3>
                   <p className="evidence">{t.about}</p>
-                  <div className="fb-block"><small>Namunaviy savol</small><p>{t.prompt}</p></div>
+                  <div className="fb-block"><small>{L('Namunaviy savol')}</small><p>{t.prompt}</p></div>
                   <p><TypeBadge id={t.type} /></p>
-                  <h4>Reja</h4>
+                  <h4>{L('Reja')}</h4>
                   <ol className="pay-steps">{t.outline.map((o) => <li key={o}>{o}</li>)}</ol>
-                  <button className="btn primary" onClick={() => practiceTopic(t.id)}><PenLine size={16} /> Shu mavzuda yozish</button>
+                  <button className="btn primary" onClick={() => practiceTopic(t.id)}><PenLine size={16} />  {L('Shu mavzuda yozish')}</button>
                 </div>
                 <div className="card">
-                  <h3 style={{ marginTop: 0 }}>Namuna insho <span className="pill">{t.essay.replace(/\*\*/g, '').trim().split(/\s+/).length} so‘z</span></h3>
-                  <p className="evidence">Mavzu so‘zlari <mark className="kw">shunday</mark> belgilangan. Avval o‘zingiz yozib ko‘ring, keyin solishtiring: so‘zlarni ko‘chirmang, o‘z fikringiz bilan ishlating.</p>
+                  <h3 style={{ marginTop: 0 }}>{L('Namuna insho')} <span className="pill">{t.essay.replace(/\*\*/g, '').trim().split(/\s+/).length}  {L('so‘z')}</span></h3>
+                  <p className="evidence">{L('Mavzu so‘zlari')} <mark className="kw">{L('shunday')}</mark>  {L('belgilangan. Avval o‘zingiz yozib ko‘ring, keyin solishtiring: so‘zlarni ko‘chirmang, o‘z fikringiz bilan ishlating.')}</p>
                   <div className="essay-model"><Highlight text={t.essay} /></div>
                 </div>
                 <div className="card">
-                  <h3 style={{ marginTop: 0 }}>Mavzu so‘zlari</h3>
+                  <h3 style={{ marginTop: 0 }}>{L('Mavzu so‘zlari')}</h3>
                   <table className="data">
-                    <thead><tr><th>So‘z / ibora</th><th>Ma’nosi</th><th>Misol</th></tr></thead>
+                    <thead><tr><th>{L('So‘z / ibora')}</th><th>{L('Ma’nosi')}</th><th>{L('Misol')}</th></tr></thead>
                     <tbody>{t.vocab.map((x) => <tr key={x.phrase}><td><b>{x.phrase}</b> <span className="evidence">{x.pos}</span></td><td>{x.uz}</td><td>{x.example}</td></tr>)}</tbody>
                   </table>
-                  <p className="evidence">Bu so‘zlar <a href="#/games/rush">so‘z o‘yinlarida</a> ham uchraydi.</p>
+                  <p className="evidence">{L('Bu so‘zlar')} <a href="#/games/rush">{L('so‘z o‘yinlarida')}</a>  {L('ham uchraydi.')}</p>
                 </div>
               </>
             );
@@ -137,11 +138,11 @@ export default function Writing() {
           <div className="card">
             <div className="row">
               <select value={id} onChange={(e) => choose(e.target.value)}>
-                <optgroup label="Task 1">{writingPrompts.filter((w) => w.task === 1).map((w) => <option key={w.id} value={w.id}>{w.title}</option>)}</optgroup>
-                <optgroup label="Task 2">{writingPrompts.filter((w) => w.task === 2).map((w) => <option key={w.id} value={w.id}>{w.title}</option>)}</optgroup>
+                <optgroup label={L('Task 1')}>{writingPrompts.filter((w) => w.task === 1).map((w) => <option key={w.id} value={w.id}>{w.title}</option>)}</optgroup>
+                <optgroup label={L('Task 2')}>{writingPrompts.filter((w) => w.task === 2).map((w) => <option key={w.id} value={w.id}>{w.title}</option>)}</optgroup>
               </select>
               <span className={`timer ${left < 60 ? 'low' : ''}`}>{fmt(left)}</span>
-              <button className="btn" onClick={() => setRunning((r) => !r)}>{running ? 'To‘xtatish' : 'Taymerni boshlash'}</button>
+              <button className="btn" onClick={() => setRunning((r) => !r)}>{running ? L('To‘xtatish') : L('Taymerni boshlash')}</button>
             </div>
             <p><b>{p.prompt}</b></p>
             {p.table && (
@@ -150,29 +151,30 @@ export default function Writing() {
                 <tbody>{p.table.rows.map((r) => <tr key={r[0]}>{r.map((c, i) => <td key={i}>{c}</td>)}</tr>)}</tbody>
               </table>
             )}
-            <div className="row"><span className="pill">Kamida {p.minWords} so‘z · {p.minutes} daqiqa</span><TypeBadge id={p.type} /></div>
-            {et && <details style={{ marginTop: 10 }}><summary>Reja: {et.name.split(' (')[0]}</summary><ol className="pay-steps">{et.structure.map((s) => <li key={s}>{s}</li>)}</ol><p className="evidence">{et.tipUz}</p></details>}
-            {topic && <details style={{ marginTop: 6 }}><summary>Mavzu so‘zlari ({topic.title})</summary><p className="fb-line">{topic.vocab.map((x) => <span key={x.phrase} className="chip-up" title={x.uz}>{x.phrase}</span>)}</p></details>}
+            <div className="row"><span className="pill">{L('Kamida')} {p.minWords}  {L('so‘z ·')} {p.minutes}  {L('daqiqa')}</span><TypeBadge id={p.type} /></div>
+            {et && <details style={{ marginTop: 10 }}><summary>{L('Reja:')} {et.name.split(' (')[0]}</summary><ol className="pay-steps">{et.structure.map((s) => <li key={s}>{s}</li>)}</ol><p className="evidence">{et.tipUz}</p></details>}
+            {topic && <details style={{ marginTop: 6 }}><summary>{L('Mavzu so‘zlari (')}{topic.title})</summary><p className="fb-line">{topic.vocab.map((x) => <span key={x.phrase} className="chip-up" title={x.uz}>{x.phrase}</span>)}</p></details>}
           </div>
           <div className="card">
-            <textarea className="essay" value={text} onChange={(e) => setText(e.target.value)} placeholder="Javobingizni inglizcha yozing... (abzatslarni bo‘sh qator bilan ajrating)" />
+            <textarea className="essay" value={text} onChange={(e) => setText(e.target.value)} placeholder={L('Javobingizni inglizcha yozing... (abzatslarni bo‘sh qator bilan ajrating)')} />
             <div className="row" style={{ justifyContent: 'space-between' }}>
-              <span className={words >= p.minWords ? 'ok' : 'pill'}>{words} so‘z</span>
-              {aiOn && acct && <button className="btn" disabled={aiBusy || words < 30} onClick={() => { setAiBusy(true); setAiErr(''); aiEvaluateWriting(p.task, p.prompt, text).then((e) => { setAiEval(e); addXp(10); }).catch((e: Error) => setAiErr(e.message)).finally(() => setAiBusy(false)); }}>{aiBusy ? 'AI baholayapti…' : 'AI baholash'}</button>}
-              <button className="btn primary" onClick={check} disabled={words === 0}>Tekshirish</button>
+              <span className={words >= p.minWords ? 'ok' : 'pill'}>{words}  {L('so‘z')}</span>
+              {aiOn && acct && <button className="btn" disabled={aiBusy || words < 30} onClick={() => { setAiBusy(true); setAiErr(''); aiEvaluateWriting(p.task, p.prompt, text).then((e) => { setAiEval(e); addXp(10); }).catch((e: Error) => setAiErr(e.message)).finally(() => setAiBusy(false)); }}>{aiBusy ? L('AI baholayapti…') : L('AI baholash')}</button>}
+              <button className="btn primary" onClick={check} disabled={words === 0}>{L('Tekshirish')}</button>
             </div>
             <p className="notice" style={{ marginTop: 12 }}>
-              Bu <b>AI baholash emas</b>: tuzilma, uslub va tanish xatolarni tekshiradi, band bermaydi. AI bilan 4 mezon bo‘yicha batafsil baho AI xizmati ulanganda “AI baholash” tugmasi orqali ishlaydi.
+              
+              {L('Bu')} <b>{L('AI baholash emas')}</b>{L(': tuzilma, uslub va tanish xatolarni tekshiradi, band bermaydi. AI bilan 4 mezon bo‘yicha batafsil baho AI xizmati ulanganda “AI baholash” tugmasi orqali ishlaydi.')}
             </p>
-            {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI baholash uchun hisobingizga kiring (kunlik limit hisobingizga yoziladi)." />}
-            {aiOn && acct && <p className="evidence">AI baholashda insho matni AI provayderiga yuboriladi.</p>}
-            {aiErr && <p className="notice">{aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">Tariflar</a></>}</p>}
-            {aiEval && <EvalCard ev={aiEval} title="AI baho" />}
+            {aiOn && !acct && <JoinForm onJoined={setAcct} text={L('AI baholash uchun hisobingizga kiring (kunlik limit hisobingizga yoziladi).')} />}
+            {aiOn && acct && <p className="evidence">{L('AI baholashda insho matni AI provayderiga yuboriladi.')}</p>}
+            {aiErr && <p className="notice">{aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">{L('Tariflar')}</a></>}</p>}
+            {aiEval && <EvalCard ev={aiEval} title={L('AI baho')} />}
           </div>
 
           {t2 && (
             <div className="card">
-              <h3 style={{ marginTop: 0 }}>Tekshiruv natijasi: {t2.passed} / {t2.checks.length}</h3>
+              <h3 style={{ marginTop: 0 }}>{L('Tekshiruv natijasi:')} {t2.passed} / {t2.checks.length}</h3>
               <div className="bar" style={{ margin: '8px 0 14px' }}><i style={{ width: `${(t2.passed / t2.checks.length) * 100}%` }} /></div>
               {t2.checks.map((c) => (
                 <div key={c.id + c.label} className={`check ${c.ok ? 'ok' : 'no'}`}>
@@ -181,17 +183,17 @@ export default function Writing() {
                 </div>
               ))}
               {t2.grammar.map((g) => <div key={g.id} className="fb-line"><b><del>{g.wrong}</del> → <ins>{g.right}</ins></b><br /><span>{g.ruleUz}</span></div>)}
-              {t2.repeated.length > 0 && <p className="fb-line">Takrorlanayotgan so‘zlar: {t2.repeated.map((r) => `${r.word} (${r.count})`).join(', ')}. Sinonimlardan foydalaning.</p>}
-              <p className="evidence">Abzatslar: {t2.paragraphs} · Gaplar: {t2.sentences} · O‘rtacha gap uzunligi: {t2.avgSentence.toFixed(1)} so‘z · Bog‘lovchilar: {t2.linkers.join(', ') || 'topilmadi'}</p>
-              {topic && <div className="row" style={{ marginTop: 10 }}><button className="btn" onClick={() => setShowModel((v) => !v)}><Sparkles size={15} /> {showModel ? 'Namunani yashirish' : 'Namuna inshoni ko‘rish'}</button></div>}
+              {t2.repeated.length > 0 && <p className="fb-line">{L('Takrorlanayotgan so‘zlar:')} {t2.repeated.map((r) => `${r.word} (${r.count})`).join(', ')}{L('. Sinonimlardan foydalaning.')}</p>}
+              <p className="evidence">{L('Abzatslar:')} {t2.paragraphs}  {L('· Gaplar:')} {t2.sentences}  {L('· O‘rtacha gap uzunligi:')} {t2.avgSentence.toFixed(1)}  {L('so‘z · Bog‘lovchilar:')} {t2.linkers.join(', ') || L('topilmadi')}</p>
+              {topic && <div className="row" style={{ marginTop: 10 }}><button className="btn" onClick={() => setShowModel((v) => !v)}><Sparkles size={15} /> {showModel ? 'Namunani yashirish' : L('Namuna inshoni ko‘rish')}</button></div>}
               {topic && showModel && <div className="essay-model" style={{ marginTop: 10 }}><Highlight text={topic.essay} /></div>}
             </div>
           )}
           {report && (
             <div className="card">
-              <h3 style={{ marginTop: 0 }}>Natija</h3>
+              <h3 style={{ marginTop: 0 }}>{L('Natija')}</h3>
               <ul>{report.tips.map((t) => <li key={t}>{t}</li>)}</ul>
-              <p className="evidence">Abzatslar: {report.paragraphs} · Gaplar: {report.sentences} · O‘rtacha gap uzunligi: {report.avgSentence.toFixed(1)} so‘z · Bog‘lovchilar: {report.linkers.join(', ') || 'topilmadi'}</p>
+              <p className="evidence">{L('Abzatslar:')} {report.paragraphs}  {L('· Gaplar:')} {report.sentences}  {L('· O‘rtacha gap uzunligi:')} {report.avgSentence.toFixed(1)}  {L('so‘z · Bog‘lovchilar:')} {report.linkers.join(', ') || L('topilmadi')}</p>
             </div>
           )}
         </>

@@ -10,6 +10,7 @@ import { pickSession } from '../../lib/srs';
 import { addXp, consumeGame, getProfile, recordReview, useProfile } from '../../lib/store';
 import { buildOptions } from '../../lib/vocabGame';
 import { recordWordItem } from '../../lib/adaptive/record';
+import { L } from '../../i18n';
 
 const SECONDS = 60;
 type Phase = 'intro' | 'play' | 'end';
@@ -47,7 +48,7 @@ export default function WordRush() {
   function start() {
     if (!consumeGame()) { setLocked(true); return; }
     setQueue(pickSession(vocabForLevel(getProfile().level).map((w) => w.id), getProfile().srs, Date.now(), 24));
-    setIdx(0); setLives(3); setCombo(0); setScore(0); setPicked(null); setMissed([]); setMood('idle'); setMsg('Tez va aniq!');
+    setIdx(0); setLives(3); setCombo(0); setScore(0); setPicked(null); setMissed([]); setMood('idle'); setMsg(L('Tez va aniq!'));
     stats.current = { score: 0, correct: 0, total: 0, done: false };
     reset(SECONDS);
     setPhase('play');
@@ -90,9 +91,9 @@ export default function WordRush() {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
-        <h2>So‘z poygasi</h2>
-        <p>60 soniya, 3 jon.</p>
-        <button className="btn primary" onClick={start}>Boshlash</button>
+        <h2>{L('So‘z poygasi')}</h2>
+        <p>{L('60 soniya, 3 jon.')}</p>
+        <button className="btn primary" onClick={start}>{L('Boshlash')}</button>
       </div>
     );
   }
@@ -104,17 +105,17 @@ export default function WordRush() {
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
         <h2>{pickLine(set)}</h2>
-        <p className="score">{score} ball</p>
-        <p>To‘g‘ri: {stats.current.correct} / {stats.current.total} ({acc}%) · <b>+{earned} XP</b></p>
+        <p className="score">{score}  {L('ball')}</p>
+        <p>{L('To‘g‘ri:')} {stats.current.correct} / {stats.current.total} ({acc}%) · <b>+{earned}  {L('XP')}</b></p>
         {missed.length > 0 && (
           <div style={{ textAlign: 'left' }}>
-            <h4>Xato qilgan so‘zlaringiz</h4>
+            <h4>{L('Xato qilgan so‘zlaringiz')}</h4>
             {missed.map((id) => <p key={id} className="bubble"><b>{vocabById[id].word}</b>: {vocabById[id].uz}</p>)}
           </div>
         )}
         <div className="row" style={{ justifyContent: 'center', marginTop: 12 }}>
-          <button className="btn primary" onClick={start}>Yana o‘ynash</button>
-          <a className="btn" href="#/games">O‘yinlar</a>
+          <button className="btn primary" onClick={start}>{L('Yana o‘ynash')}</button>
+          <a className="btn" href="#/games">{L('O‘yinlar')}</a>
         </div>
       </div>
     );
@@ -130,7 +131,7 @@ export default function WordRush() {
       <div className="hero" style={{ margin: '10px 0' }}>
         <div><div className="bubble">{msg}</div></div>
       </div>
-      <div className="pill">{dir === 'en' ? 'Ma’nosini toping' : 'Inglizchasini toping'}</div>
+      <div className="pill">{dir === 'en' ? L('Ma’nosini toping') : 'Inglizchasini toping'}</div>
       <div className="qword">{cur ? (dir === 'en' ? cur.word : cur.uz) : ''}</div>
       <div className="opts">
         {options.map((o) => {

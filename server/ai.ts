@@ -114,15 +114,20 @@ export function parseEvaluation(raw: string, keys: string[]): Evaluation {
   return { bands, overall: roundBand(nums.reduce((a, b) => a + b, 0) / nums.length), strengths: strings(j.strengths, 5, 240), improve: strings(j.improve, 5, 240), corrections: corr };
 }
 
-export async function evaluateSpeaking(cfg: AiConfig, turns: { q: string; text: string }[], opts?: CompleteOpts): Promise<Evaluation> {
-  const system = `You are a careful IELTS Speaking examiner. You only have a speech-to-text transcript, so pronunciation cannot be judged: set "pronunciation" to null. Score fluency, lexical, grammar from 0 to 9 in steps of 0.5; be realistic and strict. Reply with JSON only in this shape: {"fluency":n,"lexical":n,"grammar":n,"pronunciation":null,"strengths":["..."],"improve":["..."],"corrections":[{"said":"...","better":"..."}]}. Write "strengths" and "improve" in Uzbek (Latin script), at most 3 short items each; "corrections" in English, at most 4. ${GUARD}`;
+/** O'quvchining ona tili (izohlar shu tilda). */
+export const NATIVE: Record<string, string> = { uz: 'Uzbek (Latin script)', en: 'English', ru: 'Russian', kk: 'Kazakh (Cyrillic)', ky: 'Kyrgyz (Cyrillic)', tg: 'Tajik (Cyrillic)' };
+export const NATIVE_DEFAULT = NATIVE.uz!;
+export const nativeOf = (lang: unknown): string => NATIVE[String(lang ?? '')] ?? NATIVE_DEFAULT;
+
+export async function evaluateSpeaking(cfg: AiConfig, turns: { q: string; text: string }[], opts?: CompleteOpts, native = NATIVE_DEFAULT): Promise<Evaluation> {
+  const system = `You are a careful IELTS Speaking examiner. You only have a speech-to-text transcript, so pronunciation cannot be judged: set "pronunciation" to null. Score fluency, lexical, grammar from 0 to 9 in steps of 0.5; be realistic and strict. Reply with JSON only in this shape: {"fluency":n,"lexical":n,"grammar":n,"pronunciation":null,"strengths":["..."],"improve":["..."],"corrections":[{"said":"...","better":"..."}]}. Write "strengths" and "improve" in ${native}, at most 3 short items each; "corrections" in English, at most 4. ${GUARD}`;
   const body = turns.slice(0, 12).map((t, i) => `Q${i + 1}: ${clip(t.q, 200)}\n<candidate>${clip(t.text, 1200)}</candidate>`).join('\n\n');
   return parseEvaluation(await complete(cfg, system, body, { maxTokens: 700, ...opts }), ['fluency', 'lexical', 'grammar', 'pronunciation']);
 }
 
-export async function evaluateWriting(cfg: AiConfig, task: 1 | 2, prompt: string, text: string, opts?: CompleteOpts): Promise<Evaluation> {
+export async function evaluateWriting(cfg: AiConfig, task: 1 | 2, prompt: string, text: string, opts?: CompleteOpts, native = NATIVE_DEFAULT): Promise<Evaluation> {
   const crit = task === 1 ? 'task_achievement' : 'task_response';
-  const system = `You are a careful IELTS Writing Task ${task} examiner. Score ${crit}, coherence, lexical, grammar from 0 to 9 in steps of 0.5; be realistic and strict, and penalise answers under the word limit. Reply with JSON only in this shape: {"${crit}":n,"coherence":n,"lexical":n,"grammar":n,"strengths":["..."],"improve":["..."],"corrections":[{"said":"exact phrase from the text","better":"corrected phrase"}]}. Write "strengths" and "improve" in Uzbek (Latin script), at most 3 short items each; "corrections" in English, at most 5. ${GUARD}`;
+  const system = `You are a careful IELTS Writing Task ${task} examiner. Score ${crit}, coherence, lexical, grammar from 0 to 9 in steps of 0.5; be realistic and strict, and penalise answers under the word limit. Reply with JSON only in this shape: {"${crit}":n,"coherence":n,"lexical":n,"grammar":n,"strengths":["..."],"improve":["..."],"corrections":[{"said":"exact phrase from the text","better":"corrected phrase"}]}. Write "strengths" and "improve" in ${native}, at most 3 short items each; "corrections" in English, at most 5. ${GUARD}`;
   const user = `Task prompt: ${clip(prompt, 600)}\n<candidate>${clip(text, 4000)}</candidate>`;
   return parseEvaluation(await complete(cfg, system, user, { maxTokens: 900, ...opts }), [crit, 'coherence', 'lexical', 'grammar']);
 }
@@ -150,8 +155,8 @@ const STYLE: Record<1 | 2 | 3, string> = {
 
 export interface PersonaReply { question: string | null; reaction: Reaction | null }
 
-export async function followUpPersona(cfg: AiConfig, question: string, answer: string, level: 1 | 2 | 3, opts?: CompleteOpts): Promise<PersonaReply> {
-  const system = `You are Bandi, a comic IELTS Speaking examiner character in an entertainment app for adults who chose this style. You are ${STYLE[level]}. React to the candidate's answer in a funny way, mocking mistakes, hesitation or laziness. Also ask exactly ONE short follow-up question (max 20 words) in English that continues from the answer. STRICT LIMITS: never mention or insult family, parents, religion, ethnicity, nationality, gender, appearance, disability, politics or sex; no threats; no links. Reply with JSON only: {"emotion":"angry|laugh|disappointed|impressed","uz":"reaction in Uzbek Latin, max 18 words","en":"the same reaction in English","question":"follow-up question?"}. ${GUARD}`;
+export async function followUpPersona(cfg: AiConfig, question: string, answer: string, level: 1 | 2 | 3, opts?: CompleteOpts, native = NATIVE_DEFAULT): Promise<PersonaReply> {
+  const system = `You are Bandi, a comic IELTS Speaking examiner character in an entertainment app for adults who chose this style. You are ${STYLE[level]}. React to the candidate's answer in a funny way, mocking mistakes, hesitation or laziness. Also ask exactly ONE short follow-up question (max 20 words) in English that continues from the answer. STRICT LIMITS: never mention or insult family, parents, religion, ethnicity, nationality, gender, appearance, disability, politics or sex; no threats; no links. Reply with JSON only: {"emotion":"angry|laugh|disappointed|impressed","uz":"reaction in ${native}, max 18 words","en":"the same reaction in English","question":"follow-up question?"}. ${GUARD}`;
   const user = `Examiner's previous question: ${clip(question, 200)}\n<candidate>${clip(answer, 800)}</candidate>`;
   const raw = await complete(cfg, system, user, { maxTokens: 220, ...opts });
   const m = raw.match(/\{[\s\S]*\}/);

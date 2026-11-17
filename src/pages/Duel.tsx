@@ -6,21 +6,22 @@ import { createDuel, duelUrl, fetchDuel, getAccount, submitDuel, type DuelInfo }
 import { addXp, recordReview } from '../lib/store';
 import { buildOptions } from '../lib/vocabGame';
 import { recordWordItem } from '../lib/adaptive/record';
+import { L } from '../i18n';
 
 const SECONDS = 12;
 
 function ShareBox({ code }: { code: string }) {
   const url = duelUrl(code);
   const [copied, setCopied] = useState(false);
-  const text = 'Bandly duelida meni yutib ko‘ring!';
+  const text = L('Bandly duelida meni yutib ko‘ring!');
   return (
     <div className="card">
-      <h3>Do‘stingizni chaqiring</h3>
+      <h3>{L('Do‘stingizni chaqiring')}</h3>
       <p className="bubble" style={{ wordBreak: 'break-all' }}>{url}</p>
       <div className="row">
-        <button className="btn" onClick={() => { void navigator.clipboard?.writeText(url).then(() => setCopied(true)); }}>{copied ? 'Nusxalandi' : 'Havolani nusxalash'}</button>
-        <a className="btn" target="_blank" rel="noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}>Telegramda ulashish</a>
-        {typeof navigator.share === 'function' && <button className="btn" onClick={() => void navigator.share({ title: 'Bandly duel', text, url })}>Ulashish</button>}
+        <button className="btn" onClick={() => { void navigator.clipboard?.writeText(url).then(() => setCopied(true)); }}>{copied ? L('Nusxalandi') : L('Havolani nusxalash')}</button>
+        <a className="btn" target="_blank" rel="noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}>{L('Telegramda ulashish')}</a>
+        {typeof navigator.share === 'function' && <button className="btn" onClick={() => void navigator.share({ title: 'Bandly duel', text, url })}>{L('Ulashish')}</button>}
       </div>
     </div>
   );
@@ -84,11 +85,11 @@ function Play({ info, onDone }: { info: DuelInfo; onDone: (i: DuelInfo) => void 
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <span className="pill">{i + 1} / {info.words.length}</span>
-        <span className="combo">{score} ball</span>
-        <span className="pill">{correct} to‘g‘ri</span>
+        <span className="combo">{score}  {L('ball')}</span>
+        <span className="pill">{correct}  {L('to‘g‘ri')}</span>
       </div>
       <div className="bar" style={{ margin: '10px 0' }}><i style={{ width: `${(left / SECONDS) * 100}%`, background: left < 4 ? 'var(--bad)' : undefined }} /></div>
-      <div className="pill">Ma’nosini toping</div>
+      <div className="pill">{L('Ma’nosini toping')}</div>
       <div className="qword">{word.word}</div>
       <div className="opts">
         {opts.map((o) => {
@@ -104,18 +105,18 @@ function Results({ info }: { info: DuelInfo }) {
   return (
     <div className="card">
       <table className="data" style={{ width: '100%' }}>
-        <thead><tr><th>#</th><th>Laqab</th><th>Ball</th><th>To‘g‘ri</th><th>Vaqt</th></tr></thead>
+        <thead><tr><th>#</th><th>{L('Laqab')}</th><th>{L('Ball')}</th><th>{L('To‘g‘ri')}</th><th>{L('Vaqt')}</th></tr></thead>
         <tbody>
           {info.players.map((p) => (
             <tr key={p.nickname} style={p.me ? { background: 'rgba(255,77,61,.12)', fontWeight: 700 } : undefined}>
               <td><RankBadge n={p.rank} /></td>
-              <td>{p.nickname}{p.me ? ' (siz)' : ''}</td>
+              <td>{p.nickname}{p.me ? L(' (siz)') : ''}</td>
               <td>{p.score ?? 'kutilmoqda'}</td><td>{p.correct ?? '—'}</td><td>{p.ms ? `${Math.round(p.ms / 1000)} s` : '—'}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="evidence">Ball teng bo‘lsa tezroq tugatgan yutadi. Natijalar har 4 soniyada yangilanadi.</p>
+      <p className="evidence">{L('Ball teng bo‘lsa tezroq tugatgan yutadi. Natijalar har 4 soniyada yangilanadi.')}</p>
     </div>
   );
 }
@@ -129,20 +130,20 @@ export function DuelRoom({ code }: { code: string }) {
   const load = useCallback(async () => { try { setInfo(await fetchDuel(code)); setErr(''); } catch (e) { setErr((e as Error).message); } }, [code]);
   useEffect(() => { void load(); const t = setInterval(() => { if (!playing) void load(); }, 4000); return () => clearInterval(t); }, [load, playing]);
 
-  if (err && !info) return <div className="card"><p className="notice">{err}</p><a className="btn" href="#/duel">Duellar</a></div>;
-  if (!info) return <div className="card">Yuklanmoqda…</div>;
-  if (!acc) return <JoinForm onJoined={setAcc} text="Duelda qatnashish uchun hisobingizga kiring." />;
+  if (err && !info) return <div className="card"><p className="notice">{err}</p><a className="btn" href="#/duel">{L('Duellar')}</a></div>;
+  if (!info) return <div className="card">{L('Yuklanmoqda…')}</div>;
+  if (!acc) return <JoinForm onJoined={setAcc} text={L('Duelda qatnashish uchun hisobingizga kiring.')} />;
   if (playing) return <Play info={info} onDone={(i) => { setInfo(i); setPlaying(false); }} />;
 
   return (
     <div>
       <div className="card hero">
         <div>
-          <h2 style={{ margin: 0 }}>Duel {info.code}</h2>
-          <p style={{ margin: '4px 0' }}>10 ta so‘z, har biriga {SECONDS} soniya. Tez va to‘g‘ri javob ko‘proq ball beradi.</p>
-          {info.expired ? <span className="badge">Muddati tugagan</span> : info.iFinished ? <span className="badge on">Siz o‘ynadingiz</span> :
-            info.full && !info.players.some((p) => p.me) ? <span className="badge">Duel to‘lgan</span> :
-              <button className="btn primary" onClick={() => setPlaying(true)}>O‘ynash</button>}
+          <h2 style={{ margin: 0 }}>{L('Duel')} {info.code}</h2>
+          <p style={{ margin: '4px 0' }}>{L('10 ta so‘z, har biriga')} {SECONDS}  {L('soniya. Tez va to‘g‘ri javob ko‘proq ball beradi.')}</p>
+          {info.expired ? <span className="badge">{L('Muddati tugagan')}</span> : info.iFinished ? <span className="badge on">{L('Siz o‘ynadingiz')}</span> :
+            info.full && !info.players.some((p) => p.me) ? <span className="badge">{L('Duel to‘lgan')}</span> :
+              <button className="btn primary" onClick={() => setPlaying(true)}>{L('O‘ynash')}</button>}
         </div>
       </div>
       <Results info={info} />
@@ -160,22 +161,22 @@ export default function DuelHub() {
     setBusy(true);
     try { const d = await createDuel(); window.location.hash = `#/duel/${d.code}`; } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
-  if (!acc) return <JoinForm onJoined={setAcc} text="Duel uchun hisobingizga kiring." />;
+  if (!acc) return <JoinForm onJoined={setAcc} text={L('Duel uchun hisobingizga kiring.')} />;
   return (
     <div>
       <div className="card hero">
         <div>
-          <h2 style={{ margin: 0 }}>Duel</h2>
-          <p style={{ margin: '4px 0' }}>Do‘stlaringiz bilan bir xil 10 ta so‘zda raqobatlashing. Havolani yuboring, kim yutadi?</p>
-          <button className="btn primary" disabled={busy} onClick={() => void create()}>Yangi duel yaratish</button>
+          <h2 style={{ margin: 0 }}>{L('Duel')}</h2>
+          <p style={{ margin: '4px 0' }}>{L('Do‘stlaringiz bilan bir xil 10 ta so‘zda raqobatlashing. Havolani yuboring, kim yutadi?')}</p>
+          <button className="btn primary" disabled={busy} onClick={() => void create()}>{L('Yangi duel yaratish')}</button>
         </div>
       </div>
       <div className="card">
-        <h3>Kod bilan qo‘shilish</h3>
+        <h3>{L('Kod bilan qo‘shilish')}</h3>
         <div className="row">
-          <input type="text" value={codeIn} maxLength={8} placeholder="Masalan: K7M2QX" onChange={(e) => setCodeIn(e.target.value.toUpperCase())}
+          <input type="text" value={codeIn} maxLength={8} placeholder={L('Masalan: K7M2QX')} onChange={(e) => setCodeIn(e.target.value.toUpperCase())}
             style={{ padding: 10, borderRadius: 10, border: '2px solid var(--line)', background: 'var(--bg)', color: 'var(--text)', fontSize: 16, textTransform: 'uppercase' }} />
-          <a className="btn" href={codeIn.length >= 4 ? `#/duel/${codeIn}` : undefined} aria-disabled={codeIn.length < 4}>Qo‘shilish</a>
+          <a className="btn" href={codeIn.length >= 4 ? `#/duel/${codeIn}` : undefined} aria-disabled={codeIn.length < 4}>{L('Qo‘shilish')}</a>
         </div>
         {err && <p className="notice" style={{ marginTop: 10 }}>{err}</p>}
       </div>

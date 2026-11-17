@@ -2,6 +2,7 @@ import { getAccount } from './account';
 import { applyServerPlans, getProfile } from './store';
 import type { TrackId } from './types';
 import type { PlanId } from '../config';
+import { L } from '../i18n';
 
 export interface PayConfig { enabled: boolean; demo: boolean; periods: { days: number; label: string; note?: string | null; prices: Record<PlanId, number> }[] }
 export interface PayView { id: string; status: 'pending' | 'prepared' | 'success' | 'cancelled' | 'failed' | 'expired'; track: string; days: number; amount: number; pay_amount: number | null; card: string | null; expire_at: number; expires_in: number }
@@ -16,9 +17,9 @@ export const payConfig = (): Promise<PayConfig> =>
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
-  try { res = await fetch(path, init); } catch { throw new Error('Server bilan aloqa yo‘q'); }
+  try { res = await fetch(path, init); } catch { throw new Error(L('Server bilan aloqa yo‘q')); }
   const body = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new Error(body.error ?? `Xato ${res.status}`);
+  if (!res.ok) throw new Error(body.error ?? L('Xato {0}', [res.status]));
   return body;
 }
 const hdr = () => ({ 'x-token': getAccount()?.token ?? '' });

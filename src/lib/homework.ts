@@ -4,6 +4,7 @@ import { part2Cards } from '../content/speaking';
 import { writingTopics } from '../content/writingGuide';
 import { levelIndex, type Cefr } from './levels';
 import type { ResultRecord } from './storage';
+import { L } from '../i18n';
 
 export type HwId = 'listening' | 'reading' | 'writing' | 'speaking';
 export interface HwTask { id: HwId; title: string; sub: string; href: string; done: boolean; result?: ResultRecord; deadline: number }
@@ -51,5 +52,5 @@ export function homeworkStreak(results: ResultRecord[], now = Date.now()): numbe
 export function timeLeft(deadline: number, now = Date.now()): string {
   const ms = Math.max(0, deadline - now);
   const h = Math.floor(ms / 3_600_000), m = Math.floor((ms % 3_600_000) / 60_000);
-  return h > 0 ? `${h} soat ${m} daqiqa qoldi` : `${m} daqiqa qoldi`;
+  return h > 0 ? L('{0} soat {1} daqiqa qoldi', [h, m]) : L('{0} daqiqa qoldi', [m]);
 }

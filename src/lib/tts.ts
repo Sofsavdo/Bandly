@@ -22,11 +22,11 @@ let current: HTMLAudioElement | null = null;
 export const stopUz = (): void => { if (current) { current.pause(); current = null; } };
 
 /** O'zbekcha matnni chaladi. Muvaffaqiyatli bo'lsa true; xizmat o'chiq/limit/xato bo'lsa false (chaqiruvchi zaxira ovozga o'tadi). */
-export async function playUz(text: string, emotion: Emotion, signal: { cancelled: boolean }): Promise<boolean> {
+export async function playUz(text: string, emotion: Emotion, signal: { cancelled: boolean }, feature?: 'coach'): Promise<boolean> {
   const acc = getAccount();
   if (!acc || signal.cancelled || !(await uzTtsEnabled())) return false;
   try {
-    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: acc.token, text, emotion, ...STYLE[emotion] }), signal: AbortSignal.timeout(12_000) });
+    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: acc.token, text, emotion, feature, ...STYLE[emotion] }), signal: AbortSignal.timeout(12_000) });
     if (!r.ok || signal.cancelled) return false;
     const url = URL.createObjectURL(await r.blob());
     return await new Promise<boolean>((resolve) => {

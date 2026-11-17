@@ -10,14 +10,15 @@ import { markStep, progressOf, type StepId } from '../lib/shadowStore';
 import { addXp, markDone, recordReview, useProfile } from '../lib/store';
 import { saveResult } from '../lib/storage';
 import { Mascot } from '../components/Mascot';
+import { L } from '../i18n';
 
 const STEPS: { id: StepId; label: string; icon: LucideIcon; tip: string }[] = [
-  { id: 'watch', label: 'Tinglash + subtitr', icon: Subtitles, tip: 'Avval butun sahnani subtitr bilan tinglang. Keyin tezlikni 0.75 ga tushirib, qiyin gaplarni qayta eshiting.' },
-  { id: 'quiz', label: 'Subtitrsiz tinglash', icon: Ear, tip: 'Endi matnsiz: faqat quloq. IELTS Listening aynan shunday ishlaydi.' },
-  { id: 'cloze', label: 'Bo‘shliqlar', icon: PenLine, tip: 'Tushib qolgan so‘zlarni eshitib yozing. Imlo ham hisobga olinadi.' },
-  { id: 'shadow', label: 'Shadowing', icon: Repeat, tip: 'Gapni eshiting va darhol, aynan o‘sha ritm va ohangda takrorlang. Bu talaffuz va ravonlikning eng tez yo‘li.' },
-  { id: 'dictate', label: 'Dictant', icon: Headphones, tip: 'Gapni eshiting va to‘liq yozing. Quloq va imloni birga mashq qiladi.' },
-  { id: 'retell', label: 'Qayta aytish', icon: Mic, tip: 'Sahnani o‘z so‘zlaringiz bilan 2–3 gapda gapirib bering. Matnni ko‘rmasdan, asosiy g‘oyalarni eslang.' },
+  { id: 'watch', label: L('Tinglash + subtitr'), icon: Subtitles, tip: L('Avval butun sahnani subtitr bilan tinglang. Keyin tezlikni 0.75 ga tushirib, qiyin gaplarni qayta eshiting.') },
+  { id: 'quiz', label: L('Subtitrsiz tinglash'), icon: Ear, tip: L('Endi matnsiz: faqat quloq. IELTS Listening aynan shunday ishlaydi.') },
+  { id: 'cloze', label: L('Bo‘shliqlar'), icon: PenLine, tip: L('Tushib qolgan so‘zlarni eshitib yozing. Imlo ham hisobga olinadi.') },
+  { id: 'shadow', label: 'Shadowing', icon: Repeat, tip: L('Gapni eshiting va darhol, aynan o‘sha ritm va ohangda takrorlang. Bu talaffuz va ravonlikning eng tez yo‘li.') },
+  { id: 'dictate', label: 'Dictant', icon: Headphones, tip: L('Gapni eshiting va to‘liq yozing. Quloq va imloni birga mashq qiladi.') },
+  { id: 'retell', label: L('Qayta aytish'), icon: Mic, tip: L('Sahnani o‘z so‘zlaringiz bilan 2–3 gapda gapirib bering. Matnni ko‘rmasdan, asosiy g‘oyalarni eslang.') },
 ];
 
 /** Gap audiosini chaladi (tayyor neyron ovoz; bo'lmasa brauzer ovozi). */
@@ -61,10 +62,10 @@ function Watch({ sc, onDone }: { sc: Scene; onDone: () => void }) {
   return (
     <div className="card">
       <div className="row">
-        <button className="btn primary" onClick={() => { void pl.all(texts, rate).then(onDone); }}><Play size={16} /> Hammasini tinglash</button>
-        <button className="btn" onClick={pl.stop}><Square size={14} /> To‘xtatish</button>
+        <button className="btn primary" onClick={() => { void pl.all(texts, rate).then(onDone); }}><Play size={16} />  {L('Hammasini tinglash')}</button>
+        <button className="btn" onClick={pl.stop}><Square size={14} />  {L('To‘xtatish')}</button>
         <span className="price-tabs">{[1, 0.75, 0.6].map((r) => <button key={r} className={rate === r ? 'on' : ''} onClick={() => setRate(r)}>{r}x</button>)}</span>
-        <label className="evidence"><input type="checkbox" checked={sub} onChange={(e) => setSub(e.target.checked)} /> Subtitr</label>
+        <label className="evidence"><input type="checkbox" checked={sub} onChange={(e) => setSub(e.target.checked)} />  {L('Subtitr')}</label>
       </div>
       <div className="subs">
         {sc.lines.map((l, i) => (
@@ -74,11 +75,11 @@ function Watch({ sc, onDone }: { sc: Scene; onDone: () => void }) {
           </button>
         ))}
       </div>
-      <h4>Muhim iboralar</h4>
+      <h4>{L('Muhim iboralar')}</h4>
       <div className="row">{sc.phrases.map((p) => (
         <button key={p.phrase} className="chip-up" title={`${p.uz}: ${p.example}`} onClick={() => { const w = vocab.find((x) => x.word === p.phrase); if (w) recordReview(w.id, false); void pl.one(p.phrase); }}>{p.phrase} <small>· {p.uz}</small></button>
       ))}</div>
-      <p className="evidence">Gap ustiga bossangiz, o‘sha gap qayta eshittiriladi. Iborani bossangiz, takrorlash tizimiga qo‘shiladi.</p>
+      <p className="evidence">{L('Gap ustiga bossangiz, o‘sha gap qayta eshittiriladi. Iborani bossangiz, takrorlash tizimiga qo‘shiladi.')}</p>
     </div>
   );
 }
@@ -91,16 +92,16 @@ function Quiz({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
   const pct = Math.round((right / sc.quiz.length) * 100);
   return (
     <div className="card">
-      <div className="row"><button className="btn primary" onClick={() => void pl.all(sc.lines.map((l) => l.text), 1)}><Play size={16} /> Tinglash (matnsiz)</button><button className="btn" onClick={pl.stop}><Square size={14} /> To‘xtatish</button></div>
-      <p className="evidence">Matn ko‘rinmaydi. Tinglab, savollarga javob bering (istagancha qayta tinglash mumkin).</p>
+      <div className="row"><button className="btn primary" onClick={() => void pl.all(sc.lines.map((l) => l.text), 1)}><Play size={16} />  {L('Tinglash (matnsiz)')}</button><button className="btn" onClick={pl.stop}><Square size={14} />  {L('To‘xtatish')}</button></div>
+      <p className="evidence">{L('Matn ko‘rinmaydi. Tinglab, savollarga javob bering (istagancha qayta tinglash mumkin).')}</p>
       {sc.quiz.map((q, i) => (
         <div key={i} className="fb-block">
           <p><b>{i + 1}. {q.q}</b></p>
           <div className="opts">{q.options.map((o, k) => <button key={o} disabled={done} onClick={() => setAns((a) => ({ ...a, [i]: k }))} className={!done ? `opt ${ans[i] === k ? 'sel' : ''}` : k === q.answer ? 'opt right' : ans[i] === k ? 'opt bad' : 'opt'}>{o}</button>)}</div>
-          {done && <p className="evidence">Dalil: “{sc.lines[q.line].text}”</p>}
+          {done && <p className="evidence">{L('Dalil: “')}{sc.lines[q.line].text}”</p>}
         </div>
       ))}
-      {!done ? <button className="btn primary" disabled={Object.keys(ans).length < sc.quiz.length} onClick={() => { setDone(true); onDone(pct); }}>Tekshirish</button> : <Result pct={pct} extra={`${right} / ${sc.quiz.length} to‘g‘ri`} />}
+      {!done ? <button className="btn primary" disabled={Object.keys(ans).length < sc.quiz.length} onClick={() => { setDone(true); onDone(pct); }}>{L('Tekshirish')}</button> : <Result pct={pct} extra={`${right} / ${sc.quiz.length} to‘g‘ri`} />}
     </div>
   );
 }
@@ -116,17 +117,17 @@ function Cloze({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
   const pct = all.length ? Math.round((right / all.length) * 100) : 0;
   return (
     <div className="card">
-      <p className="evidence">Har gapni eshiting va tushib qolgan so‘zlarni yozing.</p>
+      <p className="evidence">{L('Har gapni eshiting va tushib qolgan so‘zlarni yozing.')}</p>
       {items.map((it, ii) => (
         <div key={ii} className="cloze-line">
-          <button className="icon-btn" aria-label="Eshitish" onClick={() => void pl.one(it.text)}><Play size={16} /></button>
+          <button className="icon-btn" aria-label={L('Eshitish')} onClick={() => void pl.one(it.text)}><Play size={16} /></button>
           <p>{it.parts.map((p, pi) => typeof p === 'string' ? <span key={pi}>{p}</span> : (
             <input key={pi} type="text" className={`blank ${checked ? (sameWord(vals[`${ii}-${pi}`] ?? '', p.answer) ? 'ok' : 'bad') : ''}`} value={vals[`${ii}-${pi}`] ?? ''} disabled={checked} size={Math.max(4, p.answer.length)} autoCapitalize="none" autoCorrect="off" spellCheck={false} onChange={(e) => setVals((v) => ({ ...v, [`${ii}-${pi}`]: e.target.value }))} />
           ))}</p>
           {checked && <p className="evidence">{it.text}</p>}
         </div>
       ))}
-      {!checked ? <button className="btn primary" onClick={() => { setChecked(true); onDone(pct); }}>Tekshirish</button> : <Result pct={pct} extra={`${right} / ${all.length} so‘z to‘g‘ri`} />}
+      {!checked ? <button className="btn primary" onClick={() => { setChecked(true); onDone(pct); }}>{L('Tekshirish')}</button> : <Result pct={pct} extra={`${right} / ${all.length} so‘z to‘g‘ri`} />}
     </div>
   );
 }
@@ -140,7 +141,7 @@ function useRecorder() {
   const listen = async (maxMs = 15000, silenceMs = 1600): Promise<string | null> => {
     setErr(''); setLive(''); setBusy(true); sig.current = { cancelled: false };
     try { const r = await listenTurn({ silenceMs, maxMs, noSpeechMs: 9000, lang: accent, onInterim: setLive, signal: sig.current, endRef: end }); setText(r.text); return r.text; }
-    catch (e) { setErr(`${e instanceof SpeechError ? e.message : 'Nutqni tanishda xato'}. Yozma rejimga o‘tildi.`); setTextMode(true); return null; }
+    catch (e) { setErr(L('{0}. Yozma rejimga o‘tildi.', [e instanceof SpeechError ? e.message : L('Nutqni tanishda xato')])); setTextMode(true); return null; }
     finally { setBusy(false); }
   };
   return { text, setText, live, busy, err, textMode, setTextMode, listen, finish: () => end.current?.() };
@@ -156,20 +157,20 @@ function Shadow({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
   const finished = i >= lines.length - 1 && res;
   return (
     <div className="card">
-      <div className="row"><span className="pill">{i + 1} / {lines.length}</span><button className="btn sm" onClick={() => rec.setTextMode(!rec.textMode)}>{rec.textMode ? 'Mikrofon bilan' : 'Yozib takrorlash'}</button></div>
+      <div className="row"><span className="pill">{i + 1} / {lines.length}</span><button className="btn sm" onClick={() => rec.setTextMode(!rec.textMode)}>{rec.textMode ? L('Mikrofon bilan') : L('Yozib takrorlash')}</button></div>
       <div className="shadow-line"><b>{cur.sp === 'A' ? sc.names.A : sc.names.B}</b><p className="ptext">{cur.text}</p></div>
       <div className="row">
-        <button className="btn" onClick={() => void pl.one(cur.text, 1)}><Play size={15} /> Eshitish</button>
-        <button className="btn" onClick={() => void pl.one(cur.text, 0.7)}>Sekin (0.7x)</button>
-        {!rec.textMode && (rec.busy ? <button className="btn primary" onClick={rec.finish}><Square size={14} /> Tugatdim</button> : <button className="btn primary" onClick={() => { pl.stop(); void rec.listen().then((t) => { if (t !== null) judge(t); }); }}><Mic size={15} /> Takrorlang</button>)}
+        <button className="btn" onClick={() => void pl.one(cur.text, 1)}><Play size={15} />  {L('Eshitish')}</button>
+        <button className="btn" onClick={() => void pl.one(cur.text, 0.7)}>{L('Sekin (0.7x)')}</button>
+        {!rec.textMode && (rec.busy ? <button className="btn primary" onClick={rec.finish}><Square size={14} />  {L('Tugatdim')}</button> : <button className="btn primary" onClick={() => { pl.stop(); void rec.listen().then((t) => { if (t !== null) judge(t); }); }}><Mic size={15} />  {L('Takrorlang')}</button>)}
       </div>
-      {rec.textMode && <div className="row" style={{ marginTop: 8 }}><input type="text" style={{ flex: 1, minWidth: 220 }} value={rec.text} placeholder="Eshitganingizni yozing..." onChange={(e) => rec.setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && rec.text.trim()) judge(rec.text); }} /><button className="btn" disabled={!rec.text.trim()} onClick={() => judge(rec.text)}>Tekshirish</button></div>}
-      {rec.busy && <p className="evidence">Eshityapman… {rec.live}</p>}
+      {rec.textMode && <div className="row" style={{ marginTop: 8 }}><input type="text" style={{ flex: 1, minWidth: 220 }} value={rec.text} placeholder={L('Eshitganingizni yozing...')} onChange={(e) => rec.setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && rec.text.trim()) judge(rec.text); }} /><button className="btn" disabled={!rec.text.trim()} onClick={() => judge(rec.text)}>{L('Tekshirish')}</button></div>}
+      {rec.busy && <p className="evidence">{L('Eshityapman…')} {rec.live}</p>}
       {rec.err && <p className="notice">{rec.err}</p>}
-      {res && (<><Result pct={res.pct} extra={res.missing.length ? `Tushib qolgan/xato: ${res.missing.join(', ')}` : 'Hamma so‘z to‘g‘ri!'} /><div className="fb-block"><small>Siz aytdingiz</small><DiffView a={res} /></div></>)}
+      {res && (<><Result pct={res.pct} extra={res.missing.length ? L('Tushib qolgan/xato: {0}', [res.missing.join(', ')]) : L('Hamma so‘z to‘g‘ri!')} /><div className="fb-block"><small>{L('Siz aytdingiz')}</small><DiffView a={res} /></div></>)}
       <div className="row" style={{ marginTop: 10 }}>
-        <button className="btn" disabled={i === 0} onClick={() => go(-1)}>Oldingisi</button>
-        {i < lines.length - 1 ? <button className="btn primary" disabled={!res} onClick={() => go(1)}>Keyingisi</button> : <button className="btn primary" disabled={!finished} onClick={() => onDone(Math.round(scores.reduce((a, b) => a + (b ?? 0), 0) / lines.length))}>Yakunlash</button>}
+        <button className="btn" disabled={i === 0} onClick={() => go(-1)}>{L('Oldingisi')}</button>
+        {i < lines.length - 1 ? <button className="btn primary" disabled={!res} onClick={() => go(1)}>{L('Keyingisi')}</button> : <button className="btn primary" disabled={!finished} onClick={() => onDone(Math.round(scores.reduce((a, b) => a + (b ?? 0), 0) / lines.length))}>{L('Yakunlash')}</button>}
       </div>
     </div>
   );
@@ -183,14 +184,14 @@ function Dictate({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
   const check = () => { const a = accuracy(cur.text, typed); setRes(a); setScores((s) => [...s, a.pct]); };
   return (
     <div className="card">
-      <div className="row"><span className="pill">{i + 1} / {lines.length}</span><span className="pill">Eshitish: {plays}/3</span></div>
-      <div className="row"><button className="btn primary" disabled={plays >= 3 || !!res} onClick={() => { setPlays((p) => p + 1); void pl.one(cur.text, 1); }}><Play size={15} /> Eshitish</button></div>
-      <textarea className="answer" rows={3} value={typed} disabled={!!res} placeholder="Eshitganingizni to‘liq yozing..." onChange={(e) => setTyped(e.target.value)} />
-      {!res ? <button className="btn primary" disabled={!typed.trim()} onClick={check}>Tekshirish</button> : (
+      <div className="row"><span className="pill">{i + 1} / {lines.length}</span><span className="pill">{L('Eshitish:')} {plays}/3</span></div>
+      <div className="row"><button className="btn primary" disabled={plays >= 3 || !!res} onClick={() => { setPlays((p) => p + 1); void pl.one(cur.text, 1); }}><Play size={15} />  {L('Eshitish')}</button></div>
+      <textarea className="answer" rows={3} value={typed} disabled={!!res} placeholder={L('Eshitganingizni to‘liq yozing...')} onChange={(e) => setTyped(e.target.value)} />
+      {!res ? <button className="btn primary" disabled={!typed.trim()} onClick={check}>{L('Tekshirish')}</button> : (
         <>
-          <Result pct={res.pct} extra={res.missing.length ? `Xato/tushib qolgan: ${res.missing.join(', ')}` : 'Mukammal!'} />
-          <div className="fb-block good"><small>To‘g‘ri matn</small><p>{cur.text}</p></div>
-          {i < lines.length - 1 ? <button className="btn primary" onClick={() => { setI(i + 1); setTyped(''); setRes(null); setPlays(0); }}>Keyingisi</button> : <button className="btn primary" onClick={() => onDone(Math.round([...scores].reduce((a, b) => a + b, 0) / lines.length))}>Yakunlash</button>}
+          <Result pct={res.pct} extra={res.missing.length ? L('Xato/tushib qolgan: {0}', [res.missing.join(', ')]) : 'Mukammal!'} />
+          <div className="fb-block good"><small>{L('To‘g‘ri matn')}</small><p>{cur.text}</p></div>
+          {i < lines.length - 1 ? <button className="btn primary" onClick={() => { setI(i + 1); setTyped(''); setRes(null); setPlays(0); }}>{L('Keyingisi')}</button> : <button className="btn primary" onClick={() => onDone(Math.round([...scores].reduce((a, b) => a + b, 0) / lines.length))}>{L('Yakunlash')}</button>}
         </>
       )}
     </div>
@@ -203,18 +204,18 @@ function Retell({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
   const submit = (t: string) => { const c = coverage(t, sc.retell.points); setRes(c); onDone(c.pct); };
   return (
     <div className="card">
-      <p className="evidence">Endi matnsiz, o‘z so‘zlaringiz bilan 2–3 gapda ayting.</p>
-      <div className="row"><button className="btn" onClick={() => void pl.all(sc.lines.map((l) => l.text), 1)}><Play size={15} /> Tinglash</button><button className="btn" onClick={pl.stop}><Square size={14} /> To‘xtatish</button><button className="btn sm" onClick={() => rec.setTextMode(!rec.textMode)}>{rec.textMode ? 'Mikrofon bilan' : 'Yozib aytish'}</button></div>
-      {!rec.textMode ? (rec.busy ? <button className="btn primary" onClick={rec.finish}><Square size={14} /> Tugatdim</button> : <button className="btn primary" disabled={!!res} onClick={() => { pl.stop(); void rec.listen(60_000, 3500).then((t) => { if (t !== null) submit(t); }); }}><Mic size={15} /> Gapiring</button>)
-        : <><textarea className="answer" rows={4} value={rec.text} disabled={!!res} placeholder="Sahnani o‘z so‘zlaringiz bilan qayta aytib bering (inglizcha)..." onChange={(e) => rec.setText(e.target.value)} />{!res && <button className="btn primary" disabled={rec.text.trim().split(/\s+/).length < 5} onClick={() => submit(rec.text)}>Tekshirish</button>}</>}
-      {rec.busy && <p className="evidence">Eshityapman… {rec.live}</p>}
+      <p className="evidence">{L('Endi matnsiz, o‘z so‘zlaringiz bilan 2–3 gapda ayting.')}</p>
+      <div className="row"><button className="btn" onClick={() => void pl.all(sc.lines.map((l) => l.text), 1)}><Play size={15} />  {L('Tinglash')}</button><button className="btn" onClick={pl.stop}><Square size={14} />  {L('To‘xtatish')}</button><button className="btn sm" onClick={() => rec.setTextMode(!rec.textMode)}>{rec.textMode ? L('Mikrofon bilan') : L('Yozib aytish')}</button></div>
+      {!rec.textMode ? (rec.busy ? <button className="btn primary" onClick={rec.finish}><Square size={14} />  {L('Tugatdim')}</button> : <button className="btn primary" disabled={!!res} onClick={() => { pl.stop(); void rec.listen(60_000, 3500).then((t) => { if (t !== null) submit(t); }); }}><Mic size={15} />  {L('Gapiring')}</button>)
+        : <><textarea className="answer" rows={4} value={rec.text} disabled={!!res} placeholder={L('Sahnani o‘z so‘zlaringiz bilan qayta aytib bering (inglizcha)...')} onChange={(e) => rec.setText(e.target.value)} />{!res && <button className="btn primary" disabled={rec.text.trim().split(/\s+/).length < 5} onClick={() => submit(rec.text)}>{L('Tekshirish')}</button>}</>}
+      {rec.busy && <p className="evidence">{L('Eshityapman…')} {rec.live}</p>}
       {rec.err && <p className="notice">{rec.err}</p>}
       {res && (
         <>
           <Result pct={res.pct} extra={`${res.hit.filter(Boolean).length} / ${sc.retell.points.length} g‘oya tilga olindi`} />
           {sc.retell.points.map((p, k) => <div key={p.label} className={`check ${res.hit[k] ? 'ok' : 'no'}`}>{res.hit[k] ? <CheckCircle2 size={18} /> : <Circle size={18} />}<div><b>{p.label}</b></div></div>)}
-          <div className="fb-block up"><small>Namuna (Senior Examiner varianti)</small><p>{sc.retell.model}</p></div>
-          <p className="fb-line">Siz aytgan: {rec.text}</p>
+          <div className="fb-block up"><small>{L('Namuna (Senior Examiner varianti)')}</small><p>{sc.retell.model}</p></div>
+          <p className="fb-line">{L('Siz aytgan:')} {rec.text}</p>
         </>
       )}
     </div>
@@ -231,17 +232,17 @@ function SceneView({ sc }: { sc: Scene }) {
     if (markStep(sc.id, s, score)) { addXp(s === 'watch' ? 5 : 10 + Math.round((score ?? 0) / 10)); }
     markDone('shadow');
     force((x) => x + 1);
-    if (s === 'retell' || s === 'shadow' || s === 'dictate') saveResult({ kind: 'practice', title: `Lavha: ${sc.title} (${STEPS.find((x) => x.id === s)!.label})`, correct: Math.round(score ?? 0), total: 100 });
+    if (s === 'retell' || s === 'shadow' || s === 'dictate') saveResult({ kind: 'practice', title: L('Lavha: {0} ({1})', [sc.title, STEPS.find((x) => x.id === s)!.label]), correct: Math.round(score ?? 0), total: 100 });
   };
   const S = STEPS.find((x) => x.id === step)!;
   return (
     <div>
-      <a className="evidence" href="#/shadow"><ArrowLeft size={14} style={{ verticalAlign: -2 }} /> Barcha sahnalar</a>
+      <a className="evidence" href="#/shadow"><ArrowLeft size={14} style={{ verticalAlign: -2 }} />  {L('Barcha sahnalar')}</a>
       <div className="card">
         <div className="row"><span className="pill">{sc.genre}</span><span className={`lvl-tag ${sc.level}`}>{sc.level}</span></div>
         <h2 style={{ margin: '6px 0' }}>{sc.title}</h2>
         <p className="evidence">{sc.about}</p>
-        <div className="exam-brief"><Mascot mood="think" size={64} /><div><b>Senior Examiner:</b> <span>{sc.brief}</span></div></div>
+        <div className="exam-brief"><Mascot mood="think" size={64} /><div><b>{L('Senior Examiner:')}</b> <span>{sc.brief}</span></div></div>
         <div className="tabs" role="tablist" style={{ marginTop: 12 }}>
           {STEPS.map((s, k) => <button key={s.id} className={`btn ${step === s.id ? 'primary' : ''}`} onClick={() => setStep(s.id)}>{prog.steps.includes(s.id) ? <CheckCircle2 size={14} /> : <s.icon size={14} />}{k + 1}. {s.label}{prog.best[s.id as 'quiz'] !== undefined ? ` · ${prog.best[s.id as 'quiz']}%` : ''}</button>)}
         </div>
@@ -263,11 +264,11 @@ export default function ShadowHub({ id }: { id?: string }) {
   return (
     <div>
       <div className="card">
-        <span className="eyebrow"><Clapperboard size={15} /> Eshit va takrorla</span>
-        <h2 style={{ margin: '4px 0' }}>Senior Examiner studiyasi</h2>
-        <p>Eng tez natija beradigan zamonaviy usullar bir joyda: <b>subtitrli sahnalar, shadowing, dictant, bo‘shliqlarni to‘ldirish va eshitganini qayta aytish</b>. Sahnalar film dialogi, podkast, akademik ma’ruza va hujjatli film uslubida yozilgan (original matnlar, ikki xil ovozda).</p>
-        <ol className="pay-steps"><li>Subtitr bilan tinglang, so‘ng subtitrsiz.</li><li>Gapni eshitib, aynan shu ritm bilan takrorlang (shadowing).</li><li>Eshitganingizni yozing, keyin sahnani o‘z so‘zingiz bilan aytib bering.</li></ol>
-        <p className="evidence">Darajangizga mos sahnadan boshlang. Ovoz saqlanmaydi.</p>
+        <span className="eyebrow"><Clapperboard size={15} />  {L('Eshit va takrorla')}</span>
+        <h2 style={{ margin: '4px 0' }}>{L('Senior Examiner studiyasi')}</h2>
+        <p>{L('Eng tez natija beradigan zamonaviy usullar bir joyda:')} <b>{L('subtitrli sahnalar, shadowing, dictant, bo‘shliqlarni to‘ldirish va eshitganini qayta aytish')}</b>{L('. Sahnalar film dialogi, podkast, akademik ma’ruza va hujjatli film uslubida yozilgan (original matnlar, ikki xil ovozda).')}</p>
+        <ol className="pay-steps"><li>{L('Subtitr bilan tinglang, so‘ng subtitrsiz.')}</li><li>{L('Gapni eshitib, aynan shu ritm bilan takrorlang (shadowing).')}</li><li>{L('Eshitganingizni yozing, keyin sahnani o‘z so‘zingiz bilan aytib bering.')}</li></ol>
+        <p className="evidence">{L('Darajangizga mos sahnadan boshlang. Ovoz saqlanmaydi.')}</p>
       </div>
       <div className="hw-grid">
         {scenes.map((s) => {
@@ -277,9 +278,9 @@ export default function ShadowHub({ id }: { id?: string }) {
               <div className="hw-top"><span className="hw-ico"><Clapperboard size={22} /></span><span className={`lvl-tag ${s.level}`}>{s.level}</span></div>
               <small className="hw-kind">{s.genre}</small>
               <h3>{s.title}</h3>
-              <p className="evidence">{LEVEL_INFO[s.level].name} · {s.lines.length} gap</p>
+              <p className="evidence">{LEVEL_INFO[s.level].name} · {s.lines.length}  {L('gap')}</p>
               <div className="bar"><i style={{ width: `${(p.steps.length / STEPS.length) * 100}%` }} /></div>
-              <span className="evidence">{p.steps.length}/{STEPS.length} bosqich</span>
+              <span className="evidence">{p.steps.length}/{STEPS.length}  {L('bosqich')}</span>
             </a>
           );
         })}

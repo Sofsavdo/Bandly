@@ -41,11 +41,17 @@ import Mistakes from './pages/Mistakes';
 import Challenge from './pages/Challenge';
 import Boss from './pages/Boss';
 import Studio from './pages/Studio';
+import Admin from './pages/Admin';
+import Creator from './pages/Creator';
+import Groups from './pages/Groups';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
   '#/welcome': () => <Home preview />,
   '#/studio': () => <Studio />,
+  '#/admin': () => <Admin />,
+  '#/creator': () => <Creator />,
+  '#/groups': () => <Groups />,
   '#/learn': () => <Learn />,
   '#/skills': () => <SkillCheck />,
   '#/coach': () => <Coach />,

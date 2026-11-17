@@ -7,6 +7,7 @@ import { addMistake } from '../lib/mistakes';
 import { renderCard, shareCard } from '../lib/shareCard';
 import { addXp, useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
+import { L } from '../i18n';
 
 type Phase = 'setup' | 'playing' | 'over';
 
@@ -55,7 +56,7 @@ export default function Challenge() {
       for (const i of findIssues(r.text)) { try { addMistake('coach', { kind: 'fix', wrong: i.wrong, right: i.right, whyUz: i.ruleUz }, []); } catch { /* skip */ } }
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? 'Nutqni tanish uchun internet kerak.' : 'Nutqni tanish to‘xtab qoldi. Qayta urinib ko‘ring.');
+      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? L('Mikrofon topilmadi.') : code === 'network' ? L('Nutqni tanish uchun internet kerak.') : L('Nutqni tanish to‘xtab qoldi. Qayta urinib ko‘ring.'));
       setPhase('setup');
     }
   };
@@ -67,28 +68,28 @@ export default function Challenge() {
 
   const share = async () => {
     if (!res) return;
-    const blob = await renderCard({ title: `Jim qolma! · ${levelOf(res.level).labelUz}`, body: res.survived ? `${Math.round(res.ms / 1000)} soniya to‘xtamay gapirdim!` : `${Math.round(res.ms / 1000)} soniyada jim qoldim…`, sub: `${res.words} so‘z · ${res.wpm} so‘z/daqiqa · ${score(res)} ball`, foot: 'Bandly — sen ham sinab ko‘r' });
+    const blob = await renderCard({ title: L('Jim qolma! · {0}', [levelOf(res.level).labelUz]), body: res.survived ? L('{0} soniya to‘xtamay gapirdim!', [Math.round(res.ms / 1000)]) : L('{0} soniyada jim qoldim…', [Math.round(res.ms / 1000)]), sub: L('{0} so‘z · {1} so‘z/daqiqa · {2} ball', [res.words, res.wpm, score(res)]), foot: L('Bandly — sen ham sinab ko‘r') });
     if (!blob) return;
-    const r = await shareCard(blob, 'bandly-jim-qolma', `Jim qolma! — ${score(res)} ball. ${location.origin}/#/challenge`);
-    setMsg(r === 'shared' ? 'Ulashildi' : 'Rasm yuklab olindi');
+    const r = await shareCard(blob, 'bandly-jim-qolma', L('Jim qolma! — {0} ball. {1}/#/challenge', [score(res), location.origin]));
+    setMsg(r === 'shared' ? L('Ulashildi') : L('Rasm yuklab olindi'));
   };
 
   return (
     <div>
       {phase === 'setup' && (
         <section className="card page-head with-illo t-peach challenge-start">
-          <h1 style={{ margin: 0, fontSize: 'clamp(24px, 3.4vw, 34px)', lineHeight: 1.08 }}>Jim qolma!</h1>
-          <p style={{ margin: '4px 0 14px' }}>{ROUND_MS / 1000} soniya to‘xtamay gapiring.</p>
+          <h1 style={{ margin: 0, fontSize: 'clamp(24px, 3.4vw, 34px)', lineHeight: 1.08 }}>{L('Jim qolma!')}</h1>
+          <p style={{ margin: '4px 0 14px' }}>{ROUND_MS / 1000}  {L('soniya to‘xtamay gapiring.')}</p>
           <Illo kind="mic" size={124} />
           <div className="topic-card">
-            <small>Mavzu</small>
+            <small>{L('Mavzu')}</small>
             <b>{topic.en}</b>
             <span>{topic.uz}</span>
-            <button type="button" className="icon-btn sm" onClick={() => setTopic(pickTopic(p.level))} aria-label="Boshqa mavzu"><RotateCcw size={16} /></button>
+            <button type="button" className="icon-btn sm" onClick={() => setTopic(pickTopic(p.level))} aria-label={L('Boshqa mavzu')}><RotateCcw size={16} /></button>
           </div>
-          <div className="seg" role="group" aria-label="Daraja" style={{ margin: '12px 0' }}>{LEVELS.map((l) => <button key={l.id} type="button" className={level === l.id ? 'on' : ''} onClick={() => setLevel(l.id)}>{l.labelUz.split(/ ·| \(/)[0]}</button>)}</div>
-          <div><button type="button" className="btn primary lg" disabled={!stt} onClick={() => void play()}><Mic size={18} /> Boshlash</button></div>
-          {!stt && <p className="bad">Bu brauzerda mikrofon ishlamaydi — Chrome’da oching.</p>}
+          <div className="seg" role="group" aria-label={L('Daraja')} style={{ margin: '12px 0' }}>{LEVELS.map((l) => <button key={l.id} type="button" className={level === l.id ? 'on' : ''} onClick={() => setLevel(l.id)}>{l.labelUz.split(/ ·| \(/)[0]}</button>)}</div>
+          <div><button type="button" className="btn primary lg" disabled={!stt} onClick={() => void play()}><Mic size={18} />  {L('Boshlash')}</button></div>
+          {!stt && <p className="bad">{L('Bu brauzerda mikrofon ishlamaydi — Chrome’da oching.')}</p>}
           {err && <p className="bad">{err}</p>}
         </section>
       )}
@@ -98,30 +99,30 @@ export default function Challenge() {
           <p><b>{topic.en}</b></p>
           <div aria-hidden="true" style={{ margin: '18px auto', width: 60 + d * 160, height: 60 + d * 160, borderRadius: '50%', background: `hsl(${130 - d * 130} 75% 55%)`, transition: 'width .1s, height .1s, background .1s', boxShadow: d > 0.75 ? '0 0 30px rgba(229,55,43,.6)' : 'none' }} />
           <p aria-live="polite" className="row" style={{ justifyContent: 'center' }}>
-            <span className="pill">Qoldi: {Math.ceil(left / 1000)} s</span>
+            <span className="pill">{L('Qoldi:')} {Math.ceil(left / 1000)} s</span>
             <span className="pill">{Number.isFinite(lim) ? `Jimlik: ${(silent / 1000).toFixed(1)} / ${(lim / 1000).toFixed(1)} s` : 'Bosimsiz rejim'}</span>
           </p>
-          <p className="muted" style={{ minHeight: 48 }}>{live || 'Gapiring…'}</p>
-          <button type="button" className="btn" onClick={() => endRef.current?.()}><Square size={14} /> To‘xtatish</button>
+          <p className="muted" style={{ minHeight: 48 }}>{live || L('Gapiring…')}</p>
+          <button type="button" className="btn" onClick={() => endRef.current?.()}><Square size={14} />  {L('To‘xtatish')}</button>
         </section>
       )}
 
       {phase === 'over' && res && (
         <section className="card">
-          <h3>{res.survived ? (res.level === 'relaxed' ? 'Raund tugadi' : 'Omon qoldingiz! 🎈') : 'Shar yorildi! 💥'}</h3>
+          <h3>{res.survived ? (res.level === 'relaxed' ? 'Raund tugadi' : L('Omon qoldingiz! 🎈')) : 'Shar yorildi! 💥'}</h3>
           <p className="row">
-            <span className="pill">{Math.round(res.ms / 1000)} s</span><span className="pill">{res.words} so‘z</span><span className="pill">{res.wpm} so‘z/daqiqa</span><span className="pill">{score(res)} ball</span>
+            <span className="pill">{Math.round(res.ms / 1000)} s</span><span className="pill">{res.words}  {L('so‘z')}</span><span className="pill">{res.wpm}  {L('so‘z/daqiqa')}</span><span className="pill">{score(res)}  {L('ball')}</span>
           </p>
           <p>{reaction(res, p.adult && p.roastLevel >= 2)}</p>
           {issues.length > 0 && (
             <>
-              <h3>Xatolar</h3>
+              <h3>{L('Xatolar')}</h3>
               <ul>{issues.map((i) => <li key={i.id + i.wrong}><span className="bad">{i.wrong}</span> → <span className="ok">{i.right}</span> <span className="muted">{i.ruleUz}</span></li>)}</ul>
             </>
           )}
           <p className="row">
-            <button type="button" className="btn primary" onClick={() => { setTopic(pickTopic(p.level)); setPhase('setup'); }}><RotateCcw size={14} /> Yana</button>
-            <button type="button" className="btn" onClick={() => void share()}><Share2 size={14} /> Natijani ulashish</button>
+            <button type="button" className="btn primary" onClick={() => { setTopic(pickTopic(p.level)); setPhase('setup'); }}><RotateCcw size={14} />  {L('Yana')}</button>
+            <button type="button" className="btn" onClick={() => void share()}><Share2 size={14} />  {L('Natijani ulashish')}</button>
           </p>
           {msg && <p className="muted">{msg}</p>}
         </section>

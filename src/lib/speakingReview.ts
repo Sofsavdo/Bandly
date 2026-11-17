@@ -2,6 +2,7 @@ import { modelFor, type Model } from '../content/speakingModels';
 import { vocab } from '../content/vocab';
 import type { TurnStat } from './examiner';
 import { findIssues, type Issue } from './grammarCheck';
+import { L } from '../i18n';
 
 export interface TurnReview {
   part: 1 | 2 | 3;
@@ -38,7 +39,7 @@ export function reviewTurn(t: TurnStat): TurnReview {
   const { advanced, phrases } = findAdvanced(t.text);
   const min = t.part === 2 ? 90 : t.part === 3 ? 25 : 15;
   const lengthNote = !t.text.trim() ? null : t.words < min
-    ? `Javob qisqa (${t.words} ta so‘z). ${t.part === 2 ? 'Part 2 da 150 ga yaqin so‘z kerak' : `Bu qism uchun kamida ${min}–${min + 15} ta so‘z yaxshi`}.`
+    ? L('Javob qisqa ({0} ta so‘z). {1}.', [t.words, t.part === 2 ? L('Part 2 da 150 ga yaqin so‘z kerak') : L('Bu qism uchun kamida {0}–{1} ta so‘z yaxshi', [min, min + 15])])
     : null;
   return { part: t.part, q: t.q, text: t.text, words: t.words, issues: t.text.trim() ? findIssues(t.text) : [], model: modelFor(t.q), advanced, phrases, lengthNote };
 }

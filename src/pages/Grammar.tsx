@@ -9,10 +9,12 @@ import { recordGrammarItem } from '../lib/adaptive/record';
 import { addMistake } from '../lib/mistakes';
 import { nodeForGrammarTopic, taxonomyOfNode } from '../content/curriculum/inventory';
 import { Illo } from '../components/Illo';
+import { L } from '../i18n';
 
-const FREE_TOPICS: string[] = ['To be va there is', 'Artikllar'];
-const MISTAKES = 'Xatolarim';
-const FOR_YOU = 'Sizga mos';
+const FREE_TOPICS: string[] = [L('To be va there is'), L('Artikllar')];
+const MISTAKES = L('Xatolarim');
+const FOR_YOU = L('Sizga mos');
+const ALL = L('Hammasi');
 
 /** Topic chosen on the Home plan card (one-shot handoff via sessionStorage). */
 function takeNextTopic(): string | undefined {
@@ -28,7 +30,7 @@ export default function Grammar() {
 
   const locked = !unlocked && !FREE_TOPICS.includes(topic);
   const items = useMemo(() => {
-    if (topic === 'Hammasi') return grammar;
+    if (topic === ALL) return grammar;
     if (topic === FOR_YOU) return grammar.filter((g) => fits(g.level, profile.level, 0, 1)).slice(0, 15);
     if (topic === MISTAKES) return grammar.filter((g) => { const c = profile.srs[`g${g.id}`]; return c && c.box === 0 && c.wrong > 0; });
     return grammar.filter((g) => g.topic === topic);
@@ -51,14 +53,14 @@ export default function Grammar() {
     saveResult({ kind: 'grammar', title: `Grammar: ${topic}`, correct, total: items.length });
     if (correct === items.length && items.length > 0) addXp(10);
   };
-  const tabs = [...(profile.level ? [FOR_YOU] : []), 'Hammasi', ...grammarTopics, MISTAKES];
+  const tabs = [...(profile.level ? [FOR_YOU] : []), ALL, ...grammarTopics, MISTAKES];
 
   return (
     <div>
       <div className="card page-head with-illo t-sky">
-        <h2>Grammar</h2><Illo kind="pencil" size={124} />
-        {profile.level ? <p className="evidence">Sizning darajangiz: <b>{profile.level}</b>. “{FOR_YOU}” bo‘limida aynan sizga mos savollar bor.</p> : <p className="evidence"><a href="#/placement">Darajangizni aniqlang</a>: sizga mos savollar tanlab beriladi.</p>}
-        <p>Har javobdan keyin o‘zbekcha tushuntirish chiqadi. Noto‘g‘ri javoblar "{MISTAKES}" bo‘limida takrorlanadi.</p>
+        <h2>{L('Grammar')}</h2><Illo kind="pencil" size={124} />
+        {profile.level ? <p className="evidence">{L('Sizning darajangiz:')} <b>{profile.level}</b>. “{FOR_YOU}{L('” bo‘limida aynan sizga mos savollar bor.')}</p> : <p className="evidence"><a href="#/placement">{L('Darajangizni aniqlang')}</a>{L(': sizga mos savollar tanlab beriladi.')}</p>}
+        <p>{L('Har javobdan keyin o‘zbekcha tushuntirish chiqadi. Noto‘g‘ri javoblar "')}{MISTAKES}{L('" bo‘limida takrorlanadi.')}</p>
         <div className="tabs">
           {tabs.map((t) => (
             <button key={t} className={`btn ${t === topic ? 'primary' : ''}`} onClick={() => change(t)}>
@@ -66,16 +68,16 @@ export default function Grammar() {
             </button>
           ))}
         </div>
-        {!unlocked && <p className="evidence">Bepul: {FREE_TOPICS.map((x) => `“${x}”`).join(' va ')} mavzulari. Qolganlari Grammar obunasi bilan ochiladi.</p>}
+        {!unlocked && <p className="evidence">{L('Bepul:')} {FREE_TOPICS.map((x) => `“${x}”`).join(L(' va '))}  {L('mavzulari. Qolganlari Grammar obunasi bilan ochiladi.')}</p>}
       </div>
 
       {locked ? <LockCard track="grammar" /> : (
         <>
-          {topic === MISTAKES && items.length === 0 && <div className="card">Hozircha takrorlanadigan xato yo‘q. Zo‘r!</div>}
+          {topic === MISTAKES && items.length === 0 && <div className="card">{L('Hozircha takrorlanadigan xato yo‘q. Zo‘r!')}</div>}
           {done && (
             <div className="card">
               <div className="score">{correct} / {items.length}</div>
-              <button className="btn" onClick={() => change(topic)}>Qayta urinish</button>
+              <button className="btn" onClick={() => change(topic)}>{L('Qayta urinish')}</button>
             </div>
           )}
           {items.map((g, idx) => {
@@ -92,14 +94,14 @@ export default function Grammar() {
                 </div>
                 {a !== undefined && (
                   <p className="evidence">
-                    {a === g.answer ? <span className="ok">To‘g‘ri. </span> : <span className="bad">Noto‘g‘ri. </span>}
+                    {a === g.answer ? <span className="ok">{L('To‘g‘ri.')} </span> : <span className="bad">{L('Noto‘g‘ri.')} </span>}
                     {g.explanationUz}
                   </p>
                 )}
               </div>
             );
           })}
-          {!done && items.length > 0 && <button className="btn primary" disabled={Object.keys(answers).length === 0} onClick={finish}>Natijani saqlash</button>}
+          {!done && items.length > 0 && <button className="btn primary" disabled={Object.keys(answers).length === 0} onClick={finish}>{L('Natijani saqlash')}</button>}
         </>
       )}
     </div>

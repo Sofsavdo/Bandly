@@ -14,12 +14,13 @@ import type { Reaction } from '../content/roasts';
 import { detectSlip } from '../lib/roast';
 import { saveResult } from '../lib/storage';
 import { addXp, personaLevel, useProfile } from '../lib/store';
+import { L } from '../i18n';
 
 type Stage = 'intro' | 'live' | 'report';
 type Status = 'speaking' | 'listening' | 'prep' | 'thinking';
 const ACCENTS = [
-  { id: 'en-US', label: 'AQSh (en-US)', hint: 'Ko‘pchilik uchun eng yaxshi tanish' },
-  { id: 'en-GB', label: 'Britaniya (en-GB)', hint: 'IELTS talaffuziga yaqin' },
+  { id: 'en-US', label: L('AQSh (en-US)'), hint: L('Ko‘pchilik uchun eng yaxshi tanish') },
+  { id: 'en-GB', label: 'Britaniya (en-GB)', hint: L('IELTS talaffuziga yaqin') },
   { id: 'en-IN', label: 'Hind (en-IN)', hint: 'Janubiy Osiyo aksentini yaxshiroq tushunishi mumkin' },
 ] as const;
 const readAccent = (): string => { try { return localStorage.getItem('bandly.stt') ?? 'en-US'; } catch { return 'en-US'; } };
@@ -90,8 +91,8 @@ export default function Speaking() {
           });
           if (!forceText.current) return r;
         } catch (e) {
-          const msg = e instanceof SpeechError ? e.message : 'Nutqni tanishda xato';
-          setErr(`${msg}. Yozma rejimga o‘tildi, suhbat davom etadi.`);
+          const msg = e instanceof SpeechError ? e.message : L('Nutqni tanishda xato');
+          setErr(L('{0}. Yozma rejimga o‘tildi, suhbat davom etadi.', [msg]));
         }
         setTextMode(true); textModeRef.current = true; setTimed(false); forceText.current = false;
       }
@@ -168,33 +169,34 @@ export default function Speaking() {
           <div className="hero">
             <Illo kind="mic" size={96} />
             <div>
-              <span className="eyebrow"><Mic size={15} /> Jonli ovozli suhbat</span>
-              <h2 style={{ marginBottom: 8 }}>Speaking: ustoz bilan suhbat</h2>
-              <p style={{ color: 'var(--ink-2)' }}>IELTS tartibida: Part 1, Part 2 (monolog), Part 3.</p>
+              <span className="eyebrow"><Mic size={15} />  {L('Jonli ovozli suhbat')}</span>
+              <h2 style={{ marginBottom: 8 }}>{L('Speaking: ustoz bilan suhbat')}</h2>
+              <p style={{ color: 'var(--ink-2)' }}>{L('IELTS tartibida: Part 1, Part 2 (monolog), Part 3.')}</p>
               <div className="row">
-                <span className="pill"><ShieldCheck size={14} /> Ovoz yozilmaydi</span>
-                <span className="pill">Part 1 · 2 · 3</span>
-                <span className="pill">~10 daqiqa</span>
+                <span className="pill"><ShieldCheck size={14} />  {L('Ovoz yozilmaydi')}</span>
+                <span className="pill">{L('Part 1 · 2 · 3')}</span>
+                <span className="pill">{L('~10 daqiqa')}</span>
               </div>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <h3>Boshlashdan oldin</h3>
-          {!supported && <p className="notice">Ovozli rejim uchun Chrome yoki Safari kerak — hozircha yozib javob bering.</p>}
-          {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI baho uchun hisobingizga kiring." />}
+          <h3>{L('Boshlashdan oldin')}</h3>
+          {!supported && <p className="notice">{L('Ovozli rejim uchun Chrome yoki Safari kerak — hozircha yozib javob bering.')}</p>}
+          {aiOn && !acct && <JoinForm onJoined={setAcct} text={L('AI baho uchun hisobingizga kiring.')} />}
                     <div style={{ margin: '12px 0' }}>
-            <b style={{ fontSize: 14 }}>Nutqni tanish aksenti</b>
+            <b style={{ fontSize: 14 }}>{L('Nutqni tanish aksenti')}</b>
             <div className="tabs" style={{ margin: '8px 0 4px' }}>
               {ACCENTS.map((a) => <button key={a.id} className={`btn sm ${accent === a.id ? 'dark' : ''}`} onClick={() => chooseAccent(a.id)}>{a.label}</button>)}
             </div>
-            <span className="evidence">{ACCENTS.find((a) => a.id === accent)?.hint}. Ustoz sizni noto‘g‘ri tushunsa, boshqa aksentni sinab ko‘ring.</span>
+            <span className="evidence">{ACCENTS.find((a) => a.id === accent)?.hint}{L('. Ustoz sizni noto‘g‘ri tushunsa, boshqa aksentni sinab ko‘ring.')}</span>
           </div>
-          <p><label><input type="checkbox" checked={textMode} disabled={!supported} onChange={(e) => setTextMode(e.target.checked)} /> Mikrofonsiz rejim (yozib javob berish)</label></p>
-          <button className="btn primary lg" onClick={() => void run()}><Mic size={18} /> Suhbatni boshlash</button>
+          <p><label><input type="checkbox" checked={textMode} disabled={!supported} onChange={(e) => setTextMode(e.target.checked)} />  {L('Mikrofonsiz rejim (yozib javob berish)')}</label></p>
+          <button className="btn primary lg" onClick={() => void run()}><Mic size={18} />  {L('Suhbatni boshlash')}</button>
           <p className="evidence" style={{ marginTop: 14 }}>
-            Ustozning javoblari hozircha <b>qoidaviy</b>{aiOn ? ' (AI yoqilgan bo‘lsa, javobingizga bog‘liq savollar ham beradi)' : ' (AI hali ulanmagan)'}: savollarni tartib bilan beradi, qisqa javobda "batafsilroq ayting" deydi. Talaffuz va grammatika baholanmaydi.
+            
+            {L('Ustozning javoblari hozircha')} <b>{L('qoidaviy')}</b>{aiOn ? L(' (AI yoqilgan bo‘lsa, javobingizga bog‘liq savollar ham beradi)') : L(' (AI hali ulanmagan)')}{L(': savollarni tartib bilan beradi, qisqa javobda "batafsilroq ayting" deydi. Talaffuz va grammatika baholanmaydi.')}
           </p>
         </div>
       </div>
@@ -207,45 +209,45 @@ export default function Speaking() {
         <div className="card hero">
           <Illo kind="trophy" size={90} />
           <div>
-            <h2 style={{ margin: 0 }}>Suhbat tugadi</h2>
-            <p style={{ margin: '4px 0' }}>+30 XP. </p>
+            <h2 style={{ margin: 0 }}>{L('Suhbat tugadi')}</h2>
+            <p style={{ margin: '4px 0' }}>{L('+30 XP.')} </p>
             <div className="row">
-              <span className="pill">Fluency (taxm.): <b>{summary.fluencyBand.toFixed(1)}</b></span>
-              <span className="pill">Lexical (taxm.): <b>{summary.lexicalBand.toFixed(1)}</b></span>
-              {!aiEval && <span className="pill">{aiState === 'loading' ? 'AI baholayapti…' : 'Grammar va Pronunciation: AI kerak'}</span>}
+              <span className="pill">{L('Fluency (taxm.):')} <b>{summary.fluencyBand.toFixed(1)}</b></span>
+              <span className="pill">{L('Lexical (taxm.):')} <b>{summary.lexicalBand.toFixed(1)}</b></span>
+              {!aiEval && <span className="pill">{aiState === 'loading' ? L('AI baholayapti…') : L('Grammar va Pronunciation: AI kerak')}</span>}
             </div>
           </div>
         </div>
-        {aiEval && <EvalCard ev={aiEval} title="AI baho (suhbat matni bo‘yicha)" />}
-        {aiState === 'error' && <p className="notice">AI baho berolmadi: {aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">Tariflar</a></>}. Quyidagi qoidaviy tahlil ishlaydi.</p>}
+        {aiEval && <EvalCard ev={aiEval} title={L('AI baho (suhbat matni bo‘yicha)')} />}
+        {aiState === 'error' && <p className="notice">{L('AI baho berolmadi:')} {aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">{L('Tariflar')}</a></>}{L('. Quyidagi qoidaviy tahlil ishlaydi.')}</p>}
         <div className="card">
           <table className="data">
             <tbody>
-              <tr><td>Javoblar soni</td><td>{summary.answers}</td></tr>
-              <tr><td>Jami so‘zlar / o‘rtacha javob</td><td>{summary.words} / {summary.avgWords.toFixed(1)}</td></tr>
-              <tr><td>Nutq tezligi</td><td>{timed && summary.wpm !== null ? `${summary.wpm} so‘z/daqiqa` : 'yozma rejimda o‘lchanmaydi'}</td></tr>
-              <tr><td>To‘ldiruvchilar (um, uh)</td><td>har 100 so‘zga {summary.fillerPer100.toFixed(1)}</td></tr>
-              <tr><td>Javobdan oldin o‘ylash</td><td>{summary.avgLatencySec !== null ? `${summary.avgLatencySec.toFixed(1)} s` : '—'}</td></tr>
-              <tr><td>So‘z xilma-xilligi</td><td>{(summary.lexicalRatio * 100).toFixed(0)}%</td></tr>
+              <tr><td>{L('Javoblar soni')}</td><td>{summary.answers}</td></tr>
+              <tr><td>{L('Jami so‘zlar / o‘rtacha javob')}</td><td>{summary.words} / {summary.avgWords.toFixed(1)}</td></tr>
+              <tr><td>{L('Nutq tezligi')}</td><td>{timed && summary.wpm !== null ? L('{0} so‘z/daqiqa', [summary.wpm]) : L('yozma rejimda o‘lchanmaydi')}</td></tr>
+              <tr><td>{L('To‘ldiruvchilar (um, uh)')}</td><td>{L('har 100 so‘zga')} {summary.fillerPer100.toFixed(1)}</td></tr>
+              <tr><td>{L('Javobdan oldin o‘ylash')}</td><td>{summary.avgLatencySec !== null ? `${summary.avgLatencySec.toFixed(1)} s` : '—'}</td></tr>
+              <tr><td>{L('So‘z xilma-xilligi')}</td><td>{(summary.lexicalRatio * 100).toFixed(0)}%</td></tr>
             </tbody>
           </table>
-          <h3>Tavsiyalar</h3>
+          <h3>{L('Tavsiyalar')}</h3>
           <ul>{summary.notes.map((n) => <li key={n}>{n}</li>)}</ul>
         </div>
         <div className="card">
-          <h3>Javoblar tahlili</h3>
-          <p className="evidence">Har javob bo‘yicha xatolar va yaxshiroq variant.</p>
+          <h3>{L('Javoblar tahlili')}</h3>
+          <p className="evidence">{L('Har javob bo‘yicha xatolar va yaxshiroq variant.')}</p>
         </div>
         {reviewAll(turns).map((r, i) => (
           <div className="card review" key={i}>
-            <div className="row"><span className="pill">Part {r.part}</span><b>{r.q}</b></div>
-            <div className="fb-block"><small>Sizning javobingiz</small><p>{r.text || '(javob yo‘q)'}</p></div>
+            <div className="row"><span className="pill">{L('Part')} {r.part}</span><b>{r.q}</b></div>
+            <div className="fb-block"><small>{L('Sizning javobingiz')}</small><p>{r.text || L('(javob yo‘q)')}</p></div>
             {r.lengthNote && <p className="fb-line">• {r.lengthNote}</p>}
             {r.issues.map((x) => <div key={x.id} className="fb-line"><b><del>{x.wrong}</del> → <ins>{x.right}</ins></b><br /><span>{x.ruleUz}</span></div>)}
-            {(r.advanced.length > 0 || r.phrases.length > 0) && <p className="fb-line ok">Yaxshi: {[...r.phrases, ...r.advanced].map((w) => <span key={w} className="chip-ok">{w}</span>)}</p>}
+            {(r.advanced.length > 0 || r.phrases.length > 0) && <p className="fb-line ok">{L('Yaxshi:')} {[...r.phrases, ...r.advanced].map((w) => <span key={w} className="chip-ok">{w}</span>)}</p>}
             {r.model && (
               <div className="fb-block up">
-                <small><Sparkles size={13} /> Bunday aytsa yaxshiroq (namuna)</small>
+                <small><Sparkles size={13} />  {L('Bunday aytsa yaxshiroq (namuna)')}</small>
                 <p>{r.model.model}</p>
                 <p className="fb-line">{r.model.phrases.map((w) => <span key={w} className="chip-up">{w}</span>)}</p>
                 <p className="fb-line"><Lightbulb size={14} style={{ verticalAlign: -2 }} /> {r.model.tipUz}</p>
@@ -254,7 +256,7 @@ export default function Speaking() {
           </div>
         ))}
         <div className="card">
-          <div className="row" style={{ marginTop: 10 }}><button className="btn primary" onClick={() => setStage('intro')}>Qayta o‘tish</button></div>
+          <div className="row" style={{ marginTop: 10 }}><button className="btn primary" onClick={() => setStage('intro')}>{L('Qayta o‘tish')}</button></div>
         </div>
       </div>
     );
@@ -262,29 +264,29 @@ export default function Speaking() {
 
   const EMO: Record<Reaction['emotion'], Mood> = { angry: 'angry', laugh: 'laugh', disappointed: 'sad', impressed: 'impressed', happy: 'happy' };
   const mood: Mood = reaction && status === 'speaking' ? EMO[reaction.emotion] : flash && status === 'listening' ? 'angry' : status === 'speaking' ? 'idle' : status === 'listening' ? 'listen' : 'think';
-  const statusLabel = status === 'speaking' ? 'Ustoz gapiryapti' : status === 'listening' ? 'Sizni tinglayapti' : status === 'prep' ? 'Tayyorgarlik vaqti' : 'O‘ylayapti';
+  const statusLabel = status === 'speaking' ? L('Ustoz gapiryapti') : status === 'listening' ? L('Sizni tinglayapti') : status === 'prep' ? L('Tayyorgarlik vaqti') : L('O‘ylayapti');
   return (
     <div>
       <div className="stage">
         <div className="stage-top">
           <span className="pill">{part === 0 ? 'Tanishuv' : `Part ${part}`}</span>
           <span className={`pill ${status === 'listening' ? 'ok' : ''}`}>{statusLabel}</span>
-          <button className="btn sm" onClick={abort}>Tugatish</button>
+          <button className="btn sm" onClick={abort}>{L('Tugatish')}</button>
         </div>
         <div className="stage-center">
           <div className={`mascot-wrap ${status}`}><Mascot mood={mood} size={104} talking={status === 'speaking'} /></div>
           {reaction && <div className="bubble" style={{ maxWidth: 640 }}><b>{reaction.uz}</b><div className="evidence">{reaction.en}</div></div>}
           <div className="say">{caption}</div>
-          {hint && <p className="hint-uz"><b>O‘zbekcha:</b> {hint}</p>}
+          {hint && <p className="hint-uz"><b>{L('O‘zbekcha:')}</b> {hint}</p>}
           {status === 'listening' && !textMode && <span className="wave" aria-hidden="true" style={{ opacity: mic === 'speech' ? 1 : .35 }}><i /><i /><i /><i /><i /><i /><i /></span>}
-          {status === 'listening' && !textMode && <span className={`pill ${mic === 'starting' ? '' : 'ok'}`}>{mic === 'starting' ? 'Mikrofon ulanmoqda…' : mic === 'mic' ? 'Mikrofon tayyor, gapiring' : 'Eshityapman'}</span>}
+          {status === 'listening' && !textMode && <span className={`pill ${mic === 'starting' ? '' : 'ok'}`}>{mic === 'starting' ? L('Mikrofon ulanmoqda…') : mic === 'mic' ? L('Mikrofon tayyor, gapiring') : 'Eshityapman'}</span>}
           {err && <p className="notice">{err}</p>}
           {review !== null && (
             <div style={{ width: '100%', maxWidth: 720 }}>
-              <div className="transcript"><span className="evidence">Siz aytdingiz:</span><br /><b>{review}</b></div>
+              <div className="transcript"><span className="evidence">{L('Siz aytdingiz:')}</span><br /><b>{review}</b></div>
               <div className="row" style={{ justifyContent: 'center', marginTop: 12 }}>
-                <button className="btn primary" onClick={() => reviewRes.current?.('ok')}>To‘g‘ri, davom etish</button>
-                <button className="btn" onClick={() => reviewRes.current?.('redo')}>Noto‘g‘ri tushundi, qayta aytaman</button>
+                <button className="btn primary" onClick={() => reviewRes.current?.('ok')}>{L('To‘g‘ri, davom etish')}</button>
+                <button className="btn" onClick={() => reviewRes.current?.('redo')}>{L('Noto‘g‘ri tushundi, qayta aytaman')}</button>
               </div>
             </div>
           )}
@@ -292,27 +294,27 @@ export default function Speaking() {
           {status === 'prep' && (
             <div className="row" style={{ justifyContent: 'center' }}>
               <span className="timer">{mmss(prepLeft)}</span>
-              <button className="btn primary" onClick={() => prepSkip.current?.()}>Tayyorman</button>
-              <span className="evidence" style={{ width: '100%' }}>Fikrlaringizni o‘ylab oling. Hech narsa yozib olinmaydi.</span>
+              <button className="btn primary" onClick={() => prepSkip.current?.()}>{L('Tayyorman')}</button>
+              <span className="evidence" style={{ width: '100%' }}>{L('Fikrlaringizni o‘ylab oling. Hech narsa yozib olinmaydi.')}</span>
             </div>
           )}
 
           {status === 'listening' && !textMode && (
             <>
-              <div className="transcript">{interim || <span className="evidence">Gapiring…</span>}</div>
+              <div className="transcript">{interim || <span className="evidence">{L('Gapiring…')}</span>}</div>
               <div className="row" style={{ justifyContent: 'center' }}>
                 {part === 2 && <span className="timer">{mmss(elapsed)} / 2:00</span>}
-                <button className="btn primary lg" onClick={() => endRef.current?.()}>Men tugatdim</button>
+                <button className="btn primary lg" onClick={() => endRef.current?.()}>{L('Men tugatdim')}</button>
               </div>
-              <span className="evidence">Ikki soniya jim qolsangiz ham javob tugaydi.</span>
-              <button className="btn sm" onClick={switchToText}>Mikrofon ishlamayaptimi? Yozib javob berish</button>
+              <span className="evidence">{L('Ikki soniya jim qolsangiz ham javob tugaydi.')}</span>
+              <button className="btn sm" onClick={switchToText}>{L('Mikrofon ishlamayaptimi? Yozib javob berish')}</button>
             </>
           )}
 
           {status === 'listening' && textMode && (
             <div style={{ width: '100%', maxWidth: 720 }}>
-              <textarea className="essay" style={{ minHeight: 110 }} value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Javobingizni inglizcha yozing…" />
-              <div className="row" style={{ marginTop: 10, justifyContent: 'center' }}><button className="btn primary" disabled={!typed.trim()} onClick={submitText}>Yuborish</button></div>
+              <textarea className="essay" style={{ minHeight: 110 }} value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={L('Javobingizni inglizcha yozing…')} />
+              <div className="row" style={{ marginTop: 10, justifyContent: 'center' }}><button className="btn primary" disabled={!typed.trim()} onClick={submitText}>{L('Yuborish')}</button></div>
             </div>
           )}
         </div>

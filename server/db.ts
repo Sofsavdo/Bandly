@@ -3,6 +3,12 @@ import { tzDay } from './day';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { ensureXpTables } from './xp';
 import { ensureReminderColumns } from './reminders';
+import { ensureI18nTables } from './i18n';
+import { ensureReferralColumns } from './referral';
+import { ensureGroupTables } from './groups';
+import { ensureLeagueNotifyColumn } from './leagueNotify';
+import { ensureSttTable } from './stt';
+import { ensureCallTable } from './callMinutes';
 import { ensureLeagueTables } from './league';
 import { vocab } from '../src/content/vocab';
 
@@ -106,6 +112,12 @@ export function createDb(path = ':memory:'): DatabaseSync {
   db.exec('CREATE INDEX IF NOT EXISTS sessions_player ON sessions (player_id)');
   ensureXpTables(db);
   ensureReminderColumns(db);
+  ensureI18nTables(db);
+  ensureReferralColumns(db);
+  ensureGroupTables(db);
+  ensureLeagueNotifyColumn(db);
+  ensureSttTable(db);
+  ensureCallTable(db);
   ensureLeagueTables(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;
@@ -217,8 +229,8 @@ export const byToken = (db: DatabaseSync, token: string): Player => {
   if (!p) throw new ApiError(401, 'Noma’lum token');
   return p;
 };
-export type Role = 'admin' | 'methodologist';
-export const ROLES: Role[] = ['admin', 'methodologist'];
+export type Role = 'admin' | 'methodologist' | 'creator' | 'teacher';
+export const ROLES: Role[] = ['admin', 'methodologist', 'creator', 'teacher'];
 /** Egasi Railway'da ADMIN_NICKNAMES (vergul bilan) kiritgan laqablar avtomatik admin bo'ladi. */
 const adminNicks = (env: NodeJS.ProcessEnv = process.env): string[] => (env.ADMIN_NICKNAMES ?? '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
 export function roleOf(db: DatabaseSync, playerId: number, env: NodeJS.ProcessEnv = process.env): Role | null {

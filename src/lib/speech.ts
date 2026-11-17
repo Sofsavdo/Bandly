@@ -86,7 +86,7 @@ const isMobile = (): boolean => /Android|iPhone|iPad|Mobile/i.test(navigator.use
 export function listenTurn(o: TurnOptions): Promise<TurnResult> {
   return new Promise((resolve, reject) => {
     const C = ctor();
-    if (!C) { reject(new SpeechError('unsupported', 'Brauzer nutqni tanishni qo‘llamaydi')); return; }
+    if (!C) { reject(new SpeechError('unsupported', L('Brauzer nutqni tanishni qo‘llamaydi'))); return; }
     const mobile = isMobile();
     const rec = new C();
     rec.lang = o.lang ?? 'en-US';
@@ -138,9 +138,9 @@ export function listenTurn(o: TurnOptions): Promise<TurnResult> {
     rec.onspeechstart = () => { lastAt = Date.now(); o.onStatus?.('speech'); };
     rec.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') fail(new SpeechError('denied', 'Mikrofonga ruxsat berilmadi'));
-      else if (e.error === 'audio-capture') fail(new SpeechError('nomic', 'Mikrofon topilmadi'));
-      else if (e.error === 'network') fail(new SpeechError('network', 'Nutqni tanish internet talab qiladi, aloqa yo‘q'));
-      else if (e.error === 'language-not-supported') fail(new SpeechError('unsupported', 'Bu til qo‘llanmaydi'));
+      else if (e.error === 'audio-capture') fail(new SpeechError('nomic', L('Mikrofon topilmadi')));
+      else if (e.error === 'network') fail(new SpeechError('network', L('Nutqni tanish internet talab qiladi, aloqa yo‘q')));
+      else if (e.error === 'language-not-supported') fail(new SpeechError('unsupported', L('Bu til qo‘llanmaydi')));
       // 'no-speech' va 'aborted' oddiy hollar: onend da qayta ishga tushiriladi
     };
     const begin = () => { try { rec.start(); } catch { /* allaqachon ishlayapti */ } };
@@ -149,7 +149,7 @@ export function listenTurn(o: TurnOptions): Promise<TurnResult> {
       const now = Date.now();
       restarts.push(now);
       while (restarts.length && now - restarts[0] > 4000) restarts.shift();
-      if (restarts.length > 10) { fail(new SpeechError('unstable', 'Nutqni tanish barqaror ishlamayapti')); return; }
+      if (restarts.length > 10) { fail(new SpeechError('unstable', L('Nutqni tanish barqaror ishlamayapti'))); return; }
       setTimeout(begin, restarts.length > 3 ? 500 : 120); // tez-tez uzilsa kutish oshiriladi (qotib qolmaslik uchun)
     };
     begin();
@@ -168,6 +168,7 @@ export function listenTurn(o: TurnOptions): Promise<TurnResult> {
 import type { Emotion, Reaction } from '../content/roasts';
 import { playClip, stopClip } from './clips';
 import { playUz, stopUz, uzTtsExpressive } from './tts';
+import { L } from '../i18n';
 
 /** Brauzer ovozida hissiyot faqat ohang (pitch), tezlik va balandlik orqali beriladi. */
 export const PROSODY: Record<Emotion, Prosody> = {

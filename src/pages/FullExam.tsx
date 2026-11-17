@@ -7,6 +7,7 @@ import { recordMock } from '../lib/history';
 import { loadResults, type ResultRecord } from '../lib/storage';
 import { useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
+import { L } from '../i18n';
 
 const KEY = 'bandly.fullexam.v1';
 interface State { startedAt: number; listeningId: string; readingId: string; writingDone: boolean }
@@ -34,29 +35,29 @@ export default function FullExam() {
     return (
       <div className="stage">
         <div className="stage-center">
-          <span className="eyebrow"><ClipboardCheck size={15} /> Imtihon simulyatsiyasi</span>
-          <h1 className="say">IELTS tartibida bir o‘tirishda</h1>
-          <p className="lead" style={{ maxWidth: 620 }}>Haqiqiy imtihondagi tartib: <b>Listening → Reading → Writing → Speaking</b>. Har bo‘lim taymer bilan, Listening faqat bir marta eshittiriladi. Oxirida bo‘limlar bo‘yicha taxminiy umumiy band chiqadi.</p>
+          <span className="eyebrow"><ClipboardCheck size={15} />  {L('Imtihon simulyatsiyasi')}</span>
+          <h1 className="say">{L('IELTS tartibida bir o‘tirishda')}</h1>
+          <p className="lead" style={{ maxWidth: 620 }}>{L('Haqiqiy imtihondagi tartib:')} <b>{L('Listening → Reading → Writing → Speaking')}</b>{L('. Har bo‘lim taymer bilan, Listening faqat bir marta eshittiriladi. Oxirida bo‘limlar bo‘yicha taxminiy umumiy band chiqadi.')}</p>
           <ul className="rules">
-            <li>Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.</li>
-            <li>Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.</li>
+            <li>{L('Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.')}</li>
+            <li>{L('Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.')}</li>
           </ul>
-          <button className="btn primary lg" onClick={start}>Imtihonni boshlash <ArrowRight size={18} /></button>
+          <button className="btn primary lg" onClick={start}>{L('Imtihonni boshlash')} <ArrowRight size={18} /></button>
         </div>
       </div>
     );
   }
 
-  const L = listeningTests.find((t) => t.id === st.listeningId)!;
+  const LT = listeningTests.find((t) => t.id === st.listeningId)!;
   const R = readingTests.find((t) => t.id === st.readingId)!;
-  const rl = since(results, st.startedAt, (r) => r.kind === 'listening' && r.title === L.title);
+  const rl = since(results, st.startedAt, (r) => r.kind === 'listening' && r.title === LT.title);
   const rr = since(results, st.startedAt, (r) => r.kind === 'reading' && r.title === R.title);
   const rs = since(results, st.startedAt, (r) => r.kind === 'speaking');
   const parts = [
-    { name: 'Listening', sub: `${L.title.replace(/^Listening mini-test \d+: /, '')} · ${L.minutes} daqiqa`, res: rl, href: `#/mocks/listening/${L.id}`, done: !!rl },
-    { name: 'Reading', sub: `${R.title.replace(/^Reading mini-test \d+: /, '')} · ${R.minutes} daqiqa`, res: rr, href: `#/mocks/reading/${R.id}`, done: !!rr },
-    { name: 'Writing', sub: 'Task 2 insho: yozib, tekshiruvdan o‘tkazing (band berilmaydi)', res: undefined, href: '#/exam/writing', done: st.writingDone },
-    { name: 'Speaking', sub: 'Ustoz bilan jonli suhbat (Part 1–3)', res: rs, href: '#/exam/speaking', done: !!rs },
+    { name: 'Listening', sub: L('{0} · {1} daqiqa', [LT.title.replace(/^Listening mini-test \d+: /, ''), LT.minutes]), res: rl, href: `#/mocks/listening/${LT.id}`, done: !!rl },
+    { name: 'Reading', sub: L('{0} · {1} daqiqa', [R.title.replace(/^Reading mini-test \d+: /, ''), R.minutes]), res: rr, href: `#/mocks/reading/${R.id}`, done: !!rr },
+    { name: 'Writing', sub: L('Task 2 insho: yozib, tekshiruvdan o‘tkazing (band berilmaydi)'), res: undefined, href: '#/exam/writing', done: st.writingDone },
+    { name: 'Speaking', sub: L('Ustoz bilan jonli suhbat (Part 1–3)'), res: rs, href: '#/exam/speaking', done: !!rs },
   ];
   const bands = [rl?.band, rr?.band, rs?.band].filter((b): b is number => typeof b === 'number');
   const doneN = parts.filter((x) => x.done).length;
@@ -68,7 +69,7 @@ export default function FullExam() {
   return (
     <div>
       <div className="card page-head with-illo t-butter">
-        <h2><ClipboardCheck size={22} style={{ verticalAlign: -4 }} /> To‘liq imtihon ({doneN}/4)</h2><Illo kind="clock" size={124} />
+        <h2><ClipboardCheck size={22} style={{ verticalAlign: -4 }} />  {L('To‘liq imtihon (')}{doneN}/4)</h2><Illo kind="clock" size={124} />
         <div className="bar" style={{ margin: '10px 0' }}><i style={{ width: `${(doneN / 4) * 100}%` }} /></div>
         <div className="exam-steps">
           {parts.map((x, i) => (
@@ -77,12 +78,12 @@ export default function FullExam() {
               <div className="grow">
                 <b>{i + 1}. {x.name}</b>
                 <p className="evidence" style={{ margin: 0 }}>{x.sub}</p>
-                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' ? 'Bajarildi' : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · taxminiy band ${x.res.band.toFixed(1)}` : ''}</p>}
+                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' ? L('Bajarildi') : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · taxminiy band ${x.res.band.toFixed(1)}` : ''}</p>}
               </div>
-              {x.name === 'Writing' && !x.done && <button className="btn sm" onClick={() => { const n = { ...st, writingDone: true }; saveFull(n); setSt(n); }}>Bajardim</button>}
-              {!x.done && i === nextIdx && <a className="btn primary sm" href={x.href}>Boshlash</a>}
-              {!x.done && i !== nextIdx && x.name !== 'Writing' && <a className="btn sm" href={x.href}>Ochish</a>}
-              {x.name === 'Writing' && !x.done && i !== nextIdx && <a className="btn sm" href={x.href}>Ochish</a>}
+              {x.name === 'Writing' && !x.done && <button className="btn sm" onClick={() => { const n = { ...st, writingDone: true }; saveFull(n); setSt(n); }}>{L('Bajardim')}</button>}
+              {!x.done && i === nextIdx && <a className="btn primary sm" href={x.href}>{L('Boshlash')}</a>}
+              {!x.done && i !== nextIdx && x.name !== 'Writing' && <a className="btn sm" href={x.href}>{L('Ochish')}</a>}
+              {x.name === 'Writing' && !x.done && i !== nextIdx && <a className="btn sm" href={x.href}>{L('Ochish')}</a>}
             </div>
           ))}
         </div>
@@ -91,14 +92,14 @@ export default function FullExam() {
       {overall !== null && (
         <div className="stage">
           <div className="stage-center">
-            <p className="evidence">{all ? 'Imtihon yakunlandi' : `Hozirgacha ${bands.length} ta bo‘lim bo‘yicha`}</p>
+            <p className="evidence">{all ? L('Imtihon yakunlandi') : L('Hozirgacha {0} ta bo‘lim bo‘yicha', [bands.length])}</p>
             <div className="score">{overall.toFixed(1)}</div>
-            <p className="lead">Taxminiy umumiy band</p>
-            {p.baselineBand !== null && <p>{overall > p.baselineBand ? <b className="ok">Boshlang‘ich {p.baselineBand.toFixed(1)} dan +{(overall - p.baselineBand).toFixed(1)} yuqori.</b> : overall === p.baselineBand ? 'Boshlang‘ich natijangiz bilan teng.' : 'Boshlang‘ich bahodan past: yana mashq kerak.'}</p>}
+            <p className="lead">{L('Taxminiy umumiy band')}</p>
+            {p.baselineBand !== null && <p>{overall > p.baselineBand ? <b className="ok">{L('Boshlang‘ich')} {p.baselineBand.toFixed(1)}  {L('dan +')}{(overall - p.baselineBand).toFixed(1)}  {L('yuqori.')}</b> : overall === p.baselineBand ? L('Boshlang‘ich natijangiz bilan teng.') : L('Boshlang‘ich bahodan past: yana mashq kerak.')}</p>}
           </div>
         </div>
       )}
-      <div className="row"><button className="btn" onClick={reset}><RotateCcw size={16} /> Yangi imtihon</button></div>
+      <div className="row"><button className="btn" onClick={reset}><RotateCcw size={16} />  {L('Yangi imtihon')}</button></div>
     </div>
   );
 }

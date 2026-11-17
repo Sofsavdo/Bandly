@@ -4,6 +4,7 @@ import { SALE_PLANS, TRACK_NAME, planForTrack } from '../config';
 import type { TrackId } from '../lib/types';
 import { setPlan, useProfile } from '../lib/store';
 import { Lock } from 'lucide-react';
+import { L } from '../i18n';
 
 export function LockCard({ track, reason }: { track: TrackId; reason?: string }) {
   const plan = SALE_PLANS.find((p) => p.id === planForTrack(track))!;
@@ -14,13 +15,13 @@ export function LockCard({ track, reason }: { track: TrackId; reason?: string })
   return (
     <div className="card lock">
       <span className="blob ink" style={{ margin: '0 auto 10px' }}><Lock /></span>
-      <h2>{TRACK_NAME[track]} — obuna bilan ochiladi</h2>
-      <p>{reason ?? `Bu bo‘lim ${plan.title} va All Access tariflarida bor.`}</p>
+      <h2>{TRACK_NAME[track]}  {L('— obuna bilan ochiladi')}</h2>
+      <p>{reason ?? L('Bu bo‘lim {0} va All Access tariflarida bor.', [plan.title])}</p>
       <div className="row" style={{ justifyContent: 'center' }}>
-        <a className="btn" href="#/pricing">Barcha tariflar</a>
-        {live ? <button className="btn primary" onClick={() => startPurchase(plan.id, 30)}>{plan.title} · {fmtSum(price)} so‘m / oy</button> : <button className="btn" onClick={() => setPlan(track, true)}>Demo: sinab ko‘rish</button>}
+        <a className="btn" href="#/pricing">{L('Barcha tariflar')}</a>
+        {live ? <button className="btn primary" onClick={() => startPurchase(plan.id, 30)}>{plan.title} · {fmtSum(price)}  {L('so‘m / oy')}</button> : <button className="btn" onClick={() => setPlan(track, true)}>{L('Demo: sinab ko‘rish')}</button>}
       </div>
-      {!live && <p className="evidence">Demo rejim: to‘lov hali ulanmagan, bu tugma faqat shu qurilmada bo‘limni ochadi.</p>}
+      {!live && <p className="evidence">{L('Demo rejim: to‘lov hali ulanmagan, bu tugma faqat shu qurilmada bo‘limni ochadi.')}</p>}
     </div>
   );
 }

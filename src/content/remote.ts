@@ -1,12 +1,13 @@
 // Metodist kabinetida e'lon qilingan darslarni yuklaydi (GET /api/content). Ilova ochilishida, render'dan oldin:
 // avval qurilmadagi keshdan darhol, so'ng serverdan yangisi (2,5 s kutiladi). Server javob bermasa — ilova ichidagi darslar.
 import { applyUnits } from './lessons';
+import { deepTranslate } from '../i18n';
 import { refreshLessonNodes } from './curriculum/inventory';
 import type { Unit } from './lessons/types';
 
 const KEY = 'bandly.content.v1';
 const valid = (u: unknown): u is Unit[] => Array.isArray(u) && u.length > 0 && u.every((x) => x && typeof x === 'object' && Array.isArray((x as Unit).lessons));
-const apply = (units: Unit[]) => { applyUnits(units); refreshLessonNodes(); };
+const apply = (units: Unit[]) => { applyUnits(deepTranslate(units)); refreshLessonNodes(); };
 
 export async function loadRemoteContent(): Promise<void> {
   let cached: { version: number; units: Unit[] } | null = null;

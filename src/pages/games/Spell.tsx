@@ -10,6 +10,7 @@ import { pickSession } from '../../lib/srs';
 import { addXp, consumeGame, getProfile, recordReview, useProfile } from '../../lib/store';
 import { blankExample, speak } from '../../lib/vocabGame';
 import { recordWordItem } from '../../lib/adaptive/record';
+import { L } from '../../i18n';
 
 const SIZE = 8;
 
@@ -30,7 +31,7 @@ export default function Spell() {
   function start() {
     if (!consumeGame()) { setLocked(true); return; }
     setIds(pickSession(vocabForLevel(getProfile().level).map((w) => w.id), getProfile().srs, Date.now(), SIZE));
-    setI(0); setText(''); setResult(null); setCorrect(0); correctRef.current = 0; setMood('idle'); setMsg('Eshiting, o‘ylang, yozing.');
+    setI(0); setText(''); setResult(null); setCorrect(0); correctRef.current = 0; setMood('idle'); setMsg(L('Eshiting, o‘ylang, yozing.'));
     setPhase('play');
   }
 
@@ -63,9 +64,9 @@ export default function Spell() {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="pencil" size={96} /></div>
-        <h2>Imlo sinovi</h2>
-        <p>Ma’noga qarab inglizcha so‘zni yozing.</p>
-        <button className="btn primary" onClick={start}>Boshlash</button>
+        <h2>{L('Imlo sinovi')}</h2>
+        <p>{L('Ma’noga qarab inglizcha so‘zni yozing.')}</p>
+        <button className="btn primary" onClick={start}>{L('Boshlash')}</button>
       </div>
     );
   }
@@ -75,10 +76,10 @@ export default function Spell() {
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="pencil" size={96} /></div>
         <h2>{correct} / {ids.length}</h2>
-        <p><b>+{earned} XP</b></p>
+        <p><b>+{earned}  {L('XP')}</b></p>
         <div className="row" style={{ justifyContent: 'center' }}>
-          <button className="btn primary" onClick={start}>Yana o‘ynash</button>
-          <a className="btn" href="#/games">O‘yinlar</a>
+          <button className="btn primary" onClick={start}>{L('Yana o‘ynash')}</button>
+          <a className="btn" href="#/games">{L('O‘yinlar')}</a>
         </div>
       </div>
     );
@@ -101,10 +102,10 @@ export default function Spell() {
         <input type="text" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} readOnly={!!result} value={text}
           onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') (result ? next() : check()); }}
           placeholder={`${w.word[0]}${' _'.repeat(Math.max(0, w.word.length - 1))}`} style={{ padding: 10, fontSize: 18, borderRadius: 10, border: '2px solid var(--line)', background: 'var(--bg)', color: 'var(--text)' }} />
-        <button className="btn" onClick={() => speak(w.word)}><Volume2 size={18} /> Eshitish</button>
-        {!result ? <button className="btn primary" onClick={check}>Tekshirish</button> : <button className="btn primary" onClick={next}>{i + 1 >= ids.length ? 'Yakunlash' : 'Keyingi'}</button>}
+        <button className="btn" onClick={() => speak(w.word)}><Volume2 size={18} />  {L('Eshitish')}</button>
+        {!result ? <button className="btn primary" onClick={check}>{L('Tekshirish')}</button> : <button className="btn primary" onClick={next}>{i + 1 >= ids.length ? 'Yakunlash' : L('Keyingi')}</button>}
       </div>
-      {result && <p className={result === 'ok' ? 'ok' : 'bad'}>{result === 'ok' ? 'To‘g‘ri!' : `To‘g‘ri javob: ${w.word}`}</p>}
+      {result && <p className={result === 'ok' ? 'ok' : 'bad'}>{result === 'ok' ? L('To‘g‘ri!') : L('To‘g‘ri javob: {0}', [w.word])}</p>}
     </div>
   );
 }

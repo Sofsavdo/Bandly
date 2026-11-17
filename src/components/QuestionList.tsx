@@ -1,6 +1,7 @@
 import type { Graded, PublicQuestion } from '../content/mockShared';
 import { Flag } from 'lucide-react';
 import type { Answer } from '../lib/grade';
+import { L } from '../i18n';
 
 interface Props {
   groups: { instruction: string; questionIds: number[] }[];
@@ -28,7 +29,7 @@ export function QuestionList({ groups, questions, answers, onChange, submitted, 
           {(() => {
             const first = questions.find((x) => x.id === g.questionIds[0]);
             if (first?.type !== 'match' || first.options.every((o) => o.length <= 2)) return null;
-            return <div className="notice" style={{ margin: '8px 0' }}><b>List of Headings</b><ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>{first.options.map((o) => <li key={o} style={{ listStyle: 'none', marginLeft: -18 }}>{o}</li>)}</ul></div>;
+            return <div className="notice" style={{ margin: '8px 0' }}><b>{L('List of Headings')}</b><ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>{first.options.map((o) => <li key={o} style={{ listStyle: 'none', marginLeft: -18 }}>{o}</li>)}</ul></div>;
           })()}
           {g.questionIds.map((id) => {
             const q = questions.find((x) => x.id === id)!;
@@ -42,7 +43,7 @@ export function QuestionList({ groups, questions, answers, onChange, submitted, 
                 <div className="q-head">
                   <span><b>{id}.</b> {q.text}</span>
                   {onFlag && (
-                    <button type="button" className={`flag-btn${flagged ? ' on' : ''}`} onClick={() => onFlag(id)} aria-pressed={flagged} aria-label={flagged ? `${id}-savol belgisini olib tashlash` : `${id}-savolni belgilash`} title="Keyinroq qaytish uchun belgilash">
+                    <button type="button" className={`flag-btn${flagged ? ' on' : ''}`} onClick={() => onFlag(id)} aria-pressed={flagged} aria-label={flagged ? L('{0}-savol belgisini olib tashlash', [id]) : L('{0}-savolni belgilash', [id])} title={L('Keyinroq qaytish uchun belgilash')}>
                       <Flag size={15} />
                     </button>
                   )}
@@ -61,7 +62,7 @@ export function QuestionList({ groups, questions, answers, onChange, submitted, 
                   ))}
                 {q.type === 'match' && (
                   <select disabled={submitted} value={typeof a === 'number' ? a : ''} onChange={(e) => onChange(id, e.target.value === '' ? undefined : Number(e.target.value))} style={{ marginTop: 6, maxWidth: '100%' }}>
-                    <option value="">Tanlang…</option>
+                    <option value="">{L('Tanlang…')}</option>
                     {q.options.map((opt, i) => <option key={opt} value={i}>{opt}</option>)}
                   </select>
                 )}
@@ -70,7 +71,7 @@ export function QuestionList({ groups, questions, answers, onChange, submitted, 
                 )}
                 {g && (
                   <div className="evidence">
-                    {ok ? <span className="ok">To‘g‘ri</span> : <span className="bad">Noto‘g‘ri</span>} — to‘g‘ri javob: <b>{g.answer}</b>
+                    {ok ? <span className="ok">{L('To‘g‘ri')}</span> : <span className="bad">{L('Noto‘g‘ri')}</span>}  {L('— to‘g‘ri javob:')} <b>{g.answer}</b>
                     <div>{g.evidence}</div>
                   </div>
                 )}

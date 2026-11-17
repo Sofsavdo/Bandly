@@ -543,3 +543,54 @@ html, body { overflow-x: clip; }
 .btn.danger { color: #b3261e; }
 @media (prefers-color-scheme: dark) { .btn.danger { color: #ff9a8f; } }
 .zone-gate { background: #fff !important; color: #14162b !important; box-shadow: var(--shadow-1); }
+
+/* Til tanlash */
+.lang-pick { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-1); color: var(--ink-2); cursor: pointer; flex: none; }
+.lang-pick select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; padding: 0 2px; font: inherit; font-weight: 650; font-size: 14px; color: var(--ink); cursor: pointer; box-shadow: none !important; outline-offset: 4px; }
+.lang-pick.compact { height: 40px; }
+@media (max-width: 979px) { .app-header .lang-pick.compact { padding: 0 10px; } .app-header .lang-pick.compact select { max-width: 74px; font-size: 13px; } }
+@media (min-width: 980px) { .app-header .lang-pick.compact { width: 100%; justify-content: center; box-shadow: none; background: var(--surface-2); } }
+@media (max-width: 979px) { .app-header .lang-pick.compact { display: none; } }
+
+/* Tarjimalar paneli */
+.tr-cov { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.tr-lang { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 10px 12px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; text-align: left; }
+.tr-lang.on { border-color: var(--inv); }
+.tr-lang span { font-family: var(--display); font-size: 22px; font-weight: 700; }
+.tr-lang small { color: var(--muted); font-size: 12px; }
+.tr-lang i { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--brand); }
+.tr-list { display: grid; gap: 8px; max-height: 60vh; overflow-y: auto; }
+.tr-row { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 10px; border-radius: 14px; background: var(--surface-2); }
+@media (min-width: 760px) { .tr-row { grid-template-columns: 1fr 1fr; } }
+.tr-src { font-size: 14px; color: var(--ink-2); }
+.tr-dst { display: flex; gap: 6px; align-items: flex-start; }
+.tr-dst textarea { flex: 1; min-width: 0; font-size: 14px; padding: 8px 10px; border-radius: 12px; resize: vertical; }
+
+/* Analitika */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpis.three { grid-template-columns: repeat(3, 1fr); margin: 0; }
+.kpi2 { display: flex; flex-direction: column; gap: 2px; padding: 16px; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-1); min-width: 0; }
+.kpis.three .kpi2 { background: var(--surface-2); box-shadow: none; }
+.kpi2 span { color: var(--muted); font-size: 13px; font-weight: 650; }
+.kpi2 b { font-family: var(--display); font-size: 30px; letter-spacing: -.03em; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; }
+.kpi2 small { color: var(--muted); font-size: 12.5px; }
+.abars { margin: 0 0 18px; } .abars figcaption { font-weight: 650; margin-bottom: 6px; color: var(--ink-2); } .abars figcaption b { color: var(--ink); margin-left: 6px; }
+.abars svg { width: 100%; height: auto; display: block; color: var(--ink); }
+.funnel { display: grid; gap: 8px; }
+.fstep { display: grid; grid-template-columns: 120px 1fr 48px; align-items: center; gap: 10px; font-size: 14px; }
+.fstep i { height: 14px; border-radius: 99px; background: linear-gradient(90deg, var(--brand), var(--lilac)); min-width: 4px; }
+.fstep b { text-align: right; }
+.invite-link { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; border-radius: 14px; background: var(--surface-2); }
+.invite-link code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
+.gcode { font-family: var(--display); letter-spacing: .14em; font-size: 20px; }
+table.data tr.idle td { opacity: .55; }
+
+/* AI ustoz v2: ovoz darajasi (server tanishi), xarakter tanlovi */
+.tutor-orb.listening { transform: scale(calc(1 + var(--lvl, 0) * 0.18)); transition: transform .08s linear; }
+.tutor-persona { margin: 10px auto 0; }
+.tutor-call > .tutor-persona { display: flex; width: fit-content; }
+.tutor-persona button { padding: 7px 13px; font-size: 13.5px; }
+.vu { display: inline-flex; align-items: center; gap: 4px; height: 22px; }
+.vu i { width: 4px; border-radius: 2px; background: currentColor; opacity: .75; height: calc(5px + var(--lvl, 0) * 17px); transition: height .08s linear; }
+.vu i:nth-child(2), .vu i:nth-child(4) { height: calc(5px + var(--lvl, 0) * 11px); }
+.vu i:nth-child(1), .vu i:nth-child(5) { height: calc(4px + var(--lvl, 0) * 6px); }

@@ -7,6 +7,7 @@ import { QuestsCard } from '../components/QuestsCard';
 import { UNITS } from '../content/lessons';
 import { isUnlocked, loadProgress, nextLesson } from '../lib/lessons';
 import { useProfile } from '../lib/store';
+import { L } from '../i18n';
 
 /** General English path: level → unit → lesson. Pilot slice (A1–C2). */
 const VIEW_KEY = 'bandly.learnview.v1';
@@ -26,27 +27,27 @@ export default function Learn() {
   return (
     <div>
       <section className="card page-head with-illo learn-head">
-        <h2 style={{ margin: 0 }}>Yangi darsni <em className="it">tanlang</em></h2>
-        <p style={{ margin: '6px 0 14px' }}>{passed}/{total} dars · {p.level ? `darajangiz ${p.level}` : <a href="#/placement">darajani aniqlash</a>}</p>
+        <h2 style={{ margin: 0 }}>{L('Yangi darsni')} <em className="it">{L('tanlang')}</em></h2>
+        <p style={{ margin: '6px 0 14px' }}>{passed}/{total}  {L('dars ·')} {p.level ? L('darajangiz {0}', [p.level]) : <a href="#/placement">{L('darajani aniqlash')}</a>}</p>
         <div className="row" style={{ gap: 10 }}>
-          <div className="seg" role="tablist" aria-label="Ko‘rinish">
-            <button type="button" role="tab" aria-selected={view === 'map'} className={view === 'map' ? 'on' : ''} onClick={() => pick('map')}><MapIcon size={15} /> Xarita</button>
-            <button type="button" role="tab" aria-selected={view === 'list'} className={view === 'list' ? 'on' : ''} onClick={() => pick('list')}><List size={15} /> Ro‘yxat</button>
+          <div className="seg" role="tablist" aria-label={L('Ko‘rinish')}>
+            <button type="button" role="tab" aria-selected={view === 'map'} className={view === 'map' ? 'on' : ''} onClick={() => pick('map')}><MapIcon size={15} />  {L('Xarita')}</button>
+            <button type="button" role="tab" aria-selected={view === 'list'} className={view === 'list' ? 'on' : ''} onClick={() => pick('list')}><List size={15} />  {L('Ro‘yxat')}</button>
           </div>
-          {next && <a className="btn primary" href={`#/learn/${next.lessonId}`}>Davom ettirish <ArrowRight size={16} /></a>}
+          {next && <a className="btn primary" href={`#/learn/${next.lessonId}`}>{L('Davom ettirish')} <ArrowRight size={16} /></a>}
         </div>
         <Illo kind="map" size={130} />
       </section>
       {view === 'map' && (
         <div className="learn-grid">
           <LearningMap progress={progress} level={p.level} currentId={next?.lessonId ?? null} />
-          <aside className="learn-side" aria-label="Bugungi vazifalar">{p.level && <QuestsCard />}</aside>
+          <aside className="learn-side" aria-label={L('Bugungi vazifalar')}>{p.level && <QuestsCard />}</aside>
         </div>
       )}
       {view === 'list' && <>
-        <div className="chips" role="tablist" aria-label="Daraja">
-          <button type="button" className={`chip ${lvlF === 'all' ? 'on' : ''}`} onClick={() => setLvlF('all')}>Barchasi</button>
-          {levels.map((l) => <button key={l} type="button" className={`chip ${lvlF === l ? 'on' : ''}`} onClick={() => setLvlF(l)}>{l}{p.level === l ? ' · siz' : ''}</button>)}
+        <div className="chips" role="tablist" aria-label={L('Daraja')}>
+          <button type="button" className={`chip ${lvlF === 'all' ? 'on' : ''}`} onClick={() => setLvlF('all')}>{L('Barchasi')}</button>
+          {levels.map((l) => <button key={l} type="button" className={`chip ${lvlF === l ? 'on' : ''}`} onClick={() => setLvlF(l)}>{l}{p.level === l ? L(' · siz') : ''}</button>)}
         </div>
         {shown.map((u) => {
           const done = u.lessons.filter((l) => progress[l.id]?.passedAt).length;
@@ -62,8 +63,8 @@ export default function Learn() {
                     <>
                       <h3>{i + 1}. {l.titleUz}</h3>
                       <p>{l.objectiveUz}</p>
-                      <PRing value={best} max={100} size={50} stroke={5} dark color="var(--peach)" label={`Eng yaxshi natija ${best}%`}><b style={{ fontSize: 12 }}>{pr?.passedAt ? <CheckCircle2 size={16} color="#fff" /> : `${best}%`}</b></PRing>
-                      <div className="lfoot"><span className="lstart">{pr?.passedAt ? 'Takrorlash' : open ? 'Boshlash' : <><Lock size={13} /> Yopiq</>}</span><span className="muted" style={{ fontSize: 12.5 }}>{l.minutes} daq</span></div>
+                      <PRing value={best} max={100} size={50} stroke={5} dark color="var(--peach)" label={L('Eng yaxshi natija {0}%', [best])}><b style={{ fontSize: 12 }}>{pr?.passedAt ? <CheckCircle2 size={16} color="#fff" /> : `${best}%`}</b></PRing>
+                      <div className="lfoot"><span className="lstart">{pr?.passedAt ? L('Takrorlash') : open ? L('Boshlash') : <><Lock size={13} />  {L('Yopiq')}</>}</span><span className="muted" style={{ fontSize: 12.5 }}>{l.minutes}  {L('daq')}</span></div>
                     </>
                   );
                   return open

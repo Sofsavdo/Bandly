@@ -1,4 +1,5 @@
 import { clipKey } from './clipHash';
+import { L } from '../i18n';
 
 // Oldindan yaratilgan neyron ovoz fayllari (public/audio). Fayl bo'lmasa chaqiruvchi brauzer ovoziga o'tadi.
 interface Manifest { clips: Set<string>; listening: Record<string, { file: string; seconds: number }> }
@@ -6,7 +7,7 @@ let manifest: Promise<Manifest> | null = null;
 
 export const loadManifest = (): Promise<Manifest> =>
   (manifest ??= fetch('/audio/manifest.json')
-    .then((r) => (r.ok ? r.json() : Promise.reject(new Error('manifest yo‘q'))))
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(L('manifest yo‘q')))))
     .then((j: { clips: string[]; listening: Manifest['listening'] }) => ({ clips: new Set(j.clips), listening: j.listening }))
     .catch(() => ({ clips: new Set<string>(), listening: {} })));
 

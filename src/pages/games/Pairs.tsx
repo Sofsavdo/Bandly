@@ -8,6 +8,7 @@ import { pickSession } from '../../lib/srs';
 import { addXp, consumeGame, getProfile, recordReview } from '../../lib/store';
 import { shuffle } from '../../lib/vocabGame';
 import { recordWordItem } from '../../lib/adaptive/record';
+import { L } from '../../i18n';
 
 export default function Pairs() {
   const [phase, setPhase] = useState<'intro' | 'play' | 'end'>('intro');
@@ -70,9 +71,9 @@ export default function Pairs() {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
-        <h2>Juftlik</h2>
-        <p>So‘z va ma’noni juftlang.</p>
-        <button className="btn primary" onClick={start}>Boshlash</button>
+        <h2>{L('Juftlik')}</h2>
+        <p>{L('So‘z va ma’noni juftlang.')}</p>
+        <button className="btn primary" onClick={start}>{L('Boshlash')}</button>
       </div>
     );
   }
@@ -82,11 +83,11 @@ export default function Pairs() {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}><Illo kind="star" size={96} /></div>
-        <h2>Hammasi topildi!</h2>
-        <p>Vaqt: {fmt(elapsed)} · Xatolar: {total} · <b>+{earned} XP</b></p>
+        <h2>{L('Hammasi topildi!')}</h2>
+        <p>{L('Vaqt:')} {fmt(elapsed)}  {L('· Xatolar:')} {total} · <b>+{earned}  {L('XP')}</b></p>
         <div className="row" style={{ justifyContent: 'center' }}>
-          <button className="btn primary" onClick={start}>Yana o‘ynash</button>
-          <a className="btn" href="#/games">O‘yinlar</a>
+          <button className="btn primary" onClick={start}>{L('Yana o‘ynash')}</button>
+          <a className="btn" href="#/games">{L('O‘yinlar')}</a>
         </div>
       </div>
     );
