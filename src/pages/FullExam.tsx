@@ -33,13 +33,14 @@ export default function FullExam() {
     return (
       <div className="stage">
         <div className="stage-center">
-          <span className="eyebrow"><ClipboardCheck size={15} /> Imtihon simulyatsiyasi</span>
-          <h1 className="say">To‘liq IELTS tartibida bir o‘tirishda</h1>
+          <span className="eyebrow"><ClipboardCheck size={15} /> Qisqartirilgan imtihon simulyatsiyasi</span>
+          <h1 className="say">IELTS tartibida bir o‘tirishda (qisqartirilgan)</h1>
           <p className="lead" style={{ maxWidth: 620 }}>Haqiqiy imtihondagi tartib: <b>Listening → Reading → Writing → Speaking</b>. Har bo‘lim taymer bilan, Listening faqat bir marta eshittiriladi. Oxirida bo‘limlar bo‘yicha taxminiy umumiy band chiqadi.</p>
           <ul className="rules">
             <li>Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.</li>
             <li>Test darajangizga ({p.level ?? 'B1'}) mos tanlanadi.</li>
             <li>Natijalar taxminiy: rasmiy IELTS balli emas.</li>
+            <li>Bu <b>qisqartirilgan</b> format: Listening va Reading mini-testlari 10–13 savoldan iborat (haqiqiy imtihonda har birida 40 savol, Listening ≈ 30 daqiqa, Reading 60 daqiqa). To‘liq formatli mocklar tayyorlanmoqda.</li>
             <li>Kompyuter yoki planshetda topshirish tavsiya etiladi (haqiqiy kompyuterdagi IELTS ham shunday); telefonda ham ishlaydi.</li>
             <li>Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.</li>
           </ul>

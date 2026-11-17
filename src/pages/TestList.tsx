@@ -16,7 +16,7 @@ export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kin
     <div>
       <div className="card">
         <h2>{kind === 'reading' ? 'Reading' : 'Listening'} testlari</h2>
-        <p>Testni tanlang. Har bir test imtihon taymeri va to‘liq tahlil bilan keladi.{track === 'mocks' && <> <span className="badge on">Mock Arena · bepul</span></>}</p>
+        <p>Testni tanlang. Har bir test imtihon taymeri va to‘liq tahlil bilan keladi. <span className="badge on">Bepul</span></p>
         {p.level ? <p className="evidence">Darajangiz: <b>{p.level}</b>. Sizga mos testlar birinchi ko‘rsatilgan.</p> : <p className="evidence"><a href="#/placement">Darajangizni aniqlang</a>: testlar sizga moslab tartiblanadi.</p>}
       </div>
       <div className="grid">

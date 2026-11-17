@@ -79,8 +79,10 @@ function testRoute(hash: string): ReactNode | null {
   if (!id) body = <TestList track={track} kind={kind} />;
   else if (kind === 'reading') { const t = readingTests.find((x) => x.id === id); body = t ? <Reading test={t} /> : <TestList track={track} kind={kind} />; }
   else { const t = listeningTests.find((x) => x.id === id); body = t ? <Listening test={t} /> : <TestList track={track} kind={kind} />; }
-  // Mock Arena objective tests are free (strategy DR-19, owner decision OD-08 sets limits); the exam-prep track stays behind its subscription.
-  return track === 'mocks' ? <>{body}</> : <Gate track={track}>{body}</Gate>;
+  // Obyektiv Reading/Listening testlari bepul (Mock Arena, DR-19) — ular "Imtihon" bo'limidan ochilganda ham bir xil testlar,
+  // shuning uchun u yerda ham qulflanmaydi. Pullik qism: Writing/Speaking va AI baholash.
+  void track;
+  return <>{body}</>;
 }
 
 export default function App() {
