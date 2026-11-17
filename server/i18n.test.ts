@@ -15,9 +15,14 @@ const fakeAi = (map: (s: string) => string) => async (_u: string, init?: { body?
 };
 
 // To'liq tarjima, {o'rinlar} saqlanadi
-const r = await translateMissing(db, cfg, 'ru', { call: { fetchImpl: fakeAi((s) => `RU ${s}`) as never } });
-assert.deepEqual(r, { added: 4, remaining: 0 });
-assert.equal(dictFor(db, 'ru').dict['{0} ta dars'], 'RU {0} ta dars');
+const RU: Record<string, string> = { Darslar: 'Уроки (ИИ)', '{0} ta dars': '{0} уроков', Topilmadi: 'Не найдено', 'Mashq qiling': 'Тренируйтесь' };
+const r = await translateMissing(db, cfg, 'ru', { call: { fetchImpl: fakeAi((s) => RU[s]!) as never } });
+assert.deepEqual(r, { added: 4, remaining: 0, rejected: 0 });
+assert.equal(dictFor(db, 'ru').dict['{0} ta dars'], '{0} уроков');
+
+// Sifat darvozasi: kirilldagi o'zbekcha va lotinda qolgan o'zbekcha bazaga yozilmaydi
+assert.equal(await translateBatch(db, cfg, 'ky', ['Mashq qiling'], { fetchImpl: fakeAi(() => 'Машқ қилинг') as never }), 0);
+assert.equal(await translateBatch(db, cfg, 'ky', ['Mashq qiling'], { fetchImpl: fakeAi(() => 'Mashq qiling') as never }), 0);
 assert.equal(coverage(db).ru.done, 4);
 
 // {o'rin} yo'qolgan tarjima rad etiladi
@@ -31,11 +36,11 @@ assert.equal(dictFor(db, 'ru').dict.Darslar, 'Уроки');
 assert.equal(listTranslations(db, 'ru', 'уро')[0]!.by, 'human');
 
 // Server xabarlari: aniq va shablon orqali
-assert.equal(trServer(db, 'ru', 'Topilmadi'), 'RU Topilmadi');
-assert.equal(trServer(db, 'ru', '5 ta dars'), 'RU 5 ta dars');
+assert.equal(trServer(db, 'ru', 'Topilmadi'), 'Не найдено');
+assert.equal(trServer(db, 'ru', '5 ta dars'), '5 уроков');
 assert.equal(trServer(db, 'uz', 'Topilmadi'), 'Topilmadi');
 assert.equal(trServer(db, undefined, 'Topilmadi'), 'Topilmadi');
 // Lug'at versiyasi o'zgarishda yangilanadi
-const v1 = dictFor(db, 'ru').v; setTranslation(db, 'ru', 'Mashq qiling', 'Тренируйтесь', 'human'); assert.notEqual(dictFor(db, 'ru').v, v1);
+const v1 = dictFor(db, 'ru').v; setTranslation(db, 'ru', 'Mashq qiling', 'Занимайтесь', 'human'); assert.notEqual(dictFor(db, 'ru').v, v1);
 assert.ok(calls >= 3);
 console.log('i18n server: OK');

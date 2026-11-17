@@ -4,12 +4,14 @@ import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import ts from 'typescript';
 import { isUzContent, isUzText } from './detect';
+import { englishOnly } from './english';
 import { uz } from '../../src/i18n/uz';
 
 const ROOT = join(dirname(new URL(import.meta.url).pathname), '../..');
 const OUT = join(ROOT, 'src/i18n/catalog.json');
 const set = new Set<string>();
-const add = (s: string) => { const t = s.replace(/\s+/g, ' ').trim(); if (t.length >= 2) set.add(t); };
+// Faqat inglizcha (yoki brend) matn tarjima qilinmaydi: Grammar, Mock Arena, Reading, Beginner — barcha tillarda o'zgarmaydi
+const add = (s: string) => { const t = s.replace(/\s+/g, ' ').trim(); if (t.length >= 2 && !englishOnly(t)) set.add(t); };
 
 const walk = (d: string, out: string[], skip: (p: string) => boolean) => { for (const f of readdirSync(d)) { const p = join(d, f); if (skip(p)) continue; if (statSync(p).isDirectory()) walk(p, out, skip); else if (/\.tsx?$/.test(f) && !/\.(test|d)\.tsx?$/.test(f)) out.push(p); } };
 

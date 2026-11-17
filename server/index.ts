@@ -21,7 +21,7 @@ import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
-import { coverage, dictFor, isTarget, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
+import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
@@ -171,7 +171,7 @@ createServer(async (req, res) => {
       if (req.method === 'GET' && p[0] === 'tree') return send(res, 200, { units: studioTree(db), role: me.role });
       // Tarjimalar: qamrov, ro'yxat, qo'lda tuzatish (metodist), AI tarjima (faqat admin — xarajatli)
       if (p[0] === 'i18n') {
-        if (req.method === 'GET' && !p[1]) return send(res, 200, { coverage: coverage(db), ai: ai.provider !== 'none' });
+        if (req.method === 'GET' && !p[1]) return send(res, 200, { coverage: coverage(db), ai: ai.provider !== 'none', rejected: Object.fromEntries(lastRejected) });
         const b = req.method === 'GET' ? Object.fromEntries(url.searchParams) : await readJson(req, 20_000);
         const lang = String(b.lang ?? '');
         if (!isTarget(lang)) throw new ApiError(400, 'Til noto‘g‘ri');

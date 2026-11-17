@@ -19,8 +19,9 @@ export function TranslationsPanel({ admin }: { admin: boolean }) {
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<Target | 'all' | null>(null);
   const [msg, setMsg] = useState('');
+  const [rej, setRej] = useState<Record<string, { src: string; tr: string; why: string }[]>>({});
 
-  const loadCov = useCallback(async () => { const r = await studio<{ coverage: Record<Target, Cov>; ai: boolean }>('GET', 'i18n'); setCov(r.coverage); setAiOn(r.ai); }, []);
+  const loadCov = useCallback(async () => { const r = await studio<{ coverage: Record<Target, Cov>; ai: boolean; rejected?: Record<string, { src: string; tr: string; why: string }[]> }>('GET', 'i18n'); setCov(r.coverage); setAiOn(r.ai); setRej(r.rejected ?? {}); }, []);
   const loadItems = useCallback(async () => {
     const r = await studio<{ items: Item[] }>('GET', `i18n/list?lang=${lang}&q=${encodeURIComponent(q)}&missing=${missing ? 1 : 0}`);
     setItems(r.items); setDraft({});
@@ -74,6 +75,11 @@ export function TranslationsPanel({ admin }: { admin: boolean }) {
         </div>
       )}
       {msg && <p className="notice">{msg}</p>}
+      {(rej[lang]?.length ?? 0) > 0 && (
+        <details className="fold"><summary>{L('Sifat tekshiruvidan o‘tmagan AI tarjimalari: {0}', [rej[lang]!.length])}</summary>
+          <ul className="plain">{rej[lang]!.slice(0, 20).map((r) => <li key={r.src}><b>{r.src}</b> → <s>{r.tr}</s> <span className="badge hot">{L(r.why)}</span></li>)}</ul>
+        </details>
+      )}
       <div className="row" style={{ marginBottom: 10 }}>
         <input type="text" value={q} onChange={(e) => setQ(e.target.value)} placeholder={L('Qidirish…')} style={{ flex: 1, minWidth: 180 }} />
         <label><input type="checkbox" checked={missing} onChange={(e) => setMissing(e.target.checked)} /> {L('Faqat tarjimasizlar')}</label>
