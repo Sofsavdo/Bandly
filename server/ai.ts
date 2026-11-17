@@ -4,7 +4,7 @@
 import { FORBIDDEN, type Reaction } from '../src/content/roasts';
 
 export type Provider = 'anthropic' | 'openai' | 'gemini' | 'none';
-export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string }
+export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string; fallbackModel?: string }
 
 /** Provayder nomi: bo'sh joy va katta-kichik harfga, keng tarqalgan nomlarga chidamli; nom noto'g'ri bo'lsa — kalit turidan aniqlanadi. */
 export function detectProvider(name: string, key: string): Provider {
@@ -32,7 +32,9 @@ export function configFromEnv(env: Record<string, string | undefined> = process.
   const model = (env.AI_MODEL ?? '').trim() || d.model;
   // Kalit yoki model yo'q bo'lsa AI o'chiq hisoblanadi
   const enabled = provider !== 'none' && !!key && !!model;
-  return { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, '') };
+  // Zaxira model: asosiy model band bo'lsa (503) — shu bilan javob beriladi. Gemini uchun oldingi avlod Flash (ishlab chiqarishda qo'llanadi)
+  const fb = (env.AI_FALLBACK_MODEL ?? '').trim() || (provider === 'gemini' ? 'gemini-3.6-flash' : '');
+  return { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, ''), ...(fb && fb !== model ? { fallbackModel: fb } : {}) };
 }
 
 /** AI nega o'chiq — log uchun (kalitning o'zi chiqarilmaydi). */
@@ -45,15 +47,31 @@ export function aiOffReason(env: Record<string, string | undefined> = process.en
 }
 
 export class AiError extends Error {
-  constructor(public status: number, message: string) { super(message); }
+  constructor(public status: number, message: string, public upstream?: number) { super(message); }
 }
 
 type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body: string; signal: AbortSignal }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
-export interface CompleteOpts { maxTokens?: number; timeoutMs?: number; fetchImpl?: FetchLike }
+export interface CompleteOpts { maxTokens?: number; timeoutMs?: number; fetchImpl?: FetchLike; retryDelayMs?: number }
 
 /** Bitta so'rov: tizim ko'rsatmasi + foydalanuvchi matni → javob matni. */
+/** Vaqtinchalik band bo'lish (503/500/529/429): bir marta qisqa kutib qayta, keyin zaxira model bilan urinadi. */
+const TRANSIENT = new Set([429, 500, 503, 529]);
 export async function complete(cfg: AiConfig, system: string, user: string, opts: CompleteOpts = {}): Promise<string> {
+  const plan: AiConfig[] = [cfg, cfg, ...(cfg.fallbackModel ? [{ ...cfg, model: cfg.fallbackModel }] : [])];
+  let last: unknown;
+  for (let i = 0; i < plan.length; i++) {
+    try { return await completeOnce(plan[i]!, system, user, opts); } catch (e) {
+      last = e;
+      if (!(e instanceof AiError) || !e.upstream || !TRANSIENT.has(e.upstream)) throw e;
+      if (i === 0) await new Promise((r) => setTimeout(r, opts.retryDelayMs ?? 700));
+    }
+  }
+  const e = last as AiError;
+  throw new AiError(503, e.upstream === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : 'AI ustoz hozir juda band (AI xizmatida navbat). Bir daqiqadan keyin qayta urinib ko‘ring.', e.upstream);
+}
+
+async function completeOnce(cfg: AiConfig, system: string, user: string, opts: CompleteOpts = {}): Promise<string> {
   if (cfg.provider === 'none') throw new AiError(503, 'AI yoqilmagan');
   const maxTokens = opts.maxTokens ?? 500;
   const f = (opts.fetchImpl ?? (fetch as unknown as FetchLike));
@@ -82,7 +100,7 @@ export async function complete(cfg: AiConfig, system: string, user: string, opts
       let why = '';
       try { const e = (await res.json()) as { error?: { type?: string; message?: string; status?: string } }; why = `${e.error?.type ?? e.error?.status ?? ''} ${String(e.error?.message ?? '').slice(0, 160)}`.trim(); } catch { /* bo'sh */ }
       console.error(`[ai] ${cfg.provider} ${cfg.model} → HTTP ${res.status}${why ? `: ${why}` : ''}`);
-      throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 402 ? 'AI ustoz vaqtincha ishlamayapti: AI xizmati hisobida mablag‘ tugagan. Administratorga xabar berildi.' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`);
+      throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 402 ? 'AI ustoz vaqtincha ishlamayapti: AI xizmati hisobida mablag‘ tugagan. Administratorga xabar berildi.' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`, res.status);
     }
     const j = (await res.json()) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     const text = cfg.provider === 'anthropic' ? j.content?.[0]?.text : cfg.provider === 'openai' ? j.choices?.[0]?.message?.content : (j.candidates?.[0]?.content?.parts ?? []).filter((p: { thought?: boolean; text?: string }) => !p.thought && typeof p.text === 'string').map((p: { text: string }) => p.text).join('');
