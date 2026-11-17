@@ -154,3 +154,27 @@ h2 { font-size: clamp(22px, 3.4vw, 32px); }
 :is(.night, .card.hero, .card.page-head) .notice { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); color: #f4f2ec; }
 :is(.night, .card.hero, .card.page-head) .bar { background: rgba(255,255,255,.14); }
 :is(.night, .card.hero, .card.page-head) a:not(.btn) { color: #9fe8de; }
+
+/* Brend belgisi */
+svg.brandmark { flex: none; }
+svg.brandmark.talking { animation: bm-pulse 1.4s ease-in-out infinite; }
+@keyframes bm-pulse { 50% { transform: scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { svg.brandmark.talking { animation: none; } }
+.avatar { flex: none; width: 76px; height: 76px; border-radius: 24px; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 32px; color: #fff; background: linear-gradient(150deg, var(--brand), var(--gold)); box-shadow: inset 0 -4px 0 rgba(0,0,0,.18); }
+
+/* ---------- Bir qatorda turadigan tanlov tugmalari (o'ramaydi) ---------- */
+.seg { display: inline-flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.seg::-webkit-scrollbar, .tabs::-webkit-scrollbar { display: none; }
+.seg button { white-space: nowrap; flex: none; }
+.tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 8px; }
+.tabs > * { flex: none; white-space: nowrap; }
+.seg.seg-dark { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); margin-top: 6px; }
+.seg.seg-dark button { color: rgba(244,242,236,.8); }
+.seg.seg-dark button.on { background: #fff; color: var(--night); }
+.price-tabs { flex-wrap: nowrap; }
+.price-tabs button { white-space: nowrap; }
+@media (max-width: 520px) { .row.pills-row { flex-wrap: nowrap; overflow-x: auto; } }
+/* Bir nechta "pill" qatori — tekis to'r (tartibsiz o'ralish o'rniga) */
+.row:has(> .pill + .pill + .pill) { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px; }
+.row:has(> .pill + .pill + .pill) > .pill { justify-content: center; text-align: center; }
+.pricing-head .note { font-size: 13px; margin: 8px 0 0; display: flex; gap: 6px; align-items: center; }

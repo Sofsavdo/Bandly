@@ -1,7 +1,6 @@
 import { RankBadge } from '../components/RankBadge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { vocabById } from '../content/vocab';
-import { Mascot } from '../components/Mascot';
 import { JoinForm } from '../components/JoinForm';
 import { createDuel, duelUrl, fetchDuel, getAccount, submitDuel, type DuelInfo } from '../lib/account';
 import { addXp, recordReview } from '../lib/store';
@@ -138,7 +137,6 @@ export function DuelRoom({ code }: { code: string }) {
   return (
     <div>
       <div className="card hero">
-        <Mascot mood={info.iFinished ? 'happy' : 'think'} size={84} />
         <div>
           <h2 style={{ margin: 0 }}>Duel {info.code}</h2>
           <p style={{ margin: '4px 0' }}>10 ta so‘z, har biriga {SECONDS} soniya. Tez va to‘g‘ri javob ko‘proq ball beradi.</p>
@@ -166,7 +164,6 @@ export default function DuelHub() {
   return (
     <div>
       <div className="card hero">
-        <Mascot mood="angry" size={90} />
         <div>
           <h2 style={{ margin: 0 }}>Duel</h2>
           <p style={{ margin: '4px 0' }}>Do‘stlaringiz bilan bir xil 10 ta so‘zda raqobatlashing. Havolani yuboring, kim yutadi?</p>

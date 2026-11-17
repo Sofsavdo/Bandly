@@ -76,7 +76,7 @@ export default function Challenge() {
       <section className="card">
         <h2>Jim qolma!</h2>
         <p>Mavzu bo‘yicha {ROUND_MS / 1000} soniya ingliz tilida gapiring. Jim qolsangiz, shar shishib boradi — chegaraga yetganda yorilib ketadi. To‘xtamay gapiring!</p>
-        <p className="muted" style={{ fontSize: 13 }}>Nutq brauzeringizda aniqlanadi; uning o‘z kechikishi bor, shuning uchun qiyin darajalar sinov bosqichida. Bosim yoqmasa — “Bosimsiz” rejim.</p>
+        <p className="muted" style={{ fontSize: 13 }}>Nutq brauzerda aniqlanadi — ozgina kechikish bo‘lishi mumkin.</p>
         {!stt && <p className="bad">Bu brauzer nutqni tanishni qo‘llamaydi (Chrome yoki Edge tavsiya etiladi).</p>}
       </section>
 

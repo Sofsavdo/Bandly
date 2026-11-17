@@ -60,7 +60,7 @@ export function SatPrep() {
       </div>
       <div className="card">
         <h3>Bandly mashqi (rasmiy emas)</h3>
-        <p className="muted" style={{ fontSize: 13 }}>Savollar Bandly tomonidan SAT bo‘limlari uslubida yozilgan; rasmiy College Board materiali emas va SAT ballini taxmin qilmaydi. Har javobdan keyin izoh ko‘rasiz.</p>
+        <p className="muted" style={{ fontSize: 13 }}>Bandly mashq savollari (rasmiy College Board materiali emas).</p>
         <p className="row">
           <button type="button" className={`chipbtn ${set === 'rw' ? 'on' : ''}`} onClick={() => setSet('rw')}>Reading and Writing · {SAT_RW.length} savol</button>
           <button type="button" className={`chipbtn ${set === 'math' ? 'on' : ''}`} onClick={() => setSet('math')}>Math · {SAT_MATH.length} savol</button>

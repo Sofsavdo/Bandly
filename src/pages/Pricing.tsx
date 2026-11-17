@@ -30,12 +30,12 @@ export default function Pricing() {
     <div>
       <div className="card pricing-head">
         <h2 style={{ margin: 0 }}>Tariflar</h2>
-        <p style={{ margin: '6px 0 12px' }}>Mock Arena testlari, darajani aniqlash va so‘z o‘yinlari — bepul. Obuna AI ustoz, AI baholash va to‘liq bo‘limlarni ochadi.</p>
+        <p style={{ margin: '6px 0 12px' }}>Mock testlar va daraja testi — bepul. Obuna AI ustoz va to‘liq bo‘limlarni ochadi.</p>
         <div className="price-tabs" role="tablist" aria-label="Muddat">
           {SALE_PERIODS.map((x) => <button key={x.days} role="tab" aria-selected={x.days === days} className={x.days === days ? 'on' : ''} onClick={() => setDays(x.days)}>{x.label}{x.note && <small> {x.note}</small>}</button>)}
         </div>
-        {!live && <p className="notice" style={{ marginTop: 10 }}>To‘lov hali ulanmagan: narxlar haqiqiy, lekin “Demo” tugmasi bo‘limni faqat shu qurilmada ochadi.</p>}
-        {ai === false && <p className="notice" style={{ marginTop: 10 }}><Info size={15} style={{ verticalAlign: -2 }} /> AI ustoz va AI baholash hozir ishga tushirilmoqda. Ular yoqilgunga qadar obuna darslar, grammar va imtihon bo‘limlarini ochadi; AI limitlari AI yoqilgan kundan hisoblanadi.</p>}
+        {!live && <p className="note muted">Demo rejim: to‘lov hali ulanmagan.</p>}
+        {ai === false && <p className="note muted"><Info size={14} /> AI imkoniyatlari tez orada — limitlar AI yoqilgan kundan hisoblanadi.</p>}
       </div>
 
       <div className="plans4">
@@ -66,7 +66,7 @@ export default function Pricing() {
                 {until && <span className="badge on" style={{ marginLeft: 6 }}>Faol: {fmtDate(until)} gacha</span>}
               </div>
               <ul>{pl.features.map((f) => <li key={f}><Check size={16} />{f}</li>)}</ul>
-              {pl.id === 'exam' && <p className="evidence" style={{ fontSize: 13 }}>Jonli suhbat daqiqasi General English’dagidan kam: imtihonga tayyorgarlikda asosiy vaqt 14 daqiqagacha bo‘lgan, baholanadigan to‘liq Speaking mocklarga ketadi.</p>}
+              {pl.id === 'exam' && <p className="evidence" style={{ fontSize: 13 }}>Suhbat daqiqasi kamroq: vaqt baholanadigan Speaking mocklarga ketadi.</p>}
               {live
                 ? <button className={`btn ${pl.recommended ? 'primary' : ''}`} onClick={() => startPurchase(pl.id, days)}>{until ? 'Uzaytirish' : 'Sotib olish'}</button>
                 : <button className="btn" onClick={() => { const on = demoOn(pl.id); pl.tracks.forEach((t) => setPlan(t, !on)); }}>{demoOn(pl.id) ? 'Demo: o‘chirish' : 'Demo: yoqish'}</button>}
@@ -76,13 +76,14 @@ export default function Pricing() {
       </div>
 
       <div className="card">
-        <h3 style={{ marginTop: 0 }}>To‘lov qanday ishlaydi</h3>
+        <details className="fold"><summary>To‘lov qanday ishlaydi</summary>
         <ul className="plain">
           <li>To‘lov bank kartasiga o‘tkazma orqali: ilova aniq summa va karta raqamini ko‘rsatadi, o‘tkazma qilingach obuna bir necha soniyada o‘zi yoqiladi.</li>
           <li>Obuna avtomatik yangilanmaydi — muddat tugagach, xohlasangiz qayta to‘laysiz.</li>
           <li>Obuna hisobingizga yoziladi: boshqa qurilmada ham shu hisob bilan kirasiz.</li>
           <li>Barcha ballar taxminiy; rasmiy natijani faqat imtihon markazi beradi.</li>
         </ul>
+        </details>
       </div>
     </div>
   );

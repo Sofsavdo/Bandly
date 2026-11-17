@@ -103,7 +103,7 @@ export default function LessonPage({ id }: { id: string }) {
             <div className="relearn card">
         <h3><Heart size={18} /> Jonlar tugadi — keling, qoidani qayta ko‘rib chiqamiz</h3>
         <p>{lesson.explanationUz[0]}</p>
-        <p className="muted">Quyidagi savollarni qayta yeching. Hammasi to‘g‘ri bo‘lsa, 3 ta jon qaytadi va darsni davom ettirasiz. Kutish yoki to‘lov yo‘q.</p>
+        <p className="muted">Shu savollarni to‘g‘ri yeching — 3 ta jon qaytadi.</p>
         {relearn.map((i) => (
           <div key={i}>
             <ItemView item={lesson.practice[i]!} value={rAns[i]} revealed={!!rShown[i]} onChange={(v) => setRAns((a) => ({ ...a, [i]: v }))} />
@@ -162,7 +162,7 @@ export default function LessonPage({ id }: { id: string }) {
       {step === 'practice' && (
         <section className="card">
           {slowMsg && <p className="notice" role="status">{SLOW_DOWN_UZ}. Juda tez berilgan javoblarga XP yozilmaydi.</p>}
-          <p className="muted">Har bir javobni darhol tekshiring. Xato javob 1 ta jon oladi, ketma-ket to‘g‘ri javoblar combo beradi. Bu qism yakuniy ballga ta’sir qilmaydi.</p>
+          <p className="muted">Xato — 1 jon. Ketma-ket to‘g‘ri javob — combo.</p>
           {lesson.practice.map((it, i) => (
             <div key={i}>
               <ItemView item={it} value={pAns[i]} revealed={!!pShown[i]} onChange={(v) => setPAns((a) => { const n = [...a]; n[i] = v; return n; })} />

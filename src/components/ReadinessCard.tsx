@@ -38,7 +38,7 @@ export function ReadinessCard() {
           {r.skills[r.weakest].band === null ? `${NAME[r.weakest]} bo‘yicha birinchi testni topshiring` : `Eng zaif ko‘nikma: ${NAME[r.weakest]} — mashq qilish`}
         </a>
       )}
-      <p className="muted" style={{ fontSize: 13, marginTop: 10 }}>Har bir ko‘nikma — oxirgi 3 ta test natijasining o‘rtachasi; umumiy ko‘rsatkich kamida 2 ta ko‘nikma bo‘lganda hisoblanadi. Bu rasmiy IELTS bali emas. Writing uchun AI baholash ulanmaguncha ball ko‘rsatilmaydi.</p>
+      <p className="muted" style={{ fontSize: 13, marginTop: 10 }}>Oxirgi 3 ta test o‘rtachasi. Taxminiy.</p>
     </div>
   );
 }

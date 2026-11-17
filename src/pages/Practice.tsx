@@ -196,7 +196,7 @@ export default function Practice() {
         {!res ? <button className="btn primary" disabled={cur!.kind === 'build' ? picked.length === 0 : !text.trim()} onClick={submit}>Tekshirish</button> : <button className="btn primary" onClick={next}>{i + 1 >= queue.length ? 'Natijani ko‘rish' : 'Keyingisi'} <ArrowRight size={16} /></button>}
       </div>
       {res && <Feedback e={cur!} r={res.r} answer={res.answer} />}
-      <p className="evidence">Tekshiruv qoidalarga asoslangan (AI emas): u tanish xato va qoliplarni topadi. Mukammal baholash uchun AI ustoz ulanadi.</p>
+      <p className="evidence">Qoidaviy tekshiruv (AI emas).</p>
     </div>
   );
 }

@@ -242,7 +242,7 @@ export default function Speaking() {
         </div>
         <div className="card">
           <h3>Javoblar tahlili</h3>
-          <p className="evidence">Har bir javob bo‘yicha: xatolar, ishlatgan kuchli so‘z va iboralaringiz va «bunday aytsa yaxshiroq» namuna. Matn faqat shu sahifada ko‘rinadi, saqlanmaydi.</p>
+          <p className="evidence">Har javob bo‘yicha xatolar va yaxshiroq variant.</p>
         </div>
         {reviewAll(turns).map((r, i) => (
           <div className="card review" key={i}>

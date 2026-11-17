@@ -99,7 +99,7 @@ function Player({ test, state }: { test: ListeningTest; state: ExamLeftState }) 
   return (
     <div>
       <p><b>{test.context}</b></p>
-      {!practice && !submitted && playedBefore > 0 && <p className="notice">Audio allaqachon eshittirilgan. Imtihon qoidasi bo‘yicha qayta eshittirilmaydi — savollarga javob berishni davom ettiring.</p>}
+      {!practice && !submitted && playedBefore > 0 && <p className="notice">Audio bir marta eshittiriladi (imtihon qoidasi).</p>}
       {track === undefined ? <p className="muted">Audio yuklanmoqda…</p> : track ? <FilePlayer key={practice ? 'p' : 'e'} file={track.file} seconds={track.seconds} practice={practice} initialPlays={practice ? 0 : playedBefore} onPlay={() => { if (!practice) state.update((a) => ({ ...a, audioPlays: a.audioPlays + 1 })); }} /> : <BrowserPlayer test={test} practice={practice} />}
       <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={practice} onChange={(e) => setPractice(e.target.checked)} /> Mashq rejimi (pauza va qayta eshitish)</label></p>
       <p className="evidence">Imtihon rejimida audio faqat bir marta eshittiriladi.</p>

@@ -3,7 +3,7 @@ import { fmtSum, payConfig, startPurchase, type PayConfig } from '../lib/pay';
 import { SALE_PLANS, TRACK_NAME, planForTrack } from '../config';
 import type { TrackId } from '../lib/types';
 import { setPlan, useProfile } from '../lib/store';
-import { Mascot } from './Mascot';
+import { Lock } from 'lucide-react';
 
 export function LockCard({ track, reason }: { track: TrackId; reason?: string }) {
   const plan = SALE_PLANS.find((p) => p.id === planForTrack(track))!;
@@ -13,7 +13,7 @@ export function LockCard({ track, reason }: { track: TrackId; reason?: string })
   const price = cfg?.periods[0]?.prices[plan.id] ?? plan.monthlyUzs;
   return (
     <div className="card lock">
-      <Mascot mood="think" size={96} />
+      <span className="blob ink" style={{ margin: '0 auto 10px' }}><Lock /></span>
       <h2>{TRACK_NAME[track]} — obuna bilan ochiladi</h2>
       <p>{reason ?? `Bu bo‘lim ${plan.title} va All Access tariflarida bor.`}</p>
       <div className="row" style={{ justifyContent: 'center' }}>

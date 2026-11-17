@@ -35,7 +35,7 @@ export function LessonWrite({ task }: { task: WritingTask }) {
           </ul>
           <p className={res.passed ? 'ok' : 'bad'}>{res.passed ? 'Topshiriq talablari bajarildi.' : 'Yuqoridagilarni tuzatib, qayta tekshiring.'}</p>
           {task.model && <p><b>Namuna javob:</b> <span className="muted">{task.model}</span></p>}
-          <p className="muted" style={{ fontSize: 13 }}>Bu tekshiruv qoidalarga asoslangan: u ma’lum xatolarni topadi, lekin matningizdagi barcha xatolarni topa olmaydi va ball bermaydi.</p>
+          <p className="muted" style={{ fontSize: 13 }}>Qoidaviy tekshiruv: asosiy xatolarni topadi.</p>
         </div>
       )}
     </div>

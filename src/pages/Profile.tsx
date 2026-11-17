@@ -13,7 +13,6 @@ import { setDailyGoal, useProfile } from '../lib/store';
 import { PersonaPicker } from '../components/PersonaPicker';
 import { vocab } from '../content/vocab';
 import { isMastered } from '../lib/srs';
-import { Mascot } from '../components/Mascot';
 import { ProgressCard } from '../components/ProgressCard';
 
 export default function Profile() {
@@ -32,7 +31,7 @@ export default function Profile() {
   return (
     <div>
       <div className="card hero">
-        <Mascot mood={p.streak >= 3 ? 'happy' : 'idle'} size={96} />
+        <span className="avatar" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
         <div>
           <h2 style={{ margin: 0 }}>{lp.level}-daraja</h2>
           <div className="bar" style={{ margin: '8px 0' }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
@@ -45,7 +44,7 @@ export default function Profile() {
             <span className="pill">O‘yinlar: {p.gamesPlayed}</span>
           </div>
           {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice" style={{ marginTop: 8 }}>{p.brokenStreak?.value} kunlik seriyangiz uzildi. Uzilgan kundan keyin 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, seriya tiklanadi (30 kunda bir marta).</p>}
-          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>Seriya kunlik XP maqsadiga yetgan kunlari o‘sadi. Har 7 kunlik seriya uchun 1 ta muzlatish beriladi (ko‘pi bilan 2 ta): o‘tkazib yuborilgan kun seriyani uzmaydi.</p>
+          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>Kunlik maqsad bajarilgan kunlar seriyani uzaytiradi. 7 kunda 1 muzlatish.</p>
         </div>
       </div>
 

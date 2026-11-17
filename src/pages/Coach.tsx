@@ -104,9 +104,9 @@ export default function Coach() {
       <section className="card night page-head">
         <h2><Bot size={22} /> AI ustoz</h2>
         <p>Beshta xarakterdan birini tanlang va ingliz tilida gaplashing: ustoz javob beradi, xatoingizni tuzatadi va keyingi savolni beradi.</p>
-        {status && !status.coach && <p className="notice">AI ustoz bilan suhbat tez orada ochiladi. Hozircha xarakterlar bilan tanishing va gapirishni “Jim qolma!” o‘yinida mashq qiling.</p>}
+        {status && !status.coach && <p className="notice">AI ustoz tez orada ochiladi.</p>}
         <p><a className="btn sm" href="#/challenge">Jim qolma! — 60 soniyalik gapirish o‘yini</a></p>
-        <p className="muted" style={{ fontSize: 13 }}>Hozir navbatma-navbat suhbat: nutqingiz brauzerda matnga aylanadi, javob brauzer ovozida o‘qiladi (ovoz va his-tuyg‘u sifati qurilmaga bog‘liq). Uzluksiz real vaqt ovozi va tabiiy hissiyotli ovozlar AI provayder ulangach sinovdan o‘tkaziladi.</p>
+        <p className="muted" style={{ fontSize: 13 }}>Ovozli suhbat navbatma-navbat, brauzer orqali.</p>
       </section>
 
       {!started && (

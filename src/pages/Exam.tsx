@@ -21,10 +21,8 @@ export default function Exam() {
       <div className="card night page-head">
         <h2>Imtihon tayyorgarligi {p.plan.exam && <span className="badge on">{p.planUntil.exam ? 'Obuna faol' : 'Demo'}</span>}</h2>
         <p className="muted" style={{ margin: '4px 0 10px', fontSize: 14 }}>Reading va Listening testlari bepul. Writing, Speaking va AI baholash — Exam Preparation va All Access tariflarida.</p>
-        <div className="tabs" style={{ marginBottom: 0 }}>
-          <button className={`btn ${tab === 'ielts' ? 'dark' : ''}`} onClick={() => setTab('ielts')}>IELTS</button>
-          <button className={`btn ${tab === 'sat' ? 'dark' : ''}`} onClick={() => setTab('sat')}>SAT <span className="badge on">Digital</span></button>
-          <button className={`btn ${tab === 'cefr' ? 'dark' : ''}`} onClick={() => setTab('cefr')}>CEFR <span className="badge on">Multilevel</span></button>
+        <div className="seg seg-dark" role="tablist" aria-label="Imtihon">
+          {(['ielts', 'cefr', 'sat'] as const).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{k.toUpperCase()}</button>)}
         </div>
         
       </div>

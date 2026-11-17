@@ -113,7 +113,7 @@ export default function SkillCheck() {
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderTop: '1px solid var(--line)' }}><span>{k}</span><b>{v}</b></div>
             ))}
           </div>
-          <p className="muted" style={{ fontSize: 13 }}>Taxminiy daraja. Natijalar qurilmangizda saqlanadi va “Bugungi reja”dagi Reading/Listening vazifalariga ta’sir qiladi. IELTS tayyorgarligi bu yerda alohida o‘lchanmaydi.</p>
+          <p className="muted" style={{ fontSize: 13 }}>Taxminiy daraja — Bugungi rejaga ta’sir qiladi.</p>
           <div className="row"><a className="btn primary" href="#/learn">Darslarga o‘tish</a><a className="btn" href="#/">Bosh sahifa</a></div>
         </section>
       )}

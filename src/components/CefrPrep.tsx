@@ -30,8 +30,10 @@ export function CefrPrep() {
           ))}
         </div>
         <p style={{ marginTop: 10 }}><b>Ball chegaralari ({F.scoring.value.scale}):</b> {F.scoring.value.cutoffs.map((c) => `${c.level}: ${c.range}`).join(' · ')}</p>
+        <details className="fold"><summary className="muted" style={{ fontSize: 13 }}>Manbalar va izohlar</summary>
         <ul className="muted" style={{ fontSize: 13 }}>{F.notesUz.map((n) => <li key={n}>{n}</li>)}</ul>
         <p className="muted" style={{ fontSize: 13 }}>Manbalar: {F.sources.map((x, i) => <span key={x.url}>{i ? ' · ' : ''}<a href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>
+        </details>
       </div>
 
       <div className="card">
@@ -47,7 +49,7 @@ export function CefrPrep() {
 
       <div className="card">
         <h3>Tayyorgarlik</h3>
-        <p className="muted" style={{ fontSize: 13 }}>Mashq testlari rasmiy hajm va vaqtga mos (35 savol; 60 va 45 daqiqa). Ichki tuzilish va topshiriq turlari Bandly’niki — rasmiy manbada e’lon qilinmagan. Natija to‘g‘ri javoblar soni bilan ko‘rsatiladi, Multilevel balli hisoblanmaydi.</p>
+        <p className="muted" style={{ fontSize: 13 }}>Rasmiy hajm va vaqt. Natija — to‘g‘ri javoblar soni (Multilevel balli emas).</p>
         <div className="stack">
           <a className="path-step" href="#/mocks/reading/cefr-reading-1"><b><BookOpen size={16} /> O‘qish — mashq testi 1</b><span>35 savol · 60 daqiqa · B1→C1 matnlar · bepul</span></a>
           <a className="path-step" href="#/mocks/listening/cefr-listening-1"><b><Headphones size={16} /> Tinglab tushunish — mashq testi 1</b><span>35 savol · 45 daqiqa · 5 qism, turli talaffuzlar · bepul</span></a>

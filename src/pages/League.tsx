@@ -1,7 +1,6 @@
 import { ArrowDown, ArrowUp, Flame, Shield } from 'lucide-react';
 import { RankBadge } from '../components/RankBadge';
 import { useCallback, useEffect, useState } from 'react';
-import { Mascot } from '../components/Mascot';
 import { fetchBoard, getAccount, syncNow, type Board } from '../lib/account';
 import { JoinForm } from '../components/JoinForm';
 import { useProfile } from '../lib/store';
@@ -27,7 +26,6 @@ export default function League() {
   return (
     <div>
       <div className="card hero">
-        <Mascot mood="happy" size={84} />
         <div>
           <h2 style={{ margin: 0 }}>Reyting</h2>
           <p style={{ margin: '4px 0' }}>Har hafta dushanba kuni yangilanadi. XP yig‘ing va yuqoriga chiqing.</p>

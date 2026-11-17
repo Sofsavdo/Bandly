@@ -69,7 +69,7 @@ export default function Writing() {
         <>
           <div className="card">
             <h3>Task 2 insho turlari</h3>
-            <p className="evidence">Birinchi qadam: savol qaysi turga kirishini aniqlang. Tur tuzilmani belgilaydi, noto‘g‘ri turda yozilgan insho yaxshi tilda yozilsa ham ball yo‘qotadi.</p>
+            <p className="evidence">Avval savol turini aniqlang — tuzilma shunga bog‘liq.</p>
           </div>
           {essayTypes.map((e) => (
             <div className="card" key={e.id}>
@@ -94,7 +94,7 @@ export default function Writing() {
         <>
           <div className="card">
             <h3>10 asosiy mavzu</h3>
-            <p className="evidence">IELTS savollari odatda shu mavzulardan tuziladi. Har mavzuda: savol, insho rejasi, namuna insho (mavzu so‘zlari belgilangan) va 8 ta so‘z. Barcha so‘zlar o‘yinlar va takrorlash tizimiga ham qo‘shilgan. Hamma namunalar Bandly uchun yozilgan.</p>
+            <p className="evidence">Mavzu tanlang: savol, reja, namuna va kalit so‘zlar.</p>
             <div className="kinds">
               {writingTopics.map((t) => <button key={t.id} className={`kindbtn ${t.id === topicId ? 'on' : ''}`} onClick={() => setTopicId(t.id)}><b>{t.title}</b><span>{essayTypes.find((e) => e.id === t.type)!.name.split(' (')[0]}</span></button>)}
             </div>
