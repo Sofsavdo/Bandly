@@ -380,11 +380,13 @@ const httpServer = createServer(async (req, res) => {
       const resolved = resolvePersona(String(b.persona ?? 'friendly'), { adult: b.adult === true, mode }); // adult = learner's self-declaration (OD-06b pending)
       const history = Array.isArray(b.history) ? b.history.slice(-MAX_HISTORY).map((t) => ({ role: (t as { role?: unknown }).role === 'coach' ? 'coach' as const : 'learner' as const, text: String((t as { text?: unknown }).text ?? '') })) : [];
       const text = String(b.text ?? '');
+      const t0 = Date.now();
       const reply = await once(`${player.id}:${turnId}`, async () => {
         useGlobalAi(db, COACH_GLOBAL_DAILY);                       // platform ceiling first (fail-closed)
         useAi(db, token, Date.now(), COACH_DAILY_LIMIT, 'coach');  // per-learner daily limit
         return coachTurn(coachAi, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true });
       });
+      console.log(`[coach] ${Date.now() - t0}ms ${resolved.id} adult=${b.adult === true}`); // javob matni yozilmaydi
       return send(res, 200, { ...reply, persona: resolved.id, notice: resolved.downgraded });
     }
     if (req.method === 'POST' && url.pathname.startsWith('/api/ai/')) {
@@ -434,15 +436,17 @@ const httpServer = createServer(async (req, res) => {
       // AI ustoz suhbati: obunachi oylik daqiqalari tugaguncha va xodimlar (admin, metodist — sinov uchun) kunlik chegarasiz;
       // obunasiz o'quvchining suhbat ovozi — alohida kunlik chegara (COACH_FREE_DAILY_ANSWERS), boshqa ovozli javoblar bilan aralashmaydi
       const isCoach = b.feature === 'coach';
+      const contPart = Number.isInteger(b.part) && Number(b.part) >= 1 && Number(b.part) <= 8;
       const staffRole = roleOf(db, player.id);
       const coachCall = isCoach && paid && (staffRole === 'admin' || staffRole === 'methodologist' || callLeft(db, player.id, entitlements(db, token, now).plan !== null, now) > 0);
       const bucket = tts.provider === 'elevenlabs' ? (isCoach ? 'coachvoice' : 'voice') : 'tts';
       if (tts.provider !== 'elevenlabs') useAi(db, token, now, TTS_DAILY_LIMIT, 'tts');
       else if (paid && coachCall) useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now);
+      else if (paid && isCoach && contPart) useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); // javobning davomi — bitta javob bir marta sanaladi
       else if (paid) { useAi(db, token, now, isCoach ? COACH_FREE_DAILY_ANSWERS : VOICE_DAILY_ANSWERS, bucket); try { useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); } catch (e) { refundAi(db, player.id, bucket, now); throw e; } }
       let out: Awaited<ReturnType<typeof synthesize>>;
       try { out = await synthesize(tts, text, opts); } catch (e) {
-        if (paid) { if (!coachCall) refundAi(db, player.id, bucket, now); refundGlobalVoiceChars(db, reserve, now); }
+        if (paid) { if (!coachCall && !(isCoach && contPart)) refundAi(db, player.id, bucket, now); refundGlobalVoiceChars(db, reserve, now); }
         throw e;
       }
       const { audio, cached, chars } = out;

@@ -21,23 +21,34 @@ const STYLE: Record<Emotion, { rate: number; pitch: number }> = {
 let current: HTMLAudioElement | null = null;
 export const stopUz = (): void => { if (current) { current.pause(); current = null; } };
 
+/** Ovozni oldindan tayyorlaydi (serverdan oladi), lekin chalmaydi. null — xizmat o'chiq/limit/xato. part>0 — shu javobning davomi (limitga qayta sanalmaydi). */
+export async function prepareUz(text: string, emotion: Emotion, feature?: 'coach', part = 0): Promise<string | null> {
+  const acc = getAccount();
+  if (!acc || !(await uzTtsEnabled())) return null;
+  try {
+    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: acc.token, text, emotion, feature, part, ...STYLE[emotion] }), signal: AbortSignal.timeout(12_000) });
+    return r.ok ? URL.createObjectURL(await r.blob()) : null;
+  } catch { return null; }
+}
+
+/** Tayyor ovozni chaladi (signal bekor qilsa — to'xtaydi). */
+export function playPrepared(url: string, signal: { cancelled: boolean }): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    const a = new Audio(url);
+    current = a;
+    let done = false;
+    const finish = (ok: boolean) => { if (done) return; done = true; clearInterval(poll); URL.revokeObjectURL(url); if (current === a) current = null; resolve(ok); };
+    const poll = setInterval(() => { if (signal.cancelled) { a.pause(); finish(true); } }, 120);
+    a.onended = () => finish(true);
+    a.onerror = () => finish(false);
+    a.play().catch(() => finish(false));
+  });
+}
+
 /** O'zbekcha matnni chaladi. Muvaffaqiyatli bo'lsa true; xizmat o'chiq/limit/xato bo'lsa false (chaqiruvchi zaxira ovozga o'tadi). */
 export async function playUz(text: string, emotion: Emotion, signal: { cancelled: boolean }, feature?: 'coach'): Promise<boolean> {
-  const acc = getAccount();
-  if (!acc || signal.cancelled || !(await uzTtsEnabled())) return false;
-  try {
-    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: acc.token, text, emotion, feature, ...STYLE[emotion] }), signal: AbortSignal.timeout(12_000) });
-    if (!r.ok || signal.cancelled) return false;
-    const url = URL.createObjectURL(await r.blob());
-    return await new Promise<boolean>((resolve) => {
-      const a = new Audio(url);
-      current = a;
-      let done = false;
-      const finish = (ok: boolean) => { if (done) return; done = true; clearInterval(poll); URL.revokeObjectURL(url); if (current === a) current = null; resolve(ok); };
-      const poll = setInterval(() => { if (signal.cancelled) { a.pause(); finish(true); } }, 120);
-      a.onended = () => finish(true);
-      a.onerror = () => finish(false);
-      a.play().catch(() => finish(false));
-    });
-  } catch { return false; }
+  if (signal.cancelled) return false;
+  const url = await prepareUz(text, emotion, feature);
+  if (!url || signal.cancelled) { if (url) URL.revokeObjectURL(url); return false; }
+  return playPrepared(url, signal);
 }

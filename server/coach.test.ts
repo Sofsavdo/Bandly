@@ -42,8 +42,8 @@ for (const ok2 of ['Ona tilingda ayt, keyin inglizchasini aytamiz.', 'Qiz do‘s
 for (const bad of ['Onangga ayt', 'Otangni chaqir', 'Uzbeks are stupid', 'fuck you'])
   assert.equal(parseCoachReply(JSON.stringify({ reply: bad, emotion: 'angry' })), null, `blocked: ${bad}`);
 // Bandi: 18+ bo'lsa so'kinish ruxsat, bo'lmasa — toza hazil; takrorlamaslik qoidasi hamma xarakterda
-assert.match(buildPrompt('bandi', [], 'hi', { mode: 'practice', adult: true }).system, /mild swearing is allowed/);
-assert.match(buildPrompt('bandi', [], 'hi', { mode: 'practice', adult: false }).system, /no swear words/);
+assert.match(buildPrompt('bandi', [], 'hi', { mode: 'practice', adult: true }).system, /SWEAR for real/);
+assert.match(buildPrompt('bandi', [], 'hi', { mode: 'practice', adult: false }).system, /no real swear words/);
 for (const p of ps) assert.match(p.system, /VARIETY: never repeat/);
 // yaroqsiz javob: bir marta qayta so'raladi, keyin ham bo'lmasa — oldingisini takrorlamaydigan neytral gap
 {
