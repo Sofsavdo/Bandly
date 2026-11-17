@@ -20,7 +20,7 @@ export function ensureLeagueTables(db: DatabaseSync): void {
 const weeklyXp = (db: DatabaseSync, playerId: number, week: number): number =>
   (db.prepare('SELECT COALESCE(SUM(delta),0) AS s FROM xp_log WHERE player_id = ? AND ts >= ? AND ts < ?').get(playerId, week, week + WEEK) as { s: number }).s;
 
-function standings(db: DatabaseSync, groupId: number, week: number): { player_id: number; nickname: string; xp: number }[] {
+export function standings(db: DatabaseSync, groupId: number, week: number): { player_id: number; nickname: string; xp: number }[] {
   const rows = db.prepare('SELECT m.player_id, p.nickname FROM league_members m JOIN players p ON p.id = m.player_id WHERE m.group_id = ?').all(groupId) as { player_id: number; nickname: string }[];
   return rows.map((r) => ({ ...r, xp: weeklyXp(db, r.player_id, week) })).sort((a, b) => b.xp - a.xp || a.player_id - b.player_id);
 }

@@ -21,6 +21,7 @@ import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
+import { runLeagueNotices } from './leagueNotify';
 import { analytics } from './analytics';
 import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
@@ -490,5 +491,6 @@ createServer(async (req, res) => {
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)
+if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runLeagueNotices(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/league'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Liga natijasi yuborildi: %s ta', n); }).catch((e) => console.warn('liga xabari xato', (e as Error).message)); }, 10 * 60_000);
 if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
