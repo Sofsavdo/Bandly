@@ -10,6 +10,7 @@ import { analyzeTask2, analyzeWriting, type Task2Report, type WritingReport } fr
 import { fmt, useCountdown } from '../components/hooks';
 import { addXp } from '../lib/store';
 import { saveResult } from '../lib/storage';
+import { Illo } from '../components/Illo';
 
 type Tab = 'practice' | 'types' | 'topics';
 
@@ -56,8 +57,8 @@ export default function Writing() {
 
   return (
     <div>
-      <div className="card">
-        <h2>Writing</h2>
+      <div className="card page-head with-illo t-butter">
+        <h2>Writing</h2><Illo kind="pencil" size={124} />
         <div className="tabs" role="tablist">
           <button className={`btn ${tab === 'practice' ? 'primary' : ''}`} onClick={() => setTab('practice')}><PenLine size={15} /> Mashq</button>
           <button className={`btn ${tab === 'types' ? 'primary' : ''}`} onClick={() => setTab('types')}><Layers size={15} /> Insho turlari va xatolar</button>
@@ -69,7 +70,7 @@ export default function Writing() {
         <>
           <div className="card">
             <h3>Task 2 insho turlari</h3>
-            <p className="evidence">Birinchi qadam: savol qaysi turga kirishini aniqlang. Tur tuzilmani belgilaydi, noto‘g‘ri turda yozilgan insho yaxshi tilda yozilsa ham ball yo‘qotadi.</p>
+            <p className="evidence">Avval savol turini aniqlang — tuzilma shunga bog‘liq.</p>
           </div>
           {essayTypes.map((e) => (
             <div className="card" key={e.id}>
@@ -94,7 +95,7 @@ export default function Writing() {
         <>
           <div className="card">
             <h3>10 asosiy mavzu</h3>
-            <p className="evidence">IELTS savollari odatda shu mavzulardan tuziladi. Har mavzuda: savol, insho rejasi, namuna insho (mavzu so‘zlari belgilangan) va 8 ta so‘z. Barcha so‘zlar o‘yinlar va takrorlash tizimiga ham qo‘shilgan. Hamma namunalar Bandly uchun yozilgan.</p>
+            <p className="evidence">Mavzu tanlang: savol, reja, namuna va kalit so‘zlar.</p>
             <div className="kinds">
               {writingTopics.map((t) => <button key={t.id} className={`kindbtn ${t.id === topicId ? 'on' : ''}`} onClick={() => setTopicId(t.id)}><b>{t.title}</b><span>{essayTypes.find((e) => e.id === t.type)!.name.split(' (')[0]}</span></button>)}
             </div>
@@ -165,7 +166,7 @@ export default function Writing() {
             </p>
             {aiOn && !acct && <JoinForm onJoined={setAcct} text="AI baholash uchun hisobingizga kiring (kunlik limit hisobingizga yoziladi)." />}
             {aiOn && acct && <p className="evidence">AI baholashda insho matni AI provayderiga yuboriladi.</p>}
-            {aiErr && <p className="notice">{aiErr}</p>}
+            {aiErr && <p className="notice">{aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">Tariflar</a></>}</p>}
             {aiEval && <EvalCard ev={aiEval} title="AI baho" />}
           </div>
 

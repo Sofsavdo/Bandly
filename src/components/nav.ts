@@ -14,8 +14,8 @@ export const NAV: NavItem[] = [
   { href: '#/league', label: 'nav.league', icon: Trophy },
   { href: '#/duel', label: 'nav.duel', icon: Swords },
 ];
-/** Top bar (desktop): the main products only; the rest stays in the menu drawer. */
-export const PRIMARY_NAV: NavItem[] = NAV.filter((n) => ['#/learn', '#/coach', '#/exam', '#/mocks', '#/games'].includes(n.href));
+/** Yon panel (kompyuter): asosiy bo'limlar; qolganlari "Barcha bo'limlar" menyusida. */
+export const SIDE_NAV_IDS = ['#/', '#/learn', '#/coach', '#/exam', '#/mocks', '#/grammar', '#/games', '#/league', '#/profile'];
 export const MISTAKES: NavItem = { href: '#/mistakes', label: 'nav.mistakes', icon: ClipboardList };
 export const HOME: NavItem = { href: '#/', label: 'nav.home', icon: House };
 export const PROFILE: NavItem = { href: '#/profile', label: 'nav.profile', icon: User };
@@ -40,3 +40,5 @@ export const NAV_GROUPS: NavGroup[] = [
   { id: 'compete', label: 'nav.group.compete', items: [by('#/league'), by('#/duel')] },
   { id: 'account', label: 'nav.group.account', items: [PROFILE, PRICING] },
 ];
+
+export const SIDE_NAV: NavItem[] = SIDE_NAV_IDS.map((h) => (h === '#/' ? HOME : h === '#/profile' ? PROFILE : by(h)));

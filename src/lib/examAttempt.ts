@@ -18,6 +18,9 @@ export interface ExamAttempt {
   current: number | null;
   notes: string;
   highlights: HighlightRange[];
+  /** Server bahosi (Mock Arena javoblari serverda tekshiriladi) va natija bir marta yozilganmi */
+  graded?: import('../content/mockShared').Graded;
+  recorded?: boolean;
   audioPlays: number;
 }
 

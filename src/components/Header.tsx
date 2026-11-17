@@ -1,4 +1,4 @@
-import { ChevronDown, Flame, LogIn, LogOut, Menu, Star, Target, User, X } from 'lucide-react';
+import { ChevronDown, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
 import { getAccount, onAccountChange } from '../lib/account';
 import { SignOutDialog } from './SignOutDialog';
 import { useEffect, useState } from 'react';
@@ -7,7 +7,7 @@ import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
 import { Mascot } from './Mascot';
-import { NAV_GROUPS, PRIMARY_NAV, PROFILE, isActive } from './nav';
+import { NAV_GROUPS, SIDE_NAV, PROFILE, isActive } from './nav';
 
 function Stats() {
   const t = useT();
@@ -29,21 +29,27 @@ export function Header({ hash }: { hash: string }) {
   const [bye, setBye] = useState(false);
   const [acc, setAcc] = useState(getAccount());
   useEffect(() => onAccountChange(() => setAcc(getAccount())), []);
+  // Xodimlar (metodist/admin) uchun kabinet havolasi — rol serverdan
+  const [staff, setStaff] = useState(false);
+  useEffect(() => {
+    if (!acc) { setStaff(false); return; }
+    void fetch('/api/me', { headers: { 'x-token': acc.token } }).then((r) => (r.ok ? r.json() : null)).then((j: { role?: string | null } | null) => setStaff(!!j?.role)).catch(() => setStaff(false));
+  }, [acc]);
   useEffect(() => setOpen(false), [hash]);
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
   return (
     <>
       <header className="app-header">
         <div className="container">
-          <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={38} />{BRAND.name}</a>
+          <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={36} />{BRAND.name}</a>
           <nav className="nav" aria-label={t('nav.main')}>
-            {PRIMARY_NAV.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''}><n.icon size={16} />{t(n.label)}</a>)}
+            {SIDE_NAV.map((n) => <a key={n.href} href={n.href} className={isActive(hash, n.href) ? 'active' : ''}><n.icon size={16} />{t(n.label)}</a>)}
           </nav>
           <div className="header-right">
             <Stats />
             <a className="btn primary sm header-cta" href="#/pricing">{t('cta.plans')}</a>
             <a className="icon-btn desk-only" href={PROFILE.href} aria-label={t('nav.profile')}><User size={18} /></a>
-            <button className="icon-btn menu-btn" aria-label={t('nav.menu')} onClick={() => setOpen(true)}><Menu size={20} /></button>
+            <button className="icon-btn menu-btn" aria-label={t('nav.menu')} onClick={() => setOpen(true)}><Menu size={20} /><span className="lbl">Barcha bo‘limlar</span></button>
           </div>
         </div>
       </header>
@@ -65,6 +71,7 @@ export function Header({ hash }: { hash: string }) {
                 </details>
               );
             })}
+            {staff && <a className={`dlink ${isActive(hash, '#/studio') ? 'active' : ''}`} href="#/studio"><Pencil size={20} />Metodist kabineti</a>}
             <div className="dacct">
               <span>{acc ? <>Hisob: <b>{acc.nickname}</b></> : 'Hisobga kirmagansiz'}</span>
               {acc

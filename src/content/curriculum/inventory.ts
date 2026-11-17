@@ -90,5 +90,10 @@ export const skillNodeTitle = (nodeId: string): string | undefined => {
 
 import { LESSON_NODES } from '../lessons';
 export const ALL_NODES: CurriculumNode[] = [...LESSON_NODES, ...GRAMMAR_NODES, ...VOCAB_NODES, ...SKILL_NODES];
+/** Darslar serverdan yangilanganda (applyUnits) dars tugunlarini almashtiradi. */
+export function refreshLessonNodes(): void {
+  const rest = ALL_NODES.filter((n) => !n.id.startsWith('ge.lesson.'));
+  ALL_NODES.splice(0, ALL_NODES.length, ...LESSON_NODES, ...rest);
+}
 export const nodeById = (nodeId: string): CurriculumNode | undefined => ALL_NODES.find((x) => x.id === nodeId);
 export const taxonomyOfNode = (nodeId: string): TaxonomyId[] => nodeById(nodeId)?.taxonomyIds ?? [];

@@ -1,7 +1,7 @@
 import { Pause, Play, RotateCcw, Volume2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { MockTest, type ExamLeftState } from '../components/MockTest';
-import type { ListeningTest } from '../content/types';
+import type { PublicListeningTest as ListeningTest } from '../content/mockShared';
 import { listeningTrack } from '../lib/clips';
 import { LISTENING_TABLE } from '../lib/band';
 import { bestVoice } from '../lib/speech';
@@ -11,7 +11,12 @@ const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).
 function Transcript({ test }: { test: ListeningTest }) {
   return (
     <>
-      {test.script.map((l, i) => <p key={i}><b>{l.speaker === 'A' ? test.names.A : test.names.B}:</b> {l.text}</p>)}
+      {test.script.map((l, i) => (
+        <Fragment key={i}>
+          {test.sections?.filter((s) => s.at === i).map((s) => <h4 key={s.title}>{s.title}</h4>)}
+          <p><b>{test.names[l.speaker] ?? test.names.A}:</b> {l.text}</p>
+        </Fragment>
+      ))}
     </>
   );
 }
@@ -67,9 +72,9 @@ function BrowserPlayer({ test, practice }: { test: ListeningTest; practice: bool
     const vA = bestVoice('en'); const vB = synth.getVoices().filter((v) => v.lang.toLowerCase().startsWith('en') && v !== vA)[0] ?? vA;
     test.script.forEach((line, i, arr) => {
       const u = new SpeechSynthesisUtterance(line.text);
-      const v = line.speaker === 'A' ? vA : vB;
+      const v = line.speaker === 'A' || line.speaker === 'C' ? vA : vB;
       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
-      u.rate = 0.92; u.pitch = line.speaker === 'A' ? 1.1 : 0.85;
+      u.rate = 0.92; u.pitch = line.speaker === 'A' || line.speaker === 'C' ? 1.1 : 0.85;
       if (i === arr.length - 1) u.onend = () => setPlaying(false);
       u.onerror = () => setPlaying(false);
       synth.speak(u);
@@ -94,7 +99,7 @@ function Player({ test, state }: { test: ListeningTest; state: ExamLeftState }) 
   return (
     <div>
       <p><b>{test.context}</b></p>
-      {!practice && !submitted && playedBefore > 0 && <p className="notice">Audio allaqachon eshittirilgan. Imtihon qoidasi bo‘yicha qayta eshittirilmaydi — savollarga javob berishni davom ettiring.</p>}
+      {!practice && !submitted && playedBefore > 0 && <p className="notice">Audio bir marta eshittiriladi (imtihon qoidasi).</p>}
       {track === undefined ? <p className="muted">Audio yuklanmoqda…</p> : track ? <FilePlayer key={practice ? 'p' : 'e'} file={track.file} seconds={track.seconds} practice={practice} initialPlays={practice ? 0 : playedBefore} onPlay={() => { if (!practice) state.update((a) => ({ ...a, audioPlays: a.audioPlays + 1 })); }} /> : <BrowserPlayer test={test} practice={practice} />}
       <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={practice} onChange={(e) => setPractice(e.target.checked)} /> Mashq rejimi (pauza va qayta eshitish)</label></p>
       <p className="evidence">Imtihon rejimida audio faqat bir marta eshittiriladi.</p>
@@ -131,6 +136,7 @@ export default function Listening({ test: t }: { test: ListeningTest }) {
       kind="listening"
       title={t.title}
       level={t.level}
+      scoring={t.exam === 'cefr' ? 'raw' : 'ielts'}
       minutes={t.minutes}
       groups={t.groups}
       questions={t.questions}

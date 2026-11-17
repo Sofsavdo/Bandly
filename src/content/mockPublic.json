@@ -1,0 +1,3621 @@
+{
+ "reading": [
+  {
+   "id": "reading-5",
+   "level": "A2",
+   "title": "Reading mini-test 5: A Saturday at the Market",
+   "minutes": 10,
+   "passageTitle": "A Saturday at the Market",
+   "paragraphs": [
+    "A. Every Saturday, Dilnoza goes to the big market in her town with her mother. They leave home at seven in the morning because the market is busy after nine. They go by bus, and the ride takes about twenty minutes.",
+    "B. First, they buy vegetables and fruit. Dilnoza likes red apples and sweet grapes, but her mother always buys tomatoes and onions first. The prices are lower at the market than in the supermarket, so many families shop there.",
+    "C. Next, they visit the bread section. A man called Rustam sells fresh bread from a traditional oven. He starts baking at five o’clock, and by eight the best bread is usually finished. Dilnoza always eats a small piece while it is still hot.",
+    "D. At eleven o’clock, they have tea and a snack at a small cafe near the entrance. Then they carry the heavy bags to the bus stop. Dilnoza is tired when she gets home, but she says the market is the best part of her week."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–8: Choose the correct letter.",
+     "questionIds": [
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "Dilnoza goes to the market every Saturday."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "The market is quiet after nine o’clock."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "Prices at the market are lower than in the supermarket."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "Rustam has a shop in the city centre."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Dilnoza feels tired when she gets home."
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "How do Dilnoza and her mother travel to the market?",
+     "options": [
+      "By bus",
+      "By car",
+      "On foot"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "What does Dilnoza’s mother buy first?",
+     "options": [
+      "Apples and grapes",
+      "Tomatoes and onions",
+      "Fresh bread"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "Where do they have tea?",
+     "options": [
+      "At home",
+      "At the bus stop",
+      "At a small cafe"
+     ]
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "They leave home at ______ in the morning."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Dilnoza eats a piece of bread while it is still ______."
+    }
+   ]
+  },
+  {
+   "id": "reading-1",
+   "level": "B1",
+   "title": "Reading mini-test 1: The Rise of the Rooftop Garden",
+   "minutes": 15,
+   "passageTitle": "The Rise of the Rooftop Garden",
+   "paragraphs": [
+    "A. In many large cities, the tops of buildings are among the least used spaces. For most of the twentieth century, roofs were treated as simple coverings, designed to keep rain out and little else. In recent decades, however, architects and city planners have begun to see them as an opportunity. Rooftop gardens, once a rare luxury found on a handful of hotels and private homes, are now appearing on schools, hospitals and office blocks around the world.",
+    "B. One of the main reasons for this change is heat. Cities are usually warmer than the surrounding countryside, a phenomenon known as the urban heat island effect. Dark surfaces such as asphalt and tar roofing absorb sunlight during the day and release it slowly at night. One study of a North American city suggested that if all suitable roofs were covered with plants, the average summer temperature in the centre could fall by up to two degrees Celsius. On a single building, a green roof can also reduce the cost of cooling the rooms below, because the layer of soil and plants acts as insulation.",
+    "C. Water management is a second benefit. In a city, rain that falls on hard surfaces runs quickly into drains, and during heavy storms the drainage system can be overwhelmed, causing floods. A green roof absorbs part of this rainfall and releases it slowly. Studies in several European countries have suggested that a roof with a soil layer of about ten centimetres can keep around half of the yearly rainfall from reaching the drains at all.",
+    "D. Rooftop gardens are not only practical. They also create habitats for wildlife. In cities where parks are small and far apart, insects and birds can use roofs as stepping stones between green areas. Some enthusiasts have gone further and placed beehives on rooftops, and honey produced in the middle of a city is now sold in several markets as a local speciality.",
+    "E. There are, however, challenges. A green roof is much heavier than a conventional one, so the building must be strong enough to carry the extra load, especially when the soil is wet. Installation typically costs two to three times as much as a normal roof, and the plants need regular watering and weeding. Yet over time the plant layer protects the waterproof membrane from sunlight and sudden changes in temperature. As a result, a green roof may last around forty years, compared with about twenty for a conventional roof.",
+    "F. Governments have started to respond. A few cities now require new large buildings with flat roofs to include vegetation, while others simply offer tax reductions to owners who install green roofs. Critics argue that rules which demand plants may be less effective than rules which set targets for cooling or water retention, leaving builders free to choose the best method for each building."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–9: Complete the sentences. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+     "questionIds": [
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 10–13: Choose the correct answer.",
+     "questionIds": [
+      10,
+      11,
+      12,
+      13
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "For most of the twentieth century, roofs were designed mainly to keep rain out."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "The first rooftop gardens were built on hotels."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "Dark roofing materials release absorbed heat slowly during the night."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "A green roof increases the cost of cooling the rooms below it."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Every city has made green roofs compulsory for new buildings."
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Cities are warmer than the countryside because of the urban ______ effect."
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "During heavy storms, drainage systems can be overwhelmed, causing ______."
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "A building with a green roof must be strong enough to carry the extra ______."
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "The plant layer protects the waterproof ______ from sunlight and temperature changes."
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "What is the main purpose of paragraph B?",
+     "options": [
+      "To explain how green roofs can help reduce temperatures",
+      "To compare asphalt with tar",
+      "To describe studies of rainfall",
+      "To argue that cities should be cooler"
+     ]
+    },
+    {
+     "id": 11,
+     "type": "mcq",
+     "text": "According to the passage, what is one disadvantage of green roofs?",
+     "options": [
+      "They need no maintenance",
+      "They cost more to install",
+      "They attract insects",
+      "They reduce the usable space"
+     ]
+    },
+    {
+     "id": 12,
+     "type": "mcq",
+     "text": "How long may a green roof last compared with a conventional roof?",
+     "options": [
+      "About the same time",
+      "Around twice as long",
+      "Half as long",
+      "Three times as long"
+     ]
+    },
+    {
+     "id": 13,
+     "type": "mcq",
+     "text": "What do critics of rules that demand plants suggest?",
+     "options": [
+      "Rules should set targets for performance",
+      "Rules should be stricter",
+      "Green roofs should be banned",
+      "Tax reductions should end"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "reading-6",
+   "level": "B1",
+   "title": "Reading mini-test 6: Why More People Are Cycling to Work",
+   "minutes": 12,
+   "passageTitle": "Why More People Are Cycling to Work",
+   "paragraphs": [
+    "A. In many cities, the number of people who cycle to work has grown steadily over the last ten years. Some workers say that the main reason is cost. A monthly bus ticket can be expensive, while a bicycle needs only a small amount of money for repairs.",
+    "B. Health is another reason. Doctors recommend at least thirty minutes of exercise a day, and many office workers find it difficult to fit that into a busy schedule. Cycling to work solves the problem, because the journey itself becomes exercise. One survey found that cyclists took fewer days off sick than people who drove.",
+    "C. However, cycling is not always easy. In cities without separate bicycle lanes, riders share the road with cars and buses, and many people feel unsafe. Bad weather is also a problem: few people enjoy arriving at the office wet and cold.",
+    "D. To help, some companies now provide showers and secure places to keep bicycles. A few offer small payments to employees who cycle. City councils are also building new lanes, although progress is often slow because the work is expensive."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–4: Which paragraph contains the following information? Choose the correct letter, A–D.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "instruction": "Questions 5–8: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "match",
+     "text": "a comparison of transport costs",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "match",
+     "text": "a reference to a survey",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "match",
+     "text": "the problem of sharing roads with cars",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "match",
+     "text": "ways in which employers help cyclists",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "The number of cyclists in cities has fallen recently."
+    },
+    {
+     "id": 6,
+     "type": "tfng",
+     "text": "Cyclists took fewer days off sick than drivers."
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Most companies provide free bicycles to staff."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Building new bicycle lanes is cheap and quick."
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "Doctors recommend at least thirty minutes of ______ a day."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Some companies provide ______ and secure places for bicycles."
+    }
+   ]
+  },
+  {
+   "id": "reading-3",
+   "level": "B2",
+   "title": "Reading mini-test 3: The Return of the Night Train",
+   "minutes": 18,
+   "passageTitle": "The Return of the Night Train",
+   "paragraphs": [
+    "A. Thirty years ago, an overnight train journey was a normal way to cross Europe. Then budget airlines arrived. With tickets sometimes costing less than a train sandwich, many routes lost passengers, and railway companies cancelled their night services one after another. By the early 2010s, only a handful of sleeper trains were left on the continent.",
+    "B. Recently, the picture has begun to change. Growing concern about climate change has led many travellers to look for ways to reduce their carbon footprint, and some now choose not to fly when an alternative exists. Several governments have responded by supporting new night routes, and passenger numbers on the restored services have often been higher than expected.",
+    "C. Night trains have clear advantages. Passengers travel from one city centre to another, avoiding long journeys to and from airports. Tickets are not always cheaper than flights, but travellers save the cost of a hotel room, since they sleep on the train. Emissions per passenger are also much lower than on a plane.",
+    "D. There are, however, practical problems. Many sleeper carriages are old and uncomfortable, and few factories still build new ones. International journeys are complicated by technical differences: countries use different power systems and signals, so locomotives and drivers often have to change at the border. In addition, companies must pay fees for using the tracks, and night services compete for space with freight trains.",
+    "E. Operators are trying to solve the comfort problem. New sleeper cars offer private cabins with their own washbasins and showers, and some companies have ordered dozens of them. Better design, supporters argue, can turn the night train from a cheap necessity into a pleasant experience.",
+    "F. Most analysts do not expect trains to replace aeroplanes on very long routes. But on journeys of up to about twelve hours, a night train can leave in the evening and arrive in the morning, and that makes it a realistic competitor. If more investment follows, the sleeper train may become a permanent part of European travel once again."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–4 and 13: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      13
+     ]
+    },
+    {
+     "instruction": "Questions 5–8: Complete the sentences. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+     "questionIds": [
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–12: Choose the correct answer.",
+     "questionIds": [
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "Cheap flights contributed to the decline of night trains."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "Night train tickets are always cheaper than flight tickets."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "All European countries use the same railway signals."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "Some governments are paying for new sleeper carriages."
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Many travellers want to reduce their ______ by not flying."
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Countries use different power systems and ______."
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "New sleeper cars offer private ______ with washbasins and showers."
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Night trains can compete on journeys of up to about twelve ______."
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "What was the main reason night trains disappeared from many routes?",
+     "options": [
+      "Competition from budget airlines",
+      "Government bans",
+      "A lack of drivers",
+      "Frequent accidents"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "What do passengers save by taking a night train?",
+     "options": [
+      "Airport tax",
+      "The cost of a hotel room",
+      "Baggage fees",
+      "The cost of food"
+     ]
+    },
+    {
+     "id": 11,
+     "type": "mcq",
+     "text": "Which technical problem is mentioned for international journeys?",
+     "options": [
+      "Narrow tracks",
+      "Too few stations",
+      "Different power systems and signals",
+      "Lack of fuel"
+     ]
+    },
+    {
+     "id": 12,
+     "type": "mcq",
+     "text": "How does the writer describe the future of night trains?",
+     "options": [
+      "They will replace all short flights",
+      "They can compete on medium-length journeys",
+      "They will soon disappear again",
+      "They are only for tourists"
+     ]
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Night trains will soon replace aeroplanes on very long routes."
+    }
+   ]
+  },
+  {
+   "id": "reading-4",
+   "level": "B2",
+   "title": "Reading mini-test 4: Learning a Language as an Adult",
+   "minutes": 18,
+   "passageTitle": "Learning a Language as an Adult",
+   "paragraphs": [
+    "A. Many adults believe that it is too late to learn a foreign language. Research suggests otherwise. In the first months of study, adults often learn grammar rules faster than children, because they can use logic and their knowledge of their own language. Children, on the other hand, usually develop a more natural accent. The two groups simply have different strengths.",
+    "B. Motivation matters a great deal. Adults who have a clear goal, such as a new job or a plan to move abroad, tend to keep studying even when progress slows. Those who learn only because they feel they should often give up within weeks. Many teachers therefore begin by asking students what exactly they want to do with the language.",
+    "C. Method matters too. One study followed two hundred adult learners for a year. Those who began speaking in the first week, even with simple sentences, progressed faster than those who waited until they felt ready. Spaced repetition, in which words are reviewed at increasing intervals, also helped learners remember vocabulary for longer.",
+    "D. Adults face barriers that children do not. Most are short of time, and many are afraid of making mistakes in front of others. Classes where a teacher gives regular, friendly feedback can reduce this fear, and learners in such classes are more likely to continue.",
+    "E. Finally, there may be wider benefits. Some researchers believe that people who speak two languages show signs of memory decline later in life, but the evidence is not yet conclusive. What is clear is that learners often report greater confidence and new friendships."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–4: Which paragraph contains the following information? Choose the correct letter, A–E.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "instruction": "Questions 5–9: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      5,
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 10–13: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      10,
+      11,
+      12,
+      13
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "match",
+     "text": "a comparison between adults and children",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "match",
+     "text": "the importance of having a practical reason to study",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "match",
+     "text": "a study that lasted a year",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "match",
+     "text": "fear of making errors in public",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Adults can learn grammar rules faster than children at the beginning."
+    },
+    {
+     "id": 6,
+     "type": "tfng",
+     "text": "Children usually develop a more natural accent than adults."
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Learners who spoke from the first week progressed faster."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Group classes are more effective than private lessons."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Researchers agree that learning a language prevents memory decline."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Adults with a clear ______ tend to keep studying."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "Spaced ______ helps learners remember vocabulary for longer."
+    },
+    {
+     "id": 12,
+     "type": "fill",
+     "text": "Most adult learners are short of ______."
+    },
+    {
+     "id": 13,
+     "type": "fill",
+     "text": "Regular ______ from a teacher can reduce the fear of mistakes."
+    }
+   ]
+  },
+  {
+   "id": "reading-2",
+   "level": "C1",
+   "title": "Reading mini-test 2: The Hidden Work of Sleep",
+   "minutes": 18,
+   "passageTitle": "The Hidden Work of Sleep",
+   "paragraphs": [
+    "A. For centuries, sleep was seen as a passive state, a kind of switching off that the body needed in order to recover. Modern research has shown the opposite. Brain scans reveal that during the night the brain passes through several cycles, and in some of them it is almost as active as when we are awake. Far from being idle, the sleeping brain is busy with tasks that cannot be done during the day.",
+    "B. One of these tasks is memory. During deep sleep the brain replays the events of the day, moving information from short-term memory to long-term storage. In one experiment, two groups of students studied the same list of words. The group that slept after studying remembered considerably more words the next morning than the group that stayed awake. Sleep, it seems, does not just preserve what we learn; it makes it stronger.",
+    "C. The body also uses the night to repair itself. Growth hormone is released mostly during deep sleep, helping muscles and tissues to recover. The immune system is active too: people who regularly sleep for fewer than six hours are more likely to catch a cold than those who sleep for eight. Doctors now regard sleep as one of the basic protections for health, alongside food and exercise.",
+    "D. Teenagers face a particular problem. During puberty the body clock shifts, so that young people naturally feel sleepy later in the evening and wake later in the morning. Yet most schools begin early. When some schools moved the start of lessons back by one hour, attendance improved, students reported better moods, and the number of road accidents involving young drivers fell.",
+    "E. Modern life makes good sleep harder. Artificial light in the evening, and especially the blue light from phones and tablets, delays the release of melatonin, the hormone that tells the body it is time to sleep. Experts advise keeping a regular schedule, sleeping in a dark room and avoiding screens for an hour before bed.",
+    "F. However, sleep is not the same for everyone. Most adults need between seven and nine hours, but some people function well on slightly less, and others need more. Sleeping late at weekends can reduce the effects of a short week, but it only partly makes up for lost sleep. Researchers stress that regular, sufficient sleep cannot simply be stored up or caught up later."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–6: The passage has six paragraphs, A–F. Choose the correct heading for each paragraph from the list of headings.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Questions 7–10: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10
+     ]
+    },
+    {
+     "instruction": "Questions 11–13: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      11,
+      12,
+      13
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "During deep sleep, information is moved from short-term memory to long-term ______."
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "People who sleep fewer than six hours are more likely to catch a ______."
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "When lessons started an hour later, school ______ improved."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Blue light from screens delays the release of ______."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Most adults need between seven and nine hours of sleep."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Teenagers naturally feel sleepy earlier in the evening than adults."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Short naps during the day improve exam results."
+    }
+   ]
+  },
+  {
+   "id": "reading-full-1",
+   "level": "C1",
+   "title": "IELTS Academic Reading — to‘liq mock 1",
+   "minutes": 60,
+   "passageTitle": "Reading Passage 1: The Quiet Revolution of the Bicycle",
+   "paragraphs": [
+    "A. Few machines have changed everyday life as quietly as the bicycle. Its story begins in 1817, when the German inventor Karl Drais built a two-wheeled “running machine”. It had no pedals: the rider sat on a wooden frame and pushed against the ground with both feet. Drais hoped it would offer an alternative to the horse, but the machine was heavy, uncomfortable and difficult to steer on rough roads, and interest soon faded.",
+    "B. Pedals appeared several decades later, when makers in France attached cranks directly to the front wheel. Because each turn of the pedals produced only one turn of that wheel, designers who wanted more speed simply made the front wheel larger. The result was the high-wheeled machine of the 1870s, later nicknamed the “penny-farthing”. It was fast, but the rider sat high above the ground, and a sudden stop could throw him over the handlebars. Riding it was regarded as a sport for brave young men rather than a practical form of transport.",
+    "C. The decisive change came in the 1880s with the so-called safety bicycle. It had two wheels of similar size and a chain that carried power from the pedals to the rear wheel. Gearing meant that speed no longer depended on wheel size, so the rider could sit lower and put a foot on the ground. Soon afterwards, the air-filled tyre, developed by John Boyd Dunlop in 1888, made journeys far smoother than solid rubber had allowed.",
+    "D. The social effects were remarkable. In the 1890s, cycling became a craze in Europe and North America. For the first time, many working people could travel several kilometres to a job without paying for a train or keeping a horse. The bicycle also gave women a new independence of movement, and the fashion for long, heavy skirts began to change because they were impractical for riding.",
+    "E. During the twentieth century, cars pushed bicycles to the side of many roads, especially in wealthy countries. Yet the machine never disappeared. In several cities, planners have recently built separate lanes and parking for bicycles, arguing that they reduce traffic and improve public health. Today, electric bicycles, which add a small motor to the rider’s own effort, are introducing cycling to people who once thought hills or long distances made it impossible.",
+    "A. Most people are familiar with the experience of studying something carefully, only to find a week later that much of it has gone. In the 1880s, the German psychologist Hermann Ebbinghaus tried to measure this loss. Using himself as the only subject, he memorised lists of meaningless syllables and tested how many he could recall after different intervals. His results suggested that forgetting is fastest soon after learning and then slows down, a pattern now known as the forgetting curve.",
+    "B. Later research has shown that the curve is not fixed. One of the most reliable findings in psychology is the spacing effect: material that is reviewed several times, with gaps between the sessions, is remembered far longer than material studied for the same total time in a single block. Cramming the night before an examination may produce a reasonable score the next morning, but most of what was learned disappears soon afterwards.",
+    "C. A second powerful technique is retrieval practice. When learners try to recall information without looking at it — for example, by answering questions or writing down everything they remember — they strengthen the memory more than when they simply reread their notes. Rereading feels productive because the material looks familiar, but familiarity is not the same as being able to produce the information when it is needed.",
+    "D. Why should effortful recall be so effective? One explanation is that each successful retrieval makes the route to a memory easier to find next time. Another is that recall shows learners which parts they have not yet mastered, so they can direct their attention there. Interestingly, researchers have found that a failed attempt to remember, if it is followed by the correct answer, can still improve later recall.",
+    "E. Sleep also plays an important part. Studies in which people learn new material in the evening and are tested the following morning suggest that a night of sleep helps to stabilise what has been learned. Students who give up sleep to study longer may therefore weaken the very memories they are trying to build.",
+    "F. None of these findings is new, yet they are often ignored. Many students continue to highlight, reread and cram, partly because these methods feel easier. Some teachers now build short, low-pressure quizzes into their lessons and return to earlier topics weeks later. The aim is not to test students more, but to turn remembering itself into a way of learning.",
+    "A. On a summer afternoon, the centre of a large city can be several degrees warmer than the countryside around it. This difference, called the urban heat island effect, has been observed in cities on every continent. It is usually strongest at night, when the surrounding fields cool quickly while streets and buildings go on releasing the heat they absorbed during the day.",
+    "B. Several features of cities produce the effect. Dark surfaces such as asphalt roads and roofs absorb a large share of the sunlight that falls on them. Concrete and brick store this heat and release it slowly. In addition, cities have fewer trees and less open soil, so less water evaporates — a process that naturally cools the air. Heat from vehicles, factories and air conditioners adds a further, smaller contribution.",
+    "C. The consequences are more than a matter of comfort. During heatwaves, high night-time temperatures prevent the body from recovering, and older people and those with health problems face the greatest risk. Hotter cities also use more electricity for cooling, which can place pressure on power networks at the moments of highest demand.",
+    "D. Some solutions are surprisingly simple. Painting roofs in light colours reflects more sunlight back into the sky, and so-called cool pavements use materials that stay cooler under the sun. Trees provide shade and release water vapour through their leaves, and parks of even modest size can be measurably cooler than the streets around them. Green roofs, covered with plants, insulate buildings and absorb rainwater as well as cooling the air.",
+    "E. However, none of these measures is a complete answer. Light-coloured surfaces can reflect sunlight onto nearby buildings and pedestrians, and trees need water, space and years of care before they offer much shade. In dry regions, planners must balance the cooling benefits of vegetation against the limited supply of water. Experts therefore tend to recommend a combination of measures chosen to suit each neighbourhood.",
+    "F. Traditional architecture offers further ideas. In many hot countries, older districts were built with narrow streets that remain in shade for most of the day, thick walls that slow the movement of heat, and inner courtyards with plants or water. Some architects argue that these designs, developed over centuries, deserve as much attention as new technology. As summers become hotter, the question of how to keep cities cool is likely to become one of the central challenges of urban planning."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Reading Passage 1: The Quiet Revolution of the Bicycle"
+    },
+    {
+     "at": 5,
+     "title": "Reading Passage 2: Why We Forget — and How to Remember"
+    },
+    {
+     "at": 11,
+     "title": "Reading Passage 3: Keeping Cities Cool"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–7 (Passage 1): Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ]
+    },
+    {
+     "instruction": "Questions 8–13 (Passage 1): Complete the sentences. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+     "questionIds": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+     ]
+    },
+    {
+     "instruction": "Questions 14–19 (Passage 2): The passage has six paragraphs, A–F. Choose the correct heading for each paragraph from the list of headings.",
+     "questionIds": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+     ]
+    },
+    {
+     "instruction": "Questions 20–23 (Passage 2): Choose the correct letter.",
+     "questionIds": [
+      20,
+      21,
+      22,
+      23
+     ]
+    },
+    {
+     "instruction": "Questions 24–26 (Passage 2): Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      24,
+      25,
+      26
+     ]
+    },
+    {
+     "instruction": "Questions 27–31 (Passage 3): Choose the correct letter.",
+     "questionIds": [
+      27,
+      28,
+      29,
+      30,
+      31
+     ]
+    },
+    {
+     "instruction": "Questions 32–36 (Passage 3): Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      32,
+      33,
+      34,
+      35,
+      36
+     ]
+    },
+    {
+     "instruction": "Questions 37–40 (Passage 3): Complete the summary. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      37,
+      38,
+      39,
+      40
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "Drais’s running machine was moved by the rider’s feet pushing on the ground."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "Drais’s machine quickly replaced the horse in German towns."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "The first pedals were connected to the front wheel."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "The penny-farthing was mainly bought by older riders."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "The safety bicycle was invented in Britain."
+    },
+    {
+     "id": 6,
+     "type": "tfng",
+     "text": "Women’s clothing changed partly because of cycling."
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Electric bicycles are now cheaper than ordinary bicycles."
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "On the penny-farthing, speed was increased by making the ______ larger."
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "In the safety bicycle, a ______ took power to the rear wheel."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Thanks to ______, speed no longer depended on the size of the wheel."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "Dunlop’s tyre was filled with ______."
+    },
+    {
+     "id": 12,
+     "type": "fill",
+     "text": "In the 1890s, cycling became a ______ in Europe and North America."
+    },
+    {
+     "id": 13,
+     "type": "fill",
+     "text": "Some city planners have built separate ______ for bicycles."
+    },
+    {
+     "id": 14,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. An early attempt to measure memory loss",
+      "ii. Why testing yourself works",
+      "iii. The danger of studying for too long",
+      "iv. Spreading study over time",
+      "v. Learning by trying to remember",
+      "vi. The role of rest in keeping memories",
+      "vii. Old knowledge that is rarely used",
+      "viii. How computers have changed studying"
+     ]
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. An early attempt to measure memory loss",
+      "ii. Why testing yourself works",
+      "iii. The danger of studying for too long",
+      "iv. Spreading study over time",
+      "v. Learning by trying to remember",
+      "vi. The role of rest in keeping memories",
+      "vii. Old knowledge that is rarely used",
+      "viii. How computers have changed studying"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. An early attempt to measure memory loss",
+      "ii. Why testing yourself works",
+      "iii. The danger of studying for too long",
+      "iv. Spreading study over time",
+      "v. Learning by trying to remember",
+      "vi. The role of rest in keeping memories",
+      "vii. Old knowledge that is rarely used",
+      "viii. How computers have changed studying"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. An early attempt to measure memory loss",
+      "ii. Why testing yourself works",
+      "iii. The danger of studying for too long",
+      "iv. Spreading study over time",
+      "v. Learning by trying to remember",
+      "vi. The role of rest in keeping memories",
+      "vii. Old knowledge that is rarely used",
+      "viii. How computers have changed studying"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. An early attempt to measure memory loss",
+      "ii. Why testing yourself works",
+      "iii. The danger of studying for too long",
+      "iv. Spreading study over time",
+      "v. Learning by trying to remember",
+      "vi. The role of rest in keeping memories",
+      "vii. Old knowledge that is rarely used",
+      "viii. How computers have changed studying"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. An early attempt to measure memory loss",
+      "ii. Why testing yourself works",
+      "iii. The danger of studying for too long",
+      "iv. Spreading study over time",
+      "v. Learning by trying to remember",
+      "vi. The role of rest in keeping memories",
+      "vii. Old knowledge that is rarely used",
+      "viii. How computers have changed studying"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "mcq",
+     "text": "What did Ebbinghaus use in his experiments?",
+     "options": [
+      "Lists of real words",
+      "Syllables with no meaning",
+      "Groups of students",
+      "Short stories"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "mcq",
+     "text": "According to the forgetting curve, forgetting is",
+     "options": [
+      "equal over time.",
+      "slowest just after learning.",
+      "fastest just after learning.",
+      "impossible to measure."
+     ]
+    },
+    {
+     "id": 22,
+     "type": "mcq",
+     "text": "Why does rereading notes feel useful, according to the writer?",
+     "options": [
+      "It takes a long time.",
+      "The material looks familiar.",
+      "Teachers recommend it.",
+      "It improves sleep."
+     ]
+    },
+    {
+     "id": 23,
+     "type": "mcq",
+     "text": "What do researchers say about a failed attempt to remember?",
+     "options": [
+      "It always harms memory.",
+      "It is useful if the correct answer follows.",
+      "It only helps young learners.",
+      "It should be avoided before exams."
+     ]
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Studying everything in one session the night before an exam is called ______."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Students who give up ______ to study may weaken their memories."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Some teachers now use short, low-pressure ______ in lessons."
+    },
+    {
+     "id": 27,
+     "type": "mcq",
+     "text": "When is the urban heat island effect usually strongest?",
+     "options": [
+      "In the early morning",
+      "At midday",
+      "In the afternoon",
+      "At night"
+     ]
+    },
+    {
+     "id": 28,
+     "type": "mcq",
+     "text": "Which factor does the writer describe as the smallest contribution?",
+     "options": [
+      "Dark surfaces",
+      "Stored heat in buildings",
+      "Lack of evaporation",
+      "Heat from vehicles and machines"
+     ]
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "Why are high night-time temperatures dangerous?",
+     "options": [
+      "They damage roads.",
+      "The body cannot recover.",
+      "They reduce rainfall.",
+      "People cannot sleep outside."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "What is a problem with light-coloured surfaces?",
+     "options": [
+      "They are very expensive.",
+      "They can reflect sunlight onto people and buildings.",
+      "They need a lot of water.",
+      "They make roofs heavier."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "What do experts generally recommend?",
+     "options": [
+      "Planting trees everywhere",
+      "Using only new technology",
+      "A mix of measures for each area",
+      "Moving people out of city centres"
+     ]
+    },
+    {
+     "id": 32,
+     "type": "tfng",
+     "text": "The urban heat island effect has been found only in tropical cities."
+    },
+    {
+     "id": 33,
+     "type": "tfng",
+     "text": "Evaporation of water helps to cool the air."
+    },
+    {
+     "id": 34,
+     "type": "tfng",
+     "text": "Hot cities use more electricity for cooling."
+    },
+    {
+     "id": 35,
+     "type": "tfng",
+     "text": "Green roofs are cheaper to build than light-coloured roofs."
+    },
+    {
+     "id": 36,
+     "type": "tfng",
+     "text": "Small parks have no measurable effect on temperature."
+    },
+    {
+     "id": 37,
+     "type": "fill",
+     "text": "Older districts in hot countries often have narrow streets that stay in ______ most of the day."
+    },
+    {
+     "id": 38,
+     "type": "fill",
+     "text": "Thick ______ slow the movement of heat."
+    },
+    {
+     "id": 39,
+     "type": "fill",
+     "text": "Inner ______ with plants or water also help."
+    },
+    {
+     "id": 40,
+     "type": "fill",
+     "text": "In dry regions, the benefits of vegetation must be balanced against the limited supply of ______."
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-1",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 1",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — City Library: From 1 March the library will close at 6 pm on Fridays instead of 8 pm. Books can still be returned at any time using the box next to the main door.",
+    "2) MESSAGE — Hi Sardor, the football match on Saturday has moved from the school field to the sports centre because the field is being repaired. Same time, 10 am. Bring your own water — the café there is closed at weekends. Aziz",
+    "3) ADVERTISEMENT — Room for rent: a quiet single room in a shared flat, ten minutes’ walk from the university. Bills are included in the price. Suitable for a non-smoking student. No pets, please. Call Malika after 5 pm.",
+    "Learning a language online used to mean watching recorded lessons alone at a computer. Today, many learners prefer live classes with a real teacher, even if the teacher is in another country. Some say the most important advantage is flexibility: lessons can be taken early in the morning or late at night, around work and family duties.",
+    "However, online learning is not suitable for everyone. Learners who find it difficult to organise their time often stop after a few weeks, especially when nobody checks whether they have done their homework. Teachers report that students who set a fixed time for lessons every week are far more likely to continue.",
+    "Another concern is speaking practice. In a large online group, each learner may speak for only a few minutes. For this reason, some schools now limit online groups to six students, while others offer extra conversation sessions with a partner. Many learners also use apps between lessons, although most teachers see these as a supplement rather than a replacement for real conversation.",
+    "A. For centuries, the Silk Road connected China with the Mediterranean, and cities such as Samarkand and Bukhara grew rich from the trade that passed through them. Merchants stopped in these cities to rest, exchange goods and find fresh animals for the next stage of the journey.",
+    "B. The routes carried far more than silk. Paper, spices, glass, metals and horses moved in both directions. Just as important were ideas: religions, scientific knowledge and artistic styles spread along the same roads as the goods.",
+    "C. Travel was slow and often dangerous. Caravans could take months to cross deserts and mountains, and they faced extreme heat, cold and the risk of attack. Caravanserais — inns built at regular distances along the routes — offered shelter and safety for travellers and their animals.",
+    "D. In the fifteenth and sixteenth centuries, the importance of the land routes declined. European traders increasingly used sea routes, which could carry larger loads more cheaply, and political changes made some parts of the land routes less secure.",
+    "E. Today, interest in the Silk Road has returned. Historic buildings in Samarkand, Bukhara and Khiva attract visitors from all over the world, and many caravanserais have been restored. Tourism has become an important source of income for the region.",
+    "F. At the same time, new transport projects — railways, roads and pipelines — are once again linking Central Asia with China and Europe. Some writers describe these as a “new Silk Road”, although the goods they carry are very different from those of the past.",
+    "Many people believe that creativity is a rare talent that some people are born with and others are not. Psychologists, however, increasingly see it as a skill that can be developed with practice. Studies of successful artists and scientists show that they often produce a large number of ideas, most of which are never used. Quantity, it seems, is one of the routes to quality.",
+    "One factor that appears to help is a period of rest after hard work on a problem. People frequently report that a solution came to them while they were walking or taking a shower, rather than while they were sitting at a desk. Researchers believe that during such breaks the mind continues to work on the problem without our being aware of it.",
+    "Fear of criticism, on the other hand, seems to reduce creativity. When people expect their ideas to be judged harshly, they tend to suggest only safe and familiar solutions. For this reason, many organisations separate the stage of producing ideas from the stage of evaluating them.",
+    "Finally, creativity often grows from combining knowledge from different fields. An engineer who studies biology, or a designer who learns about psychology, may notice connections that specialists miss. This suggests that schools which encourage students to explore several subjects may be preparing them better for creative work.",
+    "The idea that the language we speak shapes the way we think has fascinated scholars for more than a century. In its strongest form, the claim is that speakers of different languages live in different mental worlds, unable to understand concepts for which their language has no words. Few researchers today accept this extreme position, not least because translation between languages, though imperfect, is clearly possible.",
+    "A weaker version of the idea, however, has received considerable support. Experiments suggest that language can influence what people notice and remember. For example, languages differ in how they describe the position of objects. Some rely on terms such as “left” and “right”, which depend on the speaker’s body, while others use fixed directions such as north and south. Speakers of the second type of language tend to remember the arrangement of objects in terms of those fixed directions, even in tasks that do not involve speaking.",
+    "Critics point out that such differences may be caused not by language itself but by the culture and environment in which the language is used. A community that lives in open landscape may need fixed directions for practical reasons, and the language simply reflects this need. Separating the effect of language from the effect of culture is therefore one of the central difficulties in this area of research.",
+    "Whatever the final answer, the debate has had practical consequences. It has encouraged researchers to study a wider range of languages, many of which are spoken by small communities and are at risk of disappearing. Each of these languages, linguists argue, represents a unique way of organising human experience, and its loss would be a loss to science as well as to its speakers."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Learning languages online (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: The Silk Road (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Can creativity be learned? (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Language and thought (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "What is changing at the library?",
+     "options": [
+      "Its opening day",
+      "Its closing time on Fridays",
+      "The place to return books"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "When can books be returned?",
+     "options": [
+      "Only until 6 pm",
+      "Only on Fridays",
+      "At any time"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Why has the football match moved?",
+     "options": [
+      "The field is being repaired.",
+      "The weather will be bad.",
+      "The sports centre is cheaper."
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What should Sardor bring?",
+     "options": [
+      "Football boots",
+      "Water",
+      "Money for the café"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "What is included in the rent?",
+     "options": [
+      "Bills",
+      "Meals",
+      "Internet only"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "Who is the room suitable for?",
+     "options": [
+      "A family with a dog",
+      "A non-smoking student",
+      "Two friends"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "In the past, online language learning was mainly done alone."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "All online teachers live in the same country as their students."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Flexibility is described as an important advantage of online classes."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Online lessons are cheaper than classroom lessons."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Students with a fixed weekly lesson time are more likely to continue."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Every online school limits groups to six students."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Most teachers think apps can replace real conversation."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Learners who use apps learn grammar faster."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. Why the land routes became less important",
+      "ii. Goods and ideas that travelled together",
+      "iii. A modern version of an old connection",
+      "iv. Places of rest on a difficult journey",
+      "v. Rich cities on a long trade route",
+      "vi. The return of visitors to historic cities",
+      "vii. The invention of paper money"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. Why the land routes became less important",
+      "ii. Goods and ideas that travelled together",
+      "iii. A modern version of an old connection",
+      "iv. Places of rest on a difficult journey",
+      "v. Rich cities on a long trade route",
+      "vi. The return of visitors to historic cities",
+      "vii. The invention of paper money"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. Why the land routes became less important",
+      "ii. Goods and ideas that travelled together",
+      "iii. A modern version of an old connection",
+      "iv. Places of rest on a difficult journey",
+      "v. Rich cities on a long trade route",
+      "vi. The return of visitors to historic cities",
+      "vii. The invention of paper money"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. Why the land routes became less important",
+      "ii. Goods and ideas that travelled together",
+      "iii. A modern version of an old connection",
+      "iv. Places of rest on a difficult journey",
+      "v. Rich cities on a long trade route",
+      "vi. The return of visitors to historic cities",
+      "vii. The invention of paper money"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. Why the land routes became less important",
+      "ii. Goods and ideas that travelled together",
+      "iii. A modern version of an old connection",
+      "iv. Places of rest on a difficult journey",
+      "v. Rich cities on a long trade route",
+      "vi. The return of visitors to historic cities",
+      "vii. The invention of paper money"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. Why the land routes became less important",
+      "ii. Goods and ideas that travelled together",
+      "iii. A modern version of an old connection",
+      "iv. Places of rest on a difficult journey",
+      "v. Rich cities on a long trade route",
+      "vi. The return of visitors to historic cities",
+      "vii. The invention of paper money"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Psychologists increasingly see creativity as a ______ that can be developed."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "Successful artists and scientists often produce a large ______ of ideas."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "According to the text, ______ is one of the routes to quality."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "A period of ______ after hard work on a problem appears to help."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Solutions often come while people are walking or taking a ______."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Fear of ______ seems to reduce creativity."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "Many organisations separate producing ideas from ______ them."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Creativity often grows from combining knowledge from different ______."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "Why do few researchers accept the strongest form of the idea?",
+     "options": [
+      "It is too old.",
+      "Translation between languages is possible.",
+      "It was never tested.",
+      "Most languages are similar."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "What do experiments suggest language can influence?",
+     "options": [
+      "Intelligence",
+      "What people notice and remember",
+      "How fast people learn",
+      "Which culture people choose"
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "Words such as “left” and “right” depend on",
+     "options": [
+      "the time of day.",
+      "the speaker’s body.",
+      "fixed directions.",
+      "the landscape."
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "Speakers of languages with fixed directions tend to",
+     "options": [
+      "forget the position of objects.",
+      "remember arrangements using those directions.",
+      "avoid tasks without speaking.",
+      "prefer left and right."
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "What do critics suggest?",
+     "options": [
+      "The experiments were too small.",
+      "Culture and environment may cause the differences.",
+      "Fixed directions are rare.",
+      "Language has no effect at all."
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "What is described as one of the central difficulties?",
+     "options": [
+      "Finding speakers of rare languages",
+      "Separating the effect of language from culture",
+      "Translating experimental tasks",
+      "Measuring memory"
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "According to linguists, why does the loss of a language matter?",
+     "options": [
+      "It makes travel harder.",
+      "It is a loss to science as well as to its speakers.",
+      "It reduces the number of books.",
+      "It makes translation impossible."
+     ]
+    }
+   ]
+  }
+ ],
+ "listening": [
+  {
+   "id": "listening-5",
+   "level": "A2",
+   "title": "Listening mini-test 5: Booking a hotel room",
+   "minutes": 6,
+   "names": {
+    "A": "Receptionist",
+    "B": "Karim"
+   },
+   "context": "Mehmonxonada xona band qilish bo‘yicha qisqa telefon suhbati (A2 daraja).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good morning. Sunrise Hotel. How can I help you?"
+    },
+    {
+     "speaker": "B",
+     "text": "Hello. I would like to book a room for two nights, please."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course. When would you like to arrive?"
+    },
+    {
+     "speaker": "B",
+     "text": "On the twelfth of June. So I will leave on the fourteenth."
+    },
+    {
+     "speaker": "A",
+     "text": "Certainly. Would you like a single room or a double room?"
+    },
+    {
+     "speaker": "B",
+     "text": "A single room, please. How much is it?"
+    },
+    {
+     "speaker": "A",
+     "text": "A single room is forty five pounds a night. Breakfast is included."
+    },
+    {
+     "speaker": "B",
+     "text": "That sounds good. Is there a lift? I have a lot of luggage."
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, there is a lift. Your room will be on the third floor."
+    },
+    {
+     "speaker": "B",
+     "text": "Great. Can I pay by card?"
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, you can pay by card when you arrive. May I have your name, please?"
+    },
+    {
+     "speaker": "B",
+     "text": "My name is Karim Aliev. That is K, A, R, I, M. Aliev, A, L, I, E, V."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you, Mr Aliev. And a phone number, please?"
+    },
+    {
+     "speaker": "B",
+     "text": "It is oh seven seven, one two three, nine eight six."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you. Your booking is confirmed. We look forward to seeing you."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–6: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Questions 7–8: Choose the correct letter.",
+     "questionIds": [
+      7,
+      8
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Arrival date: ______ June"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Number of nights: ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Price of a single room: ______ pounds a night"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "The room is on the ______ floor"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Family name: ______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Phone number: 077 123 ______"
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "What type of room does Karim book?",
+     "options": [
+      "A double room",
+      "A single room",
+      "A family room"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "How will he pay?",
+     "options": [
+      "By card",
+      "In cash",
+      "By bank transfer"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-1",
+   "level": "B1",
+   "title": "Listening mini-test 1: Joining a fitness centre",
+   "minutes": 8,
+   "names": {
+    "A": "Anna",
+    "B": "Daniel"
+   },
+   "context": "Riverside Fitness Centre — New Member Form. Qo‘ng‘iroq: yangi a’zo va resepshn xodimi.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good morning, Riverside Fitness Centre, Anna speaking. How can I help you?"
+    },
+    {
+     "speaker": "B",
+     "text": "Hello, I'd like to ask about joining the centre."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course. Let me take your details first. What's your full name?"
+    },
+    {
+     "speaker": "B",
+     "text": "Daniel Harper."
+    },
+    {
+     "speaker": "A",
+     "text": "Could you spell your surname for me?"
+    },
+    {
+     "speaker": "B",
+     "text": "Sure. H, A, R, P, E, R."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you. And what's your phone number?"
+    },
+    {
+     "speaker": "B",
+     "text": "It's oh seven seven four nine, three eight one, two six five."
+    },
+    {
+     "speaker": "A",
+     "text": "Which membership are you interested in? We have standard, which includes the gym and the pool, and premium, which also includes classes."
+    },
+    {
+     "speaker": "B",
+     "text": "I think premium. I'd like to try the yoga class on Tuesday evenings, and I don't really mind about the pool."
+    },
+    {
+     "speaker": "A",
+     "text": "Good choice. Premium is forty-five pounds a month. There's a joining fee of twenty-five pounds, but it's reduced to twenty this month."
+    },
+    {
+     "speaker": "B",
+     "text": "That's fine. Can I start next Monday? That's the fourteenth of April, I think."
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, the fourteenth. Now, do you have any medical conditions we should know about?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, I have a weak knee from playing football, so I have to be careful."
+    },
+    {
+     "speaker": "A",
+     "text": "I'll make a note of that. Your free induction session is included. Would Wednesday at six o'clock suit you?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, Wednesday is perfect."
+    },
+    {
+     "speaker": "A",
+     "text": "Great. Please bring photo identification, such as a passport or driving licence. Towels are provided, so you don't need to bring one."
+    },
+    {
+     "speaker": "B",
+     "text": "Thank you very much. See you then."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–8: Complete the form. Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Choose the correct letter.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Surname: ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Phone number: ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Membership type: ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Monthly fee: £ ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Joining fee this month: £ ______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Start date: ______ April"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Medical note: weak ______"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Induction session: ______ at 6 pm"
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "Why does Daniel choose premium membership?",
+     "options": [
+      "He wants to use the pool",
+      "He wants to attend classes",
+      "It is cheaper"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "What must Daniel bring to the induction session?",
+     "options": [
+      "A towel",
+      "Photo identification",
+      "A doctor’s letter"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-2",
+   "level": "B1",
+   "title": "Listening mini-test 2: Library introduction",
+   "minutes": 8,
+   "names": {
+    "A": "Librarian"
+   },
+   "context": "Greenfield Public Library: yangi a’zolar uchun qisqa tanishtiruv (monolog).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Welcome to Greenfield Public Library. I'm going to give you a short introduction before you start exploring."
+    },
+    {
+     "speaker": "A",
+     "text": "First, our opening hours. We are open from nine in the morning until eight in the evening, Monday to Friday. On Saturdays we open later, at ten, and close at four. We are closed on Sundays."
+    },
+    {
+     "speaker": "A",
+     "text": "Joining the library is free for all residents. To join, you will need to bring proof of address, such as a bank letter or a utility bill. A passport is not enough, because it does not show where you live."
+    },
+    {
+     "speaker": "A",
+     "text": "The children's section is on the first floor, next to the cafe. The ground floor has newspapers and the main book collection."
+    },
+    {
+     "speaker": "A",
+     "text": "We have twelve public computers. Each session lasts sixty minutes, and you can extend it if nobody is waiting. Printing used to cost fifteen pence a page, but from this month it is ten pence."
+    },
+    {
+     "speaker": "A",
+     "text": "If you need somewhere quiet to study, there is a study room on the second floor. You cannot just walk in, though. You must book it at the main desk, and bookings are for two hours."
+    },
+    {
+     "speaker": "A",
+     "text": "Books can be borrowed for three weeks. If you return a book late, there is a charge of twenty pence per day. There is also a return box outside the main entrance, which is open twenty-four hours."
+    },
+    {
+     "speaker": "A",
+     "text": "Finally, free wireless internet is available throughout the building. The password is readmore, all one word, with no capital letters. Thank you, and enjoy your visit."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–8: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Choose the correct letter.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Saturday opening time: ______ am"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "The library is closed on ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "To join, bring proof of ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Computer session length: ______ minutes"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Printing now costs ______ pence per page"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Study room is on the ______ floor"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Late fee: ______ pence per day"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Wi-Fi password: ______"
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "Where is the children’s section?",
+     "options": [
+      "On the ground floor",
+      "On the first floor",
+      "On the second floor"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "How can visitors use the study room?",
+     "options": [
+      "Walk in at any time",
+      "Book at the main desk",
+      "Book online only"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-3",
+   "level": "B2",
+   "title": "Listening mini-test 3: Research project tutorial",
+   "minutes": 9,
+   "names": {
+    "A": "Tutor",
+    "B": "Maria"
+   },
+   "context": "Tutor va talaba Maria: tadqiqot loyihasi haqida suhbat.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "So, Maria, how is your research project going?"
+    },
+    {
+     "speaker": "B",
+     "text": "Quite well, thank you. I've decided to focus on plastic recycling in our city, rather than the whole country."
+    },
+    {
+     "speaker": "A",
+     "text": "Good. That's more realistic. And what methods are you planning to use?"
+    },
+    {
+     "speaker": "B",
+     "text": "I was going to send a questionnaire, but a friend suggested interviews, because they would give me more detail."
+    },
+    {
+     "speaker": "A",
+     "text": "Interviews take longer, though. How many people are you thinking of?"
+    },
+    {
+     "speaker": "B",
+     "text": "Fifteen in total. Ten residents and five shop owners."
+    },
+    {
+     "speaker": "A",
+     "text": "That sounds manageable. When do you need to finish collecting the data?"
+    },
+    {
+     "speaker": "B",
+     "text": "By the end of March. Then I'll analyse the results in April."
+    },
+    {
+     "speaker": "A",
+     "text": "Remember that the final report must be three thousand words, and the deadline is the twelfth of May."
+    },
+    {
+     "speaker": "B",
+     "text": "Yes. Can I include graphs? Do they count towards the word limit?"
+    },
+    {
+     "speaker": "A",
+     "text": "No, graphs don't count, but you must label them clearly."
+    },
+    {
+     "speaker": "B",
+     "text": "Great. And where can I find statistics on recycling?"
+    },
+    {
+     "speaker": "A",
+     "text": "The city council website has figures, but check the university library as well. The council data is only updated every two years, so it may be out of date."
+    },
+    {
+     "speaker": "B",
+     "text": "Thanks. One last thing: my presentation."
+    },
+    {
+     "speaker": "A",
+     "text": "It's on the fifth of June. Ten minutes, plus questions, and please use no more than eight slides."
+    },
+    {
+     "speaker": "B",
+     "text": "Eight slides. Understood. Thank you very much."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–2 and 8–9: Choose the correct letter.",
+     "questionIds": [
+      1,
+      2,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 3–7 and 10: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Why did Maria narrow her topic?",
+     "options": [
+      "She did not have enough time",
+      "To make the project more realistic",
+      "Her tutor told her to"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "Why did Maria choose interviews?",
+     "options": [
+      "They are cheaper",
+      "They give more detail",
+      "They are quicker"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Number of residents to interview: ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Number of shop owners to interview: ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Data collection ends at the end of ______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Report length: ______ words"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Report deadline: ______ May"
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "What does the tutor say about graphs?",
+     "options": [
+      "They count towards the word limit",
+      "They do not count but must be labelled",
+      "They are not allowed"
+     ]
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "How often is the council data updated?",
+     "options": [
+      "Every year",
+      "Every two years",
+      "Every month"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Presentation: no more than ______ slides"
+    }
+   ]
+  },
+  {
+   "id": "listening-4",
+   "level": "C1",
+   "title": "Listening mini-test 4: Urban beekeeping (lecture)",
+   "minutes": 9,
+   "names": {
+    "A": "Lecturer"
+   },
+   "context": "Ma’ruza: shahar asalarichiligi.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Today I'd like to talk about urban beekeeping. Over the last decade, the number of hives in cities has increased rapidly, and many people are surprised to hear that city bees often produce more honey than bees in the countryside."
+    },
+    {
+     "speaker": "A",
+     "text": "There are two main reasons for this. The first is variety. Parks, gardens and even balconies provide flowers throughout the season, whereas farmland may offer a single crop for only a few weeks. The second is temperature. Cities are warmer, so bees can begin collecting food earlier in the spring."
+    },
+    {
+     "speaker": "A",
+     "text": "Let me give you some figures. In summer, a typical hive contains around fifty thousand bees. An individual worker bee lives for only about six weeks. In a good location, one hive can produce an average of twenty kilograms of honey a year."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course, there are challenges. Neighbours may worry about stings, so hives in cities are usually placed on rooftops, at least three metres above the ground, or behind a tall fence."
+    },
+    {
+     "speaker": "A",
+     "text": "Another problem is competition. If there are too many hives in one area, the bees compete for nectar, and wild bees can suffer. Experts therefore recommend no more than about five hives per square kilometre."
+    },
+    {
+     "speaker": "A",
+     "text": "Finally, people sometimes ask whether city honey is safe. It is regularly tested for pollution, and the results show that it is generally safe to eat. Thank you for listening."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–10: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "The number of hives in cities has increased ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "One reason for more honey: a ______ of flowers"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Cities are ______ than the countryside"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "A summer hive has around ______ bees"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "A worker bee lives about ______ weeks"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Honey per hive per year: ______ kg"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Hives are placed at least ______ metres above the ground"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Too many hives: bees compete for ______"
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "Maximum recommended: ______ hives per square kilometre"
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "City honey is regularly tested for ______"
+    }
+   ]
+  },
+  {
+   "id": "listening-full-1",
+   "level": "C1",
+   "title": "IELTS Listening — to‘liq mock 1",
+   "minutes": 35,
+   "names": {
+    "A": "Helen / Lecturer",
+    "B": "Mark / Tom",
+    "C": "Emma",
+    "D": "Daniel"
+   },
+   "context": "4 qism: 1) kursga yozilish (telefon); 2) bog‘ bo‘yicha qisqa ma’lumot; 3) ikki talabaning taqdimot muhokamasi; 4) asalarilar haqida ma’ruza.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good afternoon, Greenway Community Centre. This is Helen speaking. How can I help?"
+    },
+    {
+     "speaker": "B",
+     "text": "Hello. I saw a poster about your evening courses, and I'd like to book a place on one of them."
+    },
+    {
+     "speaker": "A",
+     "text": "Certainly. Which course are you interested in?"
+    },
+    {
+     "speaker": "B",
+     "text": "The photography course for beginners. I'm not sure if there are still places."
+    },
+    {
+     "speaker": "A",
+     "text": "Let me check. Yes, there are three places left on the Thursday group. The Monday group is already full, I'm afraid."
+    },
+    {
+     "speaker": "B",
+     "text": "Thursday is fine, actually. Probably better for me."
+    },
+    {
+     "speaker": "A",
+     "text": "Good. I'll need to take a few details. Could I have your full name, please?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, it's Mark Fenwick."
+    },
+    {
+     "speaker": "A",
+     "text": "Could you spell the surname?"
+    },
+    {
+     "speaker": "B",
+     "text": "F, E, N, W, I, C, K."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you. And your address?"
+    },
+    {
+     "speaker": "B",
+     "text": "It's twenty-seven Mill Lane, in Ashford."
+    },
+    {
+     "speaker": "A",
+     "text": "Twenty-seven Mill Lane. And a phone number we can reach you on?"
+    },
+    {
+     "speaker": "B",
+     "text": "My mobile is oh seven nine six two, four four eight, three one oh."
+    },
+    {
+     "speaker": "A",
+     "text": "Oh seven nine six two, four four eight, three one oh. Lovely. Now, the course runs for eight weeks, starting on the ninth of October."
+    },
+    {
+     "speaker": "B",
+     "text": "And what time does it start?"
+    },
+    {
+     "speaker": "A",
+     "text": "Classes begin at half past seven and finish at nine. They're held in Room 12, which is on the first floor, next to the library."
+    },
+    {
+     "speaker": "B",
+     "text": "And how much does it cost?"
+    },
+    {
+     "speaker": "A",
+     "text": "The full price is ninety-five pounds, but if you're a member of the centre, it's seventy."
+    },
+    {
+     "speaker": "B",
+     "text": "I'm not a member. Is it worth joining?"
+    },
+    {
+     "speaker": "A",
+     "text": "Membership is fifteen pounds a year, so you would save ten pounds on this course alone, and you'd also get a discount at the café."
+    },
+    {
+     "speaker": "B",
+     "text": "Then I'll join. Do I need to bring my own camera?"
+    },
+    {
+     "speaker": "A",
+     "text": "You can use your phone for the first two weeks. After that, the tutor recommends a simple digital camera, but the centre can lend you one if necessary. You'll also need a notebook."
+    },
+    {
+     "speaker": "B",
+     "text": "That sounds fine. How do I pay?"
+    },
+    {
+     "speaker": "A",
+     "text": "You can pay by card over the phone now, or in cash at reception before the first class."
+    },
+    {
+     "speaker": "B",
+     "text": "I'll pay at reception, if that's all right."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course. Just one more thing: how did you hear about the course?"
+    },
+    {
+     "speaker": "B",
+     "text": "A friend told me about it, and then I saw the poster at the station."
+    },
+    {
+     "speaker": "A",
+     "text": "Wonderful. I'll send you a confirmation by text message today. We look forward to seeing you."
+    },
+    {
+     "speaker": "B",
+     "text": "Good morning, everyone, and welcome to Hartley Gardens. My name is Tom, and I'm one of the volunteers here. Before you set off, I'd like to give you a short introduction and a few practical details."
+    },
+    {
+     "speaker": "B",
+     "text": "The gardens were created in 1902 by a local doctor, Edward Hartley, who believed that fresh air and plants were good for his patients. After his death, the house was turned into a school for a while, and the gardens were neglected. They were only restored in the 1990s, when a group of local residents raised the money to save them."
+    },
+    {
+     "speaker": "B",
+     "text": "Today the gardens cover about twelve hectares. If you look at the map you were given, you'll see that the main path goes in a circle. If you follow it all the way round, it takes about an hour and a half, but there are several shorter routes as well."
+    },
+    {
+     "speaker": "B",
+     "text": "Let me mention a few of the highlights. Just past the entrance, on your left, is the Rose Garden. It's at its best in June, so you've come at the right time. Beyond that is the lake. Please don't feed the ducks, because bread is actually bad for them."
+    },
+    {
+     "speaker": "B",
+     "text": "On the far side of the lake you'll find the glasshouse, which contains tropical plants. It's kept very warm, so you may want to take off your coat before you go in. Next to it is the children's play area, which was rebuilt last year."
+    },
+    {
+     "speaker": "B",
+     "text": "One of our newest features is the Sensory Garden, near the north gate. It was designed for visitors with poor eyesight, so all the plants were chosen for their smell or the way they feel when you touch them. Please do touch them; that's what they're there for."
+    },
+    {
+     "speaker": "B",
+     "text": "Now, some practical information. The café is in the old stable building, and it's open until five. The toilets are next to the café and also by the main car park. If you need help, our volunteers are wearing green jackets."
+    },
+    {
+     "speaker": "B",
+     "text": "Finally, there's a talk by our head gardener at three o'clock this afternoon in the education centre. It's about growing vegetables in small spaces, and it's free, but places are limited, so please collect a ticket from the information desk if you'd like to attend."
+    },
+    {
+     "speaker": "B",
+     "text": "That's all from me. Enjoy your visit."
+    },
+    {
+     "speaker": "C",
+     "text": "Hi, Daniel. Have you got a few minutes to talk about our presentation? It's only two weeks away now."
+    },
+    {
+     "speaker": "D",
+     "text": "Sure, Emma. I've been reading about our topic, the four-day working week, and I think we've got plenty of material."
+    },
+    {
+     "speaker": "C",
+     "text": "Good. I thought we could start with the trial that took place in Britain a few years ago. Most of the companies that took part decided to continue with the shorter week afterwards."
+    },
+    {
+     "speaker": "D",
+     "text": "Yes, but I think we should be careful there. The companies chose to take part, so they were probably more enthusiastic than average. That might make the results look better than they would be in general."
+    },
+    {
+     "speaker": "C",
+     "text": "That's a good point. We should mention it as a limitation."
+    },
+    {
+     "speaker": "D",
+     "text": "What surprised me was that productivity didn't fall in most of the companies. I expected it to drop at least a little."
+    },
+    {
+     "speaker": "C",
+     "text": "Me too. Apparently people cut down on long meetings and wasted time. One manager said meetings were reduced to thirty minutes."
+    },
+    {
+     "speaker": "D",
+     "text": "And the staff reported less stress and better sleep. Although those results came from questionnaires, so they depend on what people said about themselves."
+    },
+    {
+     "speaker": "C",
+     "text": "Right. Now, how should we divide the work? I'd be happy to do the background and the history of working hours."
+    },
+    {
+     "speaker": "D",
+     "text": "Then I'll take the results of the trial. And maybe we can both do the conclusion together?"
+    },
+    {
+     "speaker": "C",
+     "text": "Fine. What about visuals? Our tutor said she wanted fewer slides with words and more charts."
+    },
+    {
+     "speaker": "D",
+     "text": "I can make the charts. I'm better with spreadsheets than you are, I think."
+    },
+    {
+     "speaker": "C",
+     "text": "That's true! I'll find a short video clip, then. Something from an interview with an employee, maybe. Not more than a minute, though."
+    },
+    {
+     "speaker": "D",
+     "text": "Good idea. One thing I'm worried about is the question time at the end. Some people are bound to ask whether this would work in hospitals or schools."
+    },
+    {
+     "speaker": "C",
+     "text": "We should prepare an answer to that. The trial was mainly in offices, so we can say the evidence for other sectors is still limited."
+    },
+    {
+     "speaker": "D",
+     "text": "Agreed. When shall we practise?"
+    },
+    {
+     "speaker": "C",
+     "text": "How about next Wednesday afternoon in the library? We could book one of the study rooms."
+    },
+    {
+     "speaker": "D",
+     "text": "Wednesday's fine, but the library rooms are always busy. Let's use the empty classroom on the second floor instead."
+    },
+    {
+     "speaker": "C",
+     "text": "Perfect. I'll send you my part by Monday so you can read it first."
+    },
+    {
+     "speaker": "A",
+     "text": "Good morning. Today I'm going to talk about honeybees, and in particular about how they communicate. For a long time, people wondered how bees that had found a good source of food were able to direct other bees to it. The answer came from the Austrian scientist Karl von Frisch, who studied bees for many years and later received a Nobel Prize for his work."
+    },
+    {
+     "speaker": "A",
+     "text": "Von Frisch discovered that a bee returning to the hive performs a kind of dance on the surface of the honeycomb. When the food is close to the hive, the bee moves in small circles. This is called the round dance, and it simply tells the other bees that food is nearby."
+    },
+    {
+     "speaker": "A",
+     "text": "When the food is further away, the bee performs what is known as the waggle dance. It runs forward in a straight line while shaking its body from side to side, then circles back and repeats the movement. The direction of the straight run shows the direction of the food in relation to the sun, and the length of the waggle tells the other bees the distance they need to fly."
+    },
+    {
+     "speaker": "A",
+     "text": "What is remarkable is that the hive is usually dark, so the other bees cannot see the dance clearly. Instead, they follow the dancer closely and pick up the information through touch and vibration. They also learn the smell of the flowers from the dancer's body."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course, not every scientist accepted these findings at first. Some argued that bees simply followed the scent of the food. It was only later, when researchers used radar to track individual bees, that it became clear that the bees really did fly in the direction indicated by the dance."
+    },
+    {
+     "speaker": "A",
+     "text": "Why does this matter today? Bees are responsible for pollinating a large proportion of the crops we eat, and in many regions bee populations have declined. Several causes have been suggested, including disease, the loss of wild flowers and the use of certain chemicals on farms."
+    },
+    {
+     "speaker": "A",
+     "text": "Understanding how bees communicate can help farmers and planners. For example, if we know how far bees are prepared to fly, we can decide where to plant strips of flowers so that bees can reach them easily. In some cities, people are now encouraged to plant flowers on balconies and roofs."
+    },
+    {
+     "speaker": "A",
+     "text": "In our next lecture, we'll look at how bees choose a new home when a colony becomes too large, a process in which, interestingly, the dance also plays a central role."
+    }
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1 — Questions 1–10"
+    },
+    {
+     "at": 29,
+     "title": "Part 2 — Questions 11–20"
+    },
+    {
+     "at": 38,
+     "title": "Part 3 — Questions 21–30"
+    },
+    {
+     "at": 57,
+     "title": "Part 4 — Questions 31–40"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–10: Complete the form. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 11–15: Choose the correct letter.",
+     "questionIds": [
+      11,
+      12,
+      13,
+      14,
+      15
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 16–20: Complete the notes. Write ONE WORD ONLY for each answer.",
+     "questionIds": [
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 21–26: Choose the correct letter.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 27–30: Who will do each task? Choose Emma or Daniel.",
+     "questionIds": [
+      27,
+      28,
+      29,
+      30
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 31–40: Complete the notes. Write ONE WORD ONLY for each answer.",
+     "questionIds": [
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Course chosen",
+     "options": [
+      "photography",
+      "pottery",
+      "cooking",
+      "painting"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Day of the group: ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Surname: ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Address: 27 ______ Lane, Ashford"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Course length: ______ weeks"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Classes start at: ______ pm"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Room: ______ (first floor)"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Price for members: £______"
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "Also bring: a ______"
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Payment: in cash at ______"
+    },
+    {
+     "id": 11,
+     "type": "mcq",
+     "text": "Edward Hartley created the gardens because he",
+     "options": [
+      "wanted to open a school.",
+      "believed plants helped his patients.",
+      "needed food for the town.",
+      "was a professional gardener."
+     ]
+    },
+    {
+     "id": 12,
+     "type": "mcq",
+     "text": "The gardens were restored by",
+     "options": [
+      "the local council.",
+      "Hartley’s family.",
+      "a group of local residents.",
+      "a national charity."
+     ]
+    },
+    {
+     "id": 13,
+     "type": "mcq",
+     "text": "How long does the full circular walk take?",
+     "options": [
+      "About 30 minutes",
+      "About an hour",
+      "About an hour and a half",
+      "About two hours"
+     ]
+    },
+    {
+     "id": 14,
+     "type": "mcq",
+     "text": "Why should visitors not feed the ducks?",
+     "options": [
+      "The ducks are protected.",
+      "Bread is bad for them.",
+      "It attracts rats.",
+      "The lake is closed."
+     ]
+    },
+    {
+     "id": 15,
+     "type": "mcq",
+     "text": "The Sensory Garden was designed for people who",
+     "options": [
+      "have young children.",
+      "cannot walk far.",
+      "have poor eyesight.",
+      "want to learn about medicine."
+     ]
+    },
+    {
+     "id": 16,
+     "type": "fill",
+     "text": "The Rose Garden is at its best in ______."
+    },
+    {
+     "id": 17,
+     "type": "fill",
+     "text": "The café is in the old ______ building."
+    },
+    {
+     "id": 18,
+     "type": "fill",
+     "text": "Volunteers wear ______ jackets."
+    },
+    {
+     "id": 19,
+     "type": "fill",
+     "text": "The afternoon talk is about growing ______ in small spaces."
+    },
+    {
+     "id": 20,
+     "type": "fill",
+     "text": "Tickets for the talk are at the information ______."
+    },
+    {
+     "id": 21,
+     "type": "mcq",
+     "text": "Why does Daniel think the trial results should be treated with care?",
+     "options": [
+      "The trial was too short.",
+      "The companies chose to take part.",
+      "Only large companies took part.",
+      "The results were not published."
+     ]
+    },
+    {
+     "id": 22,
+     "type": "mcq",
+     "text": "What surprised Daniel about the trial?",
+     "options": [
+      "Productivity did not fall.",
+      "Staff worked longer days.",
+      "Most companies stopped the trial.",
+      "Meetings became longer."
+     ]
+    },
+    {
+     "id": 23,
+     "type": "mcq",
+     "text": "According to Emma, how did companies save time?",
+     "options": [
+      "By hiring more staff",
+      "By working at weekends",
+      "By cutting long meetings",
+      "By using new software"
+     ]
+    },
+    {
+     "id": 24,
+     "type": "mcq",
+     "text": "What is Daniel’s concern about the results on stress and sleep?",
+     "options": [
+      "They were collected too late.",
+      "They came from questionnaires.",
+      "Only managers were asked.",
+      "They contradict other studies."
+     ]
+    },
+    {
+     "id": 25,
+     "type": "mcq",
+     "text": "What did the tutor ask for?",
+     "options": [
+      "A longer presentation",
+      "More written slides",
+      "More charts and fewer word slides",
+      "A printed handout"
+     ]
+    },
+    {
+     "id": 26,
+     "type": "mcq",
+     "text": "Where will they practise?",
+     "options": [
+      "In the library",
+      "In a study room",
+      "In an empty classroom",
+      "At Emma’s house"
+     ]
+    },
+    {
+     "id": 27,
+     "type": "mcq",
+     "text": "Background and history of working hours",
+     "options": [
+      "Emma",
+      "Daniel"
+     ]
+    },
+    {
+     "id": 28,
+     "type": "mcq",
+     "text": "Results of the trial",
+     "options": [
+      "Emma",
+      "Daniel"
+     ]
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "Charts",
+     "options": [
+      "Emma",
+      "Daniel"
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "Short video clip",
+     "options": [
+      "Emma",
+      "Daniel"
+     ]
+    },
+    {
+     "id": 31,
+     "type": "fill",
+     "text": "Karl von Frisch was from ______."
+    },
+    {
+     "id": 32,
+     "type": "fill",
+     "text": "He later received a ______ Prize."
+    },
+    {
+     "id": 33,
+     "type": "fill",
+     "text": "Round dance: tells bees that food is ______."
+    },
+    {
+     "id": 34,
+     "type": "fill",
+     "text": "Waggle dance: direction is shown in relation to the ______."
+    },
+    {
+     "id": 35,
+     "type": "fill",
+     "text": "The length of the waggle shows the ______ to the food."
+    },
+    {
+     "id": 36,
+     "type": "fill",
+     "text": "In the dark hive, bees get information through touch and ______."
+    },
+    {
+     "id": 37,
+     "type": "fill",
+     "text": "Bees also learn the ______ of the flowers."
+    },
+    {
+     "id": 38,
+     "type": "fill",
+     "text": "Scientists later used ______ to track individual bees."
+    },
+    {
+     "id": 39,
+     "type": "fill",
+     "text": "One suggested cause of decline is the loss of wild ______."
+    },
+    {
+     "id": 40,
+     "type": "fill",
+     "text": "Next lecture: how bees choose a new ______."
+    }
+   ]
+  },
+  {
+   "id": "cefr-listening-1",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Listening — mashq testi 1",
+   "minutes": 45,
+   "names": {
+    "A": "Sarah",
+    "B": "Alistair",
+    "C": "Hope",
+    "D": "Max"
+   },
+   "context": "5 qism: 1) sakkizta qisqa suhbat; 2) festival haqida e’lon; 3) ikki talabaning loyiha muhokamasi; 4) radio intervyu; 5) choy tarixi haqida ma’ruza.",
+   "script": [
+    {
+     "speaker": "C",
+     "text": "One. Excuse me, does this bus go to the airport?"
+    },
+    {
+     "speaker": "B",
+     "text": "Not this one, I'm afraid. You need the number forty-two. It leaves from the stop across the road every twenty minutes."
+    },
+    {
+     "speaker": "A",
+     "text": "Two. Shall we eat at the Italian place tonight?"
+    },
+    {
+     "speaker": "D",
+     "text": "I'd rather not. We had pizza on Monday. What about that new Korean restaurant near the park?"
+    },
+    {
+     "speaker": "A",
+     "text": "Fine, let's try it."
+    },
+    {
+     "speaker": "C",
+     "text": "Three. Hi, I'm calling about my order. It was supposed to arrive yesterday, but nothing came."
+    },
+    {
+     "speaker": "B",
+     "text": "I'm sorry about that. I can see there was a problem with the address. I'll send it again today, and you'll get it by Thursday."
+    },
+    {
+     "speaker": "D",
+     "text": "Four. How was the exam?"
+    },
+    {
+     "speaker": "A",
+     "text": "The reading part was fine, but I ran out of time in the writing section. I only finished half of the second essay."
+    },
+    {
+     "speaker": "B",
+     "text": "Five. Attention, please. The train to Samarkand will now depart from platform three, not platform five. Passengers are asked to move to platform three immediately."
+    },
+    {
+     "speaker": "C",
+     "text": "Six. Are you coming to the gym this evening?"
+    },
+    {
+     "speaker": "D",
+     "text": "I can't. My sister is arriving from Tashkent and I promised to pick her up from the station."
+    },
+    {
+     "speaker": "A",
+     "text": "Seven. Doctor, I've had a headache for three days now."
+    },
+    {
+     "speaker": "B",
+     "text": "Are you drinking enough water? And how many hours are you spending in front of a screen?"
+    },
+    {
+     "speaker": "A",
+     "text": "Probably ten. I'm working on a big project."
+    },
+    {
+     "speaker": "B",
+     "text": "Then I suggest regular breaks first. If it doesn't improve in a week, come back and see me."
+    },
+    {
+     "speaker": "D",
+     "text": "Eight. I really like this jacket, but it's a bit expensive."
+    },
+    {
+     "speaker": "C",
+     "text": "It's actually twenty per cent cheaper this weekend. The sale starts on Saturday."
+    },
+    {
+     "speaker": "B",
+     "text": "Welcome to the Riverside Summer Festival. Here is some information to help you enjoy your day. The festival runs from ten in the morning until eleven at night. The main stage is in the centre of the park, and the first concert begins at two o'clock."
+    },
+    {
+     "speaker": "B",
+     "text": "If you're interested in food, the market is next to the lake, where you can try dishes from more than twenty countries. Please remember that the festival is plastic-free, so bring your own bottle. Water is free at the fountains near each entrance."
+    },
+    {
+     "speaker": "B",
+     "text": "For families, there's a children's area beside the north gate, with games and face painting. Children under twelve must be with an adult at all times. If you lose your group, go to the information tent, which is the large blue tent next to the main stage."
+    },
+    {
+     "speaker": "B",
+     "text": "Finally, the festival ends with fireworks over the lake at ten thirty. The last buses back to the city centre leave at eleven fifteen, so please plan your journey home."
+    },
+    {
+     "speaker": "C",
+     "text": "So, Bek, we need to choose a topic for our group project in economics. Any ideas?"
+    },
+    {
+     "speaker": "D",
+     "text": "I was thinking about small family businesses in our city. My uncle runs a bakery, so we could interview him."
+    },
+    {
+     "speaker": "C",
+     "text": "That's a nice idea, but our teacher said the project should include data, not only interviews. Could we get numbers from your uncle?"
+    },
+    {
+     "speaker": "D",
+     "text": "He keeps records of his sales, and I think he'd share them if we don't publish his name."
+    },
+    {
+     "speaker": "C",
+     "text": "Good. We could compare his sales before and after he started selling online. That would be interesting."
+    },
+    {
+     "speaker": "D",
+     "text": "Agreed. He started online orders about two years ago. He says it was difficult at first because he had to learn to take good photos of the bread."
+    },
+    {
+     "speaker": "C",
+     "text": "Ha! How about the presentation? I'm not very confident speaking in front of the class."
+    },
+    {
+     "speaker": "D",
+     "text": "Then you could prepare the charts, and I'll present. But you should say at least one part, because the teacher gives marks to each person."
+    },
+    {
+     "speaker": "C",
+     "text": "OK, I'll present the conclusion. That's the shortest part. When is the deadline again?"
+    },
+    {
+     "speaker": "D",
+     "text": "The twentieth of May. Let's aim to finish a week earlier, so we have time to practise."
+    },
+    {
+     "speaker": "A",
+     "text": "Today on 'Working Lives' I'm talking to Daniel, who left his job in a bank to become a mountain guide. Daniel, why did you make such a big change?"
+    },
+    {
+     "speaker": "D",
+     "text": "Honestly, I was bored. The salary was good, but I spent all day in an office looking at numbers. At weekends I always went hiking, and one day I realised I was only really happy on Saturdays and Sundays."
+    },
+    {
+     "speaker": "A",
+     "text": "Was it difficult to start?"
+    },
+    {
+     "speaker": "D",
+     "text": "Very. I needed a qualification, which took almost a year, and during that time I had almost no income. My family was worried, especially my father, who thought I was making a mistake."
+    },
+    {
+     "speaker": "A",
+     "text": "And now?"
+    },
+    {
+     "speaker": "D",
+     "text": "Now he comes on some of my tours! He's changed his mind completely."
+    },
+    {
+     "speaker": "A",
+     "text": "What's the hardest part of the job?"
+    },
+    {
+     "speaker": "D",
+     "text": "The weather. You have to make decisions quickly. If a storm is coming, you must turn back, even if the group is disappointed. Safety always comes first."
+    },
+    {
+     "speaker": "A",
+     "text": "Do you earn as much as before?"
+    },
+    {
+     "speaker": "D",
+     "text": "No, less, maybe half in a bad year. But I spend less too, and I'm much healthier."
+    },
+    {
+     "speaker": "A",
+     "text": "What advice would you give to people who want to change careers?"
+    },
+    {
+     "speaker": "D",
+     "text": "Try the new work part-time first, if you can. I guided small groups at weekends for a year before I left the bank. That way I knew I really enjoyed it."
+    },
+    {
+     "speaker": "A",
+     "text": "In today's lecture I want to look at the history of tea, one of the most widely drunk beverages in the world. Tea originated in China, where it was first used as a medicine before it became an everyday drink."
+    },
+    {
+     "speaker": "A",
+     "text": "From China, tea spread to Japan, where a formal tea ceremony developed, and later along trade routes to Central Asia, India and Europe. In Central Asia, tea became an important part of hospitality: offering tea to a guest is still a sign of respect."
+    },
+    {
+     "speaker": "A",
+     "text": "In Europe, tea arrived in the seventeenth century. At first it was very expensive, so only wealthy families could afford it. It was often kept in locked boxes to prevent servants from taking it."
+    },
+    {
+     "speaker": "A",
+     "text": "Over time, prices fell, largely because of large plantations established in India and later in Sri Lanka. By the nineteenth century, tea had become a drink for all social classes in Britain."
+    },
+    {
+     "speaker": "A",
+     "text": "The way tea is prepared varies a great deal. In some countries it is served with milk, in others with sugar, lemon or even salt. Green tea, which is not fermented, remains especially popular in East Asia and in parts of Central Asia."
+    },
+    {
+     "speaker": "A",
+     "text": "Next week we'll discuss coffee, and compare how the two drinks influenced trade and social life."
+    }
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1 — Questions 1–8"
+    },
+    {
+     "at": 18,
+     "title": "Part 2 — Questions 9–14"
+    },
+    {
+     "at": 22,
+     "title": "Part 3 — Questions 15–20"
+    },
+    {
+     "at": 32,
+     "title": "Part 4 — Questions 21–28"
+    },
+    {
+     "at": 44,
+     "title": "Part 5 — Questions 29–35"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–8: You will hear eight short conversations. Choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 9–14: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct answer.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Choose the correct answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Complete the notes. Write ONE WORD ONLY for each answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Which bus goes to the airport?",
+     "options": [
+      "This bus",
+      "Number 42",
+      "Number 20"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "Where will they eat tonight?",
+     "options": [
+      "At an Italian restaurant",
+      "At a Korean restaurant",
+      "At home"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Why did the order not arrive?",
+     "options": [
+      "It was sold out.",
+      "There was a problem with the address.",
+      "The driver was ill."
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What was the problem in the exam?",
+     "options": [
+      "The reading was too hard.",
+      "She ran out of time in writing.",
+      "She arrived late."
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "Which platform does the Samarkand train leave from now?",
+     "options": [
+      "Platform 3",
+      "Platform 5",
+      "Platform 13"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "Why can’t the man go to the gym?",
+     "options": [
+      "He is ill.",
+      "He has to work late.",
+      "He is meeting his sister at the station."
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "What does the doctor suggest first?",
+     "options": [
+      "Taking medicine",
+      "Taking regular breaks",
+      "Seeing a specialist"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "When does the sale start?",
+     "options": [
+      "Today",
+      "On Friday",
+      "On Saturday"
+     ]
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "First concert on the main stage: ______ o’clock"
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Food market: next to the ______"
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "The festival is ______-free: bring your own bottle."
+    },
+    {
+     "id": 12,
+     "type": "fill",
+     "text": "Children’s area: beside the ______ gate"
+    },
+    {
+     "id": 13,
+     "type": "fill",
+     "text": "Information tent colour: ______"
+    },
+    {
+     "id": 14,
+     "type": "fill",
+     "text": "Last buses to the city centre: 11.______ pm"
+    },
+    {
+     "id": 15,
+     "type": "mcq",
+     "text": "What business will the students study?",
+     "options": [
+      "A café",
+      "A bakery",
+      "A clothes shop"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "mcq",
+     "text": "What did the teacher say the project must include?",
+     "options": [
+      "Data",
+      "Photos",
+      "A video"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "mcq",
+     "text": "On what condition will the uncle share his records?",
+     "options": [
+      "If they pay him",
+      "If his name is not published",
+      "If they help in the shop"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "mcq",
+     "text": "What was difficult for the uncle when he started selling online?",
+     "options": [
+      "Delivering bread",
+      "Taking good photos",
+      "Setting prices"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "mcq",
+     "text": "Which part will the woman present?",
+     "options": [
+      "The introduction",
+      "The charts",
+      "The conclusion"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "mcq",
+     "text": "When do they plan to finish the project?",
+     "options": [
+      "On 13 May",
+      "On 20 May",
+      "On 27 May"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "mcq",
+     "text": "Why did Daniel leave the bank?",
+     "options": [
+      "The salary was low.",
+      "He was bored.",
+      "He lost his job."
+     ]
+    },
+    {
+     "id": 22,
+     "type": "mcq",
+     "text": "How long did his qualification take?",
+     "options": [
+      "About six months",
+      "Almost a year",
+      "Two years"
+     ]
+    },
+    {
+     "id": 23,
+     "type": "mcq",
+     "text": "Who was most worried about his decision?",
+     "options": [
+      "His mother",
+      "His father",
+      "His wife"
+     ]
+    },
+    {
+     "id": 24,
+     "type": "mcq",
+     "text": "How does his father feel now?",
+     "options": [
+      "He still disagrees.",
+      "He has changed his mind.",
+      "He does not talk about it."
+     ]
+    },
+    {
+     "id": 25,
+     "type": "mcq",
+     "text": "What does Daniel find hardest?",
+     "options": [
+      "The weather",
+      "Long walks",
+      "Difficult clients"
+     ]
+    },
+    {
+     "id": 26,
+     "type": "mcq",
+     "text": "What must a guide do if a storm is coming?",
+     "options": [
+      "Wait in a hut",
+      "Turn back",
+      "Call for a helicopter"
+     ]
+    },
+    {
+     "id": 27,
+     "type": "mcq",
+     "text": "How does his income compare with before?",
+     "options": [
+      "It is higher.",
+      "It is the same.",
+      "It is lower."
+     ]
+    },
+    {
+     "id": 28,
+     "type": "mcq",
+     "text": "What advice does Daniel give?",
+     "options": [
+      "Save money first",
+      "Try the new work part-time first",
+      "Get a degree"
+     ]
+    },
+    {
+     "id": 29,
+     "type": "fill",
+     "text": "In China, tea was first used as a ______."
+    },
+    {
+     "id": 30,
+     "type": "fill",
+     "text": "In Japan, a formal tea ______ developed."
+    },
+    {
+     "id": 31,
+     "type": "fill",
+     "text": "In Central Asia, offering tea to a guest is a sign of ______."
+    },
+    {
+     "id": 32,
+     "type": "fill",
+     "text": "In Europe, tea was kept in locked ______."
+    },
+    {
+     "id": 33,
+     "type": "fill",
+     "text": "Prices fell because of large ______ in India and Sri Lanka."
+    },
+    {
+     "id": 34,
+     "type": "fill",
+     "text": "Green tea is not ______."
+    },
+    {
+     "id": 35,
+     "type": "fill",
+     "text": "Next week’s topic: ______"
+    }
+   ]
+  }
+ ]
+}

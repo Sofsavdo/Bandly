@@ -29,11 +29,11 @@ export function LessonSpeak({ sentences }: { sentences: string[] }) {
   };
 
   if (!stt) {
-    return <p className="muted">Bu brauzer nutqni tanishni qo‘llamaydi (Chrome yoki Edge tavsiya etiladi). Gaplarni ovoz chiqarib o‘qing va eshitish tugmasi bilan solishtiring.</p>;
+    return <p className="muted">Brauzer nutqni tanimaydi — Chrome yoki Edge’da oching.</p>;
   }
   return (
     <div>
-      <p className="muted">Har bir gapni eshiting, keyin mikrofonni bosib ayting. Brauzer tanigan so‘zlar ko‘rsatiladi — bu talaffuz bahosi emas, faqat mashq uchun; natija saqlanmaydi.</p>
+      <p className="muted">Eshiting, so‘ng mikrofonni bosib ayting.</p>
       {sentences.map((s, i) => {
         const res = said[i] !== undefined ? accuracy(s, said[i]!) : null;
         const v = res ? verdict(res.pct) : null;

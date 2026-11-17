@@ -1,6 +1,6 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, PROGRESS_MAX, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_MAX, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -8,6 +8,16 @@ import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
+import { gradeMock } from './mockGrade';
+import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { voiceLesson } from './content';
+import { elevenLabsFromEnv, synthesize as elSynthesize } from './elevenlabs';
+import { writeFileSync as writeFile, mkdirSync as mkdir } from 'node:fs';
+import { archive, contentVersion, createLesson, createUnit, history, publish, publishedUnits, reorder, restore, saveLesson, saveUnit, seedContent, studioTree } from './content';
+import { awardXp, submitXp } from './xp';
+import { leagueView } from './league';
+import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
 
@@ -15,12 +25,15 @@ const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
 // AI Coach limits (env). Global ceiling is FAIL-CLOSED: unset or 0 = coach disabled even with a key (owner decision OD-09).
 const COACH_GLOBAL_DAILY = Number(process.env.AI_GLOBAL_DAILY_CALLS ?? 0);
+const STUDIO_VOICE_DAILY_CHARS = Number(process.env.STUDIO_VOICE_DAILY_CHARS ?? 20_000);
 const COACH_DAILY_LIMIT = Number(process.env.AI_COACH_DAILY_LIMIT ?? 30);
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
+const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
+if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
 const hapi = hcfg ? hamyonApi(hcfg) : null;
 // Demo rejim (to'lovsiz yoqish) faqat to'lov ulanmaganda; PAY_DEMO=1 bilan majburan yoqish mumkin
@@ -64,6 +77,16 @@ function readForm(req: IncomingMessage, limit = 8192): Promise<Record<string, st
   });
 }
 
+function readRaw(req: IncomingMessage, limit: number): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    let size = 0; const chunks: Buffer[] = [];
+    req.on('data', (c: Buffer) => { size += c.length; if (size > limit) { reject(new ApiError(413, 'Fayl juda katta')); req.destroy(); return; } chunks.push(c); });
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+const MEDIA_DIR = `${dirname(DB_FILE)}/media`;
+
 function readJson(req: IncomingMessage, limit = 2048): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     let size = 0;
@@ -97,6 +120,10 @@ createServer(async (req, res) => {
       const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created });
     }
+    if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
+      revokeSession(db, String(req.headers['x-token'] ?? '')); // shu qurilma tokeni endi ishlamaydi
+      return send(res, 200, { ok: true });
+    }
     if (req.method === 'POST' && url.pathname === '/api/telegram/webhook') {
       if (!bot?.publicUrl || String(req.headers['x-telegram-bot-api-secret-token'] ?? '') !== webhookSecret(bot.token)) return send(res, 403, { error: 'Taqiqlangan' });
       const reply = handleUpdate(await readJson(req, 65_536), bot.publicUrl);
@@ -108,6 +135,92 @@ createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, join(db, String(b.nickname ?? '')));
     }
+    // ---- Darslar kontenti: o'quvchilar uchun e'lon qilingan versiya ----
+    if (req.method === 'GET' && url.pathname === '/api/content') {
+      const v = contentVersion(db);
+      if (url.searchParams.get('v') === String(v)) return send(res, 200, { version: v, units: null }); // o'zgarmagan
+      return send(res, 200, { version: v, units: publishedUnits(db) });
+    }
+    // ---- Metodist kabineti (rol: methodologist yoki admin) ----
+    if (url.pathname.startsWith('/api/studio/')) {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['methodologist']);
+      const by = me.nickname;
+      const p = url.pathname.slice('/api/studio/'.length).split('/');
+      if (req.method === 'GET' && p[0] === 'tree') return send(res, 200, { units: studioTree(db), role: me.role });
+      // Fayl yuklash: hujjat → matn → (AI) → qoralama darslar; video → media URL
+      if (req.method === 'POST' && p[0] === 'upload') {
+        const name = String(url.searchParams.get('name') ?? '').slice(0, 120);
+        const buf = await readRaw(req, MAX_VIDEO + 1024);
+        if (isVideo(name)) return send(res, 200, { media: { kind: /\.(m4a|mp3)$/i.test(name) ? 'audio' : 'video', url: saveMedia(MEDIA_DIR, name, buf) } });
+        return send(res, 200, { text: await extractText(name, buf) });
+      }
+      if (req.method === 'POST' && p[0] === 'import') {
+        const b = await readJson(req, 300_000);
+        const unitId = String(b.unitId ?? '');
+        const unit = studioTree(db).find((u) => u.id === unitId);
+        if (!unit) throw new ApiError(404, 'Bo‘lim topilmadi');
+        const text = String(b.text ?? '').trim();
+        if (text.length < 20) throw new ApiError(400, 'Matn juda qisqa');
+        if (ai.provider === 'none') throw new ApiError(503, 'AI yordamchi ulanmagan: matn ajratib olindi, uni darsga qo‘lda kiriting (Tahrirlash).');
+        useGlobalAi(db, COACH_GLOBAL_DAILY); // umumiy AI chegarasi (xarajat nazorati)
+        const media = b.media && typeof b.media === 'object' ? b.media as { kind: 'video' | 'audio'; url: string } : null;
+        const drafts = await aiDraftLessons(ai, text, { level: unit.level, unitTitle: unit.data.titleUz, note: typeof b.note === 'string' ? b.note : undefined }, () => '');
+        const created = drafts.map((d) => {
+          const lesson = media && /^\/media\/[\w.-]+$/.test(media.url) ? { ...d.lesson, media: [{ kind: media.kind === 'audio' ? 'audio' as const : 'video' as const, url: media.url, transcript: text.slice(0, 20_000) }] } : d.lesson;
+          const r = createLesson(db, unitId, lesson, by);
+          return { id: r.id, title: lesson.titleUz, errors: r.errors };
+        });
+        return send(res, 200, { created });
+      }
+      if (req.method === 'GET' && p[0] === 'history' && p[1]) return send(res, 200, { history: history(db, p[1]) });
+      const b = req.method === 'GET' ? {} : await readJson(req, 262_144);
+      if (req.method === 'POST' && p[0] === 'unit' && !p[1]) return send(res, 200, createUnit(db, String(b.level ?? ''), (b.data ?? {}) as { titleUz?: string }, by));
+      if (req.method === 'PUT' && p[0] === 'unit' && p[1]) { saveUnit(db, p[1], (b.data ?? {}) as { titleUz?: string }, by); return send(res, 200, { ok: true }); }
+      if (req.method === 'POST' && p[0] === 'lesson' && !p[1]) return send(res, 200, createLesson(db, String(b.unitId ?? ''), b.data, by));
+      if (req.method === 'PUT' && p[0] === 'lesson' && p[1]) return send(res, 200, saveLesson(db, p[1], b.data, by));
+      if (req.method === 'POST' && p[1] && ['publish', 'archive', 'restore'].includes(p[2] ?? '')) {
+        ({ publish, archive, restore } as const)[p[2] as 'publish' | 'archive' | 'restore'](db, p[1], by);
+        return send(res, 200, { ok: true });
+      }
+      if (req.method === 'POST' && p[0] === 'lesson' && p[1] && p[2] === 'voice') {
+        const el = elevenLabsFromEnv();
+        if (!el) throw new ApiError(503, 'Ovozlashtirish uchun ElevenLabs kaliti sozlanmagan');
+        // Kabinet uchun alohida kunlik chegara (belgi), umumiy AI xarajatlar jurnaliga yoziladi
+        const day = `studio-voice:${new Date().toISOString().slice(0, 10)}`;
+        const used = (db.prepare('SELECT calls FROM ai_global_usage WHERE day = ?').get(day) as { calls: number } | undefined)?.calls ?? 0;
+        const left = Math.max(0, STUDIO_VOICE_DAILY_CHARS - used);
+        const voice = String(b.voice ?? 'us') === 'uk' ? 'y1LQSw6x4O5I1qZEI77j' : 'WZlYpi1yf6zJhNWXih74'; // Sarah (UK) / Hope (US) — egasi tanlagan ovozlar
+        const r = await voiceLesson(db, p[1], by, async (text) => {
+          const audio = await elSynthesize(el, { text, voiceId: voice, modelId: 'eleven_v4_turbo', outputFormat: 'mp3_22050_32' });
+          mkdir(MEDIA_DIR, { recursive: true });
+          const file = `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.mp3`;
+          writeFile(`${MEDIA_DIR}/${file}`, audio);
+          return `/media/${file}`;
+        }, left);
+        if (r.chars) {
+          db.prepare('INSERT INTO ai_global_usage (day, calls) VALUES (?, ?) ON CONFLICT(day) DO UPDATE SET calls = calls + excluded.calls').run(day, r.chars);
+          recordAiCost(db, { playerId: me.id, feature: 'studio_voice', provider: 'elevenlabs', model: 'eleven_v4_turbo', units: r.chars, unitKind: 'chars', costUsd: r.chars * 0.5 * 0.00022, estimated: true });
+        }
+        return send(res, 200, r);
+      }
+      if (req.method === 'POST' && p[0] === 'reorder') { reorder(db, (b.ids ?? []) as string[], by); return send(res, 200, { ok: true }); }
+      return send(res, 404, { error: 'Topilmadi' });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
+      const b = await readJson(req, 16_384);
+      const g = gradeMock(b.kind, b.testId, b.answers);
+      // Kirgan o'quvchiga XP'ni server o'zi beradi (natijani o'zi hisobladi); bir urinish — bir marta
+      const tk = String(req.headers['x-token'] ?? '');
+      let xp = 0;
+      if (tk && /^[\w:.-]{6,60}$/.test(String(b.attemptId ?? ''))) {
+        try { const p = byToken(db, tk); xp = awardXp(db, p.id, `mock:${String(b.testId)}:${String(b.attemptId)}`, 'mock', g.correct * 5 + (g.correct / Math.max(1, g.total) >= 0.8 ? 20 : 0)); } catch { /* mehmon */ }
+      }
+      return send(res, 200, { ...g, xp });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/xp') {
+      const b = await readJson(req, 16_384);
+      return send(res, 200, submitXp(db, String(req.headers['x-token'] ?? ''), b.events));
+    }
     if (url.pathname === '/api/progress') {
       const token = String(req.headers['x-token'] ?? '');
       if (req.method === 'GET') return send(res, 200, getProgress(db, token));
@@ -117,6 +230,7 @@ createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, sync(db, String(b.token ?? ''), Number(b.xp), Number(b.streak)));
     }
+    if (req.method === 'GET' && url.pathname === '/api/league') return send(res, 200, leagueView(db, byToken(db, String(req.headers['x-token'] ?? '')).id));
     if (req.method === 'GET' && url.pathname === '/api/leaderboard') {
       const period = url.searchParams.get('period') === 'all' ? 'all' : 'week';
       const token = req.headers['x-token'];
@@ -135,7 +249,7 @@ createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, submitDuel(db, String(b.token ?? ''), dm[1], Number(b.score), Number(b.correct), Number(b.ms)));
     }
-    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none', provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0 });
+    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, configured: ai.provider !== 'none' });
     if (req.method === 'POST' && url.pathname === '/api/ai/coach') {
       if (ai.provider === 'none') throw new AiError(503, 'AI ustoz hali ulanmagan');
       const b = await readJson(req, 16_384);
@@ -157,21 +271,31 @@ createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname.startsWith('/api/ai/')) {
       if (ai.provider === 'none') throw new AiError(503, 'AI yoqilmagan');
       const b = await readJson(req, 16_384);
-      useAi(db, String(b.token ?? '')); // token va kunlik limit
+      const token = String(b.token ?? '');
+      const now = Date.now();
       if (url.pathname === '/api/ai/followup') {
-        const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
-        if (lv === 0) return send(res, 200, { question: await followUp(ai, String(b.question ?? ''), String(b.answer ?? '')), reaction: null });
-        return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3));
+        const player = byToken(db, token);
+        useGlobalAi(db, COACH_GLOBAL_DAILY, now);   // platforma kunlik chegarasi (belgilanmagan bo'lsa — yopiq)
+        useAi(db, token, now);                      // o'quvchining kunlik limiti
+        try {
+          const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
+          if (lv === 0) return send(res, 200, { question: await followUp(ai, String(b.question ?? ''), String(b.answer ?? '')), reaction: null });
+          return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3));
+        } catch (e) { refundAi(db, player.id, '', now); refundGlobalAi(db, now); throw e; }
       }
-      if (url.pathname === '/api/ai/speaking') {
-        const turns = Array.isArray(b.turns) ? b.turns.slice(0, 12).map((t) => ({ q: String((t as { q?: unknown }).q ?? ''), text: String((t as { text?: unknown }).text ?? '') })) : [];
-        if (!turns.some((t) => t.text.trim().length > 10)) throw new ApiError(400, 'Baholash uchun javoblar yetarli emas');
-        return send(res, 200, await evaluateSpeaking(ai, turns));
-      }
-      if (url.pathname === '/api/ai/writing') {
-        const text = String(b.text ?? '');
-        if (text.trim().split(/\s+/).length < 30) throw new ApiError(400, 'Matn juda qisqa (kamida 30 so‘z)');
-        return send(res, 200, await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? ''), text));
+      if (url.pathname === '/api/ai/speaking' || url.pathname === '/api/ai/writing') {
+        const kind = url.pathname.endsWith('writing') ? 'writing' : 'speaking';
+        // Kiritishni pul sarflashdan OLDIN tekshiramiz
+        const turns = Array.isArray(b.turns) ? b.turns.slice(0, 12).map((t) => ({ q: String((t as { q?: unknown }).q ?? '').slice(0, 500), text: String((t as { text?: unknown }).text ?? '').slice(0, 3000) })) : [];
+        const text = String(b.text ?? '').slice(0, 8000);
+        if (kind === 'speaking' && !turns.some((t) => t.text.trim().length > 10)) throw new ApiError(400, 'Baholash uchun javoblar yetarli emas');
+        if (kind === 'writing' && text.trim().split(/\s+/).length < 30) throw new ApiError(400, 'Matn juda qisqa (kamida 30 so‘z)');
+        const q = useAssessment(db, token, kind, now);  // server obunasi + oylik kvota (EXAM 10, ALL 20)
+        try { useGlobalAi(db, COACH_GLOBAL_DAILY, now); } catch (e) { refundAssessment(db, q.playerId, kind, now); throw e; }
+        try {
+          const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text);
+          return send(res, 200, { ...r, quota: { used: q.used, limit: q.limit } });
+        } catch (e) { refundAssessment(db, q.playerId, kind, now); refundGlobalAi(db, now); throw e; }
       }
       return send(res, 404, { error: 'Topilmadi' });
     }
@@ -204,7 +328,7 @@ createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
       return send(res, 200, { enabled: !!hapi, demo: DEMO, periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
-    if (req.method === 'GET' && url.pathname === '/api/me') return send(res, 200, entitlements(db, String(req.headers['x-token'] ?? '')));
+    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid) }); }
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {
       if (!hapi) throw new ApiError(503, 'To‘lov hali ulanmagan');
       const b = await readJson(req);
@@ -228,11 +352,34 @@ createServer(async (req, res) => {
       try { applyResult(db, p.id, paid ? 'paid' : 'cancel', { paidAmount: paid ? (Number.isFinite(amt) ? amt : -1) : undefined, reason: f.reason }); } catch (e) { console.error(e); return send(res, 500, { error: 'retry' }); }
       return send(res, 200, { result: 'ok' });
     }
+    // Admin akkaunti (rol 'admin') ham metodist rolini bera oladi
+    if (req.method === 'GET' && url.pathname === '/api/staff') { requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']); return send(res, 200, { staff: staffList(db) }); }
+    if (req.method === 'POST' && url.pathname === '/api/staff/role') {
+      requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']);
+      const b = await readJson(req);
+      return send(res, 200, setRole(db, String(b.nickname ?? ''), b.role ? 'methodologist' : null));
+    }
     if (url.pathname.startsWith('/api/admin/')) {
       if (!ADMIN_TOKEN || String(req.headers['x-admin'] ?? '') !== ADMIN_TOKEN) throw new ApiError(403, 'Taqiqlangan');
       if (req.method === 'GET' && url.pathname === '/api/admin/payments') return send(res, 200, { payments: recent(db, 100) });
       if (req.method === 'GET' && url.pathname === '/api/admin/ai-costs') return send(res, 200, aiCostSummary(db, Number(url.searchParams.get('days') ?? 30) || 30));
+      if (req.method === 'POST' && url.pathname === '/api/admin/role') { const b = await readJson(req); return send(res, 200, setRole(db, String(b.nickname ?? ''), b.role === null || b.role === '' ? null : String(b.role) as 'admin' | 'methodologist')); }
       if (req.method === 'POST' && url.pathname === '/api/admin/grant') { const b = await readJson(req); return send(res, 200, { until: grant(db, String(b.nickname ?? ''), String(b.track ?? ''), Number(b.days)) }); }
+    }
+    if (req.method === 'GET' && url.pathname.startsWith('/media/')) {
+      const file = url.pathname.slice('/media/'.length);
+      if (!/^[\w.-]+$/.test(file) || !existsSync(`${MEDIA_DIR}/${file}`)) return send(res, 404, { error: 'Topilmadi' });
+      const full = `${MEDIA_DIR}/${file}`; const size = statSync(full).size;
+      const type = ({ mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4a: 'audio/mp4', mp3: 'audio/mpeg' } as Record<string, string>)[file.split('.').pop()!] ?? 'application/octet-stream';
+      const m = String(req.headers.range ?? '').match(/bytes=(\d+)-(\d*)/);
+      if (m) {
+        const start = Number(m[1]); const end = m[2] ? Math.min(Number(m[2]), size - 1) : size - 1;
+        if (start >= size) { res.writeHead(416, { 'content-range': `bytes */${size}` }); return res.end(); }
+        res.writeHead(206, { 'content-type': type, 'content-range': `bytes ${start}-${end}/${size}`, 'accept-ranges': 'bytes', 'content-length': end - start + 1, 'cache-control': 'public, max-age=86400' });
+        return createReadStream(full, { start, end }).pipe(res);
+      }
+      res.writeHead(200, { 'content-type': type, 'content-length': size, 'accept-ranges': 'bytes', 'cache-control': 'public, max-age=86400' });
+      return createReadStream(full).pipe(res);
     }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true });
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;

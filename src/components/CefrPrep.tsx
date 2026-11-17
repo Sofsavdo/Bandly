@@ -30,8 +30,10 @@ export function CefrPrep() {
           ))}
         </div>
         <p style={{ marginTop: 10 }}><b>Ball chegaralari ({F.scoring.value.scale}):</b> {F.scoring.value.cutoffs.map((c) => `${c.level}: ${c.range}`).join(' · ')}</p>
+        <details className="fold"><summary className="muted" style={{ fontSize: 13 }}>Manbalar va izohlar</summary>
         <ul className="muted" style={{ fontSize: 13 }}>{F.notesUz.map((n) => <li key={n}>{n}</li>)}</ul>
         <p className="muted" style={{ fontSize: 13 }}>Manbalar: {F.sources.map((x, i) => <span key={x.url}>{i ? ' · ' : ''}<a href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>
+        </details>
       </div>
 
       <div className="card">
@@ -47,9 +49,10 @@ export function CefrPrep() {
 
       <div className="card">
         <h3>Tayyorgarlik</h3>
+        <p className="muted" style={{ fontSize: 13 }}>Rasmiy hajm va vaqt. Natija — to‘g‘ri javoblar soni (Multilevel balli emas).</p>
         <div className="stack">
-          <a className="path-step" href="#/mocks/reading"><b><BookOpen size={16} /> O‘qish</b><span>Bepul Reading mocklar (IELTS formatida, umumiy o‘qish ko‘nikmasi uchun) va B1–C1 darslar</span></a>
-          <a className="path-step" href="#/mocks/listening"><b><Headphones size={16} /> Tinglab tushunish</b><span>Bepul Listening mocklar va ko‘nikmalar tekshiruvi</span></a>
+          <a className="path-step" href="#/mocks/reading/cefr-reading-1"><b><BookOpen size={16} /> O‘qish — mashq testi 1</b><span>35 savol · 60 daqiqa · B1→C1 matnlar · bepul</span></a>
+          <a className="path-step" href="#/mocks/listening/cefr-listening-1"><b><Headphones size={16} /> Tinglab tushunish — mashq testi 1</b><span>35 savol · 45 daqiqa · 5 qism, turli talaffuzlar · bepul</span></a>
           <a className="path-step" href="#/coach"><b><Mic size={16} /> Gapirish</b><span>AI ustoz bilan suhbat va “Jim qolma!” — ravon gapirish mashqi</span></a>
         </div>
         <h3 style={{ marginTop: 14 }}><PenLine size={16} /> Yozma ish mashqi (rasmiy so‘z hajmida)</h3>

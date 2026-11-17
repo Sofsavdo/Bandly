@@ -1,5 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
-import { randomBytes, randomInt } from 'node:crypto';
+import { createHash, randomBytes, randomInt } from 'node:crypto';
+import { ensureXpTables } from './xp';
+import { ensureLeagueTables } from './league';
 import { vocab } from '../src/content/vocab';
 
 export const MAX_DELTA_PER_SYNC = 400; // bitta so'rovda qabul qilinadigan eng ko'p XP (aldovga qarshi)
@@ -92,8 +94,16 @@ export function createDb(path = ':memory:'): DatabaseSync {
   // Telegram orqali kirish (OD-05, 2026-11-15): qo'shimcha ustun, mavjud ma'lumotga tegmaydi
   const cols = (db.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map((c) => c.name);
   if (!cols.includes('tg_id')) db.exec('ALTER TABLE players ADD COLUMN tg_id INTEGER');
+  // Rollar (2026-11-17): admin va metodist kabineti uchun
+  if (!cols.includes('role')) db.exec('ALTER TABLE players ADD COLUMN role TEXT');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_tg ON players (tg_id) WHERE tg_id IS NOT NULL');
   // Hisob progressi (2026-11-17): o'quvchining qurilmadagi ma'lumotlari hisobga saqlanadi — boshqa qurilmada kirsa ham ko'rinadi
+  // Sessiyalar (2026-11-17): har qurilma — alohida token; bazada faqat SHA-256 xeshi saqlanadi. Eski players.token
+  // vaqtincha qoladi (orqaga qaytish xavfsiz bo'lishi uchun) va birinchi ishlatilganda sessiyaga ko'chiriladi.
+  db.exec('CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id INTEGER NOT NULL REFERENCES players(id), token_hash TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, last_seen INTEGER NOT NULL, revoked_at INTEGER)');
+  db.exec('CREATE INDEX IF NOT EXISTS sessions_player ON sessions (player_id)');
+  ensureXpTables(db);
+  ensureLeagueTables(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;
 }
@@ -133,21 +143,21 @@ export function putProgress(db: DatabaseSync, token: string, data: unknown, base
  *  3) aks holda yangi hisob ochiladi, laqab Telegram ismidan (band bo'lsa raqam qo'shiladi).
  */
 export function loginTelegram(db: DatabaseSync, tgId: number, nick: string, linkToken?: string, now = Date.now()): { token: string; nickname: string; linked: boolean; created: boolean } {
-  const found = db.prepare('SELECT token, nickname FROM players WHERE tg_id = ?').get(tgId) as { token: string; nickname: string } | undefined;
-  if (found) return { ...found, linked: false, created: false };
+  const found = db.prepare('SELECT id, nickname FROM players WHERE tg_id = ?').get(tgId) as { id: number; nickname: string } | undefined;
+  if (found) return { token: newSession(db, found.id, now), nickname: found.nickname, linked: false, created: false };
   if (linkToken) {
-    const legacy = db.prepare('SELECT id, token, nickname FROM players WHERE token = ? AND tg_id IS NULL').get(linkToken) as { id: number; token: string; nickname: string } | undefined;
+    const lid = playerIdOf(db, linkToken, now);
+    const legacy = lid === null ? undefined : db.prepare('SELECT id, nickname FROM players WHERE id = ? AND tg_id IS NULL').get(lid) as { id: number; nickname: string } | undefined;
     if (legacy) {
       db.prepare('UPDATE players SET tg_id = ?, updated_at = ? WHERE id = ?').run(tgId, now, legacy.id);
-      return { token: legacy.token, nickname: legacy.nickname, linked: true, created: false };
+      return { token: newSession(db, legacy.id, now), nickname: legacy.nickname, linked: true, created: false };
     }
   }
-  const token = randomBytes(24).toString('hex');
   for (let i = 0; i < 50; i++) {
     const n = i === 0 ? nick : `${nick.slice(0, 16)}${randomInt(10, 10000)}`;
     try {
-      db.prepare('INSERT INTO players (token, nickname, tg_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?)').run(token, n, tgId, now, now);
-      return { token, nickname: n, linked: false, created: true };
+      const id = Number(db.prepare('INSERT INTO players (token, nickname, tg_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?)').run(placeholder(), n, tgId, now, now).lastInsertRowid);
+      return { token: newSession(db, id, now), nickname: n, linked: false, created: true };
     } catch { /* laqab band — boshqasini sinaymiz */ }
   }
   throw new ApiError(409, 'Hisob ochib bo‘lmadi, qayta urinib ko‘ring');
@@ -162,36 +172,89 @@ const NICK_RE = /^[\p{L}\p{N}_.\- ]{2,20}$/u;
 export function join(db: DatabaseSync, nickname: string, now = Date.now()): { token: string; nickname: string } {
   const nick = (nickname ?? '').trim().replace(/\s+/g, ' ');
   if (!NICK_RE.test(nick)) throw new ApiError(400, 'Laqab 2–20 belgi: harf, raqam, bo‘shliq, _ . -');
-  const token = randomBytes(24).toString('hex');
+  let id: number;
   try {
-    db.prepare('INSERT INTO players (token, nickname, created_at, updated_at) VALUES (?, ?, ?, ?)').run(token, nick, now, now);
+    id = Number(db.prepare('INSERT INTO players (token, nickname, created_at, updated_at) VALUES (?, ?, ?, ?)').run(placeholder(), nick, now, now).lastInsertRowid);
   } catch {
     throw new ApiError(409, 'Bu laqab band');
   }
-  return { token, nickname: nick };
+  return { token: newSession(db, id, now), nickname: nick };
 }
 
 export interface Player { id: number; nickname: string; xp: number; streak: number }
 
+export const hashToken = (t: string): string => createHash('sha256').update(t).digest('hex');
+/** players.token ustuniga yoziladigan, hech qachon mijozga berilmaydigan qiymat (ustun NOT NULL UNIQUE). */
+const placeholder = (): string => `s:${randomBytes(18).toString('hex')}`;
+/** Yangi qurilma sessiyasi: xom token faqat mijozga qaytariladi, bazada xeshi. */
+export function newSession(db: DatabaseSync, playerId: number, now = Date.now()): string {
+  const token = randomBytes(24).toString('hex');
+  db.prepare('INSERT INTO sessions (player_id, token_hash, created_at, last_seen) VALUES (?, ?, ?, ?)').run(playerId, hashToken(token), now, now);
+  return token;
+}
+const TOKEN_RE = /^[a-f0-9]{48}$/;
+/** Token egasini topadi: avval sessiyalar (xesh), keyin eski players.token (topilsa — sessiyaga ko'chiriladi). */
+export function playerIdOf(db: DatabaseSync, token: string | undefined, now = Date.now()): number | null {
+  if (!token || !TOKEN_RE.test(token)) return null;
+  const h = hashToken(token);
+  const s = db.prepare('SELECT id, player_id, revoked_at, last_seen FROM sessions WHERE token_hash = ?').get(h) as { id: number; player_id: number; revoked_at: number | null; last_seen: number } | undefined;
+  if (s) {
+    if (s.revoked_at) return null;
+    if (now - s.last_seen > 3_600_000) db.prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').run(now, s.id);
+    return s.player_id;
+  }
+  const legacy = db.prepare('SELECT id FROM players WHERE token = ?').get(token) as { id: number } | undefined;
+  if (!legacy) return null;
+  db.prepare('INSERT OR IGNORE INTO sessions (player_id, token_hash, created_at, last_seen) VALUES (?, ?, ?, ?)').run(legacy.id, h, now, now);
+  return legacy.id;
+}
 export const byToken = (db: DatabaseSync, token: string): Player => {
-  const p = db.prepare('SELECT id, nickname, xp, streak FROM players WHERE token = ?').get(token ?? '') as Player | undefined;
+  const id = playerIdOf(db, token);
+  const p = id === null ? undefined : db.prepare('SELECT id, nickname, xp, streak FROM players WHERE id = ?').get(id) as Player | undefined;
   if (!p) throw new ApiError(401, 'Noma’lum token');
   return p;
 };
+export type Role = 'admin' | 'methodologist';
+export const ROLES: Role[] = ['admin', 'methodologist'];
+/** Egasi Railway'da ADMIN_NICKNAMES (vergul bilan) kiritgan laqablar avtomatik admin bo'ladi. */
+const adminNicks = (env: NodeJS.ProcessEnv = process.env): string[] => (env.ADMIN_NICKNAMES ?? '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+export function roleOf(db: DatabaseSync, playerId: number, env: NodeJS.ProcessEnv = process.env): Role | null {
+  const r = db.prepare('SELECT role, nickname FROM players WHERE id = ?').get(playerId) as { role: string | null; nickname: string } | undefined;
+  if (!r) return null;
+  if (adminNicks(env).includes(r.nickname.toLowerCase())) return 'admin';
+  return (ROLES as string[]).includes(r.role ?? '') ? (r.role as Role) : null;
+}
+export const staffList = (db: DatabaseSync) => db.prepare("SELECT nickname, role FROM players WHERE role IS NOT NULL ORDER BY role, nickname").all() as { nickname: string; role: Role }[];
+/** Token egasining roli talab qilinadi (admin hamma ruxsatga ega). */
+export function requireRole(db: DatabaseSync, token: string, allowed: Role[]): Player & { role: Role } {
+  const p = byToken(db, token);
+  const role = roleOf(db, p.id);
+  if (!role || (role !== 'admin' && !allowed.includes(role))) throw new ApiError(403, 'Bu bo‘lim uchun ruxsat yo‘q');
+  return { ...p, role };
+}
+/** Laqab bo'yicha rol beradi yoki olib tashlaydi (role = null). */
+export function setRole(db: DatabaseSync, nickname: string, role: Role | null): { nickname: string; role: Role | null } {
+  if (role !== null && !ROLES.includes(role)) throw new ApiError(400, 'Noma’lum rol');
+  const p = db.prepare('SELECT id, nickname FROM players WHERE lower(nickname) = lower(?)').get(nickname) as { id: number; nickname: string } | undefined;
+  if (!p) throw new ApiError(404, 'Foydalanuvchi topilmadi');
+  db.prepare('UPDATE players SET role = ? WHERE id = ?').run(role, p.id);
+  return { nickname: p.nickname, role };
+}
+
+/** Chiqish: shu qurilma sessiyasi bekor qilinadi (eski umumiy token bo'lsa — u ham shu sessiya orqali bekor bo'ladi). */
+export function revokeSession(db: DatabaseSync, token: string, now = Date.now()): void {
+  if (!token || !TOKEN_RE.test(token)) return;
+  playerIdOf(db, token, now); // eski tokenni sessiyaga ko'chiradi
+  db.prepare('UPDATE sessions SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL').run(now, hashToken(token));
+}
 
 /** Mijoz o'zining umumiy XP sini yuboradi; server faqat chegaralangan o'sishni qabul qiladi. */
-export function sync(db: DatabaseSync, token: string, clientXp: number, streak: number, now = Date.now()): { xp: number; accepted: number } {
+export function sync(db: DatabaseSync, token: string, _clientXp: number, streak: number, now = Date.now()): { xp: number; accepted: number } {
+  // XP endi faqat hodisalar orqali (server/xp.ts, POST /api/xp); bu yerda mijozning umumiy XP siga ishonilmaydi.
   const p = byToken(db, token);
-  const claimed = Number.isFinite(clientXp) ? Math.max(0, Math.floor(clientXp)) : 0;
-  let delta = Math.max(0, claimed - p.xp);
-  const hourAgo = now - 3_600_000;
-  const lastHour = (db.prepare('SELECT COALESCE(SUM(delta),0) AS s FROM xp_log WHERE player_id = ? AND ts > ?').get(p.id, hourAgo) as { s: number }).s;
-  delta = Math.min(delta, MAX_DELTA_PER_SYNC, Math.max(0, MAX_DELTA_PER_HOUR - lastHour));
-  const xp = p.xp + delta;
   const st = Number.isFinite(streak) ? Math.min(3650, Math.max(0, Math.floor(streak))) : p.streak;
-  db.prepare('UPDATE players SET xp = ?, streak = ?, updated_at = ? WHERE id = ?').run(xp, st, now, p.id);
-  if (delta > 0) db.prepare('INSERT INTO xp_log (player_id, ts, delta) VALUES (?, ?, ?)').run(p.id, now, delta);
-  return { xp, accepted: delta };
+  db.prepare('UPDATE players SET streak = ?, updated_at = ? WHERE id = ?').run(st, now, p.id);
+  return { xp: p.xp, accepted: 0 };
 }
 
 /** Joriy haftaning boshi: dushanba 00:00 UTC */
@@ -206,9 +269,10 @@ export interface Row { rank: number; nickname: string; xp: number; streak: numbe
 export function leaderboard(db: DatabaseSync, period: 'week' | 'all', token: string | undefined, now = Date.now()): { top: Row[]; me: Row | null; since: number | null } {
   const since = period === 'week' ? weekStart(now) : null;
   const rows = (period === 'week'
-    ? db.prepare(`SELECT p.id, p.nickname, p.streak, p.token, SUM(l.delta) AS xp FROM xp_log l JOIN players p ON p.id = l.player_id WHERE l.ts >= ? GROUP BY p.id ORDER BY xp DESC, p.id ASC`).all(since)
-    : db.prepare('SELECT id, nickname, streak, token, xp FROM players WHERE xp > 0 ORDER BY xp DESC, id ASC').all()) as { id: number; nickname: string; streak: number; token: string; xp: number }[];
-  const ranked: Row[] = rows.map((r, i) => ({ rank: i + 1, nickname: r.nickname, xp: r.xp, streak: r.streak, me: !!token && r.token === token }));
+    ? db.prepare(`SELECT p.id, p.nickname, p.streak, SUM(l.delta) AS xp FROM xp_log l JOIN players p ON p.id = l.player_id WHERE l.ts >= ? GROUP BY p.id ORDER BY xp DESC, p.id ASC`).all(since)
+    : db.prepare('SELECT id, nickname, streak, xp FROM players WHERE xp > 0 ORDER BY xp DESC, id ASC').all()) as { id: number; nickname: string; streak: number; xp: number }[];
+  const meId = playerIdOf(db, token, now);
+  const ranked: Row[] = rows.map((r, i) => ({ rank: i + 1, nickname: r.nickname, xp: r.xp, streak: r.streak, me: meId !== null && r.id === meId }));
   return { top: ranked.slice(0, 20), me: ranked.find((r) => r.me) ?? null, since };
 }
 
@@ -251,12 +315,13 @@ export interface DuelInfo {
 export function getDuel(db: DatabaseSync, code: string, token: string | undefined, now = Date.now()): DuelInfo {
   const d = db.prepare('SELECT code, words, created_at FROM duels WHERE code = ?').get((code ?? '').toUpperCase()) as { code: string; words: string; created_at: number } | undefined;
   if (!d) throw new ApiError(404, 'Duel topilmadi');
-  const rows = db.prepare(`SELECT p.nickname, p.token, dp.score, dp.correct, dp.ms FROM duel_players dp JOIN players p ON p.id = dp.player_id WHERE dp.code = ?
-    ORDER BY (dp.score IS NULL), dp.score DESC, dp.ms ASC, dp.player_id ASC`).all(d.code) as { nickname: string; token: string; score: number | null; correct: number | null; ms: number | null }[];
+  const rows = db.prepare(`SELECT p.id, p.nickname, dp.score, dp.correct, dp.ms FROM duel_players dp JOIN players p ON p.id = dp.player_id WHERE dp.code = ?
+    ORDER BY (dp.score IS NULL), dp.score DESC, dp.ms ASC, dp.player_id ASC`).all(d.code) as { id: number; nickname: string; score: number | null; correct: number | null; ms: number | null }[];
+  const meId = playerIdOf(db, token, now);
   let rank = 0;
   const players = rows.map((r) => ({
     nickname: r.nickname, score: r.score, correct: r.correct, ms: r.ms,
-    me: !!token && r.token === token, rank: r.score === null ? null : ++rank,
+    me: meId !== null && r.id === meId, rank: r.score === null ? null : ++rank,
   }));
   return { code: d.code, words: JSON.parse(d.words) as string[], expired: now - d.created_at > DUEL_TTL, full: rows.length >= DUEL_MAX_PLAYERS, players, iFinished: players.some((p) => p.me && p.score !== null) };
 }
@@ -335,6 +400,10 @@ export function useGlobalVoiceChars(db: DatabaseSync, limit: number, chars: numb
 export function refundAi(db: DatabaseSync, playerId: number, bucket: string, now = Date.now()): void {
   const day = (bucket ? `${bucket}:` : '') + new Date(now).toISOString().slice(0, 10);
   db.prepare('UPDATE ai_usage SET calls = MAX(0, calls - 1) WHERE player_id = ? AND day = ?').run(playerId, day);
+}
+/** Umumiy kunlik AI chegarasidan bitta chaqiruvni qaytaradi (provayder xato berganda). */
+export function refundGlobalAi(db: DatabaseSync, now = Date.now()): void {
+  db.prepare('UPDATE ai_global_usage SET calls = MAX(0, calls - 1) WHERE day = ?').run(new Date(now).toISOString().slice(0, 10));
 }
 export function refundGlobalVoiceChars(db: DatabaseSync, chars: number, now = Date.now()): void {
   db.prepare('UPDATE ai_global_usage SET calls = MAX(0, calls - ?) WHERE day = ?').run(chars, `voice-chars:${new Date(now).toISOString().slice(0, 10)}`);

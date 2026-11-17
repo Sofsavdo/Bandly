@@ -1,12 +1,12 @@
 import { ArrowRight, CheckCircle2, Circle, ClipboardCheck, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
-import { listeningTests } from '../content/listeningTests';
-import { readingTests } from '../content/readingTests';
+import { listeningTests, readingTests } from '../content/mockTests';
 import { levelIndex } from '../lib/levels';
 import { roundHalf } from '../lib/progress';
 import { recordMock } from '../lib/history';
 import { loadResults, type ResultRecord } from '../lib/storage';
 import { useProfile } from '../lib/store';
+import { Illo } from '../components/Illo';
 
 const KEY = 'bandly.fullexam.v1';
 interface State { startedAt: number; listeningId: string; readingId: string; writingDone: boolean }
@@ -25,7 +25,7 @@ export default function FullExam() {
   const results = loadResults();
 
   const start = () => {
-    const s: State = { startedAt: Date.now(), listeningId: nearest(listeningTests, p.level ?? 'B1').id, readingId: nearest(readingTests, p.level ?? 'B1').id, writingDone: false };
+    const s: State = { startedAt: Date.now(), listeningId: (listeningTests.find((t) => t.sections?.length && t.exam !== 'cefr') ?? nearest(listeningTests, p.level ?? 'B1')).id, readingId: (readingTests.find((t) => t.sections?.length && t.exam !== 'cefr') ?? nearest(readingTests, p.level ?? 'B1')).id, writingDone: false };
     saveFull(s); setSt(s);
   };
   const reset = () => { saveFull(null); setSt(null); };
@@ -35,12 +35,13 @@ export default function FullExam() {
       <div className="stage">
         <div className="stage-center">
           <span className="eyebrow"><ClipboardCheck size={15} /> Imtihon simulyatsiyasi</span>
-          <h1 className="say">To‘liq IELTS tartibida bir o‘tirishda</h1>
+          <h1 className="say">IELTS tartibida bir o‘tirishda</h1>
           <p className="lead" style={{ maxWidth: 620 }}>Haqiqiy imtihondagi tartib: <b>Listening → Reading → Writing → Speaking</b>. Har bo‘lim taymer bilan, Listening faqat bir marta eshittiriladi. Oxirida bo‘limlar bo‘yicha taxminiy umumiy band chiqadi.</p>
           <ul className="rules">
             <li>Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.</li>
             <li>Test darajangizga ({p.level ?? 'B1'}) mos tanlanadi.</li>
             <li>Natijalar taxminiy: rasmiy IELTS balli emas.</li>
+            <li>Listening (4 qism, 40 savol) va Reading (3 matn, 40 savol, 60 daqiqa) — <b>to‘liq format</b>. Listening audiosi savollarni o‘qish uchun pauzalarsiz, shuning uchun haqiqiy imtihondagidan qisqaroq.</li>
             <li>Kompyuter yoki planshetda topshirish tavsiya etiladi (haqiqiy kompyuterdagi IELTS ham shunday); telefonda ham ishlaydi.</li>
             <li>Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.</li>
           </ul>
@@ -70,8 +71,8 @@ export default function FullExam() {
 
   return (
     <div>
-      <div className="card">
-        <h2><ClipboardCheck size={22} style={{ verticalAlign: -4 }} /> To‘liq imtihon ({doneN}/4)</h2>
+      <div className="card page-head with-illo t-butter">
+        <h2><ClipboardCheck size={22} style={{ verticalAlign: -4 }} /> To‘liq imtihon ({doneN}/4)</h2><Illo kind="clock" size={124} />
         <div className="bar" style={{ margin: '10px 0' }}><i style={{ width: `${(doneN / 4) * 100}%` }} /></div>
         <div className="exam-steps">
           {parts.map((x, i) => (

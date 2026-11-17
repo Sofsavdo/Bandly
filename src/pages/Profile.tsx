@@ -1,4 +1,4 @@
-import { Flame, Lock, LogOut, Trophy } from 'lucide-react';
+import { Lock, LogOut, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { authConfig, getAccount, onAccountChange, restoreAccount } from '../lib/account';
 import { JoinForm } from '../components/JoinForm';
@@ -13,8 +13,9 @@ import { setDailyGoal, useProfile } from '../lib/store';
 import { PersonaPicker } from '../components/PersonaPicker';
 import { vocab } from '../content/vocab';
 import { isMastered } from '../lib/srs';
-import { Mascot } from '../components/Mascot';
 import { ProgressCard } from '../components/ProgressCard';
+import { PRing } from '../components/PRing';
+import { WeekBars } from '../components/WeekBars';
 
 export default function Profile() {
   const p = useProfile();
@@ -31,23 +32,21 @@ export default function Profile() {
   const mastered = vocab.filter((w) => isMastered(p.srs[w.id])).length;
   return (
     <div>
-      <div className="card hero">
-        <Mascot mood={p.streak >= 3 ? 'happy' : 'idle'} size={96} />
-        <div>
-          <h2 style={{ margin: 0 }}>{lp.level}-daraja</h2>
-          <div className="bar" style={{ margin: '8px 0' }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
-          <div className="evidence">{lp.into} / {lp.span} XP · jami {p.xp} XP</div>
-          <div className="row" style={{ marginTop: 8 }}>
-            <span className="pill"><Flame size={14} color="#ff7a1a" fill="#ff7a1a" /> Seriya: {displayStreak(p, dayKey())} kun{p.freezes > 0 ? ` · ❄ ${p.freezes} muzlatish` : ''}</span>
-            <span className="pill">Eng uzun: {p.longestStreak}</span>
-            {p.level && <span className="pill">Daraja: {p.level} · {LEVEL_INFO[p.level].name}</span>}
-            <span className="pill">So‘zlar: {mastered}/{vocab.length}</span>
-            <span className="pill">O‘yinlar: {p.gamesPlayed}</span>
-          </div>
-          {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice" style={{ marginTop: 8 }}>{p.brokenStreak?.value} kunlik seriyangiz uzildi. Uzilgan kundan keyin 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, seriya tiklanadi (30 kunda bir marta).</p>}
-          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>Seriya kunlik XP maqsadiga yetgan kunlari o‘sadi. Har 7 kunlik seriya uchun 1 ta muzlatish beriladi (ko‘pi bilan 2 ta): o‘tkazib yuborilgan kun seriyani uzmaydi.</p>
-        </div>
+      <section className="card prof-head">
+        <span className="avatar" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
+        <h2>{acc?.nickname ?? 'Mehmon'}</h2>
+        <p className="muted">{p.level ? `${p.level} · ${LEVEL_INFO[p.level].name}` : 'Daraja aniqlanmagan'} · {lp.level}-bosqich · jami {p.xp} XP</p>
+        <div className="bar" style={{ width: '100%', maxWidth: 420 }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
+        <small className="muted">{lp.into} / {lp.span} XP keyingi bosqichgacha</small>
+      </section>
+      <div className="ptiles">
+        <div className="ptile"><PRing value={displayStreak(p, dayKey())} max={Math.max(7, displayStreak(p, dayKey()))} color="var(--orange)" label="Seriya"><b>{displayStreak(p, dayKey())}</b></PRing><div><b>Seriya</b><small>eng uzun {p.longestStreak}{p.freezes > 0 ? ` · ❄ ${p.freezes}` : ''}</small></div></div>
+        <div className="ptile"><PRing value={mastered} max={vocab.length} color="var(--teal)" label="So‘zlar"><b>{mastered}</b></PRing><div><b>So‘zlar</b><small>/ {vocab.length} yodlangan</small></div></div>
+        <div className="ptile"><PRing value={earned.length} max={ACHIEVEMENTS.length} color="var(--yellow)" label="Yutuqlar"><b>{earned.length}</b></PRing><div><b>Yutuqlar</b><small>/ {ACHIEVEMENTS.length}</small></div></div>
+        <div className="ptile"><PRing value={p.gamesPlayed} max={Math.max(10, p.gamesPlayed)} color="var(--brand)" label="O‘yinlar"><b>{p.gamesPlayed}</b></PRing><div><b>O‘yinlar</b><small>o‘ynalgan</small></div></div>
       </div>
+      {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice">{p.brokenStreak?.value} kunlik seriya uzildi. 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, tiklanadi (30 kunda bir marta).</p>}
+      <section className="card"><h3 style={{ margin: 0 }}>Bu hafta</h3><WeekBars activity={p.activity} /></section>
 
       <ProgressCard />
 

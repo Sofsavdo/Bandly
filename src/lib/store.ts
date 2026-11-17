@@ -69,8 +69,27 @@ export const useToasts = (): Toast[] =>
   );
 
 // ---- Amallar ----
-export function addXp(amount: number): void {
+/** XP hodisasining manbasi: server har manba uchun kunlik chegara qo'yadi (server/xp.ts). */
+const sourceFromHash = (): string => {
+  const h = typeof location === 'undefined' ? '' : location.hash;
+  const m: [RegExp, string][] = [[/^#\/learn/, 'lesson'], [/^#\/boss/, 'boss'], [/^#\/(games|duel|challenge)/, 'game'], [/^#\/(mocks|exam|shadow)/, 'exam'], [/^#\/grammar/, 'grammar'], [/^#\/(practice|homework)/, 'practice'], [/^#\/mistakes/, 'mistakes'], [/^#\/placement/, 'placement'], [/^#\/?$/, 'quest']];
+  return m.find(([r]) => r.test(h))?.[1] ?? 'other';
+};
+const XPQ = 'bandly.xpq.v1';
+export function takeXpQueue(): { id: string; source: string; amount: number }[] { try { return JSON.parse(localStorage.getItem(XPQ) ?? '[]'); } catch { return []; } }
+export function dropXpQueue(ids: string[]): void { try { localStorage.setItem(XPQ, JSON.stringify(takeXpQueue().filter((e) => !ids.includes(e.id)))); } catch { /* */ } }
+function queueXp(amount: number, source: string): void {
+  try {
+    const q = takeXpQueue();
+    const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(XPQ, JSON.stringify([...q, { id, source, amount: Math.round(amount) }].slice(-300)));
+  } catch { /* */ }
+}
+
+/** source: 'server' — XP'ni server o'zi bergan (masalan Mock Arena), navbatga qo'yilmaydi. */
+export function addXp(amount: number, source?: string): void {
   if (amount <= 0) return;
+  if (source !== 'server') queueXp(amount, source ?? sourceFromHash());
   const r = applyXp(state, amount, dayKey());
   const day = dayKey();
   const act = { ...r.profile.activity, [day]: (r.profile.activity[day] ?? 0) + Math.round(amount) };

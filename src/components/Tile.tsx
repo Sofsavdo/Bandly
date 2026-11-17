@@ -18,6 +18,6 @@ export function Tile({ href, icon: Icon, tone, title, text, badge, big }: Props)
       {href && <span className="go"><ArrowRight size={18} /></span>}
     </>
   );
-  const cls = `tile${big ? ' big-tile' : ''}`;
+  const cls = `tile tone-${tone}${big ? ' big-tile' : ''}`;
   return href ? <a className={cls} href={href}>{inner}</a> : <div className={cls}>{inner}</div>;
 }

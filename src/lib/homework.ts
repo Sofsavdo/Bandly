@@ -1,5 +1,4 @@
-import { listeningTests } from '../content/listeningTests';
-import { readingTests } from '../content/readingTests';
+import { listeningTests, readingTests } from '../content/mockTests';
 import { easyPart2Cards } from '../content/speakingEasy';
 import { part2Cards } from '../content/speaking';
 import { writingTopics } from '../content/writingGuide';
@@ -24,7 +23,8 @@ function pick<T extends { level: Cefr }>(list: T[], level: Cefr | null, di: numb
 /** Har kuni bir xil (deterministik) 4 ta vazifa: Listening, Reading, Writing, Speaking — darajaga mos. */
 export function dailyTasks(level: Cefr | null, results: ResultRecord[], now = Date.now()): HwTask[] {
   const di = dayIndex(now);
-  const L = pick(listeningTests, level, di), R = pick(readingTests, level, di);
+  // Kundalik vazifa — qisqa mini-testlar (to'liq formatli va CEFR uslubidagi uzun testlar Mock Arena'da alohida)
+  const L = pick(listeningTests.filter((t) => !t.sections?.length), level, di), R = pick(readingTests.filter((t) => !t.sections?.length), level, di);
   const W = writingTopics[di % writingTopics.length];
   const easy = level === 'A1' || level === 'A2';
   const S = easy ? easyPart2Cards[di % easyPart2Cards.length] : part2Cards[di % part2Cards.length];

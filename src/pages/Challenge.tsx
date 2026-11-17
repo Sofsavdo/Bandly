@@ -6,6 +6,7 @@ import { findIssues } from '../lib/grammarCheck';
 import { addMistake } from '../lib/mistakes';
 import { renderCard, shareCard } from '../lib/shareCard';
 import { addXp, useProfile } from '../lib/store';
+import { Illo } from '../components/Illo';
 
 type Phase = 'setup' | 'playing' | 'over';
 
@@ -73,10 +74,10 @@ export default function Challenge() {
 
   return (
     <div>
-      <section className="card">
-        <h2>Jim qolma!</h2>
-        <p>Mavzu bo‘yicha {ROUND_MS / 1000} soniya ingliz tilida gapiring. Jim qolsangiz, shar shishib boradi — chegaraga yetganda yorilib ketadi. To‘xtamay gapiring!</p>
-        <p className="muted" style={{ fontSize: 13 }}>Nutq brauzeringizda aniqlanadi; uning o‘z kechikishi bor, shuning uchun qiyin darajalar sinov bosqichida. Bosim yoqmasa — “Bosimsiz” rejim.</p>
+      <section className="card page-head with-illo t-peach">
+        <h2>Jim qolma!</h2><Illo kind="mic" size={124} />
+        <p>Mavzu bo‘yicha {ROUND_MS / 1000} soniya to‘xtamay gapiring — jim qolsangiz, shar yoriladi.</p>
+        <p className="muted" style={{ fontSize: 13 }}>Nutq brauzerda aniqlanadi — ozgina kechikish bo‘lishi mumkin.</p>
         {!stt && <p className="bad">Bu brauzer nutqni tanishni qo‘llamaydi (Chrome yoki Edge tavsiya etiladi).</p>}
       </section>
 

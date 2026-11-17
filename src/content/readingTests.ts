@@ -4,6 +4,8 @@ import { reading3 } from './reading3';
 import { reading4 } from './reading4';
 import { reading5 } from './reading5';
 import { reading6 } from './reading6';
+import { readingFull1 } from './readingFull1';
+import { cefrReading1 } from './cefrReading1';
 import type { ReadingTest } from './types';
 
-export const readingTests: ReadingTest[] = [reading5, reading1, reading6, reading3, reading4, reading2];
+export const readingTests: ReadingTest[] = [reading5, reading1, reading6, reading3, reading4, reading2, readingFull1, cefrReading1];

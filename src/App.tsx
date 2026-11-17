@@ -22,8 +22,7 @@ import DuelHub, { DuelRoom } from './pages/Duel';
 import Reading from './pages/Reading';
 import Listening from './pages/Listening';
 import TestList from './pages/TestList';
-import { listeningTests } from './content/listeningTests';
-import { readingTests } from './content/readingTests';
+import { listeningTests, readingTests } from './content/mockTests';
 import Grammar from './pages/Grammar';
 import Writing from './pages/Writing';
 import Speaking from './pages/Speaking';
@@ -39,10 +38,12 @@ import Coach from './pages/Coach';
 import Mistakes from './pages/Mistakes';
 import Challenge from './pages/Challenge';
 import Boss from './pages/Boss';
+import Studio from './pages/Studio';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
   '#/welcome': () => <Home preview />,
+  '#/studio': () => <Studio />,
   '#/learn': () => <Learn />,
   '#/skills': () => <SkillCheck />,
   '#/coach': () => <Coach />,
@@ -80,8 +81,10 @@ function testRoute(hash: string): ReactNode | null {
   if (!id) body = <TestList track={track} kind={kind} />;
   else if (kind === 'reading') { const t = readingTests.find((x) => x.id === id); body = t ? <Reading test={t} /> : <TestList track={track} kind={kind} />; }
   else { const t = listeningTests.find((x) => x.id === id); body = t ? <Listening test={t} /> : <TestList track={track} kind={kind} />; }
-  // Mock Arena objective tests are free (strategy DR-19, owner decision OD-08 sets limits); the exam-prep track stays behind its subscription.
-  return track === 'mocks' ? <>{body}</> : <Gate track={track}>{body}</Gate>;
+  // Obyektiv Reading/Listening testlari bepul (Mock Arena, DR-19) — ular "Imtihon" bo'limidan ochilganda ham bir xil testlar,
+  // shuning uchun u yerda ham qulflanmaydi. Pullik qism: Writing/Speaking va AI baholash.
+  void track;
+  return <>{body}</>;
 }
 
 export default function App() {

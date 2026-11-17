@@ -47,7 +47,7 @@ export function ProgressCard() {
       <div className="spark" aria-label="Oxirgi 14 kun faolligi">
         {days.map((d) => <i key={d.day} title={`${d.day}: ${d.xp} XP`} style={{ height: `${Math.max(6, (d.xp / max) * 44)}px`, opacity: d.xp ? 1 : 0.25 }} />)}
       </div>
-      <p className="evidence">Taxminiy hisob: qurilmadagi test natijalariga asoslangan va rasmiy IELTS balli emas. O‘sishni aniq ko‘rish uchun har 2 haftada <a href="#/placement">darajani qayta aniqlang</a>.</p>
+      <p className="evidence">Taxminiy, rasmiy IELTS balli emas.<a href="#/placement">darajani qayta aniqlang</a>.</p>
     </section>
   );
 }

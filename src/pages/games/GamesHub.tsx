@@ -2,6 +2,7 @@ import { ArrowRight, BookOpen, Mic, Puzzle, Swords, Zap } from 'lucide-react';
 import { vocabForLevel } from '../../content/vocab';
 import { isDue, isMastered } from '../../lib/srs';
 import { freeGamesLeft, hasAnyPlan, useProfile } from '../../lib/store';
+import { Illo } from '../../components/Illo';
 
 const games = [
   { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: 'Jim qolma!', text: '60 soniya to‘xtamay gapiring — jim qolsangiz shar yoriladi' },
@@ -22,9 +23,9 @@ export default function GamesHub() {
   const left = freeGamesLeft(p);
   return (
     <div>
-      <div className="card">
-        <h2>So‘z o‘yinlari</h2>
-        <p>Yodlash o‘rniga o‘ynang: har bir o‘yin takrorlash tizimiga ulangan. Bilmagan so‘zlaringiz tezroq, bilganlaringiz kamroq qaytadi.</p>
+      <div className="card page-head with-illo t-pink">
+        <h2>So‘z o‘yinlari</h2><Illo kind="star" size={124} />
+        <p>Har bir o‘yin takrorlash tizimiga ulangan: bilmagan so‘zlar tezroq qaytadi.</p>
         <p className="evidence">
           {hasAnyPlan(p) ? 'Obunangiz bilan o‘yinlar cheksiz.' : `Bugun bepul o‘yinlar: ${left} ta qoldi (kuniga 2 ta). Istalgan obuna bilan cheksiz.`}
         </p>

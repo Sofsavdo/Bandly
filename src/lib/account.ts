@@ -1,4 +1,4 @@
-import { clearServerPlans, getProfile } from './store';
+import { clearServerPlans, dropXpQueue, getProfile, takeXpQueue } from './store';
 import { onLogin, pushProgress, stageClear } from './cloud';
 
 const KEY = 'bandly.account.v1';
@@ -30,6 +30,10 @@ const KEEP = new Set(['bandly.lang', 'bandly.sound', 'bandly.tg']);
 export async function signOut(wipe: boolean): Promise<void> {
   const had = !!getAccount();
   if (had) await pushProgress(); // progress hisobda qoladi
+  // Telegram'ga bog'langan hisob: shu qurilma tokeni serverda bekor qilinadi (qayta kirish — Telegram orqali).
+  // Bog'lanmagan eski hisobda token yagona kalit (hisob kodi), shuning uchun bekor qilinmaydi.
+  const acc0 = getAccount(); const tok = acc0?.tg ? acc0.token : null;
+  if (tok) { try { await fetch('/api/auth/logout', { method: 'POST', headers: { 'x-token': tok } }); } catch { /* oflayn: token qurilmadan baribir o'chiriladi */ } }
   logout();
   if (had) stageClear(); // hisob progressi qurilmada qolmaydi — qayta kirganda yuklanadi
   if (wipe) {
@@ -79,15 +83,22 @@ export interface Board { top: Row[]; me: Row | null; since: number | null }
 export const fetchBoard = (period: 'week' | 'all'): Promise<Board> =>
   call<Board>(`/api/leaderboard?period=${period}`, { headers: { 'x-token': getAccount()?.token ?? '' } });
 
-let lastSent = -1;
+let lastStreak = -1;
+/** XP hodisalarini serverga yuboradi (server qabul qiladi/cheklaydi) va seriyani yangilaydi. */
 export async function syncNow(): Promise<void> {
   const a = getAccount();
   if (!a) return;
   const p = getProfile();
-  if (p.xp === lastSent) return;
   try {
-    await call('/api/sync', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: a.token, xp: p.xp, streak: p.streak }) });
-    lastSent = p.xp;
+    const q = takeXpQueue();
+    if (q.length) {
+      const r = await call<{ done: string[] }>('/api/xp', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': a.token }, body: JSON.stringify({ events: q.slice(0, 50) }) });
+      dropXpQueue(r.done);
+    }
+    if (p.streak !== lastStreak) {
+      await call('/api/sync', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: a.token, streak: p.streak }) });
+      lastStreak = p.streak;
+    }
   } catch (e) {
     if (e instanceof Error && e.message === 'Noma’lum token') leaveLeague(); // server bazasi tiklangan bo'lishi mumkin
   }

@@ -7,24 +7,31 @@ export type Question =
 
 export interface ReadingTest {
   id: string;
+  /** Qaysi imtihon uslubida: yo'q bo'lsa IELTS (band ko'rsatiladi); 'cefr' — Multilevel uslubida (faqat xom ball) */
+  exam?: 'ielts' | 'cefr';
   level: Cefr;
   title: string;
   minutes: number;
   passageTitle: string;
   paragraphs: string[];
+  /** To'liq format: bir nechta matn — sarlavha `at` indeksli paragrafdan oldin chiqadi */
+  sections?: { at: number; title: string }[];
   groups: { instruction: string; questionIds: number[] }[];
   questions: Question[];
 }
 
 export interface ListeningTest {
   id: string;
+  exam?: 'ielts' | 'cefr';
   level: Cefr;
   title: string;
   minutes: number;
   context: string;
   /** Ekranda ko'rsatiladigan ismlar (transkript uchun) */
-  names: { A: string; B?: string };
-  script: { speaker: 'A' | 'B'; text: string }[];
+  names: { A: string; B?: string; C?: string; D?: string };
+  script: { speaker: 'A' | 'B' | 'C' | 'D'; text: string }[];
+  /** To'liq format: qismlar — sarlavha `at` indeksli satrdan oldin */
+  sections?: { at: number; title: string }[];
   groups: { instruction: string; questionIds: number[] }[];
   questions: Question[];
 }

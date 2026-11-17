@@ -42,10 +42,10 @@ export function MasteryCard() {
       <SkillLine />
       <p><a className="btn sm" href="#/mistakes">Xatolar ustida ishlash</a></p>
       {rows.length === 0 ? (
-        <p className="muted">Hali ma’lumot yo‘q. Dars, Grammar, o‘yin yoki Reading/Listening testini bajaring — shu yerda har bir mavzu bo‘yicha o‘zlashtirish darajangiz ko‘rinadi.</p>
+        <p className="muted">Hali ma’lumot yo‘q — birinchi mashqdan keyin chiqadi.</p>
       ) : (
         <>
-          <p className="evidence">O‘zlashtirish — javoblaringiz, qiyinligi va vaqt o‘tishi bilan unutilishni hisobga olgan taxminiy ko‘rsatkich (qurilmada saqlanadi).</p>
+          <p className="evidence">Javoblar, qiyinlik va unutish hisobga olinadi.</p>
           <div className="stack">
             {rows.map((r) => (
               <div key={r.id} className="skill" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 4 }}>

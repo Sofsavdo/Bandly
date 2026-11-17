@@ -242,4 +242,56 @@ export const WRITING: Record<string, WritingTask> = {
     forbid: [{ re: String.raw`\b(enjoy|enjoys|avoid|avoids|finish|mind) to \w+|\b(want|wants|hope|hopes|decided) \w+ing\b`, labelUz: 'enjoy/avoid + -ing, want/hope/decide + to — aralashib ketgan' }],
     model: 'In my free time I enjoy reading detective novels and playing chess. I try to avoid spending too much time on my phone. Next year I want to start a small business, and I hope to travel to Korea.',
   },
+  // ---- B2-U3, C1-U3, C2-U2 (2026-11-17, pilot) ----
+  'b2-u3-l1': {
+    promptUz: 'Shu oyda qaysi xizmatlardan foydalanganingiz yoki foydalanmoqchi ekaningiz haqida yozing (soch, mashina, telefon, uy…). have / get + narsa + V3 ni kamida ikki marta ishlating.', minWords: 30,
+    require: [{ re: String.raw`\b(have|has|had|having|get|gets|got|getting) (my|our|his|her|their|the|a) \w+ (cut|repaired|fixed|cleaned|painted|done|washed|checked|tested|delivered|serviced|installed|translated)\b`, labelUz: 'have / get + narsa + V3' }],
+    forbid: [{ re: String.raw`\b(had|have|got|get) (my|our|the) \w+ (repair|fix|clean|paint|wash|check|cut it)\b(?!\w)`, labelUz: 'narsadan keyin V3 kerak (repaired, fixed…)' }],
+    model: 'This month I had my hair cut at a new barber shop near my office. Last week we got the car serviced because the brakes were making a strange noise. Next Saturday I am going to have my phone repaired, as the screen is broken.',
+  },
+  'b2-u3-l2': {
+    promptUz: 'Ertalab uyga qaytganingizda eshik ochiq va stol ustida bo‘sh choynak turgan ekan. Nima bo‘lgan bo‘lishi mumkinligi haqida must have / can’t have / might have bilan 3–4 ta taxmin yozing.', minWords: 30,
+    require: [{ re: String.raw`\bmust have \w+`, labelUz: 'must have + V3' }, { re: String.raw`\b(can't|cannot|couldn't|might|may|could) have \w+`, labelUz: 'can’t / might have + V3' }],
+    forbid: [{ re: String.raw`\bmustn't have \w+`, labelUz: '“yo‘q” ma’nosida mustn’t have emas: can’t have' }],
+    model: 'Someone must have come home before me, because the door was open. It can’t have been a thief, since nothing is missing. My brother might have stopped for a cup of tea, or my mother may have forgotten to lock the door.',
+  },
+  'b2-u3-l3': {
+    promptUz: 'Kelasi yil shu kuni nima qilayotgan bo‘lasiz va yil oxirigacha nimalarga erishgan bo‘lasiz? will be + -ing va will have + V3 ni ishlating.', minWords: 30,
+    require: [{ re: String.raw`\bwill be \w+ing\b|'ll be \w+ing\b`, labelUz: 'will be + -ing' }, { re: String.raw`\bwill have \w+(ed|en|t|n)\b|'ll have \w+(ed|en|t|n)\b`, labelUz: 'will have + V3' }],
+    forbid: [{ re: String.raw`\bby the time (I|you|we|they|he|she) will\b`, labelUz: 'by the time + Present Simple (will emas)' }],
+    model: 'This time next year I will be studying at a university in Seoul. By then I will have passed my language exam, and I will have saved enough money for the first semester. By the time my course starts, I will have found a small flat near the campus.',
+  },
+  'c1-u3-l1': {
+    promptUz: 'Hayotingizdagi bitta afsus va bitta istak haqida yozing: wish + Past Perfect, wish + Past Simple va If only … ni ishlating.', minWords: 30,
+    require: [{ re: String.raw`\bwish (I|we|you|he|she|they) had(n't)? \w+`, labelUz: 'wish + Past Perfect (o‘tmish)' }, { re: String.raw`\bif only\b`, labelUz: 'If only …' }],
+    forbid: [{ re: String.raw`\bwish I would\b`, labelUz: 'o‘zingiz haqida “wish I would” emas' }],
+    model: 'I wish I had learned to play the piano when I was a child, because now it feels much harder. I also wish I lived closer to my parents, as I only see them twice a year. If only I had more free time, I would visit them every month.',
+  },
+  'c1-u3-l2': {
+    promptUz: 'Maktab yoki ish joyingiz uchun rasmiy tavsiya yozing: recommend / suggest / insist that … va It is essential that … dan keyin fe’lning asosiy shaklini ishlating.', minWords: 30,
+    require: [{ re: String.raw`\b(recommend|recommended|suggest|suggested|insist|insisted|request|propose|proposed) that (every|each|the|all|staff|students|he|she|they|we|employees|visitors)\b`, labelUz: 'recommend / suggest that …' }, { re: String.raw`\bit is (essential|important|vital|necessary) that\b`, labelUz: 'It is essential that …' }],
+    forbid: [{ re: String.raw`\b(recommend|suggest|insist|essential|important|vital)\w* that (he|she|it|every \w+|each \w+) (\w+s|is|has|does)\b`, labelUz: 'that dan keyin -s / is emas — asosiy shakl (be, have, attend)' }],
+    model: 'I recommend that every new employee attend a short training session in the first week. It is essential that each person be given a clear plan for the first month. We also suggest that managers meet their teams regularly and that nobody be left without support.',
+  },
+  'c1-u3-l3': {
+    promptUz: 'Shahringizda nima o‘zgarishi kerakligi haqida fikr bildiring: It’s (high) time … , as if … va Suppose … ni ishlating.', minWords: 30,
+    require: [{ re: String.raw`\bit'?s (high |about )?time (we|the|our|people|they|you|someone|everyone|somebody) \w+`, labelUz: 'It’s time + ega + Past Simple' }, { re: String.raw`\b(as if|as though|suppose|supposing)\b`, labelUz: 'as if / suppose' }],
+    model: 'It’s high time the city built more cycle lanes, because the traffic is getting worse every year. Some drivers behave as if the roads belonged only to them. Suppose half of all commuters cycled to work, the air would be much cleaner.',
+  },
+  'c2-u2-l1': {
+    promptUz: 'Yangilik maqolasi uslubida qisqa xabar yozing: It is reported / believed that … va … is said / thought to have + V3 tuzilmalarini ishlating.', minWords: 30,
+    require: [{ re: String.raw`\bit is (said|believed|thought|reported|understood|claimed) that\b`, labelUz: 'It is reported that …' }, { re: String.raw`\b(is|are|was|were) (said|believed|thought|reported|understood|claimed) to (have|be) \w+`, labelUz: '… is said to have / to be …' }],
+    model: 'A rare manuscript has been discovered in an old library in Bukhara. It is believed that the document dates from the eleventh century. The author is thought to have been a local astronomer, and experts are reported to be studying the text closely.',
+  },
+  'c2-u2-l2': {
+    promptUz: 'Yaqinda ko‘rgan film, kitob yoki tadbir haqida his-tuyg‘ularingizni kuchli ta’kid bilan yozing: ta’kidlovchi do/did, so … that va such … that ni ishlating.', minWords: 30,
+    require: [{ re: String.raw`\b(do|does|did) (enjoy|like|love|understand|appreciate|recommend|think|believe|want|hope|admire|agree)\b`, labelUz: 'ta’kidlovchi do / did + fe’l' }, { re: String.raw`\bsuch (a|an)? ?\w+ \w+ that\b|\bso \w+ that\b`, labelUz: 'so … that / such … that' }],
+    forbid: [{ re: String.raw`\bso a \w+|\bsuch (a )?(very )?(\w+ly) \w+ that\b`, labelUz: '“so a …” emas — such a …' }],
+    model: 'I did enjoy the concert last night, even though I was not sure about it at first. The singer had such a powerful voice that the whole hall went silent. The final song was so moving that some people in the audience started crying.',
+  },
+  'c2-u2-l3': {
+    promptUz: 'Muhim bir kun yoki joyni tasvirlang: kamida bir marta joy + fe’l + ega (On the hill stood…) va So … was … that / Such was … that tuzilmasini ishlating.', minWords: 30,
+    require: [{ re: String.raw`(^|[.!?]\s+)(So \w+ (was|were) (the|his|her|our|their)|Such (was|were) (the|his|her|our|their))\b`, labelUz: 'So … was the … / Such was the …' }, { re: String.raw`(^|[.!?]\s+)(On|In|At|Beside|Behind|Next to|Above|Under|Into|Out of)\b[^.!?]*\b(stood|lay|sat|stands|lies|sits|hung|walked|ran|came|rose)\b`, labelUz: 'joy + fe’l + ega (fronting)' }],
+    model: 'At the top of the hill stood a small stone house where my grandparents lived. So beautiful was the view from their garden that I could sit there for hours. Such was the silence in the evenings that we could hear the river far below.',
+  },
 };

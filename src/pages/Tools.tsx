@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LISTENING_TABLE, READING_ACADEMIC_TABLE, READING_GENERAL_TABLE, overallBand, rawToBand } from '../lib/band';
+import { Illo } from '../components/Illo';
 
 const bands = Array.from({ length: 19 }, (_, i) => i / 2);
 
@@ -9,7 +10,7 @@ function Overall() {
   const o = overallBand(v.l, v.r, v.w, v.s);
   const fields: [keyof typeof v, string][] = [['l', 'Listening'], ['r', 'Reading'], ['w', 'Writing'], ['s', 'Speaking']];
   return (
-    <div className="card">
+    <div className="card page-head with-illo t-mint">
       <h3>Umumiy band kalkulyatori</h3>
       <div className="row">
         {fields.map(([k, label]) => (
@@ -43,7 +44,7 @@ function Raw() {
 export default function Tools() {
   return (
     <div>
-      <div className="card"><h2>Bepul asboblar</h2><p>Ro‘yxatdan o‘tish shart emas.</p></div>
+      <div className="card"><h2>Bepul asboblar</h2><Illo kind="books" size={124} /><p>Ro‘yxatdan o‘tish shart emas.</p></div>
       <Overall />
       <Raw />
     </div>

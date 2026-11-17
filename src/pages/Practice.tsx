@@ -9,6 +9,7 @@ import { saveResult } from '../lib/storage';
 import { addXp, getProfile, recordReview, useProfile } from '../lib/store';
 import { recordPracticeItem } from '../lib/adaptive/record';
 import { shuffle } from '../lib/vocabGame';
+import { Illo } from '../components/Illo';
 
 const KINDS: { id: Kind | 'mix'; label: string; hint: string }[] = [
   { id: 'mix', label: 'Aralash', hint: 'Hamma turdan' },
@@ -117,9 +118,9 @@ export default function Practice() {
   if (!queue) {
     return (
       <div>
-        <div className="card">
-          <h2>Gap tuzish va xatolar ustida ishlash</h2>
-          <p>Ustoz kabi ishlaydi: javobingizni tekshiradi, xatoni <del>qizil</del>, to‘g‘risini <ins>yashil</ins> ko‘rsatadi, nima uchun xatoligini o‘zbekcha tushuntiradi va <b>yaxshiroq variant</b> taklif qiladi.</p>
+        <div className="card page-head with-illo t-mint">
+          <h2>Gap tuzish va xatolar ustida ishlash</h2><Illo kind="pencil" size={124} />
+          <p>Javobingizni tekshiradi, xatoni <del>qizil</del>, to‘g‘risini <ins>yashil</ins> ko‘rsatadi va o‘zbekcha tushuntiradi.</p>
           {!p.level && <p className="evidence"><a href="#/placement">Darajangizni aniqlang</a>: mashqlar sizga mos tanlanadi.</p>}
           <h3>Daraja</h3>
           <div className="tabs">{CEFR.map((l) => <button key={l} className={`btn ${l === level ? 'primary' : ''}`} onClick={() => setLevel(l)}>{l}{p.level === l ? ' ★' : ''}</button>)}</div>
@@ -196,7 +197,7 @@ export default function Practice() {
         {!res ? <button className="btn primary" disabled={cur!.kind === 'build' ? picked.length === 0 : !text.trim()} onClick={submit}>Tekshirish</button> : <button className="btn primary" onClick={next}>{i + 1 >= queue.length ? 'Natijani ko‘rish' : 'Keyingisi'} <ArrowRight size={16} /></button>}
       </div>
       {res && <Feedback e={cur!} r={res.r} answer={res.answer} />}
-      <p className="evidence">Tekshiruv qoidalarga asoslangan (AI emas): u tanish xato va qoliplarni topadi. Mukammal baholash uchun AI ustoz ulanadi.</p>
+      <p className="evidence">Qoidaviy tekshiruv (AI emas).</p>
     </div>
   );
 }

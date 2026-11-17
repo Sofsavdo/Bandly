@@ -114,7 +114,7 @@ function PlanBody() {
           );
         })}
       </div>
-      <p className="muted" style={{ fontSize: 13 }}>Reja daraja testingiz hamda General English darslari, Grammar, Gap tuzish, so‘z o‘yinlari, Reading va Listening testlaridagi javoblaringiz asosida tuziladi; bilimingiz o‘zgarganda yangilanadi.</p>
+      <p className="muted" style={{ fontSize: 13 }}>Reja natijalaringizga qarab har kuni yangilanadi.</p>
     </section>
   );
 }

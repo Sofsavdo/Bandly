@@ -204,7 +204,7 @@ function Retell({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
   const submit = (t: string) => { const c = coverage(t, sc.retell.points); setRes(c); onDone(c.pct); };
   return (
     <div className="card">
-      <p className="evidence">Sahnani yana bir marta tinglang, so‘ng matnsiz, o‘z so‘zlaringiz bilan 2–3 gapda aytib bering. Asosiy g‘oyalarning qanchasini eslaganingiz tekshiriladi.</p>
+      <p className="evidence">Endi matnsiz, o‘z so‘zlaringiz bilan 2–3 gapda ayting.</p>
       <div className="row"><button className="btn" onClick={() => void pl.all(sc.lines.map((l) => l.text), 1)}><Play size={15} /> Tinglash</button><button className="btn" onClick={pl.stop}><Square size={14} /> To‘xtatish</button><button className="btn sm" onClick={() => rec.setTextMode(!rec.textMode)}>{rec.textMode ? 'Mikrofon bilan' : 'Yozib aytish'}</button></div>
       {!rec.textMode ? (rec.busy ? <button className="btn primary" onClick={rec.finish}><Square size={14} /> Tugatdim</button> : <button className="btn primary" disabled={!!res} onClick={() => { pl.stop(); void rec.listen(60_000, 3500).then((t) => { if (t !== null) submit(t); }); }}><Mic size={15} /> Gapiring</button>)
         : <><textarea className="answer" rows={4} value={rec.text} disabled={!!res} placeholder="Sahnani o‘z so‘zlaringiz bilan qayta aytib bering (inglizcha)..." onChange={(e) => rec.setText(e.target.value)} />{!res && <button className="btn primary" disabled={rec.text.trim().split(/\s+/).length < 5} onClick={() => submit(rec.text)}>Tekshirish</button>}</>}
@@ -268,7 +268,7 @@ export default function ShadowHub({ id }: { id?: string }) {
         <h2 style={{ margin: '4px 0' }}>Senior Examiner studiyasi</h2>
         <p>Eng tez natija beradigan zamonaviy usullar bir joyda: <b>subtitrli sahnalar, shadowing, dictant, bo‘shliqlarni to‘ldirish va eshitganini qayta aytish</b>. Sahnalar film dialogi, podkast, akademik ma’ruza va hujjatli film uslubida yozilgan (original matnlar, ikki xil ovozda).</p>
         <ol className="pay-steps"><li>Subtitr bilan tinglang, so‘ng subtitrsiz.</li><li>Gapni eshitib, aynan shu ritm bilan takrorlang (shadowing).</li><li>Eshitganingizni yozing, keyin sahnani o‘z so‘zingiz bilan aytib bering.</li></ol>
-        <p className="evidence">Tinglash va takrorlash darajangizga mos sahnadan boshlang. Ovozni yozib olmaymiz: faqat tanilgan matn ekranda ko‘rinadi.</p>
+        <p className="evidence">Darajangizga mos sahnadan boshlang. Ovoz saqlanmaydi.</p>
       </div>
       <div className="hw-grid">
         {scenes.map((s) => {
