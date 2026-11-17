@@ -180,3 +180,9 @@ export async function serverTurn(o: TurnOptions): Promise<TurnResult> {
     throw e instanceof SttError ? new SpeechError(e.status === 0 ? 'network' : 'unstable', e.message) : e;
   }
 }
+
+/** Ochiq mikrofon (ruxsat bir marta so'raladi) — Gemini Live qo'ng'irog'i ham shu oqimni ishlatadi. */
+export async function micContext(): Promise<{ stream: MediaStream; ctx: AudioContext }> {
+  const m = await openMic();
+  return { stream: m.stream, ctx: m.ctx };
+}
