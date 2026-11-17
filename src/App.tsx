@@ -38,10 +38,12 @@ import Coach from './pages/Coach';
 import Mistakes from './pages/Mistakes';
 import Challenge from './pages/Challenge';
 import Boss from './pages/Boss';
+import Studio from './pages/Studio';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
   '#/welcome': () => <Home preview />,
+  '#/studio': () => <Studio />,
   '#/learn': () => <Learn />,
   '#/skills': () => <SkillCheck />,
   '#/coach': () => <Coach />,

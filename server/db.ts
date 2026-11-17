@@ -93,6 +93,8 @@ export function createDb(path = ':memory:'): DatabaseSync {
   // Telegram orqali kirish (OD-05, 2026-11-15): qo'shimcha ustun, mavjud ma'lumotga tegmaydi
   const cols = (db.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map((c) => c.name);
   if (!cols.includes('tg_id')) db.exec('ALTER TABLE players ADD COLUMN tg_id INTEGER');
+  // Rollar (2026-11-17): admin va metodist kabineti uchun
+  if (!cols.includes('role')) db.exec('ALTER TABLE players ADD COLUMN role TEXT');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_tg ON players (tg_id) WHERE tg_id IS NOT NULL');
   // Hisob progressi (2026-11-17): o'quvchining qurilmadagi ma'lumotlari hisobga saqlanadi — boshqa qurilmada kirsa ham ko'rinadi
   // Sessiyalar (2026-11-17): har qurilma — alohida token; bazada faqat SHA-256 xeshi saqlanadi. Eski players.token
@@ -210,6 +212,33 @@ export const byToken = (db: DatabaseSync, token: string): Player => {
   if (!p) throw new ApiError(401, 'Noma’lum token');
   return p;
 };
+export type Role = 'admin' | 'methodologist';
+export const ROLES: Role[] = ['admin', 'methodologist'];
+/** Egasi Railway'da ADMIN_NICKNAMES (vergul bilan) kiritgan laqablar avtomatik admin bo'ladi. */
+const adminNicks = (env: NodeJS.ProcessEnv = process.env): string[] => (env.ADMIN_NICKNAMES ?? '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+export function roleOf(db: DatabaseSync, playerId: number, env: NodeJS.ProcessEnv = process.env): Role | null {
+  const r = db.prepare('SELECT role, nickname FROM players WHERE id = ?').get(playerId) as { role: string | null; nickname: string } | undefined;
+  if (!r) return null;
+  if (adminNicks(env).includes(r.nickname.toLowerCase())) return 'admin';
+  return (ROLES as string[]).includes(r.role ?? '') ? (r.role as Role) : null;
+}
+export const staffList = (db: DatabaseSync) => db.prepare("SELECT nickname, role FROM players WHERE role IS NOT NULL ORDER BY role, nickname").all() as { nickname: string; role: Role }[];
+/** Token egasining roli talab qilinadi (admin hamma ruxsatga ega). */
+export function requireRole(db: DatabaseSync, token: string, allowed: Role[]): Player & { role: Role } {
+  const p = byToken(db, token);
+  const role = roleOf(db, p.id);
+  if (!role || (role !== 'admin' && !allowed.includes(role))) throw new ApiError(403, 'Bu bo‘lim uchun ruxsat yo‘q');
+  return { ...p, role };
+}
+/** Laqab bo'yicha rol beradi yoki olib tashlaydi (role = null). */
+export function setRole(db: DatabaseSync, nickname: string, role: Role | null): { nickname: string; role: Role | null } {
+  if (role !== null && !ROLES.includes(role)) throw new ApiError(400, 'Noma’lum rol');
+  const p = db.prepare('SELECT id, nickname FROM players WHERE lower(nickname) = lower(?)').get(nickname) as { id: number; nickname: string } | undefined;
+  if (!p) throw new ApiError(404, 'Foydalanuvchi topilmadi');
+  db.prepare('UPDATE players SET role = ? WHERE id = ?').run(role, p.id);
+  return { nickname: p.nickname, role };
+}
+
 /** Chiqish: shu qurilma sessiyasi bekor qilinadi (eski umumiy token bo'lsa — u ham shu sessiya orqali bekor bo'ladi). */
 export function revokeSession(db: DatabaseSync, token: string, now = Date.now()): void {
   if (!token || !TOKEN_RE.test(token)) return;

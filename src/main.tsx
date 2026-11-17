@@ -11,9 +11,10 @@ import { initPay } from './lib/pay';
 
 import { bootTelegram } from './lib/telegram';
 import { pullIfNewer, startCloud } from './lib/cloud';
+import { loadRemoteContent } from './content/remote';
 
 // Telegram Mini App bo'lsa — avval Telegram skripti va avtomatik kirish; keyin hisob progressi (boshqa qurilmada yangilangan bo'lsa)
-void bootTelegram().then(() => pullIfNewer()).finally(() => {
+void Promise.all([bootTelegram().then(() => pullIfNewer()), loadRemoteContent()]).finally(() => {
   startSync();
   startCloud();
   void initPay();

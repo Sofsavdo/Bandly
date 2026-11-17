@@ -683,3 +683,18 @@ html[data-tg='1'] .site-footer, html[data-tg='1'] .header-cta { display: none; }
 .price-tabs button small { font-size: 11px; font-weight: 700; color: var(--green); }
 .price-tabs button.on small { color: inherit; opacity: .85; }
 ul.plain { margin: 0; padding-left: 18px; } ul.plain li { margin: 4px 0; font-size: 14.5px; }
+
+/* ---------- Metodist kabineti ---------- */
+.studio-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.studio-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.studio-lessons { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 8px; }
+.studio-lessons li { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px 12px; }
+.studio-lessons li.archived, .studio-unit.archived { opacity: .55; }
+.badge.warn { background: color-mix(in srgb, #f59e0b 18%, transparent); color: #b45309; margin-left: 6px; }
+.studio-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.studio-field { display: grid; gap: 4px; margin: 10px 0; }
+.studio-field span { font-size: 12.5px; }
+.studio-field input, .studio-field textarea { width: 100%; padding: 9px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--text); font: inherit; font-size: 14px; }
+.studio-field textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.import-panel { width: min(94vw, 720px); }
+.lesson-media { margin: 6px 0 14px; }

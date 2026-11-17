@@ -27,11 +27,13 @@ export interface Lesson {
   minutes: number;
   explanationUz: string[];     // short paragraphs
   table?: { form: string; example: string }[];
-  examples: { en: string; uz: string }[];
+  examples: { en: string; uz: string; audio?: string }[]; // audio — metodist kabinetida ElevenLabs bilan ovozlashtirilgan
   vocab?: { en: string; uz: string }[];
   practice: Item[];            // guided practice, instant feedback
   check: Item[];               // mastery check, scored at the end
   writing?: WritingTask;
+  /** Metodist yuklagan video/audio (kabinet orqali) va uning matni */
+  media?: { kind: 'video' | 'audio'; url: string; transcript?: string }[];
 }
 
 export interface Unit {

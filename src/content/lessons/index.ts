@@ -14,23 +14,34 @@ import { B2_U3, C1_U3, C2_U2 } from './upper';
 const withWriting = (u: Unit): Unit => ({ ...u, lessons: u.lessons.map((l) => (WRITING[l.id] ? { ...l, writing: WRITING[l.id] } : l)) });
 export const UNITS: Unit[] = [A1_U1, A1_U2, A1_U3, A2_U1, A2_U2, A2_U3, B1_U1, B1_U2, B1_U3, B2_U1, B2_U2, B2_U3, C1_U1, C1_U2, C1_U3, C2_U1, C2_U2].map(withWriting);
 
-export const ALL_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = UNITS.flatMap((unit) => unit.lessons.map((lesson, index) => ({ unit, lesson, index })));
+const flatten = (units: Unit[]) => units.flatMap((unit) => unit.lessons.map((lesson, index) => ({ unit, lesson, index })));
+export const ALL_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(UNITS);
 export const lessonById = (id: string) => ALL_LESSONS.find((x) => x.lesson.id === id);
 export const lessonNodeId = (lessonId: string): string => `ge.lesson.${lessonId}`;
 
 /** Each lesson is a curriculum node; its prerequisite is the previous lesson in the global sequence, so the graph is a single A1-rooted path. */
-export const LESSON_NODES: CurriculumNode[] = ALL_LESSONS.map(({ unit, lesson }, i) => ({
+const toNodes = (all: typeof ALL_LESSONS): CurriculumNode[] => all.map(({ unit, lesson }, i) => ({
   id: lessonNodeId(lesson.id),
   level: unit.level,
   skill: 'grammar' as const,
   objective: lesson.objective,
   taxonomyIds: lesson.taxonomyIds,
-  prerequisites: i === 0 ? [] : [lessonNodeId(ALL_LESSONS[i - 1]!.lesson.id)],
+  prerequisites: i === 0 ? [] : [lessonNodeId(all[i - 1]!.lesson.id)],
   estMinutes: lesson.minutes,
   hasPractice: lesson.practice.length > 0,
   hasCheck: lesson.check.length >= 5,
   reviewStatus: unit.status,
 }));
+export const LESSON_NODES: CurriculumNode[] = toNodes(ALL_LESSONS);
+
+/** Serverdan kelgan (metodist e'lon qilgan) kontentni joriy massivlarga joylaydi — import qilgan barcha modullar yangisini ko'radi. */
+export function applyUnits(units: Unit[]): void {
+  if (!units.length) return;
+  UNITS.splice(0, UNITS.length, ...units);
+  ALL_LESSONS.splice(0, ALL_LESSONS.length, ...flatten(UNITS));
+  LESSON_NODES.splice(0, LESSON_NODES.length, ...toNodes(ALL_LESSONS));
+}
+
 
 import { vocab } from '../vocab';
 const baseWord = (en: string): string => en.split(/\s+[–-]\s+/)[0]!.trim().toLowerCase();

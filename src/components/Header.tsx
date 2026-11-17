@@ -1,4 +1,4 @@
-import { ChevronDown, Flame, LogIn, LogOut, Menu, Star, Target, User, X } from 'lucide-react';
+import { ChevronDown, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
 import { getAccount, onAccountChange } from '../lib/account';
 import { SignOutDialog } from './SignOutDialog';
 import { useEffect, useState } from 'react';
@@ -29,6 +29,12 @@ export function Header({ hash }: { hash: string }) {
   const [bye, setBye] = useState(false);
   const [acc, setAcc] = useState(getAccount());
   useEffect(() => onAccountChange(() => setAcc(getAccount())), []);
+  // Xodimlar (metodist/admin) uchun kabinet havolasi — rol serverdan
+  const [staff, setStaff] = useState(false);
+  useEffect(() => {
+    if (!acc) { setStaff(false); return; }
+    void fetch('/api/me', { headers: { 'x-token': acc.token } }).then((r) => (r.ok ? r.json() : null)).then((j: { role?: string | null } | null) => setStaff(!!j?.role)).catch(() => setStaff(false));
+  }, [acc]);
   useEffect(() => setOpen(false), [hash]);
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
   return (
@@ -65,6 +71,7 @@ export function Header({ hash }: { hash: string }) {
                 </details>
               );
             })}
+            {staff && <a className={`dlink ${isActive(hash, '#/studio') ? 'active' : ''}`} href="#/studio"><Pencil size={20} />Metodist kabineti</a>}
             <div className="dacct">
               <span>{acc ? <>Hisob: <b>{acc.nickname}</b></> : 'Hisobga kirmagansiz'}</span>
               {acc
