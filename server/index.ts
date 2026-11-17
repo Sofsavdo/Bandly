@@ -1,6 +1,6 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY } from './coach';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, PROGRESS_MAX, refundGlobalAi, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_MAX, refundGlobalAi, revokeSession, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -98,6 +98,10 @@ createServer(async (req, res) => {
       catch (e) { if (e instanceof TgAuthError) throw new ApiError(401, e.message); throw e; }
       const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
+      revokeSession(db, String(req.headers['x-token'] ?? '')); // shu qurilma tokeni endi ishlamaydi
+      return send(res, 200, { ok: true });
     }
     if (req.method === 'POST' && url.pathname === '/api/telegram/webhook') {
       if (!bot?.publicUrl || String(req.headers['x-telegram-bot-api-secret-token'] ?? '') !== webhookSecret(bot.token)) return send(res, 403, { error: 'Taqiqlangan' });

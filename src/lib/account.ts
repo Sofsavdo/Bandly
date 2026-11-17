@@ -30,6 +30,10 @@ const KEEP = new Set(['bandly.lang', 'bandly.sound', 'bandly.tg']);
 export async function signOut(wipe: boolean): Promise<void> {
   const had = !!getAccount();
   if (had) await pushProgress(); // progress hisobda qoladi
+  // Telegram'ga bog'langan hisob: shu qurilma tokeni serverda bekor qilinadi (qayta kirish — Telegram orqali).
+  // Bog'lanmagan eski hisobda token yagona kalit (hisob kodi), shuning uchun bekor qilinmaydi.
+  const acc0 = getAccount(); const tok = acc0?.tg ? acc0.token : null;
+  if (tok) { try { await fetch('/api/auth/logout', { method: 'POST', headers: { 'x-token': tok } }); } catch { /* oflayn: token qurilmadan baribir o'chiriladi */ } }
   logout();
   if (had) stageClear(); // hisob progressi qurilmada qolmaydi — qayta kirganda yuklanadi
   if (wipe) {

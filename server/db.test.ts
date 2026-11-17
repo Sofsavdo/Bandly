@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { ApiError, aiCostSummary, recordAiCost, refundAi, refundGlobalVoiceChars, useAi, useGlobalVoiceChars, DUEL_MAX_PLAYERS, DUEL_TTL, DUEL_WORDS, MAX_DELTA_PER_HOUR, MAX_DELTA_PER_SYNC, createDb, createDuel, getDuel, join, leaderboard, submitDuel, sync, weekStart } from './db';
+import { byToken, ApiError, aiCostSummary, recordAiCost, refundAi, refundGlobalVoiceChars, useAi, useGlobalVoiceChars, DUEL_MAX_PLAYERS, DUEL_TTL, DUEL_WORDS, MAX_DELTA_PER_HOUR, MAX_DELTA_PER_SYNC, createDb, createDuel, getDuel, join, leaderboard, submitDuel, sync, weekStart } from './db';
 
 const db = createDb();
 const T0 = Date.UTC(2026, 10, 13, 12, 0, 0); // juma
@@ -87,7 +87,7 @@ assert.throws(() => submitDuel(db, a.token, d3.code, 100, 1, 5000, D + 7_200_000
 {
   const cdb = createDb();
   const u = join(cdb, 'CostUser', D);
-  const pid = (cdb.prepare('SELECT id FROM players WHERE token = ?').get(u.token) as { id: number }).id;
+  const pid = byToken(cdb, u.token).id;
   recordAiCost(cdb, { playerId: pid, feature: 'tts_feedback', provider: 'elevenlabs', model: 'eleven_v4_turbo', units: 100, unitKind: 'chars', costUsd: 0.004 }, D);
   recordAiCost(cdb, { playerId: pid, feature: 'tts_feedback', provider: 'elevenlabs', model: 'eleven_v4_turbo', units: 50, unitKind: 'chars', costUsd: 0.002 }, D);
   const sum = aiCostSummary(cdb, 30, D);

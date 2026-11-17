@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
-import { createDb, join, loginTelegram } from './db';
+import { byToken, createDb, join, loginTelegram } from './db';
 import { botFromEnv, handleUpdate, nickFrom, TgAuthError, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 
 const TOKEN = '123456789:AAtest_token_value_for_unit_tests_only';
@@ -41,10 +41,11 @@ const db = createDb();
 const a = loginTelegram(db, 42, 'ali_uz');
 assert.equal(a.created, true);
 const again = loginTelegram(db, 42, 'boshqa');
-assert.equal(again.token, a.token, 'bir Telegram id — bitta hisob');
+assert.equal(byToken(db, again.token).id, byToken(db, a.token).id, 'bir Telegram id — bitta hisob');
+assert.notEqual(again.token, a.token, 'har kirish — alohida qurilma sessiyasi');
 const legacy = join(db, 'Sardor');
 const linked = loginTelegram(db, 99, 'sardor_tg', legacy.token);
-assert.deepEqual([linked.token, linked.nickname, linked.linked], [legacy.token, 'Sardor', true], 'eski hisob XP/obunasi bilan bog‘lanadi');
+assert.deepEqual([byToken(db, linked.token).id, linked.nickname, linked.linked], [byToken(db, legacy.token).id, 'Sardor', true], 'eski hisob XP/obunasi bilan bog‘lanadi');
 assert.equal(loginTelegram(db, 100, 'x_y', legacy.token).created, true, 'boshqa Telegram’ga bog‘langan hisobni qayta bog‘lab bo‘lmaydi');
 const dup = loginTelegram(db, 101, 'ali_uz');
 assert.ok(dup.created && dup.nickname !== 'ali_uz' && dup.nickname.startsWith('ali_uz'), 'band laqabga raqam qo‘shiladi');
@@ -54,12 +55,12 @@ assert.ok(dup.created && dup.nickname !== 'ali_uz' && dup.nickname.startsWith('a
   const { DatabaseSync } = await import('node:sqlite');
   const file = pj(mkdtempSync(pj(tmpdir(), 'bandly-')), 'old.sqlite');
   const old = new DatabaseSync(file);
-  old.exec("CREATE TABLE players (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL UNIQUE, nickname TEXT NOT NULL, xp INTEGER NOT NULL DEFAULT 0, streak INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL); INSERT INTO players (token, nickname, xp, created_at, updated_at) VALUES ('t1', 'Eski', 500, 1, 1);");
+  old.exec("CREATE TABLE players (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL UNIQUE, nickname TEXT NOT NULL, xp INTEGER NOT NULL DEFAULT 0, streak INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL); INSERT INTO players (token, nickname, xp, created_at, updated_at) VALUES ('abababababababababababababababababababababababab', 'Eski', 500, 1, 1);");
   old.close();
   createDb(file).close();
   const d2 = createDb(file);
-  assert.equal((d2.prepare("SELECT xp FROM players WHERE token='t1'").get() as { xp: number }).xp, 500);
-  assert.equal(loginTelegram(d2, 7, 'yangi', 't1').linked, true);
+  assert.equal((d2.prepare("SELECT xp FROM players WHERE token='abababababababababababababababababababababababab'").get() as { xp: number }).xp, 500);
+  assert.equal(loginTelegram(d2, 7, 'yangi', 'abababababababababababababababababababababababab').linked, true);
   d2.close();
 }
 
