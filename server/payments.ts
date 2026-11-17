@@ -60,7 +60,9 @@ export async function createPayment(db: DatabaseSync, api: HamyonApi, token: str
     // Band summalar ham Hamyonning o'zida hal qilinadi (create ichida 1 so'mdan oshiriladi)
     db.prepare('UPDATE payments SET hamyon_payment_id = ?, hamyon_amount = ?, card = ?, expire_at = ? WHERE id = ?').run(r.payment_id, r.amount, r.card, r.expire_at, id);
   } catch (e) {
-    db.prepare("UPDATE payments SET status = 'failed', error = ? WHERE id = ?").run(String(e instanceof Error ? e.message : e).slice(0, 200), id);
+    const msg = String(e instanceof Error ? e.message : e).slice(0, 200);
+    console.warn('Hamyon create xato: order=%s amount=%s: %s', id, amount, msg); // sababni Railway loglarida ko'rish uchun (kalitlar yozilmaydi)
+    db.prepare("UPDATE payments SET status = 'failed', error = ? WHERE id = ?").run(msg, id);
     throw new ApiError(502, 'To‘lov xizmati hozir javob bermayapti. Birozdan keyin qayta urinib ko‘ring.');
   }
   return view(get(db, id)!, now);
