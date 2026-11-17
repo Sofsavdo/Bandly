@@ -9,6 +9,7 @@ import { cancelPayment, createPayment, entitlements, findByCallback, grant, mark
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { gradeMock } from './mockGrade';
+import { awardXp, submitXp } from './xp';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
@@ -116,7 +117,18 @@ createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
       const b = await readJson(req, 16_384);
-      return send(res, 200, gradeMock(b.kind, b.testId, b.answers));
+      const g = gradeMock(b.kind, b.testId, b.answers);
+      // Kirgan o'quvchiga XP'ni server o'zi beradi (natijani o'zi hisobladi); bir urinish — bir marta
+      const tk = String(req.headers['x-token'] ?? '');
+      let xp = 0;
+      if (tk && /^[\w:.-]{6,60}$/.test(String(b.attemptId ?? ''))) {
+        try { const p = byToken(db, tk); xp = awardXp(db, p.id, `mock:${String(b.testId)}:${String(b.attemptId)}`, 'mock', g.correct * 5 + (g.correct / Math.max(1, g.total) >= 0.8 ? 20 : 0)); } catch { /* mehmon */ }
+      }
+      return send(res, 200, { ...g, xp });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/xp') {
+      const b = await readJson(req, 16_384);
+      return send(res, 200, submitXp(db, String(req.headers['x-token'] ?? ''), b.events));
     }
     if (url.pathname === '/api/progress') {
       const token = String(req.headers['x-token'] ?? '');

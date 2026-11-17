@@ -1,5 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
+import { ensureXpTables } from './xp';
 import { vocab } from '../src/content/vocab';
 
 export const MAX_DELTA_PER_SYNC = 400; // bitta so'rovda qabul qilinadigan eng ko'p XP (aldovga qarshi)
@@ -98,6 +99,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   // vaqtincha qoladi (orqaga qaytish xavfsiz bo'lishi uchun) va birinchi ishlatilganda sessiyaga ko'chiriladi.
   db.exec('CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id INTEGER NOT NULL REFERENCES players(id), token_hash TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, last_seen INTEGER NOT NULL, revoked_at INTEGER)');
   db.exec('CREATE INDEX IF NOT EXISTS sessions_player ON sessions (player_id)');
+  ensureXpTables(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;
 }
@@ -216,18 +218,12 @@ export function revokeSession(db: DatabaseSync, token: string, now = Date.now())
 }
 
 /** Mijoz o'zining umumiy XP sini yuboradi; server faqat chegaralangan o'sishni qabul qiladi. */
-export function sync(db: DatabaseSync, token: string, clientXp: number, streak: number, now = Date.now()): { xp: number; accepted: number } {
+export function sync(db: DatabaseSync, token: string, _clientXp: number, streak: number, now = Date.now()): { xp: number; accepted: number } {
+  // XP endi faqat hodisalar orqali (server/xp.ts, POST /api/xp); bu yerda mijozning umumiy XP siga ishonilmaydi.
   const p = byToken(db, token);
-  const claimed = Number.isFinite(clientXp) ? Math.max(0, Math.floor(clientXp)) : 0;
-  let delta = Math.max(0, claimed - p.xp);
-  const hourAgo = now - 3_600_000;
-  const lastHour = (db.prepare('SELECT COALESCE(SUM(delta),0) AS s FROM xp_log WHERE player_id = ? AND ts > ?').get(p.id, hourAgo) as { s: number }).s;
-  delta = Math.min(delta, MAX_DELTA_PER_SYNC, Math.max(0, MAX_DELTA_PER_HOUR - lastHour));
-  const xp = p.xp + delta;
   const st = Number.isFinite(streak) ? Math.min(3650, Math.max(0, Math.floor(streak))) : p.streak;
-  db.prepare('UPDATE players SET xp = ?, streak = ?, updated_at = ? WHERE id = ?').run(xp, st, now, p.id);
-  if (delta > 0) db.prepare('INSERT INTO xp_log (player_id, ts, delta) VALUES (?, ?, ?)').run(p.id, now, delta);
-  return { xp, accepted: delta };
+  db.prepare('UPDATE players SET streak = ?, updated_at = ? WHERE id = ?').run(st, now, p.id);
+  return { xp: p.xp, accepted: 0 };
 }
 
 /** Joriy haftaning boshi: dushanba 00:00 UTC */

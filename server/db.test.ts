@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { byToken, ApiError, aiCostSummary, recordAiCost, refundAi, refundGlobalVoiceChars, useAi, useGlobalVoiceChars, DUEL_MAX_PLAYERS, DUEL_TTL, DUEL_WORDS, MAX_DELTA_PER_HOUR, MAX_DELTA_PER_SYNC, createDb, createDuel, getDuel, join, leaderboard, submitDuel, sync, weekStart } from './db';
+import { awardXp } from './xp';
+import { byToken, ApiError, aiCostSummary, recordAiCost, refundAi, refundGlobalVoiceChars, useAi, useGlobalVoiceChars, DUEL_MAX_PLAYERS, DUEL_TTL, DUEL_WORDS, createDb, createDuel, getDuel, join, leaderboard, submitDuel, sync, weekStart } from './db';
 
 const db = createDb();
 const T0 = Date.UTC(2026, 10, 13, 12, 0, 0); // juma
@@ -11,30 +12,16 @@ assert.throws(() => join(db, 'x', T0), (e) => e instanceof ApiError && e.status 
 assert.throws(() => join(db, '<script>', T0), (e) => e instanceof ApiError && e.status === 400);
 const b = join(db, 'Dilnoza', T0);
 
-// Oddiy sinxron
-let r = sync(db, a.token, 120, 2, T0);
-assert.deepEqual(r, { xp: 120, accepted: 120 });
-// Qayta yuborish: o'sish yo'q
-r = sync(db, a.token, 120, 2, T0 + 1000);
-assert.equal(r.accepted, 0);
-// Aldov: bir so'rovda katta sakrash cheklanadi
-r = sync(db, a.token, 999_999, 2, T0 + 2000);
-assert.equal(r.accepted, MAX_DELTA_PER_SYNC);
-// Soatlik chegara
-let total = 120 + MAX_DELTA_PER_SYNC;
-for (let i = 0; i < 6; i++) { r = sync(db, a.token, 999_999, 2, T0 + 3000 + i); total += r.accepted; }
-assert.ok(total <= MAX_DELTA_PER_HOUR, `soatlik chegara buzildi: ${total}`);
-// Soat o'tgach yana qabul qilinadi
-r = sync(db, a.token, 999_999, 2, T0 + 3_700_000);
-assert.ok(r.accepted > 0);
-// Noto'g'ri token
+// Sinxron endi XP'ni o'zgartirmaydi (mijozning umumiy XP siga ishonilmaydi) — faqat seriya
+let r = sync(db, a.token, 999_999, 2, T0);
+assert.deepEqual(r, { xp: 0, accepted: 0 });
 assert.throws(() => sync(db, 'yo‘q', 10, 0, T0), (e) => e instanceof ApiError && e.status === 401);
-// Manfiy / NaN qiymatlar
 assert.equal(sync(db, b.token, -5, -3, T0).xp, 0);
-assert.equal(sync(db, b.token, NaN, NaN, T0).xp, 0);
+// XP hodisalar orqali (server/xp.ts)
+awardXp(db, byToken(db, a.token).id, 'ev-aziz-1', 'lesson', 120, T0);
 
 // Reyting
-sync(db, b.token, 50, 1, T0 + 10_000);
+awardXp(db, byToken(db, b.token).id, 'ev-dil-1', 'game', 50, T0 + 10_000);
 const lb = leaderboard(db, 'week', b.token, T0 + 20_000);
 assert.equal(lb.top[0].nickname, 'Aziz');
 assert.equal(lb.top[1].nickname, 'Dilnoza');

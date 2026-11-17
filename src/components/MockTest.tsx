@@ -7,6 +7,7 @@ import type { Cefr } from '../lib/levels';
 import { BAND_CAP, capBand } from '../lib/progress';
 import { saveResult } from '../lib/storage';
 import { addXp, getProfile } from '../lib/store';
+import { getAccount } from '../lib/account';
 import { recordTestAnswers } from '../lib/adaptive/record';
 import { clearAttempt, createAttempt, isExpired, loadAttempt, remainingSeconds, saveAttempt, setAnswer, submitAttempt, toggleFlag, unanswered, type ExamAttempt } from '../lib/examAttempt';
 import { fmt } from './hooks';
@@ -81,7 +82,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     if (!attempt || attempt.status !== 'submitted' || attempt.graded) return;
     let stop = false;
     setGradeErr('');
-    fetch('/api/mock/grade', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind, testId, answers: attempt.answers }) })
+    fetch('/api/mock/grade', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': getAccount()?.token ?? '' }, body: JSON.stringify({ kind, testId, answers: attempt.answers, attemptId: String(attempt.startedAt) }) })
       .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? `Xato ${r.status}`); return j as { graded: Graded; correct: number }; })
       .then(({ graded, correct }) => {
         if (stop) return;
@@ -90,7 +91,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
           if (!a.recorded && !recorded.current) {
             recorded.current = true;
             saveResult({ kind, title, correct, total: questions.length, band: capBand(scaledBand(correct, questions.length, table), level), level });
-            addXp(correct * 5 + (correct / questions.length >= 0.8 ? 20 : 0));
+            addXp(correct * 5 + (correct / questions.length >= 0.8 ? 20 : 0), 'server'); // serverdagi XP'ni server o'zi yozdi
             recordTestAnswers(kind, questions.map((q) => ({ type: q.type, correct: !!graded[q.id]?.correct })), level, getProfile().level);
           }
           return { ...a, graded, recorded: true };
