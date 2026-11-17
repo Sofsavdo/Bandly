@@ -21,16 +21,15 @@ const LEVEL_OPTS: { id: Cefr; label: string }[] = [
 ];
 const SKILL_OPTS: { id: Skill; label: string }[] = [{ id: 'speaking', label: 'Speaking' }, { id: 'writing', label: 'Writing' }, { id: 'listening', label: 'Listening' }, { id: 'reading', label: 'Reading' }, { id: 'grammar', label: 'Grammar' }, { id: 'vocab', label: L('So‘z boyligi') }];
 const TUTOR_OPTS: { id: Tutor; label: string; sub: string }[] = [
-  { id: 'friendly', label: L('Mehribon'), sub: L('Sabrli, yumshoq tuzatadi') },
-  { id: 'strict', label: L('Qattiqqo‘l'), sub: L('Har xatoni ushlaydi, maqtamaydi') },
-  { id: 'savage', label: L('Shafqatsiz 18+'), sub: L('Uradi, so‘kadi — faqat xatolaringizni') },
+  { id: 'friendly', label: L('Hazil, lekin so‘kinmasin'), sub: L('Kuladi, kesatadi — toza tilda') },
+  { id: 'savage', label: L('So‘kinsa ham bo‘ladi (18+)'), sub: L('Xatolaringiz ustidan so‘kinib kuladi') },
 ];
 const SKILL_HREF: Record<Skill, string> = { speaking: '#/coach', writing: '#/exam/writing', listening: '#/mocks', reading: '#/mocks', grammar: '#/grammar', vocab: '#/games' };
 const SKILL_STEP: Record<Skill, string> = { speaking: L('Speaking: AI ustoz bilan ovozli suhbat'), writing: L('Writing: insho va AI baho'), listening: L('Listening: mock testlar'), reading: L('Reading: mock testlar'), grammar: L('Grammar: zaif mavzular'), vocab: L('So‘z o‘yinlari: har kuni 5 daqiqa') };
 
 const QUESTION: Record<StepId, string> = {
   goal: L('Nimaga tayyorlanyapsiz?'), why: L('Ingliz tili sizga nima uchun kerak?'), when: L('Imtihon qachon?'), target: L('Qaysi natija kerak?'),
-  level: L('Hozirgi darajangiz qanday?'), hard: L('Nima eng qiyin? (bir nechtasini tanlang)'), minutes: L('Kuniga qancha vaqt ajratasiz?'), tutor: L('AI ustoz qanday bo‘lsin?'),
+  level: L('Hozirgi darajangiz qanday?'), hard: L('Nima eng qiyin? (bir nechtasini tanlang)'), minutes: L('Kuniga qancha vaqt ajratasiz?'), tutor: L('AI ustoz Bandi qanday gaplashsin?'),
 };
 
 const blank = (): Partial<Answers> => ({ hard: [], examDate: null, target: null });
@@ -60,8 +59,7 @@ export default function Start() {
     const band = targetBand(ans.goal, ans.target);
     if (band !== null || ans.examDate) setTarget(band ?? p.target, ans.examDate ?? p.examDate);
     const adult = ans.tutor === 'savage' ? true : p.adult;
-    setPersona(ans.tutor === 'friendly' ? 0 : ans.tutor === 'strict' ? 1 : 2, adult);
-    try { localStorage.setItem('bandly.coach.persona', ans.tutor); } catch { /* */ }
+    setPersona(ans.tutor === 'savage' ? 2 : 0, ans.tutor === 'savage' ? true : adult);
     setDone(true);
     window.scrollTo({ top: 0 });
   };

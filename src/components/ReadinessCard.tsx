@@ -30,9 +30,9 @@ export function ReadinessCard() {
         <span className="pill">{L('Umumiy:')} {r.overall?.toFixed(1) ?? '—'}</span>
         <span className="pill">{L('Maqsad:')} {r.target.toFixed(1)}</span>
         {r.gap !== null && <span className="pill">{L('Farq:')} {r.gap.toFixed(1)}</span>}
-        <span className="pill" style={{ whiteSpace: 'normal' }}>{L('Ishonchlilik:')} {CONF[r.confidence]}</span>
+        <span className="pill">{L('Ishonchlilik:')} {CONF[r.confidence]}</span>
         {r.daysToExam !== null && r.daysToExam >= 0 && <span className="pill">{L('Imtihongacha')} {r.daysToExam}  {L('kun')}</span>}
-        {p.level && <span className="pill" style={{ whiteSpace: 'normal' }}>{L('General English:')} {p.level}  {L('(alohida o‘lchanadi)')}</span>}
+        {p.level && <span className="pill pill-wide">{L('General English:')} {p.level}  {L('(alohida o‘lchanadi)')}</span>}
       </p>
       {r.weakest && (
         <a className="btn primary" style={{ whiteSpace: 'normal' }} href={HREF[r.weakest]}>

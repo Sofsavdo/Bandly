@@ -379,7 +379,7 @@ createServer(async (req, res) => {
       const reply = await once(`${player.id}:${turnId}`, async () => {
         useGlobalAi(db, COACH_GLOBAL_DAILY);                       // platform ceiling first (fail-closed)
         useAi(db, token, Date.now(), COACH_DAILY_LIMIT, 'coach');  // per-learner daily limit
-        return coachTurn(ai, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']) });
+        return coachTurn(ai, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true });
       });
       return send(res, 200, { ...reply, persona: resolved.id, notice: resolved.downgraded });
     }

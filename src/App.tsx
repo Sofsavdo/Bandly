@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { Gate } from './components/Gate';
 import { useHash } from './components/hooks';
 import { Footer } from './components/Footer';
@@ -106,7 +106,8 @@ export default function App() {
   const where = sectionOf(hash);
   const section = where?.page;
   // Menyu bosilganda yangi sahifa har doim tepadan boshlansin
-  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }, [hash]);
+  // Sahifa almashganda tepaga (o'quv xaritasi o'zi hozirgi dars joyini ochadi)
+  useLayoutEffect(() => { if (hash !== '#/learn') window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
   const lessonId = hash.match(/^#\/learn\/([\w-]+)$/)?.[1];
   const bossUnit = hash.match(/^#\/boss\/([\w-]+)$/)?.[1];

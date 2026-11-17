@@ -15,7 +15,7 @@ export function WeekBars({ activity }: { activity: Record<string, number> }) {
   const max = Math.max(30, ...days.map((d) => d.xp));
   const best = days.reduce((b, d) => (d.xp > b.xp ? d : b), days[0]!);
   return (
-    <div className="weekbars" role="img" aria-label={L('Oxirgi 7 kun: {0}', [days.map((d) => `${d.w} ${d.xp} XP`).join(', ')])}>
+    <div className={`weekbars${days.every((d) => d.xp === 0) ? ' empty' : ''}`} role="img" aria-label={L('Oxirgi 7 kun: {0}', [days.map((d) => `${d.w} ${d.xp} XP`).join(', ')])}>
       {days.map((d, i) => (
         <div key={d.k} className={`wb${i === 6 ? ' now' : d.xp > 0 ? ' has' : ''}`}>
           <i style={{ height: `${Math.max(14, (d.xp / max) * 100)}%` }}>{d === best && d.xp > 0 && <em>{d.xp}  {L('XP')}</em>}</i>

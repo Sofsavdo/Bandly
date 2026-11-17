@@ -1,5 +1,5 @@
-import { Check, Flame, Lock, MapPin, Play, RotateCcw, Star, Swords, Trophy, X } from 'lucide-react';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Check, Flame, Lock, Play, RotateCcw, Star, Swords, Trophy, X } from 'lucide-react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { UNITS, lessonNodeId } from '../content/lessons';
 import type { Lesson, Unit } from '../content/lessons/types';
 import { stateOf } from '../lib/adaptive/mastery';
@@ -9,7 +9,8 @@ import { nodeState, type NodeState } from '../lib/gamify';
 import { isUnlocked, type ProgressMap } from '../lib/lessons';
 import { loadBoss } from '../lib/boss';
 import { useProfile } from '../lib/store';
-import { Prop, ZONES, type PropKind, type ZoneTheme } from './mapArt';
+import { ZONES, ZONE_ILLO, type ZoneTheme } from './mapArt';
+import { Illo } from './Illo';
 import { L } from '../i18n';
 
 const LEVEL_NAME: Record<string, string> = { A1: L('Beginner'), A2: L('Elementary'), B1: L('Intermediate'), B2: L('Upper-intermediate'), C1: L('Advanced'), C2: L('Proficiency') };
@@ -71,31 +72,22 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
   const assumed = !!level && ORDER.indexOf(lv) < ORDER.indexOf(level);
   const pct = lessons.length ? passedN / lessons.length : 0;
   const R = 22, C = 2 * Math.PI * R;
-  // Dekoratsiyalar: har bir tugunning qarama-qarshi tomonida, zona mavzusiga qarab almashadi
-  const SMALL: Record<string, PropKind> = { A1: 'bush', A2: 'tree', B1: 'tree', B2: 'pine', C1: 'stars', C2: 'stars' };
-  const props = [
-    ...items.map((it, i) => ({ kind: t.props[i % t.props.length]!, left: it.x <= 50 ? 80 + ((i * 7) % 9) : 6 + ((i * 5) % 8), top: it.y - 50 + ((i * 13) % 22), size: 58 + ((i * 11) % 20) })),
-    // ikkinchi qatlam: kichik dekoratsiyalar tugunlar orasida (yo'ldan uzoqroq chetda)
-    ...items.slice(0, -1).map((it, i) => ({ kind: i % 3 === 2 ? ('cloud' as PropKind) : SMALL[lv]!, left: it.x <= 50 ? 10 + ((i * 3) % 6) : 88 - ((i * 4) % 6), top: it.y - STEP / 2 - 18, size: 34 + ((i * 7) % 10) })),
-  ];
+  // Bezaklar: har ikkinchi tugunning qarama-qarshi tomonida bitta 3.0 tasvir (siyrak — yo'lni to'smaydi)
+  const kinds = ZONE_ILLO[lv]!;
+  const props = items.filter((_, i) => i % 2 === 1).map((it, i) => ({ kind: kinds[i % kinds.length]!, left: it.x <= 50 ? 84 : 16, top: it.y - 44, size: 76 + ((i * 11) % 16), tilt: ((i * 37) % 17) - 8 }));
+  const blobs = Array.from({ length: Math.ceil(H / 420) }, (_, i) => ({ top: 120 + i * 420, left: i % 2 ? 78 : 18, c: i % 2 ? t.hill[1] : t.hill[0] }));
 
   return (
     <section className={`zone lv-${lv}${t.night ? ' night' : ''}`} style={{ '--za': t.accent, '--zad': t.accentDark, height: H } as CSSProperties} aria-labelledby={`zone-${lv}`}>
       <div className="zone-bg" style={{ background: `linear-gradient(180deg, ${t.sky[0]}, ${t.sky[1]})` }} aria-hidden="true">
+        {blobs.map((g, i) => <span key={i} className="zone-blob" style={{ top: g.top, left: `${g.left}%`, background: g.c }} />)}
         <svg className="zone-hills" viewBox={`0 0 400 ${H}`} preserveAspectRatio="none">
-          {Array.from({ length: Math.ceil(H / 300) }, (_, i) => {
-            const by = 140 + i * 300;
-            return <g key={i}>
-              <path d={`M0 ${by + 60} Q 80 ${by} 170 ${by + 40} T 400 ${by + 20} V ${H} H 0 Z`} fill={t.hill[0]} opacity=".35" />
-              <path d={`M0 ${by + 150} Q 120 ${by + 100} 230 ${by + 140} T 400 ${by + 120} V ${H} H 0 Z`} fill={t.hill[1]} opacity=".22" />
-            </g>;
-          })}
-          <path d={pathD(items)} fill="none" stroke={t.roadEdge} strokeWidth="40" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-          <path d={pathD(items)} fill="none" stroke={t.road} strokeWidth="32" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-          {reached > 0 && <path d={pathD(items.slice(0, reached + 1))} fill="none" stroke={t.accent} strokeWidth="10" strokeLinecap="round" vectorEffect="non-scaling-stroke" opacity=".9" />}
-          <path d={pathD(items)} fill="none" stroke={t.night ? '#ffffff' : t.roadEdge} strokeOpacity={t.night ? 0.35 : 1} strokeWidth="3" strokeDasharray="2 14" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          <path d={pathD(items)} fill="none" stroke={t.night ? 'rgba(0,0,0,.35)' : 'rgba(20,22,43,.07)'} strokeWidth="30" strokeLinecap="round" vectorEffect="non-scaling-stroke" transform="translate(0 6)" />
+          <path d={pathD(items)} fill="none" stroke={t.road} strokeWidth="26" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          {reached > 0 && <path d={pathD(items.slice(0, reached + 1))} fill="none" stroke={t.accent} strokeWidth="8" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
+          <path d={pathD(items)} fill="none" stroke={t.roadEdge} strokeWidth="3" strokeDasharray="1 12" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         </svg>
-        {props.map((p, i) => <div key={i} className="zone-prop" style={{ left: `${p.left}%`, top: p.top }}><Prop kind={p.kind} t={t} size={p.size} /></div>)}
+        {props.map((p, i) => <div key={i} className="zone-prop" style={{ left: `${p.left}%`, top: p.top, transform: `translateX(-50%) rotate(${p.tilt}deg)` }}><Illo kind={p.kind} size={p.size} /></div>)}
       </div>
 
       <header className="zone-banner">
@@ -128,7 +120,6 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
           return (
             <li key={it.lesson.id} className="zn" style={{ left: `${it.x}%`, top: it.y }}>
               {showSign && <span className="unit-sign" style={{ ['--dx' as string]: it.x < 50 ? '30px' : it.x > 50 ? '-30px' : '0px' }}>{it.unit.titleUz}</span>}
-              {it.state === 'current' && <span className={`you-pin${it.x > 50 ? ' left' : ''}`}><MapPin size={14} />  {L('Siz shu yerdasiz')}</span>}
               <button type="button" ref={it.state === 'current' ? curRef : undefined} className={`coin ${it.state}`}
                 onClick={() => onPick({ unit: it.unit, lesson: it.lesson, index: it.index, state: it.state })}
                 aria-label={L('{0}-dars: {1}, {2}{3}', [it.index + 1, it.lesson.titleUz, STATE_UZ[it.state], it.stars ? L(', {0} yulduz', [it.stars]) : ''])}>
@@ -155,8 +146,13 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
   const lp = levelProgress(p.xp);
   const today = p.dailyXp;
 
-  // Ilova sahifa almashganda tepaga qaytaradi — undan keyin hozirgi tugunga o'tamiz
-  useEffect(() => { const t = setTimeout(() => curRef.current?.scrollIntoView({ block: 'center' }), 60); return () => clearTimeout(t); }, []);
+  // Xarita darhol hozirgi dars joyida ochiladi (tepadan pastga "yugurmaydi"): bo'yashdan oldin, animatsiyasiz
+  useLayoutEffect(() => {
+    const el = curRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    window.scrollTo({ top: Math.max(0, window.scrollY + r.top - window.innerHeight / 2 + r.height / 2), left: 0, behavior: 'instant' });
+  }, []);
   useEffect(() => {
     if (!sel) return;
     const on = (e: KeyboardEvent) => { if (e.key === 'Escape') setSel(null); };
