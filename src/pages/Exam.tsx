@@ -18,7 +18,7 @@ export default function Exam() {
   const [tab, setTab] = useState<'ielts' | 'sat' | 'cefr'>('ielts');
   return (
     <div>
-      <div className="card">
+      <div className="card night page-head">
         <h2>Imtihon tayyorgarligi {p.plan.exam && <span className="badge on">{p.planUntil.exam ? 'Obuna faol' : 'Demo'}</span>}</h2>
         <p className="muted" style={{ margin: '4px 0 10px', fontSize: 14 }}>Reading va Listening testlari bepul. Writing, Speaking va AI baholash — Exam Preparation va All Access tariflarida.</p>
         <div className="tabs" style={{ marginBottom: 0 }}>

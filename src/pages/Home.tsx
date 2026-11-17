@@ -7,7 +7,8 @@ import { DailyCards } from '../components/DailyCards';
 import { ProgressCard } from '../components/ProgressCard';
 import { PlanCard } from '../components/PlanCard';
 import { QuestsCard } from '../components/QuestsCard';
-import { Tile } from '../components/Tile';
+import { HeroShowcase } from '../components/HeroShowcase';
+import { TodayHero } from '../components/TodayHero';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { vocab } from '../content/vocab';
 import { useProfile } from '../lib/store';
@@ -43,34 +44,50 @@ export default function Home({ preview = false }: { preview?: boolean }) {
 
   if (isNew) return (
     <div>
-      <section className="landing-hero">
-        <div className="hero-main">
+      <section className="night hero2">
+        <div>
           <span className="eyebrow"><Zap size={15} /> General English · IELTS · CEFR · SAT</span>
-          <h1>Ingliz tilini o‘yin kabi o‘rganing va imtihonga tayyorlaning</h1>
-          <p className="lead">A1 dan C2 gacha darslar xaritasi, sizga moslashadigan kunlik reja, bepul mock testlar va AI ustoz — bir joyda.</p>
-          <div className="row" style={{ marginTop: 20 }}>
+          <h1>Ingliz tilini <span className="grad-text">o‘yin kabi</span> o‘rganing — imtihonga ishonch bilan boring</h1>
+          <p className="lead">A1 dan C2 gacha darslar xaritasi, sizga moslashadigan kunlik reja, real formatdagi bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.</p>
+          <div className="cta">
             <a className="btn primary lg" href="#/placement">Darajamni aniqlash <ArrowRight size={18} /></a>
-            <a className="btn lg" href="#/mocks"><Timer size={18} /> Bepul mock test</a>
+            <a className="btn ghost-light lg" href="#/mocks"><Timer size={18} /> Bepul mock test</a>
           </div>
-          <div className="hero-stats">
-            <div><b>{ALL_LESSONS.length}</b><span>dars (A1–C2)</span></div>
+          <div className="proof">
+            <div><b>{ALL_LESSONS.length}</b><span>dars, A1–C2</span></div>
             <div><b>{tests}</b><span>bepul mock test</span></div>
             <div><b>{vocab.length}</b><span>so‘z</span></div>
             <div><b>3 daq</b><span>daraja testi</span></div>
           </div>
         </div>
-        <div className="hero-art" aria-hidden="true">
-          <Mascot mood="happy" size={190} />
-          <span className="chip c1"><Flame size={16} color="#ff7a1a" fill="#ff7a1a" /> Kunlik seriya</span>
-          <span className="chip c2"><Star size={16} color="#f5b400" fill="#f5b400" /> XP va yutuqlar</span>
-          <span className="chip c3"><Mic size={16} color="#ea3624" /> AI ustoz</span>
-        </div>
+        <HeroShowcase />
       </section>
 
-      <div className="tracks">
-        <Tile big href="#/learn" tone="green" icon={MapIcon} title="Ingliz tili" text="A1–C2 darslar xaritasi: har dars — tushuntirish, mashq, gapirish va tekshiruv. Bo‘lim oxirida boss." badge={<span className="badge on">Boshlash bepul</span>} />
-        <Tile big href="#/exam" tone="red" icon={Target} title="Imtihonga tayyorgarlik" text="IELTS, CEFR (Multilevel) va SAT: bo‘limlar bo‘yicha mashq, real imtihon muhitidagi mock testlar." badge={<span className="badge on">Mock testlar bepul</span>} />
-        <Tile big href="#/coach" tone="blue" icon={Bot} title="AI ustoz" text="O‘zbekcha tushuntiradi, xatoingizni topib, to‘g‘ri aytilishini ko‘rsatadi. 5 xil xarakter." />
+      <div className="bento">
+        <a className="b-lg" href="#/learn">
+          <span className="blob green"><MapIcon /></span>
+          <h3>Ingliz tili — darslar xaritasi</h3>
+          <p>Har dars: qisqa tushuntirish, mashq, gapirish va tekshiruv. Jon, combo, kunlik vazifalar va bo‘lim oxirida boss sinovi.</p>
+          <div className="b-foot"><span className="badge on">Boshlash bepul</span><ArrowRight size={18} /></div>
+        </a>
+        <a className="b-sm night" href="#/mocks">
+          <span className="blob red"><Timer /></span>
+          <h3>Mock Arena</h3>
+          <p>IELTS va CEFR formatidagi to‘liq testlar, taymer va izohlar bilan.</p>
+          <div className="b-foot"><span style={{ color: '#ffd28a' }}>Bepul</span><ArrowRight size={18} /></div>
+        </a>
+        <a className="b-md" href="#/exam">
+          <span className="blob orange"><Target /></span>
+          <h3>Imtihonga tayyorgarlik</h3>
+          <p>Reading, Listening, Writing, Speaking — AI baholash bilan.</p>
+          <div className="b-foot"><span className="muted">IELTS · CEFR · SAT</span><ArrowRight size={18} /></div>
+        </a>
+        <a className="b-md" href="#/coach">
+          <span className="blob blue"><Bot /></span>
+          <h3>AI ustoz</h3>
+          <p>O‘zbekcha tushuntiradi, xatoingizni topib, to‘g‘ri aytilishini ko‘rsatadi. 5 xil xarakter.</p>
+          <div className="b-foot"><span className="muted">Ovozli suhbat</span><ArrowRight size={18} /></div>
+        </a>
       </div>
 
       {bot && (
@@ -96,6 +113,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <a className="btn lg" href="#/placement">Testni boshlash <ArrowRight size={18} /></a>
         </div>
       )}
+      <TodayHero />
       {!signedIn && <p className="notice">Progressingiz hozir faqat shu qurilmada. <a href="#/profile">Hisob oching</a> — XP va darslaringiz hisobga yoziladi va boshqa qurilmada ham ochiladi.</p>}
       <PlanCard />
       <QuestsCard />

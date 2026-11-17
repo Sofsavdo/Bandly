@@ -101,7 +101,7 @@ export default function Coach() {
 
   return (
     <div>
-      <section className="card">
+      <section className="card night page-head">
         <h2><Bot size={22} /> AI ustoz</h2>
         <p>Beshta xarakterdan birini tanlang va ingliz tilida gaplashing: ustoz javob beradi, xatoingizni tuzatadi va keyingi savolni beradi.</p>
         {status && !status.coach && <p className="notice">AI ustoz bilan suhbat tez orada ochiladi. Hozircha xarakterlar bilan tanishing va gapirishni “Jim qolma!” o‘yinida mashq qiling.</p>}

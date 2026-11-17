@@ -6,6 +6,7 @@ import '@fontsource-variable/inter';
 import '@fontsource/unbounded/600.css';
 import '@fontsource/unbounded/700.css';
 import './styles.css';
+import './design2.css'; // Design 2.0 qatlami (tokenlar va komponentlar)
 import { startSync } from './lib/account';
 import { initPay } from './lib/pay';
 
