@@ -77,7 +77,7 @@ export default function Challenge() {
     <div>
       {phase === 'setup' && (
         <section className="card page-head with-illo t-peach challenge-start">
-          <h2 style={{ margin: 0 }}>Jim qolma!</h2>
+          <h1 style={{ margin: 0, fontSize: 'clamp(24px, 3.4vw, 34px)', lineHeight: 1.08 }}>Jim qolma!</h1>
           <p style={{ margin: '4px 0 14px' }}>{ROUND_MS / 1000} soniya to‘xtamay gapiring.</p>
           <Illo kind="mic" size={124} />
           <div className="topic-card">

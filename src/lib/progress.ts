@@ -1,4 +1,5 @@
 import type { ResultRecord } from './storage';
+import { dayKey } from './game';
 import type { Cefr } from './levels';
 import type { Profile } from './types';
 
@@ -59,7 +60,7 @@ export function studyPlan(p: Pick<Profile, 'target' | 'examDate' | 'level' | 'ch
 
 /** Oxirgi n kunning XP si (eskisi birinchi). */
 export function lastDays(activity: Record<string, number>, n: number, now = Date.now()): { day: string; xp: number }[] {
-  return Array.from({ length: n }, (_, i) => { const d = new Date(now - (n - 1 - i) * 86_400_000).toISOString().slice(0, 10); return { day: d, xp: activity[d] ?? 0 }; });
+  return Array.from({ length: n }, (_, i) => { const t = new Date(now); t.setDate(t.getDate() - (n - 1 - i)); const d = dayKey(t); return { day: d, xp: activity[d] ?? 0 }; });
 }
 
 export const TASKS = ['words', 'grammar', 'practice', 'reading', 'listening', 'speaking'] as const;

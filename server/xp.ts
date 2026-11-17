@@ -2,6 +2,7 @@
 // Server har hodisani bir marta qabul qiladi (id bo'yicha), har manba va kun uchun chegara qo'yadi.
 // Server o'zi tekshira oladigan natijalar (Mock Arena baholash) XP'ni to'g'ridan-to'g'ri server beradi.
 import type { DatabaseSync } from 'node:sqlite';
+import { tzDayStart } from './day';
 import { byToken } from './db';
 import { joinWeek } from './league';
 
@@ -17,7 +18,7 @@ export function ensureXpTables(db: DatabaseSync): void {
   db.exec('CREATE INDEX IF NOT EXISTS xp_events_day ON xp_events (player_id, ts)');
 }
 
-const dayStart = (now: number) => { const d = new Date(now); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
+const dayStart = tzDayStart; // Toshkent kuni
 
 /** Bitta hodisani qabul qiladi (takror id — 0). Qaytaradi: qabul qilingan XP. */
 export function awardXp(db: DatabaseSync, playerId: number, eventId: string, source: string, amount: number, now = Date.now()): number {
