@@ -543,3 +543,11 @@ html, body { overflow-x: clip; }
 .btn.danger { color: #b3261e; }
 @media (prefers-color-scheme: dark) { .btn.danger { color: #ff9a8f; } }
 .zone-gate { background: #fff !important; color: #14162b !important; box-shadow: var(--shadow-1); }
+
+/* Til tanlash */
+.lang-pick { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-1); color: var(--ink-2); cursor: pointer; flex: none; }
+.lang-pick select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; padding: 0 2px; font: inherit; font-weight: 650; font-size: 14px; color: var(--ink); cursor: pointer; box-shadow: none !important; outline-offset: 4px; }
+.lang-pick.compact { height: 40px; }
+@media (max-width: 979px) { .app-header .lang-pick.compact { padding: 0 10px; } .app-header .lang-pick.compact select { max-width: 74px; font-size: 13px; } }
+@media (min-width: 980px) { .app-header .lang-pick.compact { width: 100%; justify-content: center; box-shadow: none; background: var(--surface-2); } }
+@media (max-width: 979px) { .app-header .lang-pick.compact { display: none; } }

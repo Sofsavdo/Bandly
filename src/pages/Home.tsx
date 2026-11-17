@@ -9,6 +9,7 @@ import { QuestsCard } from '../components/QuestsCard';
 import { Illo } from '../components/Illo';
 import { PRing } from '../components/PRing';
 import { WeekBars } from '../components/WeekBars';
+import { LangPicker } from '../components/LangPicker';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { vocab } from '../content/vocab';
 import { useProfile } from '../lib/store';
@@ -37,7 +38,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
     <div>
       <section className="w-hero">
         <div>
-          <span className="eyebrow" style={{ whiteSpace: 'nowrap' }}>General English · IELTS · CEFR · SAT</span>
+          <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}><span className="eyebrow" style={{ whiteSpace: 'nowrap', marginBottom: 0 }}>General English · IELTS · CEFR · SAT</span><LangPicker /></div>
           <h1>Ingliz tilini <span className="hl">o‘yin kabi</span> o‘rganing</h1>
           <p className="lead">A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.</p>
           <div className="cta">

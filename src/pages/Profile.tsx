@@ -16,6 +16,7 @@ import { isMastered } from '../lib/srs';
 import { ProgressCard } from '../components/ProgressCard';
 import { PRing } from '../components/PRing';
 import { WeekBars } from '../components/WeekBars';
+import { LangPicker } from '../components/LangPicker';
 
 export default function Profile() {
   const p = useProfile();
@@ -98,6 +99,7 @@ export default function Profile() {
 
       <div className="card">
         <h3>Sozlamalar</h3>
+        <div style={{ marginBottom: 12 }}><LangPicker /></div>
         <div className="row" style={{ marginBottom: 10 }}>
           <a className="btn sm" href="#/placement">{p.level ? `Darajani qayta aniqlash (${p.level})` : 'Darajani aniqlash'}</a>
           <label><input type="checkbox" checked={snd} onChange={(e) => { setSnd(e.target.checked); setSound(e.target.checked); if (e.target.checked) sfx('ok'); }} /> Ovozli effektlar</label>

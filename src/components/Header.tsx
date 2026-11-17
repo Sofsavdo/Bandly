@@ -1,6 +1,7 @@
 import { ChevronDown, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
 import { getAccount, onAccountChange } from '../lib/account';
 import { SignOutDialog } from './SignOutDialog';
+import { LangPicker } from './LangPicker';
 import { useEffect, useState } from 'react';
 import { BRAND } from '../brand';
 import { levelProgress, dayKey, displayStreak } from '../lib/game';
@@ -52,6 +53,7 @@ export function Header({ hash }: { hash: string }) {
             {staff && <a href="#/studio" className={isActive(hash, '#/studio') ? 'active' : ''}><Pencil size={16} />Metodist kabineti</a>}
           </nav>
           <div className="header-right">
+            <LangPicker compact />
             <Stats />
             <a className="btn primary sm header-cta" href="#/pricing">{t('cta.plans')}</a>
             <a className="icon-btn desk-only" href={PROFILE.href} aria-label={t('nav.profile')}><User size={18} /></a>
@@ -68,6 +70,7 @@ export function Header({ hash }: { hash: string }) {
               <button className="icon-btn" aria-label={t('nav.close')} onClick={() => setOpen(false)}><X size={20} /></button>
             </div>
             <div className="dstats"><Stats /></div>
+            <LangPicker />
             {NAV_GROUPS.map((g) => {
               const here = g.items.some((n) => isActive(hash, n.href));
               return (
