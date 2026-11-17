@@ -14,7 +14,7 @@ export function coachStatus(): Promise<CoachStatus> {
 export const newTurnId = (): string => `t-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
 /** One coach turn. The same turnId may be retried safely: the server never calls the AI provider twice for it. */
-export async function coachSay(body: { persona: PersonaId; mode: 'practice' | 'exam'; adult: boolean; level: string | null; history: { role: 'learner' | 'coach'; text: string }[]; text: string; turnId: string }, timeoutMs = 20_000): Promise<CoachReply> {
+export async function coachSay(body: { persona: PersonaId; mode: 'practice' | 'exam'; adult: boolean; level: string | null; history: { role: 'learner' | 'coach'; text: string }[]; text: string; turnId: string }, timeoutMs = 30_000): Promise<CoachReply> {
   const a = getAccount();
   if (!a) throw new Error(L('Avval laqab tanlang'));
   const ctl = new AbortController();

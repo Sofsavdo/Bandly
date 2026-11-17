@@ -149,3 +149,24 @@ console.log('ai.test: OK');
   await comp(old, 's', 'u', { maxTokens: 300, fetchImpl: (async (_u: string, init: { body: string }) => { sentBody = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'x' }] } }] }) }; }) as never });
   assert.equal(sentBody.generationConfig.thinkingConfig, undefined, 'eski modelga thinkingLevel yuborilmaydi');
 }
+
+assert.equal((await import('./ai')).configFromEnv({ AI_API_KEY: 'AQ.Ab12' }).provider, 'gemini', 'yangi Gemini auth kaliti (AQ.) tanildi');
+
+// Model band (503): bir marta qayta, keyin zaxira model; doimiy xato (401) qayta urinilmaydi
+{
+  const { configFromEnv: cfe, complete: comp, AiError: AE } = await import('./ai');
+  const g = cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AQ.k' });
+  assert.equal(g.fallbackModel, 'gemini-3.6-flash');
+  const models: string[] = [];
+  const busyThenFallback = (async (u: string) => { const m = decodeURIComponent(u.split('/models/')[1]!.split(':')[0]!); models.push(m); return m === 'gemini-3.6-flash' ? { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'hi' }] } }] }) } : { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE', message: 'high demand' } }) }; }) as never;
+  assert.equal(await comp(g, 's', 'u', { fetchImpl: busyThenFallback, retryDelayMs: 1 }), 'hi');
+  assert.deepEqual(models, ['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.6-flash']);
+  let n = 0;
+  const allBusy = (async () => { n++; return { ok: false, status: 503, json: async () => ({}) }; }) as never;
+  await assert.rejects(comp(g, 's', 'u', { fetchImpl: allBusy, retryDelayMs: 1 }), (e: unknown) => e instanceof AE && e.status === 503 && /band/.test(e.message));
+  assert.equal(n, 3);
+  n = 0;
+  const badKey = (async () => { n++; return { ok: false, status: 401, json: async () => ({}) }; }) as never;
+  await assert.rejects(comp(g, 's', 'u', { fetchImpl: badKey, retryDelayMs: 1 }), /kaliti yaroqsiz/);
+  assert.equal(n, 1, '401 qayta urinilmaydi');
+}
