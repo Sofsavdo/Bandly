@@ -37,6 +37,15 @@ export function configFromEnv(env: Record<string, string | undefined> = process.
   return { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, ''), ...(fbs.length ? { fallbackModels: fbs } : {}) };
 }
 
+/** Ovozli suhbat uchun model tartibi: tezlik muhim (o'quvchi javobni kutib turadi). Gemini'da — avval Flash-Lite (o'ylamaydi, tez),
+ *  keyin asosiy model va qolgan zaxiralar. AI_COACH_MODEL bilan o'zgartiriladi. */
+export function coachConfig(cfg: AiConfig, env: Record<string, string | undefined> = process.env): AiConfig {
+  const first = (env.AI_COACH_MODEL ?? '').trim() || (cfg.provider === 'gemini' ? 'gemini-3.5-flash-lite' : '');
+  if (!first || first === cfg.model) return cfg;
+  const rest = [cfg.model, ...(cfg.fallbackModels ?? [])].filter((m, i, a) => m !== first && a.indexOf(m) === i);
+  return { ...cfg, model: first, fallbackModels: rest };
+}
+
 /** AI nega o'chiq — log uchun (kalitning o'zi chiqarilmaydi). */
 export function aiOffReason(env: Record<string, string | undefined> = process.env): string | null {
   const key = (env.AI_API_KEY ?? '').trim();

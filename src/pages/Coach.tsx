@@ -144,7 +144,7 @@ export default function Coach() {
     try {
       let heard = '';
       if (server) {
-        const r = await recordTurn({ silenceMs: 1300, maxMs: 60_000, noSpeechMs: 12_000, onLevel: setLvl, endRef, signal: ls });
+        const r = await recordTurn({ silenceMs: 1000, maxMs: 60_000, noSpeechMs: 12_000, onLevel: setLvl, endRef, signal: ls });
         setLvl(0);
         if (!liveRef.current || ls.cancelled) return;
         if (!r.blob) { setPhase('idle'); return; } // gapirilmadi — tugmani bosib qayta gapiradi
