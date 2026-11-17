@@ -1,7 +1,7 @@
 import { Pause, Play, RotateCcw, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { MockTest, type ExamLeftState } from '../components/MockTest';
-import type { ListeningTest } from '../content/types';
+import type { PublicListeningTest as ListeningTest } from '../content/mockShared';
 import { listeningTrack } from '../lib/clips';
 import { LISTENING_TABLE } from '../lib/band';
 import { bestVoice } from '../lib/speech';

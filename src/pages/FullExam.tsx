@@ -1,7 +1,6 @@
 import { ArrowRight, CheckCircle2, Circle, ClipboardCheck, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
-import { listeningTests } from '../content/listeningTests';
-import { readingTests } from '../content/readingTests';
+import { listeningTests, readingTests } from '../content/mockTests';
 import { levelIndex } from '../lib/levels';
 import { roundHalf } from '../lib/progress';
 import { recordMock } from '../lib/history';

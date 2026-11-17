@@ -1,10 +1,12 @@
-import type { Question } from '../content/types';
+import type { Graded, PublicQuestion } from '../content/mockShared';
 import { Flag } from 'lucide-react';
-import { correctText, isCorrect, type Answer } from '../lib/grade';
+import type { Answer } from '../lib/grade';
 
 interface Props {
   groups: { instruction: string; questionIds: number[] }[];
-  questions: Question[];
+  questions: PublicQuestion[];
+  /** Server bahosi: topshirilgandan keyin keladi */
+  graded?: Graded | null;
   answers: Record<number, Answer>;
   onChange: (id: number, a: Answer) => void;
   submitted: boolean;
@@ -17,7 +19,7 @@ interface Props {
 
 const TFNG = ['True', 'False', 'Not Given'] as const;
 
-export function QuestionList({ groups, questions, answers, onChange, submitted, flags, onFlag, anchorPrefix, current }: Props) {
+export function QuestionList({ groups, questions, answers, onChange, submitted, graded, flags, onFlag, anchorPrefix, current }: Props) {
   return (
     <div>
       {groups.map((g) => (
@@ -31,9 +33,10 @@ export function QuestionList({ groups, questions, answers, onChange, submitted, 
           {g.questionIds.map((id) => {
             const q = questions.find((x) => x.id === id)!;
             const a = answers[id];
-            const ok = submitted && isCorrect(q, a);
+            const g = submitted ? graded?.[id] : undefined;
+            const ok = !!g?.correct;
             const flagged = !!flags?.includes(id);
-            const cls = (submitted ? (ok ? 'q correct' : 'q wrong') : 'q') + (flagged ? ' flagged' : '') + (current === id ? ' current' : '');
+            const cls = (g ? (ok ? 'q correct' : 'q wrong') : 'q') + (flagged ? ' flagged' : '') + (current === id ? ' current' : '');
             return (
               <div className={cls} key={id} id={anchorPrefix ? `${anchorPrefix}${id}` : undefined}>
                 <div className="q-head">
@@ -65,10 +68,10 @@ export function QuestionList({ groups, questions, answers, onChange, submitted, 
                 {q.type === 'fill' && (
                   <input type="text" autoComplete="off" disabled={submitted} value={typeof a === 'string' ? a : ''} onChange={(e) => onChange(id, e.target.value)} />
                 )}
-                {submitted && (
+                {g && (
                   <div className="evidence">
-                    {ok ? <span className="ok">To‘g‘ri</span> : <span className="bad">Noto‘g‘ri</span>} — to‘g‘ri javob: <b>{correctText(q)}</b>
-                    <div>{q.evidence}</div>
+                    {ok ? <span className="ok">To‘g‘ri</span> : <span className="bad">Noto‘g‘ri</span>} — to‘g‘ri javob: <b>{g.answer}</b>
+                    <div>{g.evidence}</div>
                   </div>
                 )}
               </div>

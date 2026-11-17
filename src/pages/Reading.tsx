@@ -1,7 +1,7 @@
 import { Highlighter, Eraser } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { MockTest, type ExamLeftState } from '../components/MockTest';
-import type { ReadingTest } from '../content/types';
+import type { PublicReadingTest as ReadingTest } from '../content/mockShared';
 import { READING_ACADEMIC_TABLE } from '../lib/band';
 import { addHighlight, segments, type HighlightRange } from '../lib/examAttempt';
 

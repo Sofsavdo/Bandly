@@ -1,7 +1,7 @@
 import { Flag, NotebookPen, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import type { Question } from '../content/types';
-import { gradeAll, isCorrect, type Answer } from '../lib/grade';
+import type { Graded, PublicQuestion } from '../content/mockShared';
+import type { Answer } from '../lib/grade';
 import { scaledBand } from '../lib/band';
 import type { Cefr } from '../lib/levels';
 import { BAND_CAP, capBand } from '../lib/progress';
@@ -23,7 +23,7 @@ interface Props {
   title: string;
   minutes: number;
   groups: { instruction: string; questionIds: number[] }[];
-  questions: Question[];
+  questions: PublicQuestion[];
   table: ReadonlyArray<readonly [number, number]>;
   /** Test qiyinligi: past darajali testda band yuqori ko'rsatilmaydi */
   level?: Cefr;
@@ -66,20 +66,39 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     });
   }, []);
 
-  /** Natijani bir marta yozadi (XP, tarix, mastery). Urinish topshirilgan bo'lsa qayta yozilmaydi. */
+  /** Topshiradi (baholash serverda — javob kalitlari brauzerda yo'q). */
   const finalize = useCallback((a: ExamAttempt, auto: boolean) => {
     const done = submitAttempt(a, Date.now(), auto);
     if (done === a) return a;
     saveAttempt(done);
-    if (!recorded.current) {
-      recorded.current = true;
-      const correct = gradeAll(questions, done.answers);
-      saveResult({ kind, title, correct, total: questions.length, band: capBand(scaledBand(correct, questions.length, table), level), level });
-      addXp(correct * 5 + (correct / questions.length >= 0.8 ? 20 : 0));
-      recordTestAnswers(kind, questions.map((q) => ({ type: q.type, correct: isCorrect(q, done.answers[q.id]) })), level, getProfile().level);
-    }
     return done;
-  }, [kind, level, questions, table, title]);
+  }, []);
+
+  // Topshirilgan, lekin hali baholanmagan urinish: serverdan natija olinadi va BIR MARTA yoziladi (XP, tarix, mastery)
+  const [gradeErr, setGradeErr] = useState('');
+  const [gradeTry, setGradeTry] = useState(0);
+  useEffect(() => {
+    if (!attempt || attempt.status !== 'submitted' || attempt.graded) return;
+    let stop = false;
+    setGradeErr('');
+    fetch('/api/mock/grade', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind, testId, answers: attempt.answers }) })
+      .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? `Xato ${r.status}`); return j as { graded: Graded; correct: number }; })
+      .then(({ graded, correct }) => {
+        if (stop) return;
+        update((a) => {
+          if (a.graded) return a;
+          if (!a.recorded && !recorded.current) {
+            recorded.current = true;
+            saveResult({ kind, title, correct, total: questions.length, band: capBand(scaledBand(correct, questions.length, table), level), level });
+            addXp(correct * 5 + (correct / questions.length >= 0.8 ? 20 : 0));
+            recordTestAnswers(kind, questions.map((q) => ({ type: q.type, correct: !!graded[q.id]?.correct })), level, getProfile().level);
+          }
+          return { ...a, graded, recorded: true };
+        });
+      })
+      .catch((e: Error) => { if (!stop) setGradeErr(e.message === 'Failed to fetch' ? 'Server bilan aloqa yo‘q' : e.message); });
+    return () => { stop = true; };
+  }, [attempt?.status, attempt?.graded, gradeTry, kind, testId, title, questions, table, level, update]);
 
   // Taymer: har soniyada saqlangan muddatdan hisoblanadi; 0 da avtomatik topshiriladi (sahifa yopilgan bo'lsa ham, qaytib kelganda).
   useEffect(() => {
@@ -145,7 +164,8 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     );
   }
 
-  const correct = gradeAll(questions, attempt.answers);
+  const graded = attempt.graded ?? null;
+  const correct = graded ? questions.filter((q) => graded[q.id]?.correct).length : 0;
   const rawBand = scaledBand(correct, questions.length, table);
   const band = capBand(rawBand, level);
   const missing = unanswered(attempt, ids);
@@ -183,11 +203,13 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
         <div className="card">
           {attempt.autoSubmitted && <p className="notice">Vaqt tugadi — javoblaringiz avtomatik topshirildi.</p>}
           {hasFull() && <p><a className="btn sm primary" href="#/mocks/full">To‘liq imtihonga qaytish</a></p>}
-          <div className="score">{correct} / {questions.length}</div>
+          {!graded && !gradeErr && <p className="muted" role="status">Natija hisoblanmoqda…</p>}
+          {!graded && gradeErr && <p className="notice" role="alert">Natijani olib bo‘lmadi: {gradeErr}. Javoblaringiz saqlangan. <button className="btn sm" onClick={() => setGradeTry((n) => n + 1)}>Qayta urinish</button></p>}
+          {graded && <><div className="score">{correct} / {questions.length}</div>
           <div>
             Taxminiy band: <b>{band.toFixed(1)}</b> <span className="pill">40 ballik shkalaga keltirilgan, rasmiy natija emas</span>
             {level && rawBand > band && <p className="evidence">Bu test {level} darajali, shuning uchun band {BAND_CAP[level].toFixed(1)} dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.</p>}
-          </div>
+          </div></>}
         </div>
       )}
 
@@ -206,6 +228,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
             answers={attempt.answers}
             onChange={(id, a) => update((x) => setAnswer(x, id, a))}
             submitted={submitted}
+            graded={graded}
             flags={attempt.flags}
             onFlag={submitted ? undefined : (id) => update((x) => toggleFlag(x, id))}
             anchorPrefix={`q-${testId}-`}

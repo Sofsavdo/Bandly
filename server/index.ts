@@ -8,6 +8,7 @@ import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
+import { gradeMock } from './mockGrade';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, botFromEnv, handleUpdate, nickFrom, setupBot, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
@@ -108,6 +109,10 @@ createServer(async (req, res) => {
       if (bot) throw new ApiError(410, 'Hisob endi Telegram orqali ochiladi');
       const b = await readJson(req);
       return send(res, 200, join(db, String(b.nickname ?? '')));
+    }
+    if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
+      const b = await readJson(req, 16_384);
+      return send(res, 200, gradeMock(b.kind, b.testId, b.answers));
     }
     if (url.pathname === '/api/progress') {
       const token = String(req.headers['x-token'] ?? '');

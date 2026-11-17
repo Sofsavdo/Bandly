@@ -1,7 +1,6 @@
 import { BookOpen, Headphones } from 'lucide-react';
 import { Tile } from '../components/Tile';
-import { listeningTests } from '../content/listeningTests';
-import { readingTests } from '../content/readingTests';
+import { listeningTests, readingTests } from '../content/mockTests';
 import { loadResults } from '../lib/storage';
 import { levelIndex } from '../lib/levels';
 import { useProfile } from '../lib/store';

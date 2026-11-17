@@ -1,0 +1,1524 @@
+{
+ "reading": [
+  {
+   "id": "reading-5",
+   "level": "A2",
+   "title": "Reading mini-test 5: A Saturday at the Market",
+   "minutes": 10,
+   "passageTitle": "A Saturday at the Market",
+   "paragraphs": [
+    "A. Every Saturday, Dilnoza goes to the big market in her town with her mother. They leave home at seven in the morning because the market is busy after nine. They go by bus, and the ride takes about twenty minutes.",
+    "B. First, they buy vegetables and fruit. Dilnoza likes red apples and sweet grapes, but her mother always buys tomatoes and onions first. The prices are lower at the market than in the supermarket, so many families shop there.",
+    "C. Next, they visit the bread section. A man called Rustam sells fresh bread from a traditional oven. He starts baking at five o’clock, and by eight the best bread is usually finished. Dilnoza always eats a small piece while it is still hot.",
+    "D. At eleven o’clock, they have tea and a snack at a small cafe near the entrance. Then they carry the heavy bags to the bus stop. Dilnoza is tired when she gets home, but she says the market is the best part of her week."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–8: Choose the correct letter.",
+     "questionIds": [
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "Dilnoza goes to the market every Saturday."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "The market is quiet after nine o’clock."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "Prices at the market are lower than in the supermarket."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "Rustam has a shop in the city centre."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Dilnoza feels tired when she gets home."
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "How do Dilnoza and her mother travel to the market?",
+     "options": [
+      "By bus",
+      "By car",
+      "On foot"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "What does Dilnoza’s mother buy first?",
+     "options": [
+      "Apples and grapes",
+      "Tomatoes and onions",
+      "Fresh bread"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "Where do they have tea?",
+     "options": [
+      "At home",
+      "At the bus stop",
+      "At a small cafe"
+     ]
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "They leave home at ______ in the morning."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Dilnoza eats a piece of bread while it is still ______."
+    }
+   ]
+  },
+  {
+   "id": "reading-1",
+   "level": "B1",
+   "title": "Reading mini-test 1: The Rise of the Rooftop Garden",
+   "minutes": 15,
+   "passageTitle": "The Rise of the Rooftop Garden",
+   "paragraphs": [
+    "A. In many large cities, the tops of buildings are among the least used spaces. For most of the twentieth century, roofs were treated as simple coverings, designed to keep rain out and little else. In recent decades, however, architects and city planners have begun to see them as an opportunity. Rooftop gardens, once a rare luxury found on a handful of hotels and private homes, are now appearing on schools, hospitals and office blocks around the world.",
+    "B. One of the main reasons for this change is heat. Cities are usually warmer than the surrounding countryside, a phenomenon known as the urban heat island effect. Dark surfaces such as asphalt and tar roofing absorb sunlight during the day and release it slowly at night. One study of a North American city suggested that if all suitable roofs were covered with plants, the average summer temperature in the centre could fall by up to two degrees Celsius. On a single building, a green roof can also reduce the cost of cooling the rooms below, because the layer of soil and plants acts as insulation.",
+    "C. Water management is a second benefit. In a city, rain that falls on hard surfaces runs quickly into drains, and during heavy storms the drainage system can be overwhelmed, causing floods. A green roof absorbs part of this rainfall and releases it slowly. Studies in several European countries have suggested that a roof with a soil layer of about ten centimetres can keep around half of the yearly rainfall from reaching the drains at all.",
+    "D. Rooftop gardens are not only practical. They also create habitats for wildlife. In cities where parks are small and far apart, insects and birds can use roofs as stepping stones between green areas. Some enthusiasts have gone further and placed beehives on rooftops, and honey produced in the middle of a city is now sold in several markets as a local speciality.",
+    "E. There are, however, challenges. A green roof is much heavier than a conventional one, so the building must be strong enough to carry the extra load, especially when the soil is wet. Installation typically costs two to three times as much as a normal roof, and the plants need regular watering and weeding. Yet over time the plant layer protects the waterproof membrane from sunlight and sudden changes in temperature. As a result, a green roof may last around forty years, compared with about twenty for a conventional roof.",
+    "F. Governments have started to respond. A few cities now require new large buildings with flat roofs to include vegetation, while others simply offer tax reductions to owners who install green roofs. Critics argue that rules which demand plants may be less effective than rules which set targets for cooling or water retention, leaving builders free to choose the best method for each building."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–9: Complete the sentences. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+     "questionIds": [
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 10–13: Choose the correct answer.",
+     "questionIds": [
+      10,
+      11,
+      12,
+      13
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "For most of the twentieth century, roofs were designed mainly to keep rain out."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "The first rooftop gardens were built on hotels."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "Dark roofing materials release absorbed heat slowly during the night."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "A green roof increases the cost of cooling the rooms below it."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Every city has made green roofs compulsory for new buildings."
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Cities are warmer than the countryside because of the urban ______ effect."
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "During heavy storms, drainage systems can be overwhelmed, causing ______."
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "A building with a green roof must be strong enough to carry the extra ______."
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "The plant layer protects the waterproof ______ from sunlight and temperature changes."
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "What is the main purpose of paragraph B?",
+     "options": [
+      "To explain how green roofs can help reduce temperatures",
+      "To compare asphalt with tar",
+      "To describe studies of rainfall",
+      "To argue that cities should be cooler"
+     ]
+    },
+    {
+     "id": 11,
+     "type": "mcq",
+     "text": "According to the passage, what is one disadvantage of green roofs?",
+     "options": [
+      "They need no maintenance",
+      "They cost more to install",
+      "They attract insects",
+      "They reduce the usable space"
+     ]
+    },
+    {
+     "id": 12,
+     "type": "mcq",
+     "text": "How long may a green roof last compared with a conventional roof?",
+     "options": [
+      "About the same time",
+      "Around twice as long",
+      "Half as long",
+      "Three times as long"
+     ]
+    },
+    {
+     "id": 13,
+     "type": "mcq",
+     "text": "What do critics of rules that demand plants suggest?",
+     "options": [
+      "Rules should set targets for performance",
+      "Rules should be stricter",
+      "Green roofs should be banned",
+      "Tax reductions should end"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "reading-6",
+   "level": "B1",
+   "title": "Reading mini-test 6: Why More People Are Cycling to Work",
+   "minutes": 12,
+   "passageTitle": "Why More People Are Cycling to Work",
+   "paragraphs": [
+    "A. In many cities, the number of people who cycle to work has grown steadily over the last ten years. Some workers say that the main reason is cost. A monthly bus ticket can be expensive, while a bicycle needs only a small amount of money for repairs.",
+    "B. Health is another reason. Doctors recommend at least thirty minutes of exercise a day, and many office workers find it difficult to fit that into a busy schedule. Cycling to work solves the problem, because the journey itself becomes exercise. One survey found that cyclists took fewer days off sick than people who drove.",
+    "C. However, cycling is not always easy. In cities without separate bicycle lanes, riders share the road with cars and buses, and many people feel unsafe. Bad weather is also a problem: few people enjoy arriving at the office wet and cold.",
+    "D. To help, some companies now provide showers and secure places to keep bicycles. A few offer small payments to employees who cycle. City councils are also building new lanes, although progress is often slow because the work is expensive."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–4: Which paragraph contains the following information? Choose the correct letter, A–D.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "instruction": "Questions 5–8: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "match",
+     "text": "a comparison of transport costs",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "match",
+     "text": "a reference to a survey",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "match",
+     "text": "the problem of sharing roads with cars",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "match",
+     "text": "ways in which employers help cyclists",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "The number of cyclists in cities has fallen recently."
+    },
+    {
+     "id": 6,
+     "type": "tfng",
+     "text": "Cyclists took fewer days off sick than drivers."
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Most companies provide free bicycles to staff."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Building new bicycle lanes is cheap and quick."
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "Doctors recommend at least thirty minutes of ______ a day."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Some companies provide ______ and secure places for bicycles."
+    }
+   ]
+  },
+  {
+   "id": "reading-3",
+   "level": "B2",
+   "title": "Reading mini-test 3: The Return of the Night Train",
+   "minutes": 18,
+   "passageTitle": "The Return of the Night Train",
+   "paragraphs": [
+    "A. Thirty years ago, an overnight train journey was a normal way to cross Europe. Then budget airlines arrived. With tickets sometimes costing less than a train sandwich, many routes lost passengers, and railway companies cancelled their night services one after another. By the early 2010s, only a handful of sleeper trains were left on the continent.",
+    "B. Recently, the picture has begun to change. Growing concern about climate change has led many travellers to look for ways to reduce their carbon footprint, and some now choose not to fly when an alternative exists. Several governments have responded by supporting new night routes, and passenger numbers on the restored services have often been higher than expected.",
+    "C. Night trains have clear advantages. Passengers travel from one city centre to another, avoiding long journeys to and from airports. Tickets are not always cheaper than flights, but travellers save the cost of a hotel room, since they sleep on the train. Emissions per passenger are also much lower than on a plane.",
+    "D. There are, however, practical problems. Many sleeper carriages are old and uncomfortable, and few factories still build new ones. International journeys are complicated by technical differences: countries use different power systems and signals, so locomotives and drivers often have to change at the border. In addition, companies must pay fees for using the tracks, and night services compete for space with freight trains.",
+    "E. Operators are trying to solve the comfort problem. New sleeper cars offer private cabins with their own washbasins and showers, and some companies have ordered dozens of them. Better design, supporters argue, can turn the night train from a cheap necessity into a pleasant experience.",
+    "F. Most analysts do not expect trains to replace aeroplanes on very long routes. But on journeys of up to about twelve hours, a night train can leave in the evening and arrive in the morning, and that makes it a realistic competitor. If more investment follows, the sleeper train may become a permanent part of European travel once again."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–4 and 13: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      13
+     ]
+    },
+    {
+     "instruction": "Questions 5–8: Complete the sentences. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+     "questionIds": [
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–12: Choose the correct answer.",
+     "questionIds": [
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "Cheap flights contributed to the decline of night trains."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "Night train tickets are always cheaper than flight tickets."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "All European countries use the same railway signals."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "Some governments are paying for new sleeper carriages."
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Many travellers want to reduce their ______ by not flying."
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Countries use different power systems and ______."
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "New sleeper cars offer private ______ with washbasins and showers."
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Night trains can compete on journeys of up to about twelve ______."
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "What was the main reason night trains disappeared from many routes?",
+     "options": [
+      "Competition from budget airlines",
+      "Government bans",
+      "A lack of drivers",
+      "Frequent accidents"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "What do passengers save by taking a night train?",
+     "options": [
+      "Airport tax",
+      "The cost of a hotel room",
+      "Baggage fees",
+      "The cost of food"
+     ]
+    },
+    {
+     "id": 11,
+     "type": "mcq",
+     "text": "Which technical problem is mentioned for international journeys?",
+     "options": [
+      "Narrow tracks",
+      "Too few stations",
+      "Different power systems and signals",
+      "Lack of fuel"
+     ]
+    },
+    {
+     "id": 12,
+     "type": "mcq",
+     "text": "How does the writer describe the future of night trains?",
+     "options": [
+      "They will replace all short flights",
+      "They can compete on medium-length journeys",
+      "They will soon disappear again",
+      "They are only for tourists"
+     ]
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Night trains will soon replace aeroplanes on very long routes."
+    }
+   ]
+  },
+  {
+   "id": "reading-4",
+   "level": "B2",
+   "title": "Reading mini-test 4: Learning a Language as an Adult",
+   "minutes": 18,
+   "passageTitle": "Learning a Language as an Adult",
+   "paragraphs": [
+    "A. Many adults believe that it is too late to learn a foreign language. Research suggests otherwise. In the first months of study, adults often learn grammar rules faster than children, because they can use logic and their knowledge of their own language. Children, on the other hand, usually develop a more natural accent. The two groups simply have different strengths.",
+    "B. Motivation matters a great deal. Adults who have a clear goal, such as a new job or a plan to move abroad, tend to keep studying even when progress slows. Those who learn only because they feel they should often give up within weeks. Many teachers therefore begin by asking students what exactly they want to do with the language.",
+    "C. Method matters too. One study followed two hundred adult learners for a year. Those who began speaking in the first week, even with simple sentences, progressed faster than those who waited until they felt ready. Spaced repetition, in which words are reviewed at increasing intervals, also helped learners remember vocabulary for longer.",
+    "D. Adults face barriers that children do not. Most are short of time, and many are afraid of making mistakes in front of others. Classes where a teacher gives regular, friendly feedback can reduce this fear, and learners in such classes are more likely to continue.",
+    "E. Finally, there may be wider benefits. Some researchers believe that people who speak two languages show signs of memory decline later in life, but the evidence is not yet conclusive. What is clear is that learners often report greater confidence and new friendships."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–4: Which paragraph contains the following information? Choose the correct letter, A–E.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "instruction": "Questions 5–9: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      5,
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 10–13: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      10,
+      11,
+      12,
+      13
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "match",
+     "text": "a comparison between adults and children",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "match",
+     "text": "the importance of having a practical reason to study",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "match",
+     "text": "a study that lasted a year",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "match",
+     "text": "fear of making errors in public",
+     "options": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Adults can learn grammar rules faster than children at the beginning."
+    },
+    {
+     "id": 6,
+     "type": "tfng",
+     "text": "Children usually develop a more natural accent than adults."
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Learners who spoke from the first week progressed faster."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Group classes are more effective than private lessons."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Researchers agree that learning a language prevents memory decline."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Adults with a clear ______ tend to keep studying."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "Spaced ______ helps learners remember vocabulary for longer."
+    },
+    {
+     "id": 12,
+     "type": "fill",
+     "text": "Most adult learners are short of ______."
+    },
+    {
+     "id": 13,
+     "type": "fill",
+     "text": "Regular ______ from a teacher can reduce the fear of mistakes."
+    }
+   ]
+  },
+  {
+   "id": "reading-2",
+   "level": "C1",
+   "title": "Reading mini-test 2: The Hidden Work of Sleep",
+   "minutes": 18,
+   "passageTitle": "The Hidden Work of Sleep",
+   "paragraphs": [
+    "A. For centuries, sleep was seen as a passive state, a kind of switching off that the body needed in order to recover. Modern research has shown the opposite. Brain scans reveal that during the night the brain passes through several cycles, and in some of them it is almost as active as when we are awake. Far from being idle, the sleeping brain is busy with tasks that cannot be done during the day.",
+    "B. One of these tasks is memory. During deep sleep the brain replays the events of the day, moving information from short-term memory to long-term storage. In one experiment, two groups of students studied the same list of words. The group that slept after studying remembered considerably more words the next morning than the group that stayed awake. Sleep, it seems, does not just preserve what we learn; it makes it stronger.",
+    "C. The body also uses the night to repair itself. Growth hormone is released mostly during deep sleep, helping muscles and tissues to recover. The immune system is active too: people who regularly sleep for fewer than six hours are more likely to catch a cold than those who sleep for eight. Doctors now regard sleep as one of the basic protections for health, alongside food and exercise.",
+    "D. Teenagers face a particular problem. During puberty the body clock shifts, so that young people naturally feel sleepy later in the evening and wake later in the morning. Yet most schools begin early. When some schools moved the start of lessons back by one hour, attendance improved, students reported better moods, and the number of road accidents involving young drivers fell.",
+    "E. Modern life makes good sleep harder. Artificial light in the evening, and especially the blue light from phones and tablets, delays the release of melatonin, the hormone that tells the body it is time to sleep. Experts advise keeping a regular schedule, sleeping in a dark room and avoiding screens for an hour before bed.",
+    "F. However, sleep is not the same for everyone. Most adults need between seven and nine hours, but some people function well on slightly less, and others need more. Sleeping late at weekends can reduce the effects of a short week, but it only partly makes up for lost sleep. Researchers stress that regular, sufficient sleep cannot simply be stored up or caught up later."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–6: The passage has six paragraphs, A–F. Choose the correct heading for each paragraph from the list of headings.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Questions 7–10: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10
+     ]
+    },
+    {
+     "instruction": "Questions 11–13: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      11,
+      12,
+      13
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. A surprising level of activity",
+      "ii. Why teenagers struggle",
+      "iii. Strengthening what we have learned",
+      "iv. The cost of light at night",
+      "v. Physical repair and protection",
+      "vi. Differences between individuals and limits to recovery",
+      "vii. The history of sleep research"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "During deep sleep, information is moved from short-term memory to long-term ______."
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "People who sleep fewer than six hours are more likely to catch a ______."
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "When lessons started an hour later, school ______ improved."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Blue light from screens delays the release of ______."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Most adults need between seven and nine hours of sleep."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Teenagers naturally feel sleepy earlier in the evening than adults."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Short naps during the day improve exam results."
+    }
+   ]
+  }
+ ],
+ "listening": [
+  {
+   "id": "listening-5",
+   "level": "A2",
+   "title": "Listening mini-test 5: Booking a hotel room",
+   "minutes": 6,
+   "names": {
+    "A": "Receptionist",
+    "B": "Karim"
+   },
+   "context": "Mehmonxonada xona band qilish bo‘yicha qisqa telefon suhbati (A2 daraja).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good morning. Sunrise Hotel. How can I help you?"
+    },
+    {
+     "speaker": "B",
+     "text": "Hello. I would like to book a room for two nights, please."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course. When would you like to arrive?"
+    },
+    {
+     "speaker": "B",
+     "text": "On the twelfth of June. So I will leave on the fourteenth."
+    },
+    {
+     "speaker": "A",
+     "text": "Certainly. Would you like a single room or a double room?"
+    },
+    {
+     "speaker": "B",
+     "text": "A single room, please. How much is it?"
+    },
+    {
+     "speaker": "A",
+     "text": "A single room is forty five pounds a night. Breakfast is included."
+    },
+    {
+     "speaker": "B",
+     "text": "That sounds good. Is there a lift? I have a lot of luggage."
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, there is a lift. Your room will be on the third floor."
+    },
+    {
+     "speaker": "B",
+     "text": "Great. Can I pay by card?"
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, you can pay by card when you arrive. May I have your name, please?"
+    },
+    {
+     "speaker": "B",
+     "text": "My name is Karim Aliev. That is K, A, R, I, M. Aliev, A, L, I, E, V."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you, Mr Aliev. And a phone number, please?"
+    },
+    {
+     "speaker": "B",
+     "text": "It is oh seven seven, one two three, nine eight six."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you. Your booking is confirmed. We look forward to seeing you."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–6: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Questions 7–8: Choose the correct letter.",
+     "questionIds": [
+      7,
+      8
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Arrival date: ______ June"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Number of nights: ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Price of a single room: ______ pounds a night"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "The room is on the ______ floor"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Family name: ______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Phone number: 077 123 ______"
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "What type of room does Karim book?",
+     "options": [
+      "A double room",
+      "A single room",
+      "A family room"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "How will he pay?",
+     "options": [
+      "By card",
+      "In cash",
+      "By bank transfer"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-1",
+   "level": "B1",
+   "title": "Listening mini-test 1: Joining a fitness centre",
+   "minutes": 8,
+   "names": {
+    "A": "Anna",
+    "B": "Daniel"
+   },
+   "context": "Riverside Fitness Centre — New Member Form. Qo‘ng‘iroq: yangi a’zo va resepshn xodimi.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good morning, Riverside Fitness Centre, Anna speaking. How can I help you?"
+    },
+    {
+     "speaker": "B",
+     "text": "Hello, I'd like to ask about joining the centre."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course. Let me take your details first. What's your full name?"
+    },
+    {
+     "speaker": "B",
+     "text": "Daniel Harper."
+    },
+    {
+     "speaker": "A",
+     "text": "Could you spell your surname for me?"
+    },
+    {
+     "speaker": "B",
+     "text": "Sure. H, A, R, P, E, R."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you. And what's your phone number?"
+    },
+    {
+     "speaker": "B",
+     "text": "It's oh seven seven four nine, three eight one, two six five."
+    },
+    {
+     "speaker": "A",
+     "text": "Which membership are you interested in? We have standard, which includes the gym and the pool, and premium, which also includes classes."
+    },
+    {
+     "speaker": "B",
+     "text": "I think premium. I'd like to try the yoga class on Tuesday evenings, and I don't really mind about the pool."
+    },
+    {
+     "speaker": "A",
+     "text": "Good choice. Premium is forty-five pounds a month. There's a joining fee of twenty-five pounds, but it's reduced to twenty this month."
+    },
+    {
+     "speaker": "B",
+     "text": "That's fine. Can I start next Monday? That's the fourteenth of April, I think."
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, the fourteenth. Now, do you have any medical conditions we should know about?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, I have a weak knee from playing football, so I have to be careful."
+    },
+    {
+     "speaker": "A",
+     "text": "I'll make a note of that. Your free induction session is included. Would Wednesday at six o'clock suit you?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, Wednesday is perfect."
+    },
+    {
+     "speaker": "A",
+     "text": "Great. Please bring photo identification, such as a passport or driving licence. Towels are provided, so you don't need to bring one."
+    },
+    {
+     "speaker": "B",
+     "text": "Thank you very much. See you then."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–8: Complete the form. Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Choose the correct letter.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Surname: ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Phone number: ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Membership type: ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Monthly fee: £ ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Joining fee this month: £ ______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Start date: ______ April"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Medical note: weak ______"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Induction session: ______ at 6 pm"
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "Why does Daniel choose premium membership?",
+     "options": [
+      "He wants to use the pool",
+      "He wants to attend classes",
+      "It is cheaper"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "What must Daniel bring to the induction session?",
+     "options": [
+      "A towel",
+      "Photo identification",
+      "A doctor’s letter"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-2",
+   "level": "B1",
+   "title": "Listening mini-test 2: Library introduction",
+   "minutes": 8,
+   "names": {
+    "A": "Librarian"
+   },
+   "context": "Greenfield Public Library: yangi a’zolar uchun qisqa tanishtiruv (monolog).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Welcome to Greenfield Public Library. I'm going to give you a short introduction before you start exploring."
+    },
+    {
+     "speaker": "A",
+     "text": "First, our opening hours. We are open from nine in the morning until eight in the evening, Monday to Friday. On Saturdays we open later, at ten, and close at four. We are closed on Sundays."
+    },
+    {
+     "speaker": "A",
+     "text": "Joining the library is free for all residents. To join, you will need to bring proof of address, such as a bank letter or a utility bill. A passport is not enough, because it does not show where you live."
+    },
+    {
+     "speaker": "A",
+     "text": "The children's section is on the first floor, next to the cafe. The ground floor has newspapers and the main book collection."
+    },
+    {
+     "speaker": "A",
+     "text": "We have twelve public computers. Each session lasts sixty minutes, and you can extend it if nobody is waiting. Printing used to cost fifteen pence a page, but from this month it is ten pence."
+    },
+    {
+     "speaker": "A",
+     "text": "If you need somewhere quiet to study, there is a study room on the second floor. You cannot just walk in, though. You must book it at the main desk, and bookings are for two hours."
+    },
+    {
+     "speaker": "A",
+     "text": "Books can be borrowed for three weeks. If you return a book late, there is a charge of twenty pence per day. There is also a return box outside the main entrance, which is open twenty-four hours."
+    },
+    {
+     "speaker": "A",
+     "text": "Finally, free wireless internet is available throughout the building. The password is readmore, all one word, with no capital letters. Thank you, and enjoy your visit."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–8: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–10: Choose the correct letter.",
+     "questionIds": [
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Saturday opening time: ______ am"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "The library is closed on ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "To join, bring proof of ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Computer session length: ______ minutes"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Printing now costs ______ pence per page"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Study room is on the ______ floor"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Late fee: ______ pence per day"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Wi-Fi password: ______"
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "Where is the children’s section?",
+     "options": [
+      "On the ground floor",
+      "On the first floor",
+      "On the second floor"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "How can visitors use the study room?",
+     "options": [
+      "Walk in at any time",
+      "Book at the main desk",
+      "Book online only"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-3",
+   "level": "B2",
+   "title": "Listening mini-test 3: Research project tutorial",
+   "minutes": 9,
+   "names": {
+    "A": "Tutor",
+    "B": "Maria"
+   },
+   "context": "Tutor va talaba Maria: tadqiqot loyihasi haqida suhbat.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "So, Maria, how is your research project going?"
+    },
+    {
+     "speaker": "B",
+     "text": "Quite well, thank you. I've decided to focus on plastic recycling in our city, rather than the whole country."
+    },
+    {
+     "speaker": "A",
+     "text": "Good. That's more realistic. And what methods are you planning to use?"
+    },
+    {
+     "speaker": "B",
+     "text": "I was going to send a questionnaire, but a friend suggested interviews, because they would give me more detail."
+    },
+    {
+     "speaker": "A",
+     "text": "Interviews take longer, though. How many people are you thinking of?"
+    },
+    {
+     "speaker": "B",
+     "text": "Fifteen in total. Ten residents and five shop owners."
+    },
+    {
+     "speaker": "A",
+     "text": "That sounds manageable. When do you need to finish collecting the data?"
+    },
+    {
+     "speaker": "B",
+     "text": "By the end of March. Then I'll analyse the results in April."
+    },
+    {
+     "speaker": "A",
+     "text": "Remember that the final report must be three thousand words, and the deadline is the twelfth of May."
+    },
+    {
+     "speaker": "B",
+     "text": "Yes. Can I include graphs? Do they count towards the word limit?"
+    },
+    {
+     "speaker": "A",
+     "text": "No, graphs don't count, but you must label them clearly."
+    },
+    {
+     "speaker": "B",
+     "text": "Great. And where can I find statistics on recycling?"
+    },
+    {
+     "speaker": "A",
+     "text": "The city council website has figures, but check the university library as well. The council data is only updated every two years, so it may be out of date."
+    },
+    {
+     "speaker": "B",
+     "text": "Thanks. One last thing: my presentation."
+    },
+    {
+     "speaker": "A",
+     "text": "It's on the fifth of June. Ten minutes, plus questions, and please use no more than eight slides."
+    },
+    {
+     "speaker": "B",
+     "text": "Eight slides. Understood. Thank you very much."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–2 and 8–9: Choose the correct letter.",
+     "questionIds": [
+      1,
+      2,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 3–7 and 10: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Why did Maria narrow her topic?",
+     "options": [
+      "She did not have enough time",
+      "To make the project more realistic",
+      "Her tutor told her to"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "Why did Maria choose interviews?",
+     "options": [
+      "They are cheaper",
+      "They give more detail",
+      "They are quicker"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Number of residents to interview: ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Number of shop owners to interview: ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Data collection ends at the end of ______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Report length: ______ words"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Report deadline: ______ May"
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "What does the tutor say about graphs?",
+     "options": [
+      "They count towards the word limit",
+      "They do not count but must be labelled",
+      "They are not allowed"
+     ]
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "How often is the council data updated?",
+     "options": [
+      "Every year",
+      "Every two years",
+      "Every month"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Presentation: no more than ______ slides"
+    }
+   ]
+  },
+  {
+   "id": "listening-4",
+   "level": "C1",
+   "title": "Listening mini-test 4: Urban beekeeping (lecture)",
+   "minutes": 9,
+   "names": {
+    "A": "Lecturer"
+   },
+   "context": "Ma’ruza: shahar asalarichiligi.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Today I'd like to talk about urban beekeeping. Over the last decade, the number of hives in cities has increased rapidly, and many people are surprised to hear that city bees often produce more honey than bees in the countryside."
+    },
+    {
+     "speaker": "A",
+     "text": "There are two main reasons for this. The first is variety. Parks, gardens and even balconies provide flowers throughout the season, whereas farmland may offer a single crop for only a few weeks. The second is temperature. Cities are warmer, so bees can begin collecting food earlier in the spring."
+    },
+    {
+     "speaker": "A",
+     "text": "Let me give you some figures. In summer, a typical hive contains around fifty thousand bees. An individual worker bee lives for only about six weeks. In a good location, one hive can produce an average of twenty kilograms of honey a year."
+    },
+    {
+     "speaker": "A",
+     "text": "Of course, there are challenges. Neighbours may worry about stings, so hives in cities are usually placed on rooftops, at least three metres above the ground, or behind a tall fence."
+    },
+    {
+     "speaker": "A",
+     "text": "Another problem is competition. If there are too many hives in one area, the bees compete for nectar, and wild bees can suffer. Experts therefore recommend no more than about five hives per square kilometre."
+    },
+    {
+     "speaker": "A",
+     "text": "Finally, people sometimes ask whether city honey is safe. It is regularly tested for pollution, and the results show that it is generally safe to eat. Thank you for listening."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–10: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "The number of hives in cities has increased ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "One reason for more honey: a ______ of flowers"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Cities are ______ than the countryside"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "A summer hive has around ______ bees"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "A worker bee lives about ______ weeks"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Honey per hive per year: ______ kg"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Hives are placed at least ______ metres above the ground"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Too many hives: bees compete for ______"
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "Maximum recommended: ______ hives per square kilometre"
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "City honey is regularly tested for ______"
+    }
+   ]
+  }
+ ]
+}

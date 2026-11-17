@@ -1,5 +1,4 @@
-import { listeningTests } from '../content/listeningTests';
-import { readingTests } from '../content/readingTests';
+import { listeningTests, readingTests } from '../content/mockTests';
 import { easyPart2Cards } from '../content/speakingEasy';
 import { part2Cards } from '../content/speaking';
 import { writingTopics } from '../content/writingGuide';
