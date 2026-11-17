@@ -12,14 +12,18 @@ import { personaLevel, useProfile } from '../lib/store';
 import { addMistake } from '../lib/mistakes';
 import { logErrors } from '../lib/adaptive/store';
 import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
-import { L } from '../i18n';
+import { L, getLang } from '../i18n';
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
-type Lang = 'en-US' | 'uz-UZ';
+type Lang = string; // nutqni tanish tili: en-US yoki o'quvchining ona tili
 const PHASE_UZ: Record<Phase, string> = { idle: L('Navbat sizda'), listening: 'Tinglayapman…', thinking: L('O‘ylayapman…'), speaking: L('Gapiryapman…'), error: L('Qayta urinib ko‘ring') };
 const OPENER = L('Salom! Men Bandly ustoziman. Keling, ingliz tilida gaplashamiz — qiynalsangiz, o‘zbekcha so‘rang. So, how are you today?');
 const LANG_KEY = 'bandly.coach.lang';
 const PERSONA_BY_LEVEL: PersonaId[] = ['friendly', 'comedy', 'savage', 'savage'];
+// Ona tili: interfeys tili (inglizcha interfeysda — o'zbekcha)
+const NATIVE_STT: Record<string, string> = { uz: 'uz-UZ', ru: 'ru-RU', kk: 'kk-KZ', ky: 'ky-KG', tg: 'tg-TJ', en: 'uz-UZ' };
+const nativeStt = (): string => NATIVE_STT[getLang()] ?? 'uz-UZ';
+const isNative = (t: string): boolean => /[А-Яа-яЁёҚқҒғЎўҲҳӮӯҶҷӢӣ]/.test(t) || isUzbek(t);
 const isUzbek = (t: string): boolean => /[‘’ʻ]|\b(men|siz|salom|qanday|keling|yaxshi|bu|uchun|bilan|emas|ham|nima|qiling|ayting|so‘z)\b/i.test(t);
 
 interface Msg { role: 'learner' | 'coach'; text: string; reply?: CoachReply }
@@ -31,8 +35,9 @@ async function speakLine(text: string, signal: { cancelled: boolean }): Promise<
     if (signal.cancelled) return;
     if (await playUz(part, 'happy', signal)) continue;
     if (!ttsSupported()) return;
-    const uz = isUzbek(part) && hasVoice('uz');
-    await say(part, signal, uz ? 'uz-UZ' : 'en-GB', { pitch: 1, rate: 0.95, volume: 1 });
+    const nat = isNative(part) ? nativeStt() : null;
+    const ok = nat && hasVoice(nat.slice(0, 2));
+    await say(part, signal, ok ? nat! : 'en-GB', { pitch: 1, rate: 0.95, volume: 1 });
   }
 }
 
@@ -48,7 +53,7 @@ export default function Coach() {
   const [typing, setTyping] = useState(false);
   const [interim, setInterim] = useState('');
   const [voiceOn, setVoiceOn] = useState(true);
-  const [lang, setLang] = useState<Lang>(() => { try { return localStorage.getItem(LANG_KEY) === 'uz-UZ' ? 'uz-UZ' : 'en-US'; } catch { return 'en-US'; } });
+  const [lang, setLang] = useState<Lang>(() => { try { return localStorage.getItem(LANG_KEY) === 'native' ? nativeStt() : 'en-US'; } catch { return 'en-US'; } });
   const endRef = useRef<(() => void) | null>(null);
   const sig = useRef({ cancelled: false });
   const pending = useRef<{ text: string; turnId: string } | null>(null);
@@ -60,7 +65,7 @@ export default function Coach() {
 
   useEffect(() => { void coachStatus().then(setStatus); return () => { live.current = false; sig.current.cancelled = true; stopSpeaking(); }; }, []);
   useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' }); }, [msgs, interim]);
-  const pickLang = (l: Lang) => { setLang(l); try { localStorage.setItem(LANG_KEY, l); } catch { /* ignore */ } };
+  const pickLang = (l: Lang) => { setLang(l); try { localStorage.setItem(LANG_KEY, l === 'en-US' ? 'en' : 'native'); } catch { /* ignore */ } };
 
   /** Ustoz gapiradi, keyin (ovozli rejimda) avtomatik ravishda o'quvchini tinglaydi — qo'ng'iroqdagidek. */
   const tutorSays = async (line: string) => {
@@ -114,7 +119,7 @@ export default function Coach() {
       if (r.text.trim()) await send(r.text);
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? L('Internet aloqasi uzildi.') : L('Nutqni tanib bo‘lmadi.'));
+      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? L('Mikrofon topilmadi.') : code === 'network' ? L('Internet aloqasi uzildi.') : L('Nutqni tanib bo‘lmadi.'));
       setPhase('error');
     }
   }

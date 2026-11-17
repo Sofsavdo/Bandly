@@ -138,7 +138,7 @@ export function listenTurn(o: TurnOptions): Promise<TurnResult> {
     rec.onspeechstart = () => { lastAt = Date.now(); o.onStatus?.('speech'); };
     rec.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') fail(new SpeechError('denied', 'Mikrofonga ruxsat berilmadi'));
-      else if (e.error === 'audio-capture') fail(new SpeechError('nomic', 'Mikrofon topilmadi'));
+      else if (e.error === 'audio-capture') fail(new SpeechError('nomic', L('Mikrofon topilmadi')));
       else if (e.error === 'network') fail(new SpeechError('network', L('Nutqni tanish internet talab qiladi, aloqa yo‘q')));
       else if (e.error === 'language-not-supported') fail(new SpeechError('unsupported', L('Bu til qo‘llanmaydi')));
       // 'no-speech' va 'aborted' oddiy hollar: onend da qayta ishga tushiriladi

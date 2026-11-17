@@ -6,7 +6,9 @@
 // Bot tokeni faqat server muhit o'zgaruvchisida (TELEGRAM_BOT_TOKEN); kodga yoki logga yozilmaydi.
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
-export interface TgUser { id: number; first_name?: string; last_name?: string; username?: string }
+export interface TgUser { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string }
+export type Tr = (s: string) => string;
+const same: Tr = (s) => s;
 export const WIDGET_MAX_AGE_S = 300; // spec: 5 daqiqa
 export const WEBAPP_MAX_AGE_S = 3600; // Mini App ochilgandan keyin 1 soat (ilova fonda turib qayta yuklanishi mumkin)
 
@@ -92,14 +94,14 @@ export async function tgApi<T = unknown>(token: string, method: string, body: un
 export const appUrl = (publicUrl: string, route = '/'): string => `${publicUrl}/?tg=1&r=${encodeURIComponent(route)}`;
 
 /** /start va boshqa xabarlarga javob: Mini App tugmalari. */
-export function startReply(chatId: number, publicUrl: string, firstName?: string): Record<string, unknown> {
-  const hi = firstName ? `Salom, ${firstName.slice(0, 32)}!` : 'Salom!';
+export function startReply(chatId: number, publicUrl: string, firstName?: string, tr: Tr = same): Record<string, unknown> {
+  const hi = firstName ? tr('Salom, {0}!').replace('{0}', firstName.slice(0, 32)) : tr('Salom!');
   return {
     chat_id: chatId,
-    text: `${hi} Bandly — ingliz tili darslari, IELTS / CEFR / SAT tayyorgarligi va bepul mock testlar.\n\nQuyidagi tugma bilan ilovani shu yerning o‘zida oching. Hisobingiz Telegram orqali avtomatik ulanadi.`,
+    text: `${hi} ${tr('Bandly — ingliz tili darslari, IELTS / CEFR / SAT tayyorgarligi va bepul mock testlar.')}\n\n${tr('Quyidagi tugma bilan ilovani shu yerning o‘zida oching. Hisobingiz Telegram orqali avtomatik ulanadi.')}`,
     reply_markup: { inline_keyboard: [
-      [{ text: '📚 Bandly’ni ochish', web_app: { url: appUrl(publicUrl, '/') } }],
-      [{ text: '⏱ Bepul mock test', web_app: { url: appUrl(publicUrl, '/mocks') } }, { text: '🎯 Darajamni aniqlash', web_app: { url: appUrl(publicUrl, '/placement') } }],
+      [{ text: `📚 ${tr('Bandly’ni ochish')}`, web_app: { url: appUrl(publicUrl, '/') } }],
+      [{ text: `⏱ ${tr('Bepul mock test')}`, web_app: { url: appUrl(publicUrl, '/mocks') } }, { text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: { url: appUrl(publicUrl, '/placement') } }],
     ] },
   };
 }
@@ -116,12 +118,13 @@ export async function setupBot(cfg: BotConfig, f: Fetch = fetch): Promise<string
 }
 
 /** Webhook yangilanishi → yuboriladigan javob (yoki null). Faqat shaxsiy chatlarga javob beriladi. */
-export function handleUpdate(update: unknown, publicUrl: string): { method: string; body: Record<string, unknown> } | null {
+export function handleUpdate(update: unknown, publicUrl: string, trFor: (lang?: string) => Tr = () => same): { method: string; body: Record<string, unknown> } | null {
   const msg = (update as { message?: { chat?: { id?: number; type?: string }; from?: TgUser; text?: string } })?.message;
   if (!msg?.chat?.id || msg.chat.type !== 'private') return null;
   const text = (msg.text ?? '').trim();
+  const tr = trFor(msg.from?.language_code);
   if (/^\/mock\b/.test(text)) {
-    return { method: 'sendMessage', body: { chat_id: msg.chat.id, text: 'Bepul mock testlar: Listening va Reading, imtihon taymeri va avtomatik baho bilan.', reply_markup: { inline_keyboard: [[{ text: '⏱ Mock testni ochish', web_app: { url: appUrl(publicUrl, '/mocks') } }]] } } };
+    return { method: 'sendMessage', body: { chat_id: msg.chat.id, text: tr('Bepul mock testlar: Listening va Reading, imtihon taymeri va avtomatik baho bilan.'), reply_markup: { inline_keyboard: [[{ text: `⏱ ${tr('Mock testni ochish')}`, web_app: { url: appUrl(publicUrl, '/mocks') } }]] } } };
   }
-  return { method: 'sendMessage', body: startReply(msg.chat.id, publicUrl, msg.from?.first_name) };
+  return { method: 'sendMessage', body: startReply(msg.chat.id, publicUrl, msg.from?.first_name, tr) };
 }

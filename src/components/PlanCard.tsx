@@ -95,7 +95,7 @@ function PlanBody() {
       )}
       {load.lowered && !full && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% i bajarildi, shuning uchun bugungi reja')} {prefs.minutes} → {load.minutes}  {L('daqiqaga yengillashtirildi.')} <button type="button" className="btn sm" onClick={() => setFull(true)}>{L('To‘liq rejani ko‘rsatish')}</button></p>}
       {load.suggestMore && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% ini bajardingiz — zo‘r! Xohlasangiz, “Rejani sozlash”da kunlik vaqtni oshiring.')}</p>}
-      {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>{L('Ko‘nikmalar tekshiruvi bo‘yicha')} {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(' va ')}  {L('umumiy darajangizdan past — rejada unga ko‘proq joy beriladi.')}</p>}
+      {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>{L('Ko‘nikmalar tekshiruvi bo‘yicha')} {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(L(' va '))}  {L('umumiy darajangizdan past — rejada unga ko‘proq joy beriladi.')}</p>}
       {prefs.goal === 'sat' && <a className="path-step" href="#/exam"><b>{L('SAT mashqi')}</b><span>{L('Imtihon → SAT: Reading and Writing va Math savollari')}</span></a>}
       {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>{L('CEFR Multilevel')}</b><span>{L('Imtihon → CEFR: format va yozma ish mashqi')}</span></a>}
       {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>{L('Xatolar ustida ishlash ·')} {mistakesDue}  {L('ta')}</b><span>{L('Avval qilgan xatolaringiz takrorlash vaqti keldi — eng foydali 5 daqiqa.')}</span></a>}

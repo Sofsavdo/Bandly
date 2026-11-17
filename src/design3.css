@@ -551,3 +551,17 @@ html, body { overflow-x: clip; }
 @media (max-width: 979px) { .app-header .lang-pick.compact { padding: 0 10px; } .app-header .lang-pick.compact select { max-width: 74px; font-size: 13px; } }
 @media (min-width: 980px) { .app-header .lang-pick.compact { width: 100%; justify-content: center; box-shadow: none; background: var(--surface-2); } }
 @media (max-width: 979px) { .app-header .lang-pick.compact { display: none; } }
+
+/* Tarjimalar paneli */
+.tr-cov { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.tr-lang { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 10px 12px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; text-align: left; }
+.tr-lang.on { border-color: var(--inv); }
+.tr-lang span { font-family: var(--display); font-size: 22px; font-weight: 700; }
+.tr-lang small { color: var(--muted); font-size: 12px; }
+.tr-lang i { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--brand); }
+.tr-list { display: grid; gap: 8px; max-height: 60vh; overflow-y: auto; }
+.tr-row { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 10px; border-radius: 14px; background: var(--surface-2); }
+@media (min-width: 760px) { .tr-row { grid-template-columns: 1fr 1fr; } }
+.tr-src { font-size: 14px; color: var(--ink-2); }
+.tr-dst { display: flex; gap: 6px; align-items: flex-start; }
+.tr-dst textarea { flex: 1; min-width: 0; font-size: 14px; padding: 8px 10px; border-radius: 12px; resize: vertical; }

@@ -50,7 +50,7 @@ function FilePlayer({ file, seconds, practice, initialPlays = 0, onPlay }: { fil
     <div>
       <div className="row">
         <button className="btn primary" onClick={toggle} disabled={locked || (playing && !practice)}>
-          {playing ? <><Pause size={18} /> {practice ? 'Pauza' : L('Eshittirilmoqda…')}</> : <><Play size={18} /> {plays === 0 ? L('Audioni boshlash') : L('Davom ettirish')}</>}
+          {playing ? <><Pause size={18} /> {practice ? L('Pauza') : L('Eshittirilmoqda…')}</> : <><Play size={18} /> {plays === 0 ? L('Audioni boshlash') : L('Davom ettirish')}</>}
         </button>
         {practice && plays > 0 && <button className="btn" onClick={restart}><RotateCcw size={16} />  {L('Boshidan')}</button>}
         <span className="pill">{mmss(pos)} / {mmss(total)}</span>

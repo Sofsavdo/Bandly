@@ -22,7 +22,7 @@ export default function Exam() {
   return (
     <div>
       <div className="card page-head with-illo t-butter">
-        <h2>{L('Imtihonga')} <em className="it">{L('tayyorgarlik')}</em> {p.plan.exam && <span className="badge on">{p.planUntil.exam ? L('Obuna faol') : 'Demo'}</span>}</h2>
+        <h2>{L('Imtihonga')} <em className="it">{L('tayyorgarlik')}</em> {p.plan.exam && <span className="badge on">{p.planUntil.exam ? L('Obuna faol') : L('Demo')}</span>}</h2>
         <p style={{ margin: '4px 0 6px' }}>{L('Reading va Listening — bepul. Writing, Speaking va AI baho — tarifda.')}</p>
         <div className="seg seg-dark" role="tablist" aria-label={L('Imtihon')}>
           {(['ielts', 'cefr', 'sat'] as const).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{k.toUpperCase()}</button>)}

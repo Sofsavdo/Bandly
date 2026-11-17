@@ -34,7 +34,7 @@ export function LessonWrite({ task }: { task: WritingTask }) {
             {res.forbidden.map((f) => <li key={f} className="bad"><XCircle size={14} /> {f}</li>)}
             {res.issues.map((i) => <li key={i.id + i.wrong}><XCircle size={14} className="bad" /> «{i.wrong}» → «{i.right}»: <span className="muted">{i.ruleUz}</span></li>)}
           </ul>
-          <p className={res.passed ? 'ok' : 'bad'}>{res.passed ? 'Topshiriq talablari bajarildi.' : L('Yuqoridagilarni tuzatib, qayta tekshiring.')}</p>
+          <p className={res.passed ? 'ok' : 'bad'}>{res.passed ? L('Topshiriq talablari bajarildi.') : L('Yuqoridagilarni tuzatib, qayta tekshiring.')}</p>
           {task.model && <p><b>{L('Namuna javob:')}</b> <span className="muted">{task.model}</span></p>}
           <p className="muted" style={{ fontSize: 13 }}>{L('Qoidaviy tekshiruv: asosiy xatolarni topadi.')}</p>
         </div>

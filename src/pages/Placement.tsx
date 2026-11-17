@@ -68,7 +68,7 @@ export default function Placement() {
     return (
       <div className="stage placement">
         <div className="stage-top">
-          <span className="pill">{q.kind === 'Grammar' ? 'Grammatika' : L('Lug‘at')}</span>
+          <span className="pill">{q.kind === 'Grammar' ? L('Grammatika') : L('Lug‘at')}</span>
           <span className="pill">{L('Savol')} {answeredN + 1}</span>
         </div>
         <div className="level-steps" aria-label={L('Bosqichlar')}>

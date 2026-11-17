@@ -8,6 +8,7 @@ import { getAccount } from '../lib/account';
 import { formatItems, formatPairs, parseItems, parsePairs } from '../lib/lessonDsl';
 import { validateLesson } from '../lib/lessons';
 import { ImportPanel } from '../components/ImportPanel';
+import { TranslationsPanel } from '../components/TranslationsPanel';
 import { L } from '../i18n';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
@@ -109,6 +110,7 @@ export default function Studio() {
       ))}
 
       {role === 'admin' && <StaffPanel />}
+      <TranslationsPanel admin={role === 'admin'} />
       <button className="btn" onClick={() => { const t = prompt(L('{0} uchun yangi bo‘lim nomi (o‘zbekcha)', [level])); if (t) void act('unit', () => studio('POST', 'unit', { level, data: { titleUz: t } }), L('Bo‘lim yaratildi (qoralama).')); }}><FilePlus2 size={16} /> {level}  {L('uchun yangi bo‘lim')}</button>
       {importTo && <ImportPanel unit={{ id: importTo.id, level: importTo.level, titleUz: importTo.data.titleUz }} onClose={() => setImportTo(null)} onDone={async (m: string) => { setImportTo(null); await load(); setMsg(m); }} />}
     </div>

@@ -103,7 +103,7 @@ export default function Spell() {
           onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') (result ? next() : check()); }}
           placeholder={`${w.word[0]}${' _'.repeat(Math.max(0, w.word.length - 1))}`} style={{ padding: 10, fontSize: 18, borderRadius: 10, border: '2px solid var(--line)', background: 'var(--bg)', color: 'var(--text)' }} />
         <button className="btn" onClick={() => speak(w.word)}><Volume2 size={18} />  {L('Eshitish')}</button>
-        {!result ? <button className="btn primary" onClick={check}>{L('Tekshirish')}</button> : <button className="btn primary" onClick={next}>{i + 1 >= ids.length ? 'Yakunlash' : 'Keyingi'}</button>}
+        {!result ? <button className="btn primary" onClick={check}>{L('Tekshirish')}</button> : <button className="btn primary" onClick={next}>{i + 1 >= ids.length ? 'Yakunlash' : L('Keyingi')}</button>}
       </div>
       {result && <p className={result === 'ok' ? 'ok' : 'bad'}>{result === 'ok' ? L('To‘g‘ri!') : L('To‘g‘ri javob: {0}', [w.word])}</p>}
     </div>

@@ -78,7 +78,7 @@ export default function FullExam() {
               <div className="grow">
                 <b>{i + 1}. {x.name}</b>
                 <p className="evidence" style={{ margin: 0 }}>{x.sub}</p>
-                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' ? 'Bajarildi' : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · taxminiy band ${x.res.band.toFixed(1)}` : ''}</p>}
+                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' ? L('Bajarildi') : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · taxminiy band ${x.res.band.toFixed(1)}` : ''}</p>}
               </div>
               {x.name === 'Writing' && !x.done && <button className="btn sm" onClick={() => { const n = { ...st, writingDone: true }; saveFull(n); setSt(n); }}>{L('Bajardim')}</button>}
               {!x.done && i === nextIdx && <a className="btn primary sm" href={x.href}>{L('Boshlash')}</a>}

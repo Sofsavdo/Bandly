@@ -68,7 +68,7 @@ export default function Grammar() {
             </button>
           ))}
         </div>
-        {!unlocked && <p className="evidence">{L('Bepul:')} {FREE_TOPICS.map((x) => `“${x}”`).join(' va ')}  {L('mavzulari. Qolganlari Grammar obunasi bilan ochiladi.')}</p>}
+        {!unlocked && <p className="evidence">{L('Bepul:')} {FREE_TOPICS.map((x) => `“${x}”`).join(L(' va '))}  {L('mavzulari. Qolganlari Grammar obunasi bilan ochiladi.')}</p>}
       </div>
 
       {locked ? <LockCard track="grammar" /> : (

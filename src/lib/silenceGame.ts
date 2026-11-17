@@ -59,7 +59,7 @@ export const TOPICS: { band: 'low' | 'mid' | 'high'; en: string; uz: string }[] 
   { band: 'low', en: 'Talk about your family.', uz: L('Oilangiz haqida') },
   { band: 'low', en: 'Describe your typical day from morning to night.', uz: L('Odatiy kuningiz') },
   { band: 'low', en: 'Talk about your best friend.', uz: L('Eng yaqin do‘stingiz') },
-  { band: 'low', en: 'Describe your home.', uz: 'Uyingiz' },
+  { band: 'low', en: 'Describe your home.', uz: L('Uyingiz') },
   { band: 'low', en: 'What did you do last weekend?', uz: L('O‘tgan dam olish kunlari nima qildingiz?') },
   { band: 'mid', en: 'Describe a trip that you will never forget.', uz: L('Unutilmas sayohatingiz') },
   { band: 'mid', en: 'Is social media good or bad for young people? Why?', uz: L('Ijtimoiy tarmoqlar yoshlar uchun foydalimi?') },

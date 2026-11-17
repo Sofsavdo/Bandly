@@ -25,7 +25,7 @@ export function LessonSpeak({ sentences }: { sentences: string[] }) {
       setSaid((s) => ({ ...s, [i]: r.text }));
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? L('Mikrofonga ruxsat berilmagan. Brauzer sozlamalarida ruxsat bering.') : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? L('Nutqni tanish xizmati bilan aloqa yo‘q.') : L('Nutqni tanib bo‘lmadi, qayta urinib ko‘ring.'));
+      setErr(code === 'denied' ? L('Mikrofonga ruxsat berilmagan. Brauzer sozlamalarida ruxsat bering.') : code === 'nomic' ? L('Mikrofon topilmadi.') : code === 'network' ? L('Nutqni tanish xizmati bilan aloqa yo‘q.') : L('Nutqni tanib bo‘lmadi, qayta urinib ko‘ring.'));
     } finally { setActive(null); setInterim(''); }
   };
 

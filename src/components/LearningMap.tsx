@@ -14,7 +14,7 @@ import { L } from '../i18n';
 
 const LEVEL_NAME: Record<string, string> = { A1: L('Beginner'), A2: L('Elementary'), B1: L('Intermediate'), B2: L('Upper-intermediate'), C1: L('Advanced'), C2: L('Proficiency') };
 const ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-const STATE_UZ: Record<NodeState, string> = { locked: 'yopiq', open: 'ochiq', current: L('hozirgi dars'), passed: 'tugallangan', mastered: L('to‘liq o‘zlashtirilgan'), revise: L('takrorlash vaqti keldi') };
+const STATE_UZ: Record<NodeState, string> = { locked: L('yopiq'), open: L('ochiq'), current: L('hozirgi dars'), passed: L('tugallangan'), mastered: L('to‘liq o‘zlashtirilgan'), revise: L('takrorlash vaqti keldi') };
 
 // Geometriya: viewBox kengligi 400; x foizda, y pikselda (HTML tugunlar va SVG yo'l bir xil koordinatada).
 const STEP = 128, TOP = 196, BOTTOM = 100, UNIT_GAP = 60;
@@ -131,7 +131,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
               {it.state === 'current' && <span className={`you-pin${it.x > 50 ? ' left' : ''}`}><MapPin size={14} />  {L('Siz shu yerdasiz')}</span>}
               <button type="button" ref={it.state === 'current' ? curRef : undefined} className={`coin ${it.state}`}
                 onClick={() => onPick({ unit: it.unit, lesson: it.lesson, index: it.index, state: it.state })}
-                aria-label={L('{0}-dars: {1}, {2}{3}', [it.index + 1, it.lesson.titleUz, STATE_UZ[it.state], it.stars ? `, ${it.stars} yulduz` : ''])}>
+                aria-label={L('{0}-dars: {1}, {2}{3}', [it.index + 1, it.lesson.titleUz, STATE_UZ[it.state], it.stars ? L(', {0} yulduz', [it.stars]) : ''])}>
                 <span className="coin-face">{Icon ? <Icon size={it.state === 'current' ? 30 : 24} strokeWidth={2.6} /> : <span className="num">{it.index + 1}</span>}</span>
               </button>
               {it.stars > 0 && <span className="zn-stars" aria-hidden="true">{[1, 2, 3].map((s) => <Star key={s} size={13} className={s <= it.stars ? 'on' : ''} />)}</span>}

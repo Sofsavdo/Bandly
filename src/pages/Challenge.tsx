@@ -56,7 +56,7 @@ export default function Challenge() {
       for (const i of findIssues(r.text)) { try { addMistake('coach', { kind: 'fix', wrong: i.wrong, right: i.right, whyUz: i.ruleUz }, []); } catch { /* skip */ } }
     } catch (e) {
       const code = e instanceof SpeechError ? e.code : 'unstable';
-      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? 'Mikrofon topilmadi.' : code === 'network' ? L('Nutqni tanish uchun internet kerak.') : L('Nutqni tanish to‘xtab qoldi. Qayta urinib ko‘ring.'));
+      setErr(code === 'denied' ? 'Mikrofonga ruxsat berilmagan.' : code === 'nomic' ? L('Mikrofon topilmadi.') : code === 'network' ? L('Nutqni tanish uchun internet kerak.') : L('Nutqni tanish to‘xtab qoldi. Qayta urinib ko‘ring.'));
       setPhase('setup');
     }
   };

@@ -77,7 +77,7 @@ export default function Writing() {
             <div className="card" key={e.id}>
               <h3 style={{ marginTop: 0 }}>{e.name}</h3>
               <p className="evidence">{L('Topshiriqda:')} {e.signals.map((s) => `“${s}”`).join(' · ')}</p>
-              <p><span className={`pill ${e.opinion === 'ha' ? 'ok' : ''}`}>{L('O‘z fikringiz:')} {e.opinion === 'ha' ? 'talab etiladi' : L('asosiy emas')}</span></p>
+              <p><span className={`pill ${e.opinion === 'ha' ? 'ok' : ''}`}>{L('O‘z fikringiz:')} {e.opinion === 'ha' ? L('talab etiladi') : L('asosiy emas')}</span></p>
               <ol className="pay-steps">{e.structure.map((s) => <li key={s}>{s}</li>)}</ol>
               <p className="fb-line">{e.frames.map((f) => <span key={f} className="chip-up">{f}</span>)}</p>
               <p className="fb-line"><b>{L('Maslahat:')}</b> {e.tipUz}</p>
@@ -159,7 +159,7 @@ export default function Writing() {
             <textarea className="essay" value={text} onChange={(e) => setText(e.target.value)} placeholder={L('Javobingizni inglizcha yozing... (abzatslarni bo‘sh qator bilan ajrating)')} />
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <span className={words >= p.minWords ? 'ok' : 'pill'}>{words}  {L('so‘z')}</span>
-              {aiOn && acct && <button className="btn" disabled={aiBusy || words < 30} onClick={() => { setAiBusy(true); setAiErr(''); aiEvaluateWriting(p.task, p.prompt, text).then((e) => { setAiEval(e); addXp(10); }).catch((e: Error) => setAiErr(e.message)).finally(() => setAiBusy(false)); }}>{aiBusy ? L('AI baholayapti…') : 'AI baholash'}</button>}
+              {aiOn && acct && <button className="btn" disabled={aiBusy || words < 30} onClick={() => { setAiBusy(true); setAiErr(''); aiEvaluateWriting(p.task, p.prompt, text).then((e) => { setAiEval(e); addXp(10); }).catch((e: Error) => setAiErr(e.message)).finally(() => setAiBusy(false)); }}>{aiBusy ? L('AI baholayapti…') : L('AI baholash')}</button>}
               <button className="btn primary" onClick={check} disabled={words === 0}>{L('Tekshirish')}</button>
             </div>
             <p className="notice" style={{ marginTop: 12 }}>
@@ -184,7 +184,7 @@ export default function Writing() {
               ))}
               {t2.grammar.map((g) => <div key={g.id} className="fb-line"><b><del>{g.wrong}</del> → <ins>{g.right}</ins></b><br /><span>{g.ruleUz}</span></div>)}
               {t2.repeated.length > 0 && <p className="fb-line">{L('Takrorlanayotgan so‘zlar:')} {t2.repeated.map((r) => `${r.word} (${r.count})`).join(', ')}{L('. Sinonimlardan foydalaning.')}</p>}
-              <p className="evidence">{L('Abzatslar:')} {t2.paragraphs}  {L('· Gaplar:')} {t2.sentences}  {L('· O‘rtacha gap uzunligi:')} {t2.avgSentence.toFixed(1)}  {L('so‘z · Bog‘lovchilar:')} {t2.linkers.join(', ') || 'topilmadi'}</p>
+              <p className="evidence">{L('Abzatslar:')} {t2.paragraphs}  {L('· Gaplar:')} {t2.sentences}  {L('· O‘rtacha gap uzunligi:')} {t2.avgSentence.toFixed(1)}  {L('so‘z · Bog‘lovchilar:')} {t2.linkers.join(', ') || L('topilmadi')}</p>
               {topic && <div className="row" style={{ marginTop: 10 }}><button className="btn" onClick={() => setShowModel((v) => !v)}><Sparkles size={15} /> {showModel ? 'Namunani yashirish' : L('Namuna inshoni ko‘rish')}</button></div>}
               {topic && showModel && <div className="essay-model" style={{ marginTop: 10 }}><Highlight text={topic.essay} /></div>}
             </div>
@@ -193,7 +193,7 @@ export default function Writing() {
             <div className="card">
               <h3 style={{ marginTop: 0 }}>{L('Natija')}</h3>
               <ul>{report.tips.map((t) => <li key={t}>{t}</li>)}</ul>
-              <p className="evidence">{L('Abzatslar:')} {report.paragraphs}  {L('· Gaplar:')} {report.sentences}  {L('· O‘rtacha gap uzunligi:')} {report.avgSentence.toFixed(1)}  {L('so‘z · Bog‘lovchilar:')} {report.linkers.join(', ') || 'topilmadi'}</p>
+              <p className="evidence">{L('Abzatslar:')} {report.paragraphs}  {L('· Gaplar:')} {report.sentences}  {L('· O‘rtacha gap uzunligi:')} {report.avgSentence.toFixed(1)}  {L('so‘z · Bog‘lovchilar:')} {report.linkers.join(', ') || L('topilmadi')}</p>
             </div>
           )}
         </>

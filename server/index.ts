@@ -22,7 +22,7 @@ import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
 import { coverage, dictFor, isTarget, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
-import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona } from './ai';
+import { AiError, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
@@ -57,6 +57,8 @@ function limited(ip: string): boolean {
   return ++h.n > 120;
 }
 
+/** So'rov tili: ilova sarlavhasi (x-lang), bo'lmasa brauzer tili. */
+const reqLang = (req: IncomingMessage): string => String(req.headers['x-lang'] ?? String(req.headers['accept-language'] ?? '').split(/[,;-]/)[0] ?? '').toLowerCase();
 const send = (res: ServerResponse, status: number, body: unknown) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
   res.end(JSON.stringify(body));
@@ -111,7 +113,7 @@ createServer(async (req, res) => {
     // Proksi (Railway va boshqalar) orqasida haqiqiy IP birinchi X-Forwarded-For qiymatida
     const fwd = TRUST_PROXY ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '';
     const ip = fwd || (req.socket.remoteAddress ?? 'x');
-    if (limited(ip)) return send(res, 429, { error: 'Juda ko‘p so‘rov' });
+    if (limited(ip)) return send(res, 429, { error: trServer(db, reqLang(req), 'Juda ko‘p so‘rov') });
     const url = new URL(req.url ?? '/', 'http://x');
     if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
     if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
@@ -135,9 +137,10 @@ createServer(async (req, res) => {
       if (m?.chat?.type === 'private' && m.from?.id && /^\/(stop|remind)\b/.test(cmd)) {
         const on = cmd.startsWith('/remind');
         const ok = setRemind(db, m.from.id, on);
-        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: !ok ? 'Avval Bandly’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind' });
+        const lc = ((m.from as { language_code?: string }).language_code ?? '').split('-')[0];
+        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, !ok ? 'Avval Bandly’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind') });
       }
-      const reply = handleUpdate(upd, bot.publicUrl);
+      const reply = handleUpdate(upd, bot.publicUrl, (lc) => (t: string) => trServer(db, (lc ?? '').split('-')[0], t));
       return send(res, 200, reply ? { method: reply.method, ...reply.body } : {}); // javob webhook javobining o'zida yuboriladi
     }
     if (req.method === 'POST' && url.pathname === '/api/join') {
@@ -303,7 +306,7 @@ createServer(async (req, res) => {
       const reply = await once(`${player.id}:${turnId}`, async () => {
         useGlobalAi(db, COACH_GLOBAL_DAILY);                       // platform ceiling first (fail-closed)
         useAi(db, token, Date.now(), COACH_DAILY_LIMIT, 'coach');  // per-learner daily limit
-        return coachTurn(ai, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode });
+        return coachTurn(ai, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']) });
       });
       return send(res, 200, { ...reply, persona: resolved.id, notice: resolved.downgraded });
     }
@@ -319,7 +322,7 @@ createServer(async (req, res) => {
         try {
           const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
           if (lv === 0) return send(res, 200, { question: await followUp(ai, String(b.question ?? ''), String(b.answer ?? '')), reaction: null });
-          return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3));
+          return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3, undefined, nativeOf(req.headers['x-lang'])));
         } catch (e) { refundAi(db, player.id, '', now); refundGlobalAi(db, now); throw e; }
       }
       if (url.pathname === '/api/ai/speaking' || url.pathname === '/api/ai/writing') {
@@ -332,7 +335,8 @@ createServer(async (req, res) => {
         const q = useAssessment(db, token, kind, now);  // server obunasi + oylik kvota (EXAM 10, ALL 20)
         try { useGlobalAi(db, COACH_GLOBAL_DAILY, now); } catch (e) { refundAssessment(db, q.playerId, kind, now); throw e; }
         try {
-          const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text);
+          const nat = nativeOf(req.headers['x-lang']);
+          const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns, undefined, nat) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text, undefined, nat);
           return send(res, 200, { ...r, quota: { used: q.used, limit: q.limit } });
         } catch (e) { refundAssessment(db, q.playerId, kind, now); refundGlobalAi(db, now); throw e; }
       }
@@ -367,7 +371,7 @@ createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
       return send(res, 200, { enabled: !!hapi, demo: DEMO, periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
-    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid) }); }
+    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; const xl = reqLang(req); if (/^(uz|en|ru|kk|ky|tg)$/.test(xl)) db.prepare('UPDATE players SET lang = ? WHERE id = ?').run(xl, pid); return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid) }); }
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {
       if (!hapi) throw new ApiError(503, 'To‘lov hali ulanmagan');
       const b = await readJson(req);
@@ -424,7 +428,7 @@ createServer(async (req, res) => {
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
-    if (e instanceof ApiError || e instanceof AiError || e instanceof TtsError) return send(res, e.status, { error: trServer(db, String(req.headers['x-lang'] ?? ''), e.message) });
+    if (e instanceof ApiError || e instanceof AiError || e instanceof TtsError) return send(res, e.status, { error: trServer(db, reqLang(req), e.message) });
     console.error(e);
     return send(res, 500, { error: 'Server xatosi' });
   }
@@ -432,5 +436,5 @@ createServer(async (req, res) => {
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)
-if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn')).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
+if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);

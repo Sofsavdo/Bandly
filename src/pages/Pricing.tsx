@@ -70,7 +70,7 @@ export default function Pricing() {
               </div>
               <ul>{pl.features.map((f) => <li key={f}><Check size={16} />{f}</li>)}</ul>
               {live
-                ? <button className={`btn ${pl.recommended ? 'primary' : ''}`} onClick={() => startPurchase(pl.id, days)}>{until ? 'Uzaytirish' : 'Sotib olish'}</button>
+                ? <button className={`btn ${pl.recommended ? 'primary' : ''}`} onClick={() => startPurchase(pl.id, days)}>{until ? 'Uzaytirish' : L('Sotib olish')}</button>
                 : <button className="btn" onClick={() => { const on = demoOn(pl.id); pl.tracks.forEach((t) => setPlan(t, !on)); }}>{demoOn(pl.id) ? L('Demo: o‘chirish') : L('Demo: yoqish')}</button>}
             </div>
           );
