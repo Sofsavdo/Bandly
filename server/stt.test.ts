@@ -22,3 +22,18 @@ assert.throws(() => sttAllowed(db, cfg, a), ApiError);
 recordStt(db, b, 50); sttAllowed(db, cfg, c); recordStt(db, c, 10);
 assert.throws(() => sttAllowed(db, cfg, c), (e: ApiError) => e.status === 503);
 console.log('stt: OK');
+
+// Qisqa gapda boshqa til aniqlansa (marathi, shved) — ingliz tili deb qayta tanadi; o'zbekcha yoki inglizcha bo'lsa — bir marta
+{
+  const { transcribeLearner } = await import('./stt');
+  const calls: (string | null)[] = [];
+  const fake = (async (_u: string, init: { body: FormData }) => { const lc = init.body.get('language_code') as string | null; calls.push(lc); return { ok: true, status: 200, json: async () => (lc === 'eng' ? { text: 'I go to school', language_code: 'eng', words: [{ end: 1.2 }] } : { text: 'आय गो टू स्कूल', language_code: 'mar', words: [{ end: 1.1 }] }) }; }) as never;
+  const cfg = { key: 'k', model: 'scribe_v1', dailySecondsPerUser: 999, globalDailySeconds: 9999, pricePerHour: 0.4, fetchImpl: fake };
+  const r = await transcribeLearner(cfg, Buffer.alloc(2000), 'audio/webm', 'uzb');
+  assert.equal(r.text, 'I go to school'); assert.equal(r.forced, true); assert.deepEqual(calls, [null, 'eng']);
+  const calls2: (string | null)[] = [];
+  const uz = (async (_u: string, init: { body: FormData }) => { calls2.push(init.body.get('language_code') as string | null); return { ok: true, status: 200, json: async () => ({ text: 'salom qalaysan', language_code: 'uzb', words: [] }) }; }) as never;
+  const r2 = await transcribeLearner({ ...cfg, fetchImpl: uz }, Buffer.alloc(2000), 'audio/webm', 'uzb');
+  assert.equal(r2.forced, false); assert.equal(calls2.length, 1, 'o‘zbekcha — qayta tanilmaydi');
+  console.log('stt (til): OK');
+}

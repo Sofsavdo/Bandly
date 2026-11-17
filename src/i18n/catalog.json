@@ -2930,7 +2930,7 @@
 "Zo‘r!",
 "Zo‘r! Raund oxirigacha gapirdingiz. Endi tezlikni va so‘z boyligini oshiramiz.",
 "[ai] {0} {1} → javob yo'q (vaqt tugadi yoki aloqa uzildi)",
-"[stt] {0}s til={1} belgi={2}",
+"[stt] {0}s til={1}{2} belgi={3}",
 "___ are our teachers. (uzoqda turishibdi)",
 "___ shoes are new. (qo‘limdagi)",
 "___ the roads were flooded, schools were closed. (sabab, to‘liq gap)",

@@ -180,3 +180,13 @@ assert.equal((await import('./ai')).configFromEnv({ AI_API_KEY: 'AQ.Ab12' }).pro
   await comp({ ...g, model: 'gemini-3.5-flash-lite', fallbackModels: [] }, 's', 'u', { fetchImpl: (async (_u: string, init: { body: string }) => { sb = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'x' }] } }] }) }; }) as never });
   assert.equal(sb.generationConfig.thinkingConfig, undefined);
 }
+
+// Ovozli suhbat uchun tez model: Gemini'da Flash-Lite birinchi, keyin asosiy va qolgan zaxiralar
+{
+  const { configFromEnv: cfe, coachConfig } = await import('./ai');
+  const g = cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AQ.k' });
+  const c = coachConfig(g, {});
+  assert.equal(c.model, 'gemini-3.5-flash-lite'); assert.deepEqual(c.fallbackModels, ['gemini-3.8-flash', 'gemini-3.6-flash']);
+  assert.equal(coachConfig(g, { AI_COACH_MODEL: 'gemini-3.8-flash' }).model, 'gemini-3.8-flash');
+  assert.equal(coachConfig(cfe({ AI_PROVIDER: 'anthropic', AI_API_KEY: 'sk-ant-1' }), {}).model, 'claude-haiku-5-5', 'boshqa provayderda o‘zgarmaydi');
+}

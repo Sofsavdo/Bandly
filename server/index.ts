@@ -23,20 +23,22 @@ import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { runReminders, setRemind } from './reminders';
 import { runLeagueNotices } from './leagueNotify';
-import { MAX_AUDIO, recordStt, sttAllowed, sttConfigFromEnv, transcribe } from './stt';
+import { MAX_AUDIO, NATIVE_STT_CODE, recordStt, sttAllowed, sttConfigFromEnv, transcribeLearner } from './stt';
 import { analytics } from './analytics';
 import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
 import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
-import { AiError, aiOffReason, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
+import { AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
 // AI Coach limits (env). Global ceiling is FAIL-CLOSED: unset or 0 = coach disabled even with a key (owner decision OD-09).
+const COACH_FREE_DAILY_ANSWERS = Number(process.env.COACH_FREE_DAILY_ANSWERS ?? process.env.VOICE_DAILY_ANSWERS ?? 5); // obunasiz: AI ustoz suhbatidagi neyron ovozli javoblar/kun
 const COACH_GLOBAL_DAILY = Number(process.env.AI_GLOBAL_DAILY_CALLS ?? 0);
 const STUDIO_VOICE_DAILY_CHARS = Number(process.env.STUDIO_VOICE_DAILY_CHARS ?? 20_000);
-const stt = sttConfigFromEnv(); // ElevenLabs Scribe (AI ustoz uchun nutqni tanish); bo'lmasa brauzer tanishi
+const stt = sttConfigFromEnv();
+const coachAi = coachConfig(ai); // ovozli suhbat uchun tez model (Gemini: Flash-Lite birinchi) // ElevenLabs Scribe (AI ustoz uchun nutqni tanish); bo'lmasa brauzer tanishi
 const COACH_DAILY_LIMIT = Number(process.env.AI_COACH_DAILY_LIMIT ?? 30);
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
@@ -358,10 +360,11 @@ const httpServer = createServer(async (req, res) => {
       const p = byToken(db, String(req.headers['x-token'] ?? ''));
       sttAllowed(db, stt, p.id);
       const audio = await readRaw(req, MAX_AUDIO + 1024);
-      const r = await transcribe(stt, audio, String(req.headers['content-type'] ?? ''));
+      const xl = String(req.headers['x-lang'] ?? 'uz').slice(0, 2);
+      const r = await transcribeLearner(stt, audio, String(req.headers['content-type'] ?? ''), NATIVE_STT_CODE[xl] ?? 'uzb');
       const secs = r.seconds || audio.length / 4000; // so'z vaqti bo'lmasa — hajmdan taxmin
       recordStt(db, p.id, secs);
-      console.log(`[stt] ${secs.toFixed(1)}s til=${r.lang ?? '?'} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
+      console.log(`[stt] ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
       addCall(db, p.id, secs);
       recordAiCost(db, { playerId: p.id, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
       return send(res, 200, { text: r.text, lang: r.lang });
@@ -380,7 +383,7 @@ const httpServer = createServer(async (req, res) => {
       const reply = await once(`${player.id}:${turnId}`, async () => {
         useGlobalAi(db, COACH_GLOBAL_DAILY);                       // platform ceiling first (fail-closed)
         useAi(db, token, Date.now(), COACH_DAILY_LIMIT, 'coach');  // per-learner daily limit
-        return coachTurn(ai, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true });
+        return coachTurn(coachAi, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true });
       });
       return send(res, 200, { ...reply, persona: resolved.id, notice: resolved.downgraded });
     }
@@ -428,12 +431,15 @@ const httpServer = createServer(async (req, res) => {
       // ElevenLabs: limit faqat yangi (xarajatli) javobga — kuniga VOICE_DAILY_ANSWERS ta + platforma kunlik belgilar chegarasi (OD-25).
       const paid = tts.provider === 'elevenlabs' && !isCached(tts, text, opts);
       const reserve = text.length + 16;
-      // AI ustoz suhbati: obunachining oylik daqiqalari tugaguncha kunlik 5 ta javob chegarasi qo'llanmaydi
-      const coachCall = b.feature === 'coach' && paid && callLeft(db, player.id, entitlements(db, token, now).plan !== null, now) > 0;
-      const bucket = tts.provider === 'elevenlabs' ? 'voice' : 'tts';
+      // AI ustoz suhbati: obunachi oylik daqiqalari tugaguncha va xodimlar (admin, metodist — sinov uchun) kunlik chegarasiz;
+      // obunasiz o'quvchining suhbat ovozi — alohida kunlik chegara (COACH_FREE_DAILY_ANSWERS), boshqa ovozli javoblar bilan aralashmaydi
+      const isCoach = b.feature === 'coach';
+      const staffRole = roleOf(db, player.id);
+      const coachCall = isCoach && paid && (staffRole === 'admin' || staffRole === 'methodologist' || callLeft(db, player.id, entitlements(db, token, now).plan !== null, now) > 0);
+      const bucket = tts.provider === 'elevenlabs' ? (isCoach ? 'coachvoice' : 'voice') : 'tts';
       if (tts.provider !== 'elevenlabs') useAi(db, token, now, TTS_DAILY_LIMIT, 'tts');
       else if (paid && coachCall) useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now);
-      else if (paid) { useAi(db, token, now, VOICE_DAILY_ANSWERS, 'voice'); try { useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); } catch (e) { refundAi(db, player.id, 'voice', now); throw e; } }
+      else if (paid) { useAi(db, token, now, isCoach ? COACH_FREE_DAILY_ANSWERS : VOICE_DAILY_ANSWERS, bucket); try { useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); } catch (e) { refundAi(db, player.id, bucket, now); throw e; } }
       let out: Awaited<ReturnType<typeof synthesize>>;
       try { out = await synthesize(tts, text, opts); } catch (e) {
         if (paid) { if (!coachCall) refundAi(db, player.id, bucket, now); refundGlobalVoiceChars(db, reserve, now); }

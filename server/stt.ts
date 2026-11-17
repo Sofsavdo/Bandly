@@ -36,7 +36,19 @@ export function recordStt(db: DatabaseSync, playerId: number, seconds: number, n
 export interface SttResult { text: string; lang: string | null; seconds: number }
 
 /** Ovozni ElevenLabs'ga yuboradi. Til avtomatik aniqlanadi (o'quvchi inglizcha va ona tilini aralashtiradi). */
-export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string): Promise<SttResult> {
+/** Interfeys tili → Scribe til kodi (ISO 639-3). */
+export const NATIVE_STT_CODE: Record<string, string> = { uz: 'uzb', ru: 'rus', kk: 'kaz', ky: 'kir', tg: 'tgk', en: 'uzb' };
+
+/** Tanish: avval tilni o'zi aniqlaydi; qisqa gapda boshqa til (masalan, marathi yoki shved) chiqsa — ingliz tili deb qayta tanadi.
+ *  O'quvchi faqat ingliz tilida yoki o'z ona tilida gapiradi. */
+export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb'): Promise<SttResult & { forced: boolean }> {
+  const r = await transcribe(cfg, audio, mime);
+  if (!r.text || !r.lang || r.lang === 'eng' || r.lang === native) return { ...r, forced: false };
+  const again = await transcribe(cfg, audio, mime, 'eng');
+  return { ...again, seconds: Math.max(r.seconds, again.seconds), forced: true };
+}
+
+export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, language?: string): Promise<SttResult> {
   const type = mime.split(';')[0]!.trim().toLowerCase();
   if (!MIMES.includes(type)) throw new ApiError(415, 'Audio formati qo‘llab-quvvatlanmaydi');
   if (audio.length < 800) throw new ApiError(400, 'Ovoz juda qisqa');
@@ -44,6 +56,7 @@ export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string): P
   const form = new FormData();
   form.append('model_id', cfg.model);
   form.append('tag_audio_events', 'false');
+  if (language) form.append('language_code', language);
   form.append('file', new Blob([new Uint8Array(audio)], { type }), `turn.${type.split('/')[1]}`);
   const r = await (cfg.fetchImpl ?? fetch)('https://api.elevenlabs.io/v1/speech-to-text', { method: 'POST', headers: { 'xi-api-key': cfg.key }, body: form, signal: AbortSignal.timeout(30_000) });
   if (!r.ok) throw new ApiError(502, `Nutqni tanib bo‘lmadi (${r.status})`);
