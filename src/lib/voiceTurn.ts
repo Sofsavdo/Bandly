@@ -67,7 +67,7 @@ function level(m: Mic): number {
 }
 
 /** Nutq chegarasi: shovqin darajasidan yuqori (xonadagi shovqinga moslashadi). */
-export const speechThreshold = (floor: number, strict = false): number => Math.max(strict ? 0.045 : 0.018, floor * (strict ? 6 : 3));
+export const speechThreshold = (floor: number, strict = false): number => Math.max(strict ? 0.045 : 0.024, floor * (strict ? 6 : 3.2));
 /** Shovqin darajasini sekin kuzatadi: faqat jim paytlarda yangilanadi. */
 export const nextFloor = (floor: number, v: number): number => (v < floor * 2.5 ? floor * 0.95 + v * 0.05 : floor);
 
@@ -99,7 +99,8 @@ export async function recordTurn(o: RecordOptions): Promise<Recording> {
       clearInterval(t);
       o.endRef.current = null;
       const speechMs = speechAt ? lastVoice - speechAt : 0;
-      rec.onstop = () => resolve({ blob: speechAt && !o.signal.cancelled ? new Blob(parts, { type: rec.mimeType || mime || 'audio/webm' }) : null, mime: (rec.mimeType || mime || 'audio/webm'), speechMs });
+      // juda qisqa (0.4 s dan kam) — shovqin yoki yo'tal: serverga yuborilmaydi
+      rec.onstop = () => resolve({ blob: speechAt && speechMs >= 400 && !o.signal.cancelled ? new Blob(parts, { type: rec.mimeType || mime || 'audio/webm' }) : null, mime: (rec.mimeType || mime || 'audio/webm'), speechMs });
       try { rec.state !== 'inactive' ? rec.stop() : rec.onstop(new Event('stop')); } catch { resolve({ blob: null, mime, speechMs: 0 }); }
     };
     o.endRef.current = finish;
@@ -112,7 +113,7 @@ export async function recordTurn(o: RecordOptions): Promise<Recording> {
       const th = speechThreshold(m.floor);
       if (v > th) {
         loud += 60;
-        if (loud >= 120) { if (!speechAt) { speechAt = now - loud; o.onSpeech?.(); } lastVoice = now; }
+        if (loud >= 240) { if (!speechAt) { speechAt = now - loud; o.onSpeech?.(); } lastVoice = now; } // ~0.25 s davomli ovoz — gap (qisqa shovqin emas)
       } else { loud = 0; m.floor = nextFloor(m.floor, v); }
       if (speechAt && now - lastVoice > o.silenceMs) finish();
       else if (!speechAt && now - start > o.noSpeechMs) finish();

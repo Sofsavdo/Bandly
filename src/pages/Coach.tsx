@@ -7,7 +7,7 @@ import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
 import { hasVoice, listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
-import { playPrepared, prepareUz } from '../lib/tts';
+import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
 import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
 import { useProfile } from '../lib/store';
 import { BandiAvatar } from '../components/BandiAvatar';
@@ -51,21 +51,27 @@ export function chunkReply(text: string): string[] {
 
 /** Ustoz gapini aytadi: neyron ovoz gapma-gap — birinchi gap tayyor bo'lishi bilan chalinadi, keyingisi shu payt tayyorlanadi.
  *  Neyron ovoz bo'lmasa — brauzer ovozi. */
-async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 'happy' | 'angry' | 'laugh' = 'happy'): Promise<void> {
+async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 'happy' | 'angry' | 'laugh' = 'happy'): Promise<'ok' | 'limit'> {
   const parts = chunkReply(text);
-  let next = prepareUz(parts[0]!, emotion, 'coach', 0);
+  let neural = true;
+  let next: Promise<string | null> = prepareUz(parts[0]!, emotion, 'coach', 0);
   for (let i = 0; i < parts.length; i++) {
-    if (signal.cancelled) return;
-    const url = await next;
-    if (i + 1 < parts.length) next = prepareUz(parts[i + 1]!, emotion, 'coach', i + 1);
+    if (signal.cancelled) return 'ok';
+    const url = neural ? await next : null;
+    if (i === 0 && !url && lastTtsStatus === 429) neural = false; // kunlik neyron ovoz tugadi — bu javobni bo'lib-bo'lib aralashtirmaymiz
+    if (neural && i + 1 < parts.length) next = prepareUz(parts[i + 1]!, emotion, 'coach', i + 1);
     if (url && !signal.cancelled) { await playPrepared(url, signal); continue; }
     if (url) URL.revokeObjectURL(url);
-    if (!ttsSupported() || signal.cancelled) return;
+    if (!browserVoiceUsable()) return neural ? 'ok' : 'limit';
+    if (signal.cancelled) return 'ok';
     const nat = isNative(parts[i]!) ? nativeStt() : null;
     const ok = nat && hasVoice(nat.slice(0, 2));
     await say(parts[i]!, signal, ok ? nat! : 'en-GB', { pitch: 1, rate: 0.98, volume: 1 });
   }
+  return neural ? 'ok' : 'limit';
 }
+/** Brauzer ovozi haqiqatan bormi (Telegram ichidagi Android brauzerida ko'pincha ovoz yo'q — jim qoladi). */
+const browserVoiceUsable = (): boolean => ttsSupported() && window.speechSynthesis.getVoices().length > 0;
 
 export default function Coach() {
   const p = useProfile();
@@ -76,6 +82,7 @@ export default function Coach() {
   const phaseRef = useRef<Phase>('idle');
   const setPhase = (ph: Phase) => { phaseRef.current = ph; setPhaseState(ph); };
   const [err, setErr] = useState('');
+  const [limitHit, setLimitHit] = useState(false);
   const [lvl, setLvl] = useState(0);
   const [emotion, setEmotionState] = useState<CoachEmotion>('neutral');
   const emoRef = useRef<CoachEmotion>('neutral');
@@ -102,7 +109,7 @@ export default function Coach() {
     setPhase('speaking');
     const s = { cancelled: false }; sig.current = s;
     const stopWatch = server ? await watchBargeIn(() => { s.cancelled = true; stopSpeaking(); }) : () => undefined;
-    try { await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy'); } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } finally { stopWatch(); }
+    try { const res = await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy'); if (res === 'limit') { setLimitHit(true); if (!browserVoiceUsable()) { end(); return; } } } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } finally { stopWatch(); }
     if (!liveRef.current) return;
     setPhase('idle');
     if (canListen) void listen();
@@ -165,7 +172,7 @@ export default function Coach() {
         if (!r.blob) { setPhase('idle'); return; } // gapirilmadi — tugmani bosib qayta gapiradi
         setPhase('thinking');
         heard = (await transcribeTurn(r)).text;
-        if (!heard) { setPhase('idle'); setErr(L('Ovoz eshitilmadi. Qayta gapiring.')); return; }
+        if (!heard) { setPhase('idle'); if (liveRef.current) void listen(); return; } // aniq so'z chiqmadi — jim qolmay qayta tinglaydi
       } else {
         heard = (await listenTurn({ silenceMs: 1600, maxMs: 45_000, noSpeechMs: 9000, lang: 'en-US', onInterim: () => undefined, signal: ls, endRef })).text.trim();
       }
@@ -200,6 +207,7 @@ export default function Coach() {
         <h2>{L('Bandi')}</h2>
         <p>{L('Faqat ovozli suhbat: gapiring, Bandi tinglaydi, kuladi, kesatadi va xatoingizni aytadi.')}</p>
         {minutes?.subscribed && <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span>}
+        {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Bandi ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         {status && !status.coach && <p className="notice">{L('AI ustoz tez orada ochiladi.')}</p>}
         {!acc
           ? <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />
@@ -219,6 +227,7 @@ export default function Coach() {
           {orb}
           <p className="voice-status" aria-live="polite">{PHASE_UZ[phase]}</p>
           {err && <p className="tutor-err">{err}</p>}
+          {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Bandi ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         </div>
         <div className="tutor-ctrl">
           {canListen && (
