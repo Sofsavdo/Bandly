@@ -45,8 +45,8 @@ export function CertAdmin() {
         <thead><tr><th>{L('ID')}</th><th>{L('Egasi')}</th><th>{L('Turi')}</th><th>{L('Imtihon')}</th><th>{L('Holati')}</th><th /></tr></thead>
         <tbody>{rows.map((c) => (
           <tr key={c.id}><td><a href={c.verifyUrl.replace(/^https?:\/\/[^/]+/, '')} target="_blank" rel="noreferrer">{c.id}</a></td><td>{c.data.name} <span className="muted">@{c.nickname}</span></td><td>{TYPE_UZ[c.type]}</td><td>{c.data.examName}</td>
-            <td>{c.status === 'valid' ? L('Amalda') : <span title={c.revokeReason ?? ''}>{L('Bekor qilingan')}</span>}</td>
-            <td>{c.status === 'valid' && <button className="btn sm danger" onClick={() => void revoke(c.id)}>{L('Bekor qilish')}</button>}</td></tr>
+            <td>{c.status === 'valid' ? L('Amalda') : c.status === 'expired' ? L('Muddati tugagan') : <span title={c.revokeReason ?? ''}>{L('Bekor qilingan')}</span>}</td>
+            <td>{c.status !== 'revoked' && <button className="btn sm danger" onClick={() => void revoke(c.id)}>{L('Bekor qilish')}</button>}</td></tr>
         ))}</tbody>
       </table></div>
       <h4>{L('Berish mezonlari')}</h4>

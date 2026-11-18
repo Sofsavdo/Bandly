@@ -22,7 +22,8 @@ export default function CertificateVerify({ id }: { id: string }) {
       {err && <section className="card verify-card bad"><ShieldX size={40} /><h1>{L('Sertifikat topilmadi')}</h1><p>{L('ID to‘g‘ri yozilganini tekshiring:')} <b>{id}</b></p></section>}
       {c && (
         <section className={`card verify-card ${c.status === 'valid' ? 'good' : 'bad'}`}>
-          <div className="verify-status">{c.status === 'valid' ? <BadgeCheck size={34} /> : <ShieldX size={34} />}<b>{c.status === 'valid' ? L('Haqiqiy sertifikat') : L('Bekor qilingan sertifikat')}</b></div>
+          <div className="verify-status">{c.status === 'valid' ? <BadgeCheck size={34} /> : <ShieldX size={34} />}<b>{c.status === 'valid' ? L('Haqiqiy sertifikat') : c.status === 'expired' ? L('Muddati tugagan sertifikat') : L('Bekor qilingan sertifikat')}</b></div>
+          {c.status === 'expired' && <p className="notice">{L('Sertifikat {0} gacha amal qilgan.', [new Date(c.validUntil).toLocaleDateString('uz-UZ')])}</p>}
           {c.status === 'revoked' && c.revokedAt && <p className="notice">{L('Bu sertifikat {0} sanada bekor qilingan.', [new Date(c.revokedAt).toLocaleDateString('uz-UZ')])}</p>}
           <div className="verify-body">
             <img className="verify-photo" src={c.photoUrl} alt="" />
@@ -38,6 +39,7 @@ export default function CertificateVerify({ id }: { id: string }) {
                 {c.data.cefr && (c.type === 'achievement' || c.data.module !== 'cefr') && <div><dt>{L('CEFR')}</dt><dd>{c.data.cefr}</dd></div>}
                 <div><dt>{L('Imtihon sanasi')}</dt><dd>{c.data.testDate}</dd></div>
                 <div><dt>{L('Berilgan sana')}</dt><dd>{new Date(c.issuedAt).toLocaleDateString('uz-UZ')}</dd></div>
+                <div><dt>{L('Amal qiladi')}</dt><dd>{new Date(c.validUntil).toLocaleDateString('uz-UZ')}  {L('gacha')}</dd></div>
                 <div><dt>{L('ID')}</dt><dd>{c.id}</dd></div>
               </dl>
               <button className="btn" onClick={() => setShow(true)}>{L('Sertifikatni ko‘rish')}</button>
