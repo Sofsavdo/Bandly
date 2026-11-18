@@ -5,7 +5,8 @@ import { listening4 } from './listening4';
 import { listening5 } from './listening5';
 import { listeningFull1 } from './listeningFull1';
 import { listening6, listening7, listening8, listening9 } from './ladderListening';
+import { listening10, listening11, listening12, listening13, listening14, listening15, listening16, listening17, listening18 } from './ladderListening2';
 import { cefrListening1 } from './cefrListening1';
 import type { ListeningTest } from './types';
 
-export const listeningTests: ListeningTest[] = [listening5, listening6, listening7, listening1, listening8, listening2, listening3, listening4, listening9, listeningFull1, cefrListening1];
+export const listeningTests: ListeningTest[] = [listening5, listening6, listening7, listening10, listening11, listening1, listening8, listening2, listening12, listening13, listening3, listening9, listening14, listening15, listening16, listening4, listening17, listening18, listeningFull1, cefrListening1];
