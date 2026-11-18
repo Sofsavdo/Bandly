@@ -21,6 +21,14 @@ for (const evil of ['/../secret-outside.txt', '/..%2fsecret-outside.txt', '/%2e%
   assert.ok(r === null || r.file.endsWith('index.html'), `traversal: ${evil} -> ${r?.file}`);
 }
 assert.equal(resolveStatic(root, '/%E0%A4%A'), null, 'noto‘g‘ri kodlash');
+// Ochiq SEO sahifalari: toza manzil → .html, papka → index.html
+mkdirSync(join(root, 'vositalar'));
+writeFileSync(join(root, 'vositalar', 'index.html'), '<html>v</html>');
+writeFileSync(join(root, 'vositalar', 'band.html'), '<html>b</html>');
+assert.ok(resolveStatic(root, '/vositalar/band')!.file.endsWith('band.html')); assert.equal(resolveStatic(root, '/vositalar/band')!.fallback, false);
+assert.ok(resolveStatic(root, '/vositalar/')!.file.endsWith(join('vositalar', 'index.html')));
+assert.ok(resolveStatic(root, '/vositalar')!.file.endsWith(join('vositalar', 'index.html')));
+assert.equal(resolveStatic(root, '/vositalar/yoq')!.fallback, true);
 // Range (Safari audio)
 assert.deepEqual(parseRange('bytes=0-99', 1000), { start: 0, end: 99 });
 assert.deepEqual(parseRange('bytes=500-', 1000), { start: 500, end: 999 });

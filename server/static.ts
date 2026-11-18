@@ -5,7 +5,7 @@ import { extname, join, normalize, resolve, sep } from 'node:path';
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg',
-  '.ico': 'image/x-icon', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8',
+  '.ico': 'image/x-icon', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml; charset=utf-8',
 };
 
 /** dist/ ichidagi faylni beradi; papkadan tashqariga chiqishga yo'l qo'ymaydi. Topilmasa index.html (SPA). */
@@ -17,6 +17,8 @@ export function resolveStatic(root: string, urlPath: string): { file: string; fa
   const target = resolve(join(base, normalize(p)));
   if (target !== base && !target.startsWith(base + sep)) return null; // path traversal
   if (existsSync(target) && statSync(target).isFile()) return { file: target, fallback: false };
+  // Ochiq (SEO) sahifalar: /vositalar/x → x.html, /vositalar/ → index.html
+  for (const page of [`${target}.html`, join(target, 'index.html')]) if (page !== join(base, 'index.html') && existsSync(page) && statSync(page).isFile()) return { file: page, fallback: false };
   if (extname(target)) return null; // mavjud bo'lmagan .js/.css/.png fayllar uchun HTML emas, 404
   const index = join(base, 'index.html');
   return existsSync(index) ? { file: index, fallback: true } : null;

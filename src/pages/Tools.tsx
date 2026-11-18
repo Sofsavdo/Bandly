@@ -47,6 +47,7 @@ export default function Tools() {
       <div className="card"><h2>{L('Bepul asboblar')}</h2><Illo kind="books" size={124} /><p>{L('Ro‘yxatdan o‘tish shart emas.')}</p></div>
       <Overall />
       <Raw />
+      <div className="card"><h3>{L('Boshqa bepul vositalar')}</h3><p className="row"><a className="btn" href="/vositalar/ielts-cefr-multilevel">{L('IELTS ↔ CEFR ↔ Multilevel')}</a><a className="btn" href="/vositalar/speaking-writing-mavzular">{L('Speaking va Writing mavzulari')}</a></p></div>
     </div>
   );
 }
