@@ -20,6 +20,17 @@ assert.equal(seedContent(db), 0, 'qayta seed hech narsa qo‘shmaydi');
 const pub = publishedUnits(db);
 assert.deepEqual(pub.map((x) => x.id), UNITS.map((x) => x.id), 'e’lon qilingan tartib statik tartib bilan bir xil');
 assert.deepEqual(pub[0]!.lessons[0], UNITS[0]!.lessons[0], 'dars mazmuni o‘zgarmagan');
+// Statik kontent yangilansa (yangi bo'lim o'rtaga qo'shilsa, dars matni o'zgarsa) — metodist tegmagan qatorlar unga moslanadi
+{
+  const d2 = createDb();
+  const old = UNITS.filter((x) => x.id !== 'a1-u2');
+  seedContent(d2, old);
+  const changed = UNITS.map((x) => (x.id === 'a1-u1' ? { ...x, lessons: x.lessons.map((l, i) => (i === 0 ? { ...l, titleUz: 'Yangilangan' } : l)) } : x));
+  assert.equal(seedContent(d2, changed), 1 + UNITS.find((x) => x.id === 'a1-u2')!.lessons.length, 'faqat yangi bo‘lim qo‘shildi');
+  const p2 = publishedUnits(d2);
+  assert.deepEqual(p2.map((x) => x.id), UNITS.map((x) => x.id), 'yangi bo‘lim o‘z joyiga tushdi');
+  assert.equal(p2[0]!.lessons[0]!.titleUz, 'Yangilangan', 'tegilmagan dars statikdan yangilandi');
+}
 
 // Tahrirlash: qoralama o'quvchilarga ko'rinmaydi, e'lon qilingach ko'rinadi
 const L = UNITS[0]!.lessons[0]!;
@@ -28,6 +39,7 @@ assert.deepEqual(saveLesson(db, L.id, edited, 'Metodist').errors, []);
 assert.equal(publishedUnits(db)[0]!.lessons[0]!.titleUz, L.titleUz, 'qoralama hali ko‘rinmaydi');
 assert.ok(studioTree(db)[0]!.lessons[0]!.dirty);
 publish(db, L.id, 'Metodist');
+seedContent(db); assert.equal(publishedUnits(db)[0]!.lessons[0]!.titleUz, 'Tahrirlangan nom', 'metodist tahriri seed bilan ustidan yozilmaydi');
 assert.equal(publishedUnits(db)[0]!.lessons[0]!.titleUz, 'Tahrirlangan nom');
 // Xatosi bor darsni e'lon qilib bo'lmaydi
 const broken = { ...L, check: [] };

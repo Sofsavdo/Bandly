@@ -23,17 +23,26 @@ export function ensureContentTables(db: DatabaseSync): void {
 
 const unitMeta = (u: Unit): UnitMeta => { const { lessons: _l, ...m } = u; return m; };
 
-/** Statik kontentdan bazada yo'q bo'lganlarini qo'shadi (e'lon qilingan holda). */
+/** Statik kontentdan bazada yo'q bo'lganlarini qo'shadi (e'lon qilingan holda).
+ *  Metodist tegmagan (faqat seed yozgan) qatorlar statik kontentga moslanadi: tartib (daraja ichida) va matn yangilanadi.
+ *  Metodist tahrirlagan, arxivlagan yoki o'zi yaratgan qatorlarga tegilmaydi. Qaytaradi: yangi qo'shilganlar soni. */
 export function seedContent(db: DatabaseSync, units: Unit[] = STATIC_UNITS, now = Date.now()): number {
   ensureContentTables(db);
-  const has = db.prepare('SELECT 1 FROM content WHERE id = ?');
+  const get = db.prepare('SELECT status, data, published, position, updated_by FROM content WHERE id = ?');
   const ins = db.prepare('INSERT INTO content (kind, id, parent, level, position, status, data, published, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+  const upd = db.prepare("UPDATE content SET position = ?, data = ?, published = ?, updated_at = ? WHERE id = ? AND updated_by = 'seed'");
   let n = 0;
-  units.forEach((u, ui) => {
-    if (!has.get(u.id)) { const d = JSON.stringify(unitMeta(u)); ins.run('unit', u.id, null, u.level, (ui + 1) * 10, 'published', d, d, now, 'seed'); n++; }
-    u.lessons.forEach((l, li) => {
-      if (!has.get(l.id)) { const d = JSON.stringify(l); ins.run('lesson', l.id, u.id, u.level, (li + 1) * 10, 'published', d, d, now, 'seed'); n++; }
-    });
+  const sync = (kind: 'unit' | 'lesson', id: string, parent: string | null, level: string, pos: number, d: string) => {
+    const r = get.get(id) as { status: string; data: string; published: string | null; position: number; updated_by: string | null } | undefined;
+    if (!r) { ins.run(kind, id, parent, level, pos, 'published', d, d, now, 'seed'); n++; return; }
+    const untouched = r.updated_by === 'seed' && r.status === 'published' && r.data === r.published;
+    if (untouched && (r.position !== pos || r.data !== d)) upd.run(pos, d, d, now, id);
+  };
+  const perLevel: Record<string, number> = {};
+  units.forEach((u) => {
+    perLevel[u.level] = (perLevel[u.level] ?? 0) + 1;
+    sync('unit', u.id, null, u.level, perLevel[u.level]! * 10, JSON.stringify(unitMeta(u)));
+    u.lessons.forEach((l, li) => sync('lesson', l.id, u.id, u.level, (li + 1) * 10, JSON.stringify(l)));
   });
   return n;
 }
