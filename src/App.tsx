@@ -48,6 +48,7 @@ import Boss from './pages/Boss';
 import Studio from './pages/Studio';
 import Admin from './pages/Admin';
 import Creator from './pages/Creator';
+import IeltsCourse from './pages/IeltsCourse';
 import Groups from './pages/Groups';
 
 const routes: Record<string, () => ReactNode> = {
@@ -63,6 +64,7 @@ const routes: Record<string, () => ReactNode> = {
   '#/mistakes': () => <Mistakes />,
   '#/challenge': () => <Challenge />,
   '#/exam': () => <Exam />,
+  '#/ielts': () => <IeltsCourse />,
   '#/exam/writing': () => <Gate track="exam"><Writing /></Gate>,
   '#/exam/speaking': () => <Gate track="exam"><Speaking /></Gate>,
   '#/grammar': () => <Grammar />,

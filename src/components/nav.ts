@@ -1,4 +1,4 @@
-import { Bot, BookOpenCheck, BookOpen, Clapperboard, ClipboardList, CreditCard, LineChart as ChartIcon, ListChecks, PenLine, Gamepad2, House, Puzzle, Swords, Target, Timer, Trophy, User, type LucideIcon } from 'lucide-react';
+import { Bot, BookOpenCheck, GraduationCap, BookOpen, Clapperboard, ClipboardList, CreditCard, LineChart as ChartIcon, ListChecks, PenLine, Gamepad2, House, Puzzle, Swords, Target, Timer, Trophy, User, type LucideIcon } from 'lucide-react';
 
 import type { Key } from '../i18n';
 
@@ -23,6 +23,7 @@ export const HOMEWORK: NavItem = { href: '#/homework', label: 'nav.homework', ic
 export const RESULTS: NavItem = { href: '#/results', label: 'nav.results', icon: ChartIcon };
 export const SHADOW: NavItem = { href: '#/shadow', label: 'nav.shadow', icon: Clapperboard };
 export const TOOLS: NavItem = { href: '#/tools', label: 'nav.tools', icon: BookOpen };
+export const IELTS_COURSE: NavItem = { href: '#/ielts', label: 'nav.ieltsCourse', icon: GraduationCap };
 
 export const isActive = (hash: string, base: string): boolean =>
   base === '#/' ? hash === '#/' || hash === '' : hash === base || hash.startsWith(base + '/');
@@ -37,7 +38,7 @@ export const SECTIONS: Section[] = [
   { id: 'home', item: HOME, children: [] },
   { id: 'learn', item: by('#/learn'), children: [LESSONS, by('#/grammar'), by('#/games')] },
   { id: 'coach', item: by('#/coach'), children: [] },
-  { id: 'exam', item: by('#/exam'), children: [by('#/exam'), by('#/mocks'), RESULTS, TOOLS] },
+  { id: 'exam', item: by('#/exam'), children: [by('#/exam'), IELTS_COURSE, by('#/mocks'), RESULTS, TOOLS] },
   { id: 'practice', item: PRACTICE_SECTION, children: [PRACTICE, MISTAKES, SHADOW, HOMEWORK] },
   { id: 'league', item: by('#/league'), children: [by('#/league'), by('#/duel')] },
   { id: 'profile', item: PROFILE, children: [PROFILE, PRICING] },

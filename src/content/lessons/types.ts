@@ -32,6 +32,8 @@ export interface Lesson {
   practice: Item[];            // guided practice, instant feedback
   check: Item[];               // mastery check, scored at the end
   writing?: WritingTask;
+  /** Gapirish bosqichini o'tkazib yuborish (masalan, IELTS Reading strategiya darslari — misollar talaffuz uchun emas) */
+  skipSpeak?: boolean;
   /** Metodist yuklagan video/audio (kabinet orqali) va uning matni */
   media?: { kind: 'video' | 'audio'; url: string; transcript?: string }[];
 }

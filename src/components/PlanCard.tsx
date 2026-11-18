@@ -1,7 +1,7 @@
 import { CalendarCheck, ArrowRight, Play } from 'lucide-react';
 import { startRun, type RunTask } from '../lib/planRun';
 import { ALL_NODES, nodeById, skillNodeTitle, topicOfNode } from '../content/curriculum/inventory';
-import { ALL_LESSONS } from '../content/lessons';
+import { ALL_LESSONS, nextIeltsLesson } from '../content/lessons';
 import { loadAdaptive } from '../lib/adaptive/store';
 import type { PlanTask } from '../lib/adaptive/recommend';
 import { useEffect, useState } from 'react';
@@ -82,10 +82,14 @@ function PlanBody() {
     const href = lesson ? `#/learn/${lesson.lesson.id}` : node?.skill === 'reading' ? '#/mocks/reading' : node?.skill === 'listening' ? '#/mocks/listening' : isVocab ? '#/games' : '#/grammar';
     return { t, title, href, lessonId: lesson?.lesson.id };
   });
+  // IELTS maqsadli o'quvchiga har kuni 1 ta IELTS kursi darsi (imtihon ko'nikmasi) — General English darslariga qo'shimcha
+  const ie = prefs.goal === 'ielts' ? nextIeltsLesson(lp, p.level) : undefined;
+  const ieRow = ie ? { href: `#/learn/${ie.lesson.id}`, title: L('IELTS darsi: {0}', [ie.lesson.titleUz]), lessonId: ie.lesson.id, minutes: ie.lesson.minutes } : null;
   /** Bir bosishda: xatolar (bo'lsa) → reja vazifalari ketma-ket; pastdagi panel keyingisiga olib boradi. */
   const runTasks: RunTask[] = [
     ...(mistakesDue > 0 ? [{ href: '#/mistakes', title: L('Xatolar ustida ishlash') }] : []),
     ...rows.map((r) => ({ href: r.href, title: r.title, lessonId: r.lessonId })),
+    ...(ieRow ? [{ href: ieRow.href, title: ieRow.title, lessonId: ieRow.lessonId }] : []),
   ];
   const begin = () => { const g = rows.find((r) => r.href === '#/grammar'); if (g) { try { sessionStorage.setItem('bandly.nextTopic', g.title); } catch { /* */ } } startRun(runTasks); };
   return (
@@ -113,6 +117,7 @@ function PlanBody() {
       {load.lowered && !full && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% i bajarildi, shuning uchun bugungi reja')} {prefs.minutes} → {load.minutes}  {L('daqiqaga yengillashtirildi.')} <button type="button" className="btn sm" onClick={() => setFull(true)}>{L('To‘liq rejani ko‘rsatish')}</button></p>}
       {load.suggestMore && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% ini bajardingiz — zo‘r! Xohlasangiz, “Rejani sozlash”da kunlik vaqtni oshiring.')}</p>}
       {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>{L('Ko‘nikmalar tekshiruvi bo‘yicha')} {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(L(' va '))}  {L('umumiy darajangizdan past — rejada unga ko‘proq joy beriladi.')}</p>}
+      {ieRow && <a className="path-step" href={ieRow.href}><b>{ieRow.title}</b><span>{ieRow.minutes}  {L('daq ·')} {L('IELTS kursi: savol turi va usul — tilni ballga aylantirish.')}</span></a>}
       {prefs.goal === 'sat' && <a className="path-step" href="#/exam"><b>{L('SAT mashqi')}</b><span>{L('Imtihon → SAT: Reading and Writing va Math savollari')}</span></a>}
       {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>{L('CEFR Multilevel')}</b><span>{L('Imtihon → CEFR: format va yozma ish mashqi')}</span></a>}
       {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>{L('Xatolar ustida ishlash ·')} {mistakesDue}  {L('ta')}</b><span>{L('Avval qilgan xatolaringiz takrorlash vaqti keldi — eng foydali 5 daqiqa.')}</span></a>}
