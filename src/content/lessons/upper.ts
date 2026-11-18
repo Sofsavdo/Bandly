@@ -1,7 +1,7 @@
 import type { Unit } from './types';
 import { ch, gap, ord } from './helpers';
 
-// PILOT content — original, written for Bandly (2026-11-17). Status 'pilot': shown with a "methodologist review pending" label.
+// PILOT content — original, written for Sellzen (2026-11-17). Status 'pilot': shown with a "methodologist review pending" label.
 
 export const B2_U3: Unit = {
   id: 'b2-u3', level: 'B2', title: 'Getting things done', titleUz: 'Ishlarni bajartirish va taxmin',

@@ -20,6 +20,7 @@ import { LangPicker } from '../components/LangPicker';
 import { InviteCard } from '../components/InviteCard';
 import { JoinGroupCard } from '../components/JoinGroupCard';
 import { ResultList } from '../components/ResultList';
+import { CertProfileCard } from '../components/CertProfileCard';
 import { L } from '../i18n';
 
 export default function Profile() {
@@ -106,6 +107,7 @@ export default function Profile() {
         <details className="fold" style={{ margin: '10px 0' }}><summary>{L('AI ustoz xarakteri')}</summary><PersonaPicker /></details>
       </div>
 
+      <CertProfileCard />
       <div className="card">
         <h3>{L('Natijalar tarixi')}</h3>
         <ResultList results={results} limit={10} moreHref="#/results" />

@@ -1,4 +1,4 @@
-// Hisob progressi (2026-11-17): qurilmadagi Bandly ma'lumotlari (XP, darslar, xatolar, natijalar, boss…) hisobga saqlanadi.
+// Hisob progressi (2026-11-17): qurilmadagi Sellzen ma'lumotlari (XP, darslar, xatolar, natijalar, boss…) hisobga saqlanadi.
 // - Ikki qurilma (yoki mehmon progressi + hisob) to'qnashganda yozuv darajasida birlashtiriladi (progressMerge.ts):
 //   bir qurilmada o'tilgan dars, natija, xato yoki SRS kartasi ikkinchi qurilmadagi eski holat sabab yo'qolmaydi.
 // - Kirgan holatda o'zgarishlar har 20 soniyada va sahifa yopilayotganda yuboriladi.

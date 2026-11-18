@@ -1,4 +1,4 @@
-// IELTS Speaking savollar banki (original, Bandly). Part 1 — kundalik mavzular; Part 2 — karta + Part 3 muhokama savollari.
+// IELTS Speaking savollar banki (original, Sellzen). Part 1 — kundalik mavzular; Part 2 — karta + Part 3 muhokama savollari.
 export const morePart1: { topic: string; questions: string[] }[] = [
   { topic: 'Home', questions: ['Do you live in a house or a flat?', 'Which room do you spend the most time in?', 'What would you like to change about your home?', 'Do you plan to live there for a long time?'] },
   { topic: 'Family', questions: ['Do you have a large or small family?', 'Who are you closest to in your family?', 'How often do you see your relatives?', 'What do you usually do together as a family?'] },

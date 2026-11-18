@@ -17,7 +17,7 @@ const walk = (d: string) => {
   for (const f of readdirSync(d)) {
     const p = join(d, f);
     if (statSync(p).isDirectory()) { if (!SKIP_DIRS.includes(relative(SRC, p).split('/')[0]!)) walk(p); }
-    else if (/\.tsx?$/.test(f) && !/\.(test|d)\.tsx?$/.test(f) && !/vite-env/.test(f)) files.push(p);
+    else if (/\.tsx?$/.test(f) && !/\.(test|d)\.tsx?$/.test(f) && !/vite-env/.test(f) && !readFileSync(p, 'utf8').includes('i18n-ignore-file')) files.push(p); // fayl ichidagi belgisi — o'ralmaydi (masalan PDF baytlari, inglizcha sertifikat)
   }
 };
 walk(SRC);

@@ -1,3 +1,4 @@
+import { Logo } from './Logo';
 import { BarChart3, Megaphone, Users, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
 import { getAccount, onAccountChange } from '../lib/account';
 import { SignOutDialog } from './SignOutDialog';
@@ -7,7 +8,6 @@ import { BRAND } from '../brand';
 import { levelProgress, dayKey, displayStreak } from '../lib/game';
 import { useProfile } from '../lib/store';
 import { useT } from '../i18n';
-import { Mascot } from './Mascot';
 import { PROFILE, SECTIONS, isActive, sectionOf } from './nav';
 import { L } from '../i18n';
 
@@ -52,7 +52,7 @@ export function Header({ hash }: { hash: string }) {
     <>
       <header className="app-header">
         <div className="container">
-          <a className="logo" href="#/" aria-label={BRAND.name}><Mascot mood="happy" size={36} />{BRAND.name}</a>
+          <a className="logo" href="#/" aria-label={BRAND.name}><Logo size={36} /></a>
           <nav className="nav" aria-label={t('nav.main')}>
             {SECTIONS.map((sc) => <a key={sc.id} href={sc.item.href} className={here === sc.id ? 'active' : ''} aria-current={here === sc.id ? 'page' : undefined}><sc.item.icon size={16} />{t(sc.item.label)}</a>)}
             {extra.map((x) => <a key={x.href} href={x.href} className={isActive(hash, x.href) ? 'active' : ''}><x.icon size={16} />{x.label}</a>)}
@@ -71,7 +71,7 @@ export function Header({ hash }: { hash: string }) {
           <div className="drawer-back" onClick={() => setOpen(false)} />
           <aside className="drawer" aria-label={t('nav.menu')}>
             <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
-              <span className="logo"><Mascot mood="happy" size={34} />{BRAND.name}</span>
+              <span className="logo"><Logo size={34} /></span>
               <button className="icon-btn" aria-label={t('nav.close')} onClick={() => setOpen(false)}><X size={20} /></button>
             </div>
             <div className="dstats"><Stats /></div>

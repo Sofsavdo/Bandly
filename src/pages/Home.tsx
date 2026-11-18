@@ -46,10 +46,12 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <h1>{L('Ingliz tilini')} <span className="hl">{L('o‘yin kabi')}</span>  {L('o‘rganing')}</h1>
           <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
           <div className="cta">
-            {onboarded
-              ? <a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a>
-              : <a className="btn primary lg" href="#/start">{L('Shaxsiy reja tuzish')} <ArrowRight size={18} /></a>}
-            <a className="btn lg" href={onboarded ? '#/start' : '#/placement'}>{onboarded ? L('Mening rejam') : L('Darajamni aniqlash')}</a>
+            {!acc ? <>
+              <a className="btn primary lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')} <ArrowRight size={18} /></a>
+              <a className="btn lg" href="#/login">{L('Kirish')}</a>
+            </> : onboarded
+              ? <><a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a><a className="btn lg" href="#/start">{L('Mening rejam')}</a></>
+              : <><a className="btn primary lg" href="#/start">{L('Shaxsiy reja tuzish')} <ArrowRight size={18} /></a><a className="btn lg" href="#/placement">{L('Darajamni aniqlash')}</a></>}
           </div>
           <div className="w-proof">
             <div><b>{ALL_LESSONS.length}</b><span>{L('dars')}</span></div>
@@ -125,7 +127,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
       {lvl && <PlanCard />}
 
       <section className="lvlcard">
-        <h3>{lvl ? `${lvl} · ${LEVEL_INFO[lvl].name}` : 'Bandly'} — {lp.level}{L('-bosqich')}</h3>
+        <h3>{lvl ? `${lvl} · ${LEVEL_INFO[lvl].name}` : 'Sellzen'} — {lp.level}{L('-bosqich')}</h3>
         <p>{left === 0 ? L('Bugungi maqsad bajarildi — seriya saqlandi!') : L('Bugungi maqsadgacha {0} XP', [left])}</p>
         <div className="slider" role="progressbar" aria-valuemin={0} aria-valuemax={lp.span} aria-valuenow={lp.into} aria-label={L('Keyingi bosqichgacha XP')}><i style={{ width: `${lp.pct * 100}%` }} /><b style={{ left: `${Math.max(4, Math.min(96, lp.pct * 100))}%` }} /></div>
         <Illo kind="trophy" />

@@ -59,7 +59,7 @@ export const VOCAB_NODES: CurriculumNode[] = VOCAB_LEVELS.map((lv, i) => {
   const n = vocab.filter((w) => w.level === lv).length;
   return {
     id: `ge.vocab.${lv.toLowerCase()}`, level: lv, skill: 'vocabulary' as const,
-    objective: `Recognise, spell and use the ${n} ${lv} words in the Bandly word list in context.`,
+    objective: `Recognise, spell and use the ${n} ${lv} words in the Sellzen word list in context.`,
     taxonomyIds: ['V.word_choice', 'V.spelling'] as TaxonomyId[],
     prerequisites: i === 0 ? [] : [`ge.vocab.${VOCAB_LEVELS[i - 1]!.toLowerCase()}`],
     estMinutes: 8, hasPractice: n > 0, hasCheck: n >= 5, reviewStatus: 'legacy' as const,

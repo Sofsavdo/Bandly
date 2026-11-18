@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Graded, PublicQuestion } from '../content/mockShared';
 import type { Answer } from '../lib/grade';
 import { scaledBand } from '../lib/band';
+import { CertNotice } from './CertNotice';
 import type { Cefr } from '../lib/levels';
 import { BAND_CAP, capBand } from '../lib/progress';
 import { saveResult } from '../lib/storage';
@@ -82,14 +83,16 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
   // Topshirilgan, lekin hali baholanmagan urinish: serverdan natija olinadi va BIR MARTA yoziladi (XP, tarix, mastery)
   const [gradeErr, setGradeErr] = useState('');
   const [gradeTry, setGradeTry] = useState(0);
+  const [cert, setCert] = useState<{ issued: { id: string; type: string }[]; missing: string[] } | null>(null);
   useEffect(() => {
     if (!attempt || attempt.status !== 'submitted' || attempt.graded) return;
     let stop = false;
     setGradeErr('');
     fetch('/api/mock/grade', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': getAccount()?.token ?? '' }, body: JSON.stringify({ kind, testId, answers: attempt.answers, attemptId: String(attempt.startedAt) }) })
-      .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? L('Xato {0}', [r.status])); return j as { graded: Graded; correct: number; stats?: ExamAttempt['stats'] }; })
-      .then(({ graded, correct, stats }) => {
+      .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? L('Xato {0}', [r.status])); return j as { graded: Graded; correct: number; stats?: ExamAttempt['stats']; certificates?: { id: string; type: string }[]; certMissing?: string[] }; })
+      .then(({ graded, correct, stats, certificates, certMissing }) => {
         if (stop) return;
+        setCert({ issued: certificates ?? [], missing: certMissing ?? [] });
         update((a) => {
           if (a.graded) return a;
           if (!a.recorded && !recorded.current) {
@@ -216,6 +219,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
             {L('Band:')} <b>{band.toFixed(1)}</b>
             {level && rawBand > band && <p className="evidence">{L('Bu test')} {level}  {L('darajali, shuning uchun band')} {BAND_CAP[level].toFixed(1)}  {L('dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.')}</p>}
           </div>}
+          {cert && <CertNotice issued={cert.issued} missing={cert.missing} />}
           <TestReport kind={kind} title={title} questions={questions} graded={graded} answers={attempt.answers} startedAt={attempt.startedAt} submittedAt={attempt.submittedAt} minutes={minutes} stats={attempt.stats} /></>}
         </div>
       )}

@@ -7,6 +7,8 @@ import { syncMock } from '../lib/bands';
 import { loadResults, type ResultRecord } from '../lib/storage';
 import { useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
+import { CertNotice } from '../components/CertNotice';
+import { getAccount } from '../lib/account';
 import { L } from '../i18n';
 
 const KEY = 'bandly.fullexam.v1';
@@ -25,6 +27,19 @@ function RecordMock({ entry }: { entry: Parameters<typeof recordMock>[0] }) {
   const key = JSON.stringify(entry);
   useEffect(() => { recordMock(entry); syncMock(entry); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
+}
+
+/** 4 bo'lim tugagach: server o'z natijalaridan to'liq imtihon natijasini yig'adi va sertifikat beradi (bir imtihon — bir marta). */
+function FullCert({ st }: { st: State }) {
+  const [r, setR] = useState<{ issued: { id: string; type: string }[]; missing: string[] } | null>(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    void fetch('/api/exam/full', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': getAccount()?.token ?? '' }, body: JSON.stringify({ startedAt: st.startedAt, listeningId: st.listeningId, readingId: st.readingId }) })
+      .then(async (x) => { const j = await x.json().catch(() => ({})) as { certificates?: { id: string; type: string }[]; certMissing?: string[]; error?: string }; if (!x.ok) throw new Error(j.error ?? String(x.status)); setR({ issued: j.certificates ?? [], missing: j.certMissing ?? [] }); })
+      .catch((e: Error) => setErr(e.message));
+  }, [st.startedAt, st.listeningId, st.readingId]);
+  if (err) return <p className="notice">{err}</p>;
+  return r ? <CertNotice issued={r.issued} missing={r.missing} /> : null;
 }
 
 export default function FullExam() {
@@ -111,6 +126,7 @@ export default function FullExam() {
           </div>
         </div>
       )}
+      {all && <FullCert st={st} />}
       {entry && <RecordMock entry={entry} />}
       <div className="row"><button className="btn" onClick={reset}><RotateCcw size={16} />  {L('Yangi imtihon')}</button></div>
     </div>

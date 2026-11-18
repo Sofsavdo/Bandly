@@ -1,7 +1,7 @@
 import type { Unit } from './types';
 import { ch, gap, ord } from './helpers';
 
-// PILOT content — original, written for Bandly. Status 'pilot': shown with a "methodologist review pending" label.
+// PILOT content — original, written for Sellzen. Status 'pilot': shown with a "methodologist review pending" label.
 
 export const B2_U1: Unit = {
   id: 'b2-u1', level: 'B2', title: 'News and reports', titleUz: 'Yangiliklar va xabarlar',
@@ -122,7 +122,7 @@ export const B2_U1: Unit = {
         ch('My sister, ___ lives in Seoul, is visiting us.', ['that', 'who', 'which'], 1, 'Vergulli gapda that ishlatilmaydi: who.'),
         ch('This is the town ___ I was born.', ['where', 'which', 'whose'], 0, 'Joy: where.'),
         gap('I met a woman ___ son plays for the national team.', ['whose'], 'Egalik: whose son.'),
-        gap('The app ___ helped me most was Bandly.', ['that', 'which'], 'Narsa: that / which.'),
+        gap('The app ___ helped me most was Sellzen.', ['that', 'which'], 'Narsa: that / which.'),
         ord(['which', 'Bukhara', 'very', 'is', 'old', 'beautiful', 'is'], 'Bukhara which is very old is beautiful', 'Tartib: ot + which + qo‘shimcha ma’lumot + asosiy fe’l. (Yozuvda vergullar bilan: Bukhara, which is very old, is beautiful.)'),
       ],
     },

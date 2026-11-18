@@ -2,7 +2,7 @@ import type { Item } from './lessons/types';
 import type { Cefr } from '../lib/levels';
 import { ch } from './lessons/helpers';
 
-// Skill check (pilot): one short reading text and one short listening monologue per band. Original texts written for Bandly.
+// Skill check (pilot): one short reading text and one short listening monologue per band. Original texts written for Sellzen.
 // Purpose: estimate Reading and Listening separately from the grammar/vocabulary placement. Results are estimates, not certified levels.
 export interface SkillSet {
   level: Cefr;

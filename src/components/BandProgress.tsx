@@ -104,7 +104,7 @@ function OfficialForm({ data, onData, onErr, official }: { data: BandData; onDat
       )}
       {!open ? <button className="btn sm" onClick={() => setOpen(true)}>{L('Natijani kiritish')}</button> : (
         <div className="official-form">
-          <p className="muted" style={{ marginTop: 0 }}>{L('Imtihon topshirgan bo‘lsangiz, natijangizni kiriting — bu Bandly samaradorligini halol o‘lchashga yordam beradi.')}</p>
+          <p className="muted" style={{ marginTop: 0 }}>{L('Imtihon topshirgan bo‘lsangiz, natijangizni kiriting — bu Sellzen samaradorligini halol o‘lchashga yordam beradi.')}</p>
           <div className="row">
             {SK.map(([k, n]) => (
               <label key={k} className="field-sm">{n}

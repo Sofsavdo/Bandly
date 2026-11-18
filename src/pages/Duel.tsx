@@ -13,7 +13,7 @@ const SECONDS = 12;
 function ShareBox({ code }: { code: string }) {
   const url = duelUrl(code);
   const [copied, setCopied] = useState(false);
-  const text = L('Bandly duelida meni yutib ko‘ring!');
+  const text = L('Sellzen duelida meni yutib ko‘ring!');
   return (
     <div className="card">
       <h3>{L('Do‘stingizni chaqiring')}</h3>
@@ -21,7 +21,7 @@ function ShareBox({ code }: { code: string }) {
       <div className="row">
         <button className="btn" onClick={() => { void navigator.clipboard?.writeText(url).then(() => setCopied(true)); }}>{copied ? L('Nusxalandi') : L('Havolani nusxalash')}</button>
         <a className="btn" target="_blank" rel="noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}>{L('Telegramda ulashish')}</a>
-        {typeof navigator.share === 'function' && <button className="btn" onClick={() => void navigator.share({ title: 'Bandly duel', text, url })}>{L('Ulashish')}</button>}
+        {typeof navigator.share === 'function' && <button className="btn" onClick={() => void navigator.share({ title: 'Sellzen duel', text, url })}>{L('Ulashish')}</button>}
       </div>
     </div>
   );

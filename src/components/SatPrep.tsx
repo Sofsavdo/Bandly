@@ -37,7 +37,7 @@ function Practice({ items, title }: { items: SatItem[]; title: string }) {
   );
 }
 
-/** Digital SAT: verified structure + Bandly's ORIGINAL practice items. No SAT score is estimated. */
+/** Digital SAT: verified structure + Sellzen's ORIGINAL practice items. No SAT score is estimated. */
 export function SatPrep() {
   const [set, setSetState] = useState<'rw' | 'math' | null>(null);
   const [limitAt, setLimitAt] = useState<number | null>(null);

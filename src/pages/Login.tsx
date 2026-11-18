@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { JoinForm } from '../components/JoinForm';
-import { Mascot } from '../components/Mascot';
+import { LogoMark } from '../components/Logo';
 import { refreshEntitlements } from '../lib/pay';
 import { restoreAccount } from '../lib/account';
 import { L } from '../i18n';
@@ -11,7 +11,7 @@ export default function Login() {
   const [msg, setMsg] = useState('');
   return (
     <div className="login-wall">
-      <Mascot mood="happy" size={72} />
+      <LogoMark size={72} title={L('Sellzen')} />
       <h2>{L('Davom etish uchun kiring')}</h2>
       <p className="muted">{L('Bepul. Progressingiz har qanday qurilmada saqlanadi.')}</p>
       <JoinForm onJoined={() => { /* hisob o'zgarishi App'ni qayta chizadi */ }} />

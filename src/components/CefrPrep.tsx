@@ -7,7 +7,7 @@ import { useProfile } from '../lib/store';
 import { LessonWrite } from './LessonWrite';
 import { L } from '../i18n';
 
-// Bandly's own practice prompts in the official word ranges (task TYPES of the real exam are not verified, so prompts are generic).
+// Sellzen's own practice prompts in the official word ranges (task TYPES of the real exam are not verified, so prompts are generic).
 const TASKS: { title: string; task: WritingTask }[] = [
   { title: L('1-topshiriq · 100–150 so‘z'), task: { promptUz: L('Do‘stingizga xat yozing: yaqinda borgan bayram yoki tadbir haqida gapirib bering, nima yoqqanini va keyingi safar birga borishni taklif qiling.'), minWords: 100, maxWords: 150, require: [], model: '' } },
   { title: L('2-topshiriq · 200–250 so‘z'), task: { promptUz: L('“Ba’zi odamlar universitetda o‘qish ishga kirish uchun shart emas deb hisoblaydi.” Bu fikrga qanchalik qo‘shilasiz? Sabablar va misollar keltiring.'), minWords: 200, maxWords: 250, require: [{ re: String.raw`\b(because|since|therefore|however|although|for example|for instance|in my opinion|I believe|I think)\b`, labelUz: L('fikrni asoslovchi bog‘lovchi (because, however, for example…)') }], model: '' } },

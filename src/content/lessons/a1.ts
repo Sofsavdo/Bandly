@@ -1,7 +1,7 @@
 import type { Unit } from './types';
 import { ch, gap, ord } from './helpers';
 
-// PILOT content — original, written for Bandly. Status 'pilot': shown with a "methodologist review pending" label.
+// PILOT content — original, written for Sellzen. Status 'pilot': shown with a "methodologist review pending" label.
 
 export const A1_U1: Unit = {
   id: 'a1-u1', level: 'A1', title: 'Meeting people', titleUz: 'Tanishuv',
