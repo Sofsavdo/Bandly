@@ -108,6 +108,234 @@
    ]
   },
   {
+   "id": "reading-7",
+   "level": "A2",
+   "title": "Reading mini-test 7: A New Sports Centre",
+   "minutes": 12,
+   "passageTitle": "A New Sports Centre",
+   "paragraphs": [
+    "A. Last month, a new sports centre opened in Chilonzor. It is next to the metro station, so it is easy to get there. The centre is open every day from six in the morning until ten at night, but on Sundays it closes at eight.",
+    "B. There is a big swimming pool, a gym and two halls for basketball and volleyball. The pool is the most popular part of the centre. In the mornings, many older people swim there before work. After school, the pool is full of children.",
+    "C. Prices are not very high. One visit costs thirty thousand som, and a monthly card costs two hundred thousand. Students pay half price if they show their student card. Children under seven can use the pool for free with a parent.",
+    "D. The centre also has classes. There are yoga classes on Monday and Wednesday evenings, and swimming lessons for children on Saturday mornings. You need to book classes at the reception desk or on the centre’s website. Classes are small, with only twelve people in each group.",
+    "E. The manager, Mrs Karimova, says the centre is busier than she expected. She wants to open a small café next year, because many visitors ask for a place to have a drink after their exercise."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–8: Choose the correct letter.",
+     "questionIds": [
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–11: Complete the sentences. Write ONE WORD AND/OR A NUMBER from the passage for each answer.",
+     "questionIds": [
+      9,
+      10,
+      11
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "The sports centre is close to a metro station."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "The centre closes at ten o’clock every day."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "The gym is the most popular part of the centre."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "The centre has a parking area for cars."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Young children can swim for free if a parent is with them."
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "Who swims in the pool in the mornings?",
+     "options": [
+      "Children",
+      "Older people",
+      "Students"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "When are the yoga classes?",
+     "options": [
+      "On Saturday mornings",
+      "On Monday and Wednesday evenings",
+      "Every day at six"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "Why does the manager want to open a café?",
+     "options": [
+      "Visitors want a drink after exercise.",
+      "The centre needs more money.",
+      "The pool is too busy."
+     ]
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "A monthly card costs ______ thousand som."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Students pay ______ price with a student card."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "There are only ______ people in each class."
+    }
+   ]
+  },
+  {
+   "id": "reading-8",
+   "level": "A2",
+   "title": "Reading mini-test 8: My First Job",
+   "minutes": 12,
+   "passageTitle": "My First Job",
+   "paragraphs": [
+    "A. When I was seventeen, I got my first job in a small bookshop in Samarkand. My uncle knew the owner, Mr Nazarov, and he told me about the job. I worked there every summer for three years.",
+    "B. At first, my work was very simple. I cleaned the shelves, put new books in the right place and carried heavy boxes from the van. I did not talk to customers in the first month, because Mr Nazarov wanted me to learn where everything was.",
+    "C. In the second month, I started to help customers. This was difficult for me, because I was quite shy. Many tourists came to the shop, and they often asked for maps and books about the history of the city. I had to speak English with them, and my English improved a lot.",
+    "D. The pay was not high, but I saved most of my money. At the end of the third summer, I bought my first laptop. I still use it today for my university work.",
+    "E. Now I study economics in Tashkent. I think the bookshop taught me important things: how to be patient, how to talk to people and how to manage money. I visit Mr Nazarov every time I go home."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–8: Choose the correct letter.",
+     "questionIds": [
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Questions 9–11: Complete the sentences. Write ONE WORD ONLY from the passage for each answer.",
+     "questionIds": [
+      9,
+      10,
+      11
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "The writer heard about the job from a family member."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "The writer worked in the shop all year round."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "In the first month, the writer helped many customers."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "Mr Nazarov also owns a shop in Tashkent."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "The writer’s English got better because of the job."
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What did tourists often ask for?",
+     "options": [
+      "Postcards and pens",
+      "Maps and history books",
+      "Children’s books"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "Why was helping customers difficult at first?",
+     "options": [
+      "The writer was shy.",
+      "The shop was always busy.",
+      "The books were expensive."
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "What does the writer study now?",
+     "options": [
+      "History",
+      "English",
+      "Economics"
+     ]
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "The writer carried heavy boxes from the ______."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "With the money from the job, the writer bought a ______."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "The job taught the writer how to be ______."
+    }
+   ]
+  },
+  {
    "id": "reading-1",
    "level": "B1",
    "title": "Reading mini-test 1: The Rise of the Rooftop Garden",
@@ -356,6 +584,286 @@
      "id": 10,
      "type": "fill",
      "text": "Some companies provide ______ and secure places for bicycles."
+    }
+   ]
+  },
+  {
+   "id": "reading-9",
+   "level": "B1",
+   "title": "Reading mini-test 9: The Return of the Bicycle Courier",
+   "minutes": 15,
+   "passageTitle": "The Return of the Bicycle Courier",
+   "paragraphs": [
+    "A. Ten years ago, most parcels in large cities were delivered by van. Today, more and more of them arrive by bicycle. Delivery companies say that bikes are often faster than vans in busy city centres, because they can use cycle lanes and do not need to look for parking spaces.",
+    "B. Many of the new bikes are cargo bikes, which have a large box at the front or back. Some of them have a small electric motor, so riders can carry up to one hundred kilograms without becoming exhausted. A cargo bike costs much less than a van, and it does not need fuel.",
+    "C. City councils are also interested. Fewer vans on the roads means less traffic and cleaner air. Some cities have created special areas where companies can leave large deliveries; from there, the parcels are taken to their final address by bike. This system is often called “the last mile”.",
+    "D. However, the job is not easy. Couriers work outside in all weather, and in winter the roads can be dangerous. Many of them are paid for each delivery rather than for each hour, so a slow day means low earnings. Some couriers have started to ask companies for better pay and insurance.",
+    "E. Experts believe the number of bicycle deliveries will keep growing, especially as online shopping becomes more popular. But they also say that bikes cannot replace vans completely: large or very heavy items, such as furniture, will still need to travel by road."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–9: Choose the correct letter.",
+     "questionIds": [
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 10–12: Complete the sentences. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+     "questionIds": [
+      10,
+      11,
+      12
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "tfng",
+     "text": "In city centres, bicycles can be quicker than vans."
+    },
+    {
+     "id": 2,
+     "type": "tfng",
+     "text": "All cargo bikes have an electric motor."
+    },
+    {
+     "id": 3,
+     "type": "tfng",
+     "text": "A cargo bike is cheaper than a van."
+    },
+    {
+     "id": 4,
+     "type": "tfng",
+     "text": "Most couriers prefer to work in winter."
+    },
+    {
+     "id": 5,
+     "type": "tfng",
+     "text": "Experts think bikes will completely replace vans."
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "Why can bikes deliver faster in cities?",
+     "options": [
+      "They carry more parcels.",
+      "They use cycle lanes and need no parking.",
+      "Their riders work longer hours.",
+      "They have stronger motors."
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "Why are city councils interested in bike deliveries?",
+     "options": [
+      "To earn money from couriers",
+      "To reduce traffic and pollution",
+      "To create more parking",
+      "To sell cargo bikes"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "How are many couriers paid?",
+     "options": [
+      "For each hour",
+      "For each delivery",
+      "Once a month",
+      "By the kilometre"
+     ]
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "What will still need to travel by road?",
+     "options": [
+      "Letters",
+      "Food",
+      "Furniture",
+      "Clothes"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "With a motor, riders can carry up to one hundred ______."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "Taking parcels from a special area to the final address is called “the ______”."
+    },
+    {
+     "id": 12,
+     "type": "fill",
+     "text": "Some couriers want better pay and ______."
+    }
+   ]
+  },
+  {
+   "id": "reading-10",
+   "level": "B2",
+   "title": "Reading mini-test 10: Why We Trust Strangers Online",
+   "minutes": 18,
+   "passageTitle": "Why We Trust Strangers Online",
+   "paragraphs": [
+    "A. Every day, millions of people book rooms in the homes of people they have never met, or buy expensive second-hand items from strangers hundreds of kilometres away. A generation ago, most of these transactions would have seemed far too risky. What has changed is not human nature but the arrival of systems designed to build trust between people who will probably never meet again.",
+    "B. The most familiar of these systems is the rating. After a transaction, both sides give each other a score and often a short written review. Over time, these scores form a public record. Researchers have found that people are strongly influenced by the first few reviews they read, and that a single very negative comment can outweigh several positive ones.",
+    "C. Ratings have obvious weaknesses, however. Because many users feel awkward about criticising someone directly, average scores on some platforms are extremely high, which makes it difficult to tell an excellent seller from an ordinary one. In addition, some businesses pay for fake positive reviews, and platforms must spend considerable effort detecting them.",
+    "D. Platforms therefore combine ratings with other signals. Verified identity documents, connected phone numbers and secure payment systems all reduce the risk that a user is not who they claim to be. Some platforms hold the buyer’s money until the item has arrived in good condition, so that neither side has to take the first step on trust alone.",
+    "E. Interestingly, studies suggest that people trust online strangers who appear similar to themselves, for example in age or interests, more than those who seem different. Critics warn that this tendency can disadvantage certain groups, and some platforms have reduced the amount of personal information shown before a booking is confirmed."
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: The passage has five paragraphs, A–E. Choose the correct heading for each paragraph.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–9: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "instruction": "Questions 10–13: Complete the sentences. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+     "questionIds": [
+      10,
+      11,
+      12,
+      13
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. Additional ways of checking users",
+      "ii. A change made possible by new systems",
+      "iii. How scores and comments shape decisions",
+      "iv. Problems with rating systems",
+      "v. A preference for similar people",
+      "vi. The history of second-hand markets"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. Additional ways of checking users",
+      "ii. A change made possible by new systems",
+      "iii. How scores and comments shape decisions",
+      "iv. Problems with rating systems",
+      "v. A preference for similar people",
+      "vi. The history of second-hand markets"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. Additional ways of checking users",
+      "ii. A change made possible by new systems",
+      "iii. How scores and comments shape decisions",
+      "iv. Problems with rating systems",
+      "v. A preference for similar people",
+      "vi. The history of second-hand markets"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. Additional ways of checking users",
+      "ii. A change made possible by new systems",
+      "iii. How scores and comments shape decisions",
+      "iv. Problems with rating systems",
+      "v. A preference for similar people",
+      "vi. The history of second-hand markets"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. Additional ways of checking users",
+      "ii. A change made possible by new systems",
+      "iii. How scores and comments shape decisions",
+      "iv. Problems with rating systems",
+      "v. A preference for similar people",
+      "vi. The history of second-hand markets"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "tfng",
+     "text": "The writer believes that human nature has become more trusting."
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "One very bad review can matter more than several good ones."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Most fake reviews are written by competitors."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Some platforms now show less personal information before a booking is confirmed."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "High average scores make it hard to tell an excellent seller from an ______ one."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "Some businesses pay for fake positive ______."
+    },
+    {
+     "id": 12,
+     "type": "fill",
+     "text": "Some platforms keep the buyer’s ______ until the item arrives."
+    },
+    {
+     "id": 13,
+     "type": "fill",
+     "text": "Critics say the preference for similar people can ______ certain groups."
     }
    ]
   },
@@ -2242,6 +2750,277 @@
    ]
   },
   {
+   "id": "listening-6",
+   "level": "A2",
+   "title": "Listening mini-test 6: Joining a library",
+   "minutes": 7,
+   "names": {
+    "A": "Librarian",
+    "B": "Madina"
+   },
+   "context": "Kutubxonaga a’zo bo‘lish haqida qisqa suhbat (A2 daraja).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Hello. Can I help you?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, please. I want to join the library. What do I need to do?"
+    },
+    {
+     "speaker": "A",
+     "text": "It is easy. I just need your name, address and phone number. What is your name?"
+    },
+    {
+     "speaker": "B",
+     "text": "Madina Yusupova. That is Y, U, S, U, P, O, V, A."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you. And your address?"
+    },
+    {
+     "speaker": "B",
+     "text": "Forty-two Navoi Street."
+    },
+    {
+     "speaker": "A",
+     "text": "Forty-two Navoi Street. Good. The card is free for students. Are you a student?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, I am a student at the medical college."
+    },
+    {
+     "speaker": "A",
+     "text": "Then the card is free. You can borrow six books at one time, and you can keep them for three weeks."
+    },
+    {
+     "speaker": "B",
+     "text": "Three weeks. And what time does the library open?"
+    },
+    {
+     "speaker": "A",
+     "text": "We open at nine in the morning and close at seven in the evening. On Saturdays we close at two. We are closed on Sundays."
+    },
+    {
+     "speaker": "B",
+     "text": "Can I use the computers here?"
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, the computer room is on the second floor. You can use a computer for one hour a day."
+    },
+    {
+     "speaker": "B",
+     "text": "Great. Thank you very much."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–6: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Questions 7–8: Choose the correct letter.",
+     "questionIds": [
+      7,
+      8
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Family name: ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Address: ______ Navoi Street"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Number of books at one time: ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Keep books for: ______ weeks"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Saturday closing time: ______ o’clock"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Computer room: ______ floor"
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "Why is the library card free for Madina?",
+     "options": [
+      "She is a student.",
+      "She lives near the library.",
+      "It is her first visit."
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "How long can she use a computer each day?",
+     "options": [
+      "Thirty minutes",
+      "One hour",
+      "Two hours"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-7",
+   "level": "A2",
+   "title": "Listening mini-test 7: A trip to Chimgan",
+   "minutes": 7,
+   "names": {
+    "A": "Guide",
+    "B": "Tourist"
+   },
+   "context": "Tog‘ga ekskursiya haqida ma’lumot (A2 daraja).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good morning, everyone, and welcome to our day trip to Chimgan. My name is Botir and I am your guide today."
+    },
+    {
+     "speaker": "A",
+     "text": "The bus leaves at eight thirty from the front of the hotel, so please be there ten minutes early."
+    },
+    {
+     "speaker": "A",
+     "text": "The journey takes about two hours. We will stop once at a small village for tea."
+    },
+    {
+     "speaker": "B",
+     "text": "Excuse me, do we need to bring lunch?"
+    },
+    {
+     "speaker": "A",
+     "text": "No, lunch is included. We will eat at a restaurant near the lake at one o’clock. But please bring water and a warm jacket, because it is cold in the mountains."
+    },
+    {
+     "speaker": "B",
+     "text": "Can we go up the mountain by cable car?"
+    },
+    {
+     "speaker": "A",
+     "text": "Yes. The cable car ticket is not in the price. It costs eighty thousand som, and you pay at the station."
+    },
+    {
+     "speaker": "B",
+     "text": "What time do we come back?"
+    },
+    {
+     "speaker": "A",
+     "text": "We leave Chimgan at five and arrive at the hotel at about seven in the evening."
+    },
+    {
+     "speaker": "A",
+     "text": "One more thing: please do not walk far from the group. If you get lost, call me. My number is on your ticket."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–8: Choose the correct letter.",
+     "questionIds": [
+      6,
+      7,
+      8
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Guide’s name: ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "The bus leaves at ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Journey time: about ______ hours"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Lunch at a restaurant near the ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Cable car ticket: ______ thousand som"
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What should tourists bring?",
+     "options": [
+      "Lunch and a camera",
+      "Water and a warm jacket",
+      "Money for tea"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "What time will they arrive back at the hotel?",
+     "options": [
+      "At five",
+      "At six",
+      "At about seven"
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "Where is the guide’s phone number?",
+     "options": [
+      "On the ticket",
+      "On the bus",
+      "At the hotel desk"
+     ]
+    }
+   ]
+  },
+  {
    "id": "listening-1",
    "level": "B1",
    "title": "Listening mini-test 1: Joining a fitness centre",
@@ -2406,6 +3185,161 @@
       "A towel",
       "Photo identification",
       "A doctor’s letter"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "listening-8",
+   "level": "B1",
+   "title": "Listening mini-test 8: Volunteering at a festival",
+   "minutes": 9,
+   "names": {
+    "A": "Coordinator",
+    "B": "Jasur"
+   },
+   "context": "Festivalda ko‘ngilli bo‘lib ishlash haqida suhbat (B1 daraja).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Hi, thanks for coming in. So you’re interested in volunteering at the food festival this year?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes. I saw the advert online. I’ve never volunteered before, but I’d really like to try."
+    },
+    {
+     "speaker": "A",
+     "text": "That’s no problem — about half of our volunteers are new each year. The festival runs for three days, from the fourteenth to the sixteenth of September."
+    },
+    {
+     "speaker": "B",
+     "text": "Do I have to work all three days?"
+    },
+    {
+     "speaker": "A",
+     "text": "No, we ask for a minimum of two shifts. Each shift is five hours. The morning shift starts at nine, and the afternoon shift starts at two."
+    },
+    {
+     "speaker": "B",
+     "text": "I have classes on the Friday, so the weekend would be better for me."
+    },
+    {
+     "speaker": "A",
+     "text": "Fine. There are a few different jobs. Some volunteers work at the information desk, some help with recycling, and some sell tickets for the cooking competitions."
+    },
+    {
+     "speaker": "B",
+     "text": "The information desk sounds interesting. I speak Russian and some English, so I could help visitors from abroad."
+    },
+    {
+     "speaker": "A",
+     "text": "Perfect, we need people with languages there. Volunteers don’t get paid, but you’ll get a free T-shirt, meals during your shift, and a certificate at the end."
+    },
+    {
+     "speaker": "B",
+     "text": "A certificate would be useful for my CV. Is there any training?"
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, there’s a short training session on the Wednesday before the festival, at six in the evening, in the town hall. It lasts about ninety minutes."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–6: Complete the form. Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Questions 7–10: Choose the correct letter.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Festival dates: 14th–______ September"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Minimum number of shifts: ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Length of each shift: ______ hours"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Afternoon shift starts at: ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Chosen job: ______ desk"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Training place: the ______"
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "What does the coordinator say about new volunteers?",
+     "options": [
+      "They must have experience.",
+      "About half are new each year.",
+      "They only work one shift.",
+      "They sell tickets."
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "Why can’t Jasur work on Friday?",
+     "options": [
+      "He has a job.",
+      "He has classes.",
+      "He is travelling.",
+      "He is ill."
+     ]
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "Which of these do volunteers NOT receive?",
+     "options": [
+      "A T-shirt",
+      "Meals",
+      "Payment",
+      "A certificate"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "How long is the training session?",
+     "options": [
+      "About 30 minutes",
+      "About an hour",
+      "About 90 minutes",
+      "Two hours"
      ]
     }
    ]
@@ -2811,6 +3745,150 @@
      "id": 10,
      "type": "fill",
      "text": "City honey is regularly tested for ______"
+    }
+   ]
+  },
+  {
+   "id": "listening-9",
+   "level": "B2",
+   "title": "Listening mini-test 9: A talk on urban gardens",
+   "minutes": 9,
+   "names": {
+    "A": "Speaker"
+   },
+   "context": "Shahar bog‘lari haqida ma’ruza (B2 daraja, IELTS Part 4 uslubida).",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good afternoon. Today I want to talk about urban gardens — small areas of land in cities where residents grow their own fruit and vegetables."
+    },
+    {
+     "speaker": "A",
+     "text": "Although they are often seen as a modern trend, community gardens have a long history. During periods of food shortage in the twentieth century, many governments actually encouraged people to grow food in parks and empty plots."
+    },
+    {
+     "speaker": "A",
+     "text": "Today the motivation is rather different. In a recent survey of garden members in three European cities, the most common reason given was not saving money, but meeting neighbours. Food production came only third, after improving mental health."
+    },
+    {
+     "speaker": "A",
+     "text": "The environmental benefits are real but should not be exaggerated. Gardens absorb rainwater, which reduces the risk of flooding, and they provide habitats for insects such as bees. However, the amount of food they produce is small compared with the needs of a city."
+    },
+    {
+     "speaker": "A",
+     "text": "One challenge is soil quality. Land in cities may contain metals from old industries, so many projects grow vegetables in raised beds filled with clean soil rather than directly in the ground."
+    },
+    {
+     "speaker": "A",
+     "text": "Another challenge is security of tenure — in other words, how long a group can stay on the land. Many gardens are created on sites that are waiting for development, and after a few years the land is sold. Successful projects therefore try to sign long-term agreements with the city council."
+    },
+    {
+     "speaker": "A",
+     "text": "Finally, research suggests that gardens work best when they are designed with local people rather than for them. Projects that involved residents from the planning stage had far more members after five years."
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Questions 1–5: Complete the notes. Write ONE WORD ONLY for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "instruction": "Questions 6–10: Choose the correct letter.",
+     "questionIds": [
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Main reason people join (survey): meeting ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Gardens absorb ______, which reduces flood risk"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Gardens provide habitats for insects such as ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "City soil may contain ______ from old industries"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Many projects use raised ______ with clean soil"
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What does the speaker say about the history of community gardens?",
+     "options": [
+      "They started in the last ten years.",
+      "Governments once encouraged them.",
+      "They were banned in parks.",
+      "They were only found in Europe."
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "In the survey, food production was",
+     "options": [
+      "the most common reason.",
+      "the second reason.",
+      "the third reason.",
+      "not mentioned."
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "What is the speaker’s view of the environmental benefits?",
+     "options": [
+      "They are very large.",
+      "They are real but limited.",
+      "They do not exist.",
+      "They are not yet known."
+     ]
+    },
+    {
+     "id": 9,
+     "type": "mcq",
+     "text": "What does “security of tenure” refer to?",
+     "options": [
+      "Protection from theft",
+      "How long a group can stay on the land",
+      "The cost of the land",
+      "Rules about who can join"
+     ]
+    },
+    {
+     "id": 10,
+     "type": "mcq",
+     "text": "Which projects had more members after five years?",
+     "options": [
+      "Those in city centres",
+      "Those designed with residents",
+      "Those with paid staff",
+      "Those on development sites"
+     ]
     }
    ]
   },
