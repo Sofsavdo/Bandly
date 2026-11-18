@@ -62,27 +62,18 @@ export function sayWithVoice(text: string, signal: Signal, voice: SpeechSynthesi
 
 /** Ustoz gapirishi. onend ishlamaydigan qurilmalar uchun taxminiy vaqtdan keyin ham tugaydi. */
 export interface Prosody { pitch: number; rate: number; volume: number }
+/** Inglizcha matn faqat ElevenLabs bilan oldindan yaratilgan audio orqali aytiladi (brauzer ovozi ishlatilmaydi — egasi qarori 2026-11-18).
+ *  Butun matn uchun fayl bo'lmasa, gaplarga bo'linadi va har bir gapning fayli navbat bilan chalinadi; fayli yo'q gap jim o'tkaziladi. */
 export async function say(text: string, signal: Signal, lang = 'en-GB', prosody: Prosody = { pitch: 1, rate: 0.95, volume: 1 }): Promise<void> {
-  if (lang.toLowerCase().startsWith('en') && (await playClip(text, signal))) return;
-  return sayBrowser(text, signal, lang, prosody);
+  void prosody;
+  if (!lang.toLowerCase().startsWith('en')) return;
+  if (await playClip(text, signal)) return;
+  for (const s of splitSentences(text)) { if (signal.cancelled) return; await playClip(s, signal); }
 }
 
-function sayBrowser(text: string, signal: Signal, lang: string, prosody: Prosody): Promise<void> {
-  return new Promise((resolve) => {
-    const guard = setTimeout(done, Math.max(1500, text.length * 90 + 1500));
-    let finished = false;
-    function done() { if (finished) return; finished = true; clearTimeout(guard); resolve(); }
-    if (!ttsSupported() || signal.cancelled) { setTimeout(done, Math.min(1500, text.length * 30)); return; }
-    const synth = window.speechSynthesis;
-    synth.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    const want = lang.toLowerCase();
-    const voice = want.startsWith('en') ? bestVoice('en') : bestVoice(want) ?? bestVoice(want.slice(0, 2));
-    if (voice) u.voice = voice;
-    u.lang = lang; u.rate = prosody.rate; u.pitch = prosody.pitch; u.volume = prosody.volume;
-    u.onend = done; u.onerror = done;
-    synth.speak(u);
-  });
+/** Matnni gaplarga bo'lish (generator ham xuddi shu funksiyadan foydalanadi — kalitlar mos keladi). */
+export function splitSentences(text: string): string[] {
+  return text.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+(?=[A-Z"“‘'])/).map((x) => x.trim()).filter(Boolean);
 }
 
 export const stopSpeaking = (): void => { stopClip(); stopUz(); if (ttsSupported()) window.speechSynthesis.cancel(); };
@@ -215,7 +206,6 @@ export async function sayReaction(r: Reaction, signal: Signal): Promise<'uz' | '
   if (r.emotion === 'laugh' && !(await uzTtsExpressive())) await say('Ha, ha, ha, ha!', signal, 'en-GB', { pitch: 1.7, rate: 1.3, volume: 1 });
   // 1) Serverdagi o'zbekcha neyron ovoz (sozlangan bo'lsa), 2) brauzerdagi o'zbek ovozi, 3) inglizcha variant
   if (await playUz(r.uz, r.emotion, signal)) return 'uz';
-  const uz = hasVoice('uz');
-  await say(uz ? r.uz : r.en, signal, uz ? 'uz-UZ' : 'en-GB', PROSODY[r.emotion]);
-  return uz ? 'uz' : 'en';
+  await say(r.en, signal, 'en-GB', PROSODY[r.emotion]); // o'zbekcha neyron ovoz bo'lmasa — inglizcha variantning tayyor audiosi (brauzer ovozi emas)
+  return 'en';
 }

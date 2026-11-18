@@ -19,7 +19,7 @@ const shuffle = <T,>(a: readonly T[], rnd: () => number): T[] => {
   return r;
 };
 
-const ROUND_OFF = ['Do you think most people would find that easy to do?', 'Is that something many people in your country do?', 'Would you recommend that to a friend?'];
+export const ROUND_OFF = ['Do you think most people would find that easy to do?', 'Is that something many people in your country do?', 'Would you recommend that to a friend?'];
 
 /**
  * IELTS Speaking tartibidagi ustoz (qoidaviy "miya"). Keyinchalik shu interfeys AI bilan almashtiriladi:

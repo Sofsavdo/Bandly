@@ -12,7 +12,7 @@ export function Footer() {
         <div className="footer-row">
           <a className="logo" href="#/"><Mascot mood="happy" size={30} />{BRAND.name}</a>
           <nav className="footer-links" aria-label={L('Pastki havolalar')}>
-            <a href="#/learn">{t('nav.learn')}</a><a href="#/exam">{t('nav.exam')}</a><a href="#/mocks">{t('nav.mocks')}</a><a href="#/pricing">{t('nav.pricing')}</a>
+            <a href="#/learn">{t('nav.learn')}</a><a href="#/exam">{t('nav.exam')}</a><a href="#/mocks">{t('nav.mocks')}</a><a href="#/pricing">{t('nav.pricing')}</a><a href="/vositalar/">{L('Bepul vositalar')}</a>
           </nav>
         </div>
       </div>

@@ -4,7 +4,6 @@ import { MockTest, type ExamLeftState } from '../components/MockTest';
 import type { PublicListeningTest as ListeningTest } from '../content/mockShared';
 import { listeningTrack } from '../lib/clips';
 import { LISTENING_TABLE } from '../lib/band';
-import { bestVoice } from '../lib/speech';
 import { L } from '../i18n';
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -60,34 +59,9 @@ function FilePlayer({ file, seconds, practice, initialPlays = 0, onPlay }: { fil
   );
 }
 
-/** Zaxira: audio fayl bo'lmasa brauzer ovozi (sifati qurilmaga bog'liq). */
-function BrowserPlayer({ test, practice }: { test: ListeningTest; practice: boolean }) {
-  const [playing, setPlaying] = useState(false);
-  const [plays, setPlays] = useState(0);
-  const supported = 'speechSynthesis' in window;
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
-  const locked = !practice && plays >= 1 && !playing;
-  const play = () => {
-    const synth = window.speechSynthesis;
-    synth.cancel(); setPlaying(true); setPlays((n) => n + 1);
-    const vA = bestVoice('en'); const vB = synth.getVoices().filter((v) => v.lang.toLowerCase().startsWith('en') && v !== vA)[0] ?? vA;
-    test.script.forEach((line, i, arr) => {
-      const u = new SpeechSynthesisUtterance(line.text);
-      const v = line.speaker === 'A' || line.speaker === 'C' ? vA : vB;
-      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
-      u.rate = 0.92; u.pitch = line.speaker === 'A' || line.speaker === 'C' ? 1.1 : 0.85;
-      if (i === arr.length - 1) u.onend = () => setPlaying(false);
-      u.onerror = () => setPlaying(false);
-      synth.speak(u);
-    });
-  };
-  return (
-    <div>
-      <p className="notice">{L('Tayyor audio topilmadi: brauzer ovozi ishlatiladi, sifati qurilmaga bog‘liq.')}</p>
-      {!supported && <p className="notice">{L('Brauzeringiz ovoz sintezini qo‘llamaydi. Transkriptdan foydalaning.')}</p>}
-      <button className="btn primary" onClick={play} disabled={playing || locked || !supported}><Play size={18} /> {plays === 0 ? L('Audioni boshlash') : L('Qayta eshitish')}</button>
-    </div>
-  );
+/** Audio fayl hali tayyor bo'lmasa: brauzer ovozi ishlatilmaydi (faqat ElevenLabs audiosi), shuning uchun transkript bilan ishlash taklif qilinadi. */
+function NoAudio() {
+  return <p className="notice">{L('Bu test uchun audio hali tayyorlanmoqda. Hozircha “Mashq rejimi”ni yoqib, transkript bilan ishlashingiz mumkin.')}</p>;
 }
 
 function Player({ test, state }: { test: ListeningTest; state: ExamLeftState }) {
@@ -101,7 +75,7 @@ function Player({ test, state }: { test: ListeningTest; state: ExamLeftState }) 
     <div>
       <p><b>{test.context}</b></p>
       {!practice && !submitted && playedBefore > 0 && <p className="notice">{L('Audio bir marta eshittiriladi (imtihon qoidasi).')}</p>}
-      {track === undefined ? <p className="muted">{L('Audio yuklanmoqda…')}</p> : track ? <FilePlayer key={practice ? 'p' : 'e'} file={track.file} seconds={track.seconds} practice={practice} initialPlays={practice ? 0 : playedBefore} onPlay={() => { if (!practice) state.update((a) => ({ ...a, audioPlays: a.audioPlays + 1 })); }} /> : <BrowserPlayer test={test} practice={practice} />}
+      {track === undefined ? <p className="muted">{L('Audio yuklanmoqda…')}</p> : track ? <FilePlayer key={practice ? 'p' : 'e'} file={track.file} seconds={track.seconds} practice={practice} initialPlays={practice ? 0 : playedBefore} onPlay={() => { if (!practice) state.update((a) => ({ ...a, audioPlays: a.audioPlays + 1 })); }} /> : <NoAudio />}
       <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={practice} onChange={(e) => setPractice(e.target.checked)} />  {L('Mashq rejimi (pauza va qayta eshitish)')}</label></p>
       <p className="evidence">{L('Imtihon rejimida audio faqat bir marta eshittiriladi.')}</p>
       {(submitted || practice) && <details open={submitted}><summary>{L('Transkript')}</summary><Transcript test={test} /></details>}

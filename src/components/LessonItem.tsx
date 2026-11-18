@@ -1,8 +1,9 @@
 import { CheckCircle2, RotateCcw, Volume2, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Item } from '../content/lessons/types';
 import { checkItem, correctAnswerText, type ItemAnswer } from '../lib/lessons';
-import { say, stopSpeaking, ttsSupported } from '../lib/speech';
+import { say, stopSpeaking } from '../lib/speech';
+import { hasClip } from '../lib/clips';
 import { L } from '../i18n';
 
 /** Renders one deterministic exercise item (choice / gap / order) with optional reveal of the answer. Shared by lessons and mistake review. */
@@ -51,15 +52,17 @@ export function OrderInput({ item, value, onChange, disabled }: { item: Extract<
 }
 
 
-/** Listening savoli: audio ikki martagacha eshitiladi (imtihonda bir marta — o'rganishda ikki marta), matn javobdan keyin ochiladi. */
+/** Listening savoli: ElevenLabs audiosi ikki martagacha eshitiladi (imtihonda bir marta — o'rganishda ikki marta), matn javobdan keyin ochiladi.
+ *  Audio fayli hali tayyor bo'lmasa — brauzer ovozi ishlatilmaydi, matn darhol ko'rsatiladi. */
 function ListenClip({ text, revealed }: { text: string; revealed: boolean }) {
   const [plays, setPlays] = useState(0);
-  const noVoice = !ttsSupported();
+  const [ready, setReady] = useState<boolean | null>(null);
+  useEffect(() => { let on = true; void hasClip(text).then((ok) => { if (on) setReady(ok); }); return () => { on = false; }; }, [text]);
   const play = () => { stopSpeaking(); setPlays((n) => n + 1); void say(text, { cancelled: false }); };
   return (
     <div className="listen-clip">
-      {!noVoice && <button type="button" className="btn listen-btn" disabled={plays >= 2 && !revealed} onClick={play}><Volume2 size={18} />  {plays === 0 ? L('Eshitish') : plays >= 2 && !revealed ? L('2 marta eshitildi') : L('Yana eshitish')}</button>}
-      {(revealed || noVoice) && <p className="muted listen-script">«{text}»</p>}
+      {ready && <button type="button" className="btn listen-btn" disabled={plays >= 2 && !revealed} onClick={play}><Volume2 size={18} />  {plays === 0 ? L('Eshitish') : plays >= 2 && !revealed ? L('2 marta eshitildi') : L('Yana eshitish')}</button>}
+      {(revealed || ready === false) && <p className="muted listen-script">«{text}»</p>}
     </div>
   );
 }

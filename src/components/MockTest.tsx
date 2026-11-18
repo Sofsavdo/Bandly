@@ -12,6 +12,7 @@ import { recordTestAnswers } from '../lib/adaptive/record';
 import { clearAttempt, createAttempt, isExpired, loadAttempt, remainingSeconds, saveAttempt, setAnswer, submitAttempt, toggleFlag, unanswered, type ExamAttempt } from '../lib/examAttempt';
 import { fmt } from './hooks';
 import { QuestionList } from './QuestionList';
+import { TestReport } from './TestReport';
 import { L } from '../i18n';
 
 const hasFull = (): boolean => { try { return !!localStorage.getItem('bandly.fullexam.v1'); } catch { return false; } };
@@ -86,8 +87,8 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     let stop = false;
     setGradeErr('');
     fetch('/api/mock/grade', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': getAccount()?.token ?? '' }, body: JSON.stringify({ kind, testId, answers: attempt.answers, attemptId: String(attempt.startedAt) }) })
-      .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? L('Xato {0}', [r.status])); return j as { graded: Graded; correct: number }; })
-      .then(({ graded, correct }) => {
+      .then(async (r) => { const j = await r.json().catch(() => ({})) as { graded?: Graded; correct?: number; error?: string }; if (!r.ok || !j.graded) throw new Error(j.error ?? L('Xato {0}', [r.status])); return j as { graded: Graded; correct: number; stats?: ExamAttempt['stats'] }; })
+      .then(({ graded, correct, stats }) => {
         if (stop) return;
         update((a) => {
           if (a.graded) return a;
@@ -97,7 +98,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
             addXp(correct * 5 + (correct / questions.length >= 0.8 ? 20 : 0), 'server'); // serverdagi XP'ni server o'zi yozdi
             recordTestAnswers(kind, questions.map((q) => ({ type: q.type, correct: !!graded[q.id]?.correct })), level, getProfile().level);
           }
-          return { ...a, graded, recorded: true };
+          return { ...a, graded, recorded: true, stats };
         });
       })
       .catch((e: Error) => { if (!stop) setGradeErr(e.message === 'Failed to fetch' ? L('Server bilan aloqa yo‘q') : e.message); });
@@ -214,7 +215,8 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
             
             {L('Band:')} <b>{band.toFixed(1)}</b>
             {level && rawBand > band && <p className="evidence">{L('Bu test')} {level}  {L('darajali, shuning uchun band')} {BAND_CAP[level].toFixed(1)}  {L('dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.')}</p>}
-          </div>}</>}
+          </div>}
+          <TestReport kind={kind} title={title} questions={questions} graded={graded} answers={attempt.answers} startedAt={attempt.startedAt} submittedAt={attempt.submittedAt} minutes={minutes} stats={attempt.stats} /></>}
         </div>
       )}
 
