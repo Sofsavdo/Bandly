@@ -2,7 +2,7 @@
 // Server har hodisani bir marta qabul qiladi (id bo'yicha), har manba va kun uchun chegara qo'yadi.
 // Server o'zi tekshira oladigan natijalar (Mock Arena baholash) XP'ni to'g'ridan-to'g'ri server beradi.
 import type { DatabaseSync } from 'node:sqlite';
-import { tzDayStart } from './day';
+import { tzDay, tzDayStart } from './day';
 import { byToken } from './db';
 import { joinWeek } from './league';
 
@@ -40,17 +40,40 @@ export function awardXp(db: DatabaseSync, playerId: number, eventId: string, sou
   return accepted;
 }
 
-/** POST /api/xp: mijoz hodisalari. "mock" manbasini mijoz yubora olmaydi (uni server beradi). */
-export function submitXp(db: DatabaseSync, token: string, events: unknown, now = Date.now()): { xp: number; accepted: number; done: string[] } {
+/** Faqat server beradigan manbalar: mijoz ularni yubora olmaydi. */
+export const SERVER_ONLY: readonly string[] = ['mock', 'referral'];
+/** Dars/boss XP hodisasi aniq obyektga bog'langan bo'lishi kerak: `lesson:<darsId>:<check|practice>:<kun>`, `boss:<bo'limId>:<kun>`.
+ *  Shunday qilib bitta dars kuniga bir martadan ortiq XP bermaydi va to'qima id bilan XP yig'ib bo'lmaydi. */
+const LESSON_EV = /^lesson:([\w-]{2,60}):(check|practice):(\d{4}-\d{2}-\d{2})$/;
+const BOSS_EV = /^boss:([\w-]{2,60}):(\d{4}-\d{2}-\d{2})$/;
+/** Mijoz kuni Toshkent kunidan biroz farq qilishi yoki navbat oflayn kechikishi mumkin: bugun va oldingi 2 kun qabul qilinadi. */
+function recentDay(day: string, now: number): boolean {
+  for (let i = 0; i <= 2; i++) if (tzDay(now - i * 86_400_000) === day) return true;
+  return day === tzDay(now + 86_400_000); // mijoz soati Toshkentdan oldinda bo'lsa
+}
+export type KnownIds = { lesson: (id: string) => boolean; unit: (id: string) => boolean };
+const ANY: KnownIds = { lesson: () => true, unit: () => true };
+
+/** Hodisa id'si manbaga mos va mavjud obyektga tegishlimi. Qaytaradi: yozish uchun id yoki null (rad etildi). */
+export function eventKey(source: string, id: string, now: number, known: KnownIds = ANY): string | null {
+  if (source === 'placement') return 'placement:once'; // daraja testi XP — bir umrda bir marta
+  if (source === 'lesson') { const m = LESSON_EV.exec(id); return m && recentDay(m[3]!, now) && known.lesson(m[1]!) ? id : null; }
+  if (source === 'boss') { const m = BOSS_EV.exec(id); return m && recentDay(m[2]!, now) && known.unit(m[1]!) ? id : null; }
+  return id;
+}
+
+/** POST /api/xp: mijoz hodisalari. Server manbalarini ("mock", "referral") mijoz yubora olmaydi. */
+export function submitXp(db: DatabaseSync, token: string, events: unknown, now = Date.now(), known: KnownIds = ANY): { xp: number; accepted: number; done: string[] } {
   const p = byToken(db, token);
   const list = Array.isArray(events) ? events.slice(0, 50) : [];
   let accepted = 0; const done: string[] = [];
   for (const e of list) {
     const ev = e as { id?: unknown; source?: unknown; amount?: unknown };
     const id = String(ev.id ?? ''); const src = String(ev.source ?? 'other');
-    if (src === 'mock') { done.push(id); continue; }
-    accepted += awardXp(db, p.id, id, src, Number(ev.amount), now);
-    done.push(id);
+    done.push(id); // rad etilganlar ham navbatdan olinadi (qayta yuborilmaydi)
+    if (SERVER_ONLY.includes(src)) continue;
+    const key = eventKey(src, id, now, known);
+    if (key) accepted += awardXp(db, p.id, key, src, Number(ev.amount), now);
   }
   const xp = (db.prepare('SELECT xp FROM players WHERE id = ?').get(p.id) as { xp: number }).xp;
   return { xp, accepted, done };

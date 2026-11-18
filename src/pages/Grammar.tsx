@@ -1,4 +1,5 @@
 import { Lock } from 'lucide-react';
+import { hasTrack } from '../lib/entitlement';
 import { useMemo, useState } from 'react';
 import { grammar, grammarTopics, topicLevel } from '../content/grammar';
 import { fits } from '../lib/levels';
@@ -23,8 +24,8 @@ function takeNextTopic(): string | undefined {
 
 export default function Grammar() {
   const profile = useProfile();
-  const unlocked = profile.plan.grammar;
-  const [topic, setTopic] = useState<string>(() => takeNextTopic() ?? (profile.level && profile.plan.grammar ? FOR_YOU : profile.level && ['A1', 'A2'].includes(profile.level) ? FREE_TOPICS[0] : FREE_TOPICS[1]));
+  const unlocked = hasTrack(profile, 'grammar');
+  const [topic, setTopic] = useState<string>(() => takeNextTopic() ?? (profile.level && unlocked ? FOR_YOU : profile.level && ['A1', 'A2'].includes(profile.level) ? FREE_TOPICS[0] : FREE_TOPICS[1]));
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [done, setDone] = useState(false);
 

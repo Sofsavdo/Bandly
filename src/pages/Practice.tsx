@@ -1,4 +1,5 @@
 import type { Mood } from '../components/Mascot';
+import { hasTrack } from '../lib/entitlement';
 import { ArrowRight, CheckCircle2, CircleAlert, Lightbulb, Sparkles, Target } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { LockCard } from '../components/Gate';
@@ -61,7 +62,7 @@ function Feedback({ e, r, answer }: { e: Exercise; r: Result; answer: string }) 
 
 export default function Practice() {
   const p = useProfile();
-  const unlocked = p.plan.grammar;
+  const unlocked = hasTrack(p, 'grammar');
   const [level, setLevel] = useState<Cefr>(p.level ?? 'B1');
   const [kind, setKind] = useState<Kind | 'mix'>('mix');
   const [queue, setQueue] = useState<Exercise[] | null>(null);

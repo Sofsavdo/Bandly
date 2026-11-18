@@ -1,4 +1,5 @@
 import { BookOpen, Headphones, Mic, PenLine } from 'lucide-react';
+import { hasTrack } from '../lib/entitlement';
 import { useState } from 'react';
 import { Tile } from '../components/Tile';
 import { useProfile } from '../lib/store';
@@ -24,7 +25,7 @@ export default function Exam() {
   return (
     <div>
       <div className="card page-head with-illo t-butter">
-        <h2>{L('Imtihonga')} <em className="it">{L('tayyorgarlik')}</em> {p.plan.exam && <span className="badge on">{p.planUntil.exam ? L('Obuna faol') : L('Demo')}</span>}</h2>
+        <h2>{L('Imtihonga')} <em className="it">{L('tayyorgarlik')}</em> {hasTrack(p, 'exam') && <span className="badge on">{p.planUntil.exam ? L('Obuna faol') : L('Demo')}</span>}</h2>
         <p style={{ margin: '4px 0 6px' }}>{L('Mock testlar bepul. AI baho: haftasiga 1 ta Writing va 1 ta Speaking bepul.')}</p>
         <div className="seg seg-dark" role="tablist" aria-label={L('Imtihon')}>
           {(['ielts', 'cefr', 'sat'] as const).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{k.toUpperCase()}</button>)}
@@ -38,7 +39,7 @@ export default function Exam() {
       {tab === 'ielts' && <ReadinessCard />}
       {tab === 'ielts' && (
         <div className="grid">
-          {skills.map((s) => <Tile key={s.href} href={s.href} icon={s.icon} tone={s.tone} title={s.title} text={s.text} badge={s.free ? <span className="badge on">{L('Bepul')}</span> : !p.plan.exam && <span className="badge">{L('Haftasiga 1 bepul')}</span>} />)}
+          {skills.map((s) => <Tile key={s.href} href={s.href} icon={s.icon} tone={s.tone} title={s.title} text={s.text} badge={s.free ? <span className="badge on">{L('Bepul')}</span> : !hasTrack(p, 'exam') && <span className="badge">{L('Haftasiga 1 bepul')}</span>} />)}
         </div>
       )}
     </div>

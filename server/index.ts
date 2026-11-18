@@ -1,7 +1,7 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt } from './coach';
 import { tzDay } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, PROGRESS_MAX, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -10,18 +10,18 @@ import { cancelPayment, createPayment, entitlements, findByCallback, grant, mark
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
-import { mockStats, recordMockStat } from './mockStats';
 import { freeLimitsFromEnv, freeStatus, unlockLesson, wallStats } from './freeQuota';
 import { listStudioTests, publicStudioTests, publishedStudioTests, saveStudioTest, setStudioTestStatus } from './studioTests';
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
-import { gradeMock } from './mockGrade';
+import { startAutoBackup } from './autoBackup';
+import { gradeRequest } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { voiceLesson } from './content';
 import { elevenLabsFromEnv, synthesize as elSynthesize } from './elevenlabs';
 import { writeFileSync as writeFile, mkdirSync as mkdir } from 'node:fs';
-import { archive, contentVersion, createLesson, createUnit, history, publish, publishedUnits, reorder, restore, saveLesson, saveUnit, seedContent, studioTree } from './content';
+import { archive, knownContent, contentVersion, createLesson, createUnit, history, publish, publishedUnits, reorder, restore, saveLesson, saveUnit, seedContent, studioTree } from './content';
 import { awardXp, submitXp } from './xp';
 import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
@@ -51,6 +51,8 @@ const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
+startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
+expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
@@ -333,22 +335,12 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/mock/tests') return send(res, 200, publicStudioTests(db)); // kabinetda e'lon qilingan testlar (javobsiz)
     if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
       const b = await readJson(req, 16_384);
-      const g = gradeMock(b.kind, b.testId, b.answers, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : []);
-      // Kirgan o'quvchiga XP'ni server o'zi beradi (natijani o'zi hisobladi); bir urinish — bir marta
-      const tk = String(req.headers['x-token'] ?? '');
-      let xp = 0;
-      if (tk && /^[\w:.-]{6,60}$/.test(String(b.attemptId ?? ''))) {
-        try { const p = byToken(db, tk); xp = awardXp(db, p.id, `mock:${String(b.testId)}:${String(b.attemptId)}`, 'mock', g.correct * 5 + (g.correct / Math.max(1, g.total) >= 0.8 ? 20 : 0)); } catch { /* mehmon */ }
-      }
-      // Anonim test statistikasi: avval solishtirish (o'zini hisobga olmasdan), keyin shu urinish yoziladi
-      const stats = mockStats(db, String(b.testId), g.correct);
-      recordMockStat(db, String(b.testId), String(b.attemptId ?? ''), g.correct, g.total);
-      return send(res, 200, { ...g, xp, stats });
+      return send(res, 200, gradeRequest(db, String(req.headers['x-token'] ?? ''), b, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : []));
     }
     if (req.method === 'POST' && url.pathname === '/api/xp') {
       const b = await readJson(req, 16_384);
       const tk = String(req.headers['x-token'] ?? '');
-      const out = submitXp(db, tk, b.events);
+      const out = submitXp(db, tk, b.events, Date.now(), knownContent(db));
       maybeRewardReferral(db, byToken(db, tk).id); // taklif qilingan o'quvchi birinchi darsni bajargan bo'lsa — ikkalasiga XP
       return send(res, 200, out);
     }

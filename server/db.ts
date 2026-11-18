@@ -218,6 +218,8 @@ export function newSession(db: DatabaseSync, playerId: number, now = Date.now())
   return token;
 }
 const TOKEN_RE = /^[a-f0-9]{48}$/;
+/** Sessiya 180 kun ishlatilmasa bekor bo'ladi (qayta kirish — Telegram orqali bir bosish). */
+export const SESSION_IDLE_MS = 180 * 86_400_000;
 /** Token egasini topadi: avval sessiyalar (xesh), keyin eski players.token (topilsa — sessiyaga ko'chiriladi). */
 export function playerIdOf(db: DatabaseSync, token: string | undefined, now = Date.now()): number | null {
   if (!token || !TOKEN_RE.test(token)) return null;
@@ -264,6 +266,12 @@ export function setRole(db: DatabaseSync, nickname: string, role: Role | null): 
   if (!p) throw new ApiError(404, 'Foydalanuvchi topilmadi');
   db.prepare('UPDATE players SET role = ? WHERE id = ?').run(role, p.id);
   return { nickname: p.nickname, role };
+}
+
+/** Uzoq ishlatilmagan sessiyalarni yopadi (yo'qolgan/sotilgan telefon). Server ishga tushganda va kuniga bir marta chaqiriladi.
+ *  Faol foydalanuvchining last_seen'i soatiga yangilanadi, shuning uchun unga ta'sir qilmaydi. Qaytaradi: yopilganlar soni. */
+export function expireIdleSessions(db: DatabaseSync, now = Date.now()): number {
+  return Number(db.prepare('UPDATE sessions SET revoked_at = ? WHERE revoked_at IS NULL AND last_seen < ?').run(now, now - SESSION_IDLE_MS).changes);
 }
 
 /** Chiqish: shu qurilma sessiyasi bekor qilinadi (eski umumiy token bo'lsa — u ham shu sessiya orqali bekor bo'ladi). */

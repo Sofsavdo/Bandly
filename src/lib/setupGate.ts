@@ -6,8 +6,9 @@ import { getProfile } from './store';
 
 const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|groups|welcome|duel\/)/;
 
-/** Ro'yxatdan o'tmagan mehmon faqat shu sahifalarni ko'radi: bosh sahifa, reja savolnomasi, tariflar. */
-const GUEST = /^#\/(welcome|start|pricing)?$/;
+/** Ro'yxatdan o'tmagan mehmon ko'radigan sahifalar: bosh sahifa, reja savolnomasi, tariflar va bepul Mock Arena
+ *  (Reading/Listening obyektiv testlari, to'liq mock). Qolgan hammasi — hisob bilan. */
+const GUEST = /^#\/((welcome|start|pricing)?|mocks|mocks\/full|mocks\/(reading|listening)(\/[\w-]+)?)$/;
 export const needsLogin = (hash: string, account: boolean): boolean => !account && !GUEST.test(hash.split('?')[0]);
 
 export function setupRoute(hash: string, s: { account: boolean; onboarded: boolean; level: string | null } = { account: !!getAccount(), onboarded: !!loadAnswers(), level: getProfile().level }): string | null {

@@ -89,7 +89,7 @@ export default function LessonPage({ id }: { id: string }) {
     const xp = checkXp(counted, r.passed, firstPassEver, lessonXpDay(lesson.id) === today); // takror bir kunda kamroq (GAMIFIED §3.1)
     saveAttempt(lesson.id, r, now);
     saveResult({ kind: 'grammar', title: L('Dars: {0}', [lesson.titleUz]), correct: r.correct, total: r.total });
-    addXp(xp); markLessonXp(lesson.id, today); setGained((g) => g + xp);
+    addXp(xp, 'lesson', `${lesson.id}:check:${today}`); markLessonXp(lesson.id, today); setGained((g) => g + xp);
     if (r.passed) addToReview(lessonWordIds(lesson.id), now); // lesson words join the spaced-repetition deck
     setResult(r); setStep('result');
   };
@@ -128,7 +128,7 @@ export default function LessonPage({ id }: { id: string }) {
   const finishPractice = () => {
     const key = `${lesson.id}:practice`;
     const today = localDayKey(Date.now());
-    if (play.xp > 0 && lessonXpDay(key) !== today) { addXp(play.xp); markLessonXp(key, today); setGained((g) => g + play.xp); } // mashq XP kuniga bir marta
+    if (play.xp > 0 && lessonXpDay(key) !== today) { addXp(play.xp, 'lesson', `${lesson.id}:practice:${today}`); markLessonXp(key, today); setGained((g) => g + play.xp); } // mashq XP kuniga bir marta
     setStep(lesson.skipSpeak ? (lesson.writing ? 'write' : 'check') : 'speak');
   };
   const relearnPanel = () => relearn !== null && (
