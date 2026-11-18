@@ -170,7 +170,7 @@ export const B2_U5: Unit = {
       vocab: [{ en: 'get used to', uz: 'ko‘nikmoq' }, { en: 'pressure', uz: 'bosim' }, { en: 'adapt', uz: 'moslashmoq' }, { en: 'unfamiliar', uz: 'notanish, begona' }],
       practice: [
         ch('I’m used to ___ early. It’s easy for me.', ['get up', 'getting up', 'got up'], 1, 'be used to + -ing.'),
-        ch('When I was a child, I ___ climb trees.', ['used to', 'was used to', 'got used to'], 0, 'O‘tmish odati — used to + fe’l.'),
+        ch('As a teenager, I ___ play computer games all night.', ['used to', 'was used to', 'got used to'], 0, 'O‘tmish odati — used to + fe’l.'),
         ch('Driving on the left was hard, but I ___ it.', ['used to', 'got used to', 'use to'], 1, 'Ko‘nikib qoldim — got used to.'),
         gap('She isn’t used to ___ (eat) spicy food.', ['eating'], 'be used to + -ing.'),
         ord(['getting', 'I’m', 'to', 'job', 'used', 'my', 'new'], 'I’m getting used to my new job', 'get used to + ot (jarayon).'),

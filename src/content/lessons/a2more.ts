@@ -676,7 +676,7 @@ export const A2_U8: Unit = {
         ch('We ___ a new house this month — it’s almost ready.', ['build', 'are building', 'builds'], 1, 'Vaqtinchalik, hozir davom etyapti — are building.'),
         ch('Water ___ at 100 degrees.', ['boils', 'is boiling', 'boil'], 0, 'Fakt — present simple.'),
         ch('I ___ a new phone. Mine is broken.', ['am needing', 'need', 'needs'], 1, 'need — holat fe’li.'),
-        gap('What ___ you ___ (do) at the moment?', ['are doing'], 'at the moment — continuous: are … doing.'),
+        gap('What are you ___ (do) at the moment?', ['doing'], 'at the moment — continuous: are you doing.'),
         gap('She ___ (not / like) spicy food.', ['doesn’t like', "doesn't like", 'does not like'], 'like — holat fe’li, present simple.'),
         ord(['is', 'He', 'now', 'shower', 'having', 'a'], 'He is having a shower now', 'now — continuous.'),
       ],

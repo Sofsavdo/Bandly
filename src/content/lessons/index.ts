@@ -8,15 +8,21 @@ import { C1_U1, C1_U2 } from './c1';
 import { C2_U1 } from './c2';
 import { A1_U3, A2_U3, B1_U3 } from './extra';
 import { WRITING } from './writing';
+import { LESSON_VOCAB } from './lessonVocab';
 import { B2_U3, C1_U3, C2_U2 } from './upper';
 import { A1_U4, A1_U5, A1_U6, A1_U7, A1_U8 } from './a1more';
 import { A2_U4, A2_U5, A2_U6, A2_U7, A2_U8 } from './a2more';
 import { B1_U4, B1_U5, B1_U6, B1_U7, B1_U8 } from './b1more';
 import { B2_U4, B2_U5, B2_U6, B2_U7, B2_U8 } from './b2more';
+import { C1_U4, C1_U5, C1_U6, C1_U7, C1_U8 } from './c1more';
+import { C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8 } from './c2more';
 
 /** General English path (pilot slice A1–C2). Order matters: units and lessons follow the learning sequence. */
-const withWriting = (u: Unit): Unit => ({ ...u, lessons: u.lessons.map((l) => (WRITING[l.id] ? { ...l, writing: WRITING[l.id] } : l)) });
-export const UNITS: Unit[] = [A1_U1, A1_U2, A1_U3, A1_U4, A1_U5, A1_U6, A1_U7, A1_U8, A2_U1, A2_U2, A2_U3, A2_U4, A2_U5, A2_U6, A2_U7, A2_U8, B1_U1, B1_U2, B1_U3, B1_U4, B1_U5, B1_U6, B1_U7, B1_U8, B2_U1, B2_U2, B2_U3, B2_U4, B2_U5, B2_U6, B2_U7, B2_U8, C1_U1, C1_U2, C1_U3, C2_U1, C2_U2].map(withWriting);
+const withWriting = (u: Unit): Unit => ({ ...u, lessons: u.lessons.map((l) => {
+  const w = WRITING[l.id] ? { ...l, writing: WRITING[l.id] } : l;
+  return (w.vocab?.length ?? 0) < 3 && LESSON_VOCAB[l.id] ? { ...w, vocab: LESSON_VOCAB[l.id] } : w; // eski darslarga so'zlar (juftini top o'yini uchun)
+}) });
+export const UNITS: Unit[] = [A1_U1, A1_U2, A1_U3, A1_U4, A1_U5, A1_U6, A1_U7, A1_U8, A2_U1, A2_U2, A2_U3, A2_U4, A2_U5, A2_U6, A2_U7, A2_U8, B1_U1, B1_U2, B1_U3, B1_U4, B1_U5, B1_U6, B1_U7, B1_U8, B2_U1, B2_U2, B2_U3, B2_U4, B2_U5, B2_U6, B2_U7, B2_U8, C1_U1, C1_U2, C1_U3, C1_U4, C1_U5, C1_U6, C1_U7, C1_U8, C2_U1, C2_U2, C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8].map(withWriting);
 
 const flatten = (units: Unit[]) => units.flatMap((unit) => unit.lessons.map((lesson, index) => ({ unit, lesson, index })));
 export const ALL_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(UNITS);
