@@ -69,7 +69,7 @@ const port = (http.address() as { port: number }).port;
   const msg = await new Promise<string>((r) => ws.on('message', (d) => r(d.toString())));
   assert.equal(JSON.parse(msg).code, 401);
 }
-// to'g'ri: ready → ovoz yuboriladi → Bandi ovozi (ikkilik) va matn nusxalari keladi
+// to'g'ri: ready → ovoz yuboriladi → Sellzen AI ovozi (ikkilik) va matn nusxalari keladi
 {
   const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?token=good&adult=1&lang=uz&level=B1`);
   const events: string[] = []; let audioBytes = 0;
@@ -84,7 +84,7 @@ const port = (http.address() as { port: number }).port;
   ws.send(JSON.stringify({ type: 'end' }));
   await new Promise((r) => ws.on('close', r));
   assert.deepEqual(seenModels, ['models/bad-model', 'models/gemini-2.5-flash-native-audio-preview-12-2025'], 'zaxira modelga o‘tdi');
-  assert.ok(sawGreeting, 'Bandi suhbatni o‘zi boshlaydi');
+  assert.ok(sawGreeting, 'Sellzen AI suhbatni o‘zi boshlaydi');
   assert.deepEqual(gotAudio, [640]);
   assert.equal(audioBytes, 480);
   assert.deepEqual(events.filter((e) => e !== 'in' && e !== 'out'), ['ready', 'turn']);

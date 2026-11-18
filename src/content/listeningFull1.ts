@@ -1,7 +1,7 @@
 import type { ListeningTest } from './types';
 
 // To'liq formatli IELTS Listening mashq testi: 4 qism, 40 savol (≈ 30 daqiqa).
-// Original mashq skripti (Bandly). Rasmiy IELTS materiali emas; metodist tekshiruvini kutmoqda (PXD-05).
+// Original mashq skripti (Sellzen). Rasmiy IELTS materiali emas; metodist tekshiruvini kutmoqda (PXD-05).
 // Ovozlar (tools/audio-tasks.ts): A — Sarah (UK), B — Alistair (UK), C — Hope (US), D — Max (US).
 type L = { speaker: 'A' | 'B' | 'C' | 'D'; text: string };
 

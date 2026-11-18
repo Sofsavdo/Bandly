@@ -16,9 +16,9 @@ export function InviteCard() {
   }, [acc?.token]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!acc || !r) return null;
   const link = r.bot ? `https://t.me/${r.bot}?start=ref_${r.code}` : `${location.origin}/?ref=${r.code}`;
-  const text = L('Men Bandly’da ingliz tilini o‘rganyapman — sen ham qo‘shil:');
+  const text = L('Men Sellzen’da ingliz tilini o‘rganyapman — sen ham qo‘shil:');
   const share = async () => {
-    try { if (navigator.share) { await navigator.share({ title: 'Bandly', text, url: link }); return; } } catch { /* bekor qilindi */ }
+    try { if (navigator.share) { await navigator.share({ title: 'Sellzen', text, url: link }); return; } } catch { /* bekor qilindi */ }
     await navigator.clipboard?.writeText(`${text} ${link}`).catch(() => undefined); setMsg(L('Havola nusxalandi'));
   };
   return (

@@ -8,7 +8,7 @@ import { UZ_MULTILEVEL } from '../../src/content/examFormats';
 import { part1Topics, part2Cards } from '../../src/content/speaking';
 import { writingPrompts } from '../../src/content/writing';
 
-export const SITE = 'https://bandly-production.up.railway.app';
+export const SITE = 'https://sellzen.uz';
 const ROOT = new URL('../../public/', import.meta.url).pathname;
 
 /** IELTS ↔ CEFR: ielts.org "IELTS and the CEFR" (2026-11-18 da o'qildi). Chegara ballar (5.0, 8.0) — oraliq holat. */
@@ -36,7 +36,7 @@ function layout(o: { slug: string; title: string; description: string; body: str
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(o.title)} — Bandly</title>
+<title>${esc(o.title)} — Sellzen</title>
 <meta name="description" content="${esc(o.description)}">
 <link rel="canonical" href="${url}">
 <meta property="og:title" content="${esc(o.title)}">
@@ -67,7 +67,7 @@ table{width:100%;border-collapse:collapse;font-size:15px}th,td{text-align:left;p
 footer{padding-top:24px;padding-bottom:40px;font-size:14px;color:var(--muted)}
 .timer{font-variant-numeric:tabular-nums;font-size:34px;font-weight:800}
 </style>
-<script type="application/ld+json">${json({ '@context': 'https://schema.org', '@type': 'WebApplication', name: o.title, url, applicationCategory: 'EducationalApplication', inLanguage: 'uz', offers: { '@type': 'Offer', price: '0', priceCurrency: 'UZS' }, publisher: { '@type': 'Organization', name: 'Bandly' } })}</script>
+<script type="application/ld+json">${json({ '@context': 'https://schema.org', '@type': 'WebApplication', name: o.title, url, applicationCategory: 'EducationalApplication', inLanguage: 'uz', offers: { '@type': 'Offer', price: '0', priceCurrency: 'UZS' }, publisher: { '@type': 'Organization', name: 'Sellzen' } })}</script>
 </head>
 <body>
 <header><a class="logo" href="/">Band<b>ly</b></a><nav aria-label="Vositalar">${PAGES.map((p) => `<a href="/vositalar/${p.slug}"${p.slug === o.slug ? ' class="on" aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}</nav></header>
@@ -75,7 +75,7 @@ footer{padding-top:24px;padding-bottom:40px;font-size:14px;color:var(--muted)}
 ${o.body}
 <section class="card cta"><h2 style="margin-top:0">Bepul shaxsiy IELTS reja</h2><p>2 daqiqalik so‘rovnoma: maqsadingiz, darajangiz va vaqtingizga qarab kunlik reja, darslar va mock testlar.</p><a class="btn" href="/#/start">Rejani olish</a></section>
 </main>
-<footer>Bandly — o‘zbek tilida IELTS va ingliz tili tayyorgarligi. Bu vositalar bepul va ro‘yxatdan o‘tishsiz ishlaydi. Bandly IELTS’ning rasmiy hamkori emas; natijalar taxminiy.</footer>
+<footer>Sellzen — o‘zbek tilida IELTS va ingliz tili tayyorgarligi. Bu vositalar bepul va ro‘yxatdan o‘tishsiz ishlaydi. Sellzen IELTS’ning rasmiy hamkori emas; natijalar taxminiy.</footer>
 ${o.script ? `<script>${o.script}</script>` : ''}
 </body>
 </html>
@@ -106,7 +106,7 @@ function bandPage(): string {
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Band</th><th>Listening</th><th>Reading (Academic)</th><th>Reading (General)</th></tr></thead><tbody>
 ${[9, 8.5, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4].map((b) => { const f = (t: ReadonlyArray<readonly [number, number]>) => { const i = t.findIndex((x) => x[1] === b); return i < 0 ? '–' : `${t[i]![0]}${i > 0 ? `–${t[i - 1]![0] - 1}` : '–40'}`.replace(/^(\d+)–\1$/, '$1'); }; return `<tr><td><b>${b.toFixed(1)}</b></td><td>${f(LISTENING_TABLE)}</td><td>${f(READING_ACADEMIC_TABLE)}</td><td>${f(READING_GENERAL_TABLE)}</td></tr>`; }).join('\n')}
 </tbody></table></div>
-<p class="note">Writing va Speaking’ni imtihonchi 4 mezon bo‘yicha baholaydi. Ularni o‘zingiz aniqlash qiyin — Bandly’da yozma ish va gapirish AI tomonidan shu mezonlar bo‘yicha baholanadi.</p>`;
+<p class="note">Writing va Speaking’ni imtihonchi 4 mezon bo‘yicha baholaydi. Ularni o‘zingiz aniqlash qiyin — Sellzen’da yozma ish va gapirish AI tomonidan shu mezonlar bo‘yicha baholanadi.</p>`;
   const script = `const T={l:${json(LISTENING_TABLE)},a:${json(READING_ACADEMIC_TABLE)},g:${json(READING_GENERAL_TABLE)}};
 const band=(raw,t)=>{raw=Math.max(0,Math.min(40,Math.floor(+raw||0)));for(const [m,b] of t)if(raw>=m)return b;return 0};
 const round=a=>Math.floor(a*2+0.5)/2;const $=id=>document.getElementById(id);
@@ -159,7 +159,7 @@ function topicsPage(): string {
 <button class="btn" id="go2">Taymerni boshlash</button> <button class="btn alt" data-new="p2">Boshqa kartochka</button>
 <h2>Part 3 (shu mavzu bo‘yicha)</h2><ol id="p3"></ol></section>
 <section class="card"><h2 style="margin-top:0">Writing Task 2</h2><p id="w2"></p><div class="timer" id="tw">40:00</div><p class="note">Kamida 250 so‘z, 40 daqiqa.</p><button class="btn" id="gow">Taymerni boshlash</button> <button class="btn alt" data-new="w2">Boshqa mavzu</button></section>
-<p class="note">Bu bazada ${p1.length} ta Part 1 mavzusi, ${p2.length} ta Part 2 kartochkasi va ${w2.length} ta Writing Task 2 savoli bor. Mavzular Bandly’ning o‘z mashq materiali (rasmiy IELTS savollari emas). Javobingizni Bandly’da yozib yoki aytib, AI bahosini olishingiz mumkin.</p>`;
+<p class="note">Bu bazada ${p1.length} ta Part 1 mavzusi, ${p2.length} ta Part 2 kartochkasi va ${w2.length} ta Writing Task 2 savoli bor. Mavzular Sellzen’ning o‘z mashq materiali (rasmiy IELTS savollari emas). Javobingizni Sellzen’da yozib yoki aytib, AI bahosini olishingiz mumkin.</p>`;
   const script = `const D={p1:${json(p1)},p2:${json(p2)},w2:${json(w2)}};const $=id=>document.getElementById(id);const pick=a=>a[Math.floor(Math.random()*a.length)];
 const li=a=>a.map(x=>'<li>'+x.replace(/[<>&]/g,'')+'</li>').join('');
 function n1(){const t=pick(D.p1);$('p1t').textContent=t.t;$('p1').innerHTML=li(t.q)}

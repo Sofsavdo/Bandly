@@ -25,7 +25,7 @@ export default function Creator() {
         <p style={{ margin: '6px 0 12px' }}>{L('Havolangiz orqali kelgan o‘quvchilar va ularning to‘lovlari.')}</p>
         <div className="invite-link" style={{ background: 'var(--surface)' }}><code>{link}</code>
           <button className="icon-btn sm" aria-label={L('Nusxalash')} onClick={() => { void navigator.clipboard?.writeText(link).then(() => setMsg(L('Havola nusxalandi'))); }}><Copy size={16} /></button>
-          <button className="icon-btn sm" aria-label={L('Ulashish')} onClick={() => { void navigator.share?.({ title: 'Bandly', url: link }).catch(() => undefined); }}><Share2 size={16} /></button>
+          <button className="icon-btn sm" aria-label={L('Ulashish')} onClick={() => { void navigator.share?.({ title: 'Sellzen', url: link }).catch(() => undefined); }}><Share2 size={16} /></button>
         </div>
         {msg && <p className="evidence">{msg}</p>}
       </section>

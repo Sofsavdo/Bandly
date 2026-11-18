@@ -8,8 +8,10 @@ export const listeningTests = data.listening as unknown as PublicListeningTest[]
 /** Metodist kabinetida e'lon qilingan testlarni (javobsiz) ro'yxatga qo'shadi. Ilova ochilishida bir marta chaqiriladi. */
 export async function loadStudioTests(): Promise<void> {
   try {
+    const tok = (() => { try { return (JSON.parse(localStorage.getItem('bandly.account.v1') ?? 'null') as { token?: string } | null)?.token ?? ''; } catch { return ''; } })();
+    if (!tok) return; // mehmon Mock Arena'ni ko'rmaydi — so'rov ham yuborilmaydi
     const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 2500);
-    const r = await fetch('/api/mock/tests', { signal: ctl.signal });
+    const r = await fetch('/api/mock/tests', { signal: ctl.signal, headers: { 'x-token': tok } });
     clearTimeout(t);
     if (!r.ok) return;
     const j = (await r.json()) as { reading?: PublicReadingTest[]; listening?: PublicListeningTest[] };

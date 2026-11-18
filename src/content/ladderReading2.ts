@@ -1,7 +1,7 @@
 import type { ReadingTest } from './types';
 
 // IELTS zinapoyasi uchun qo'shimcha Reading mini-testlari (har darajaga 2 tadan): IELTS savol turlari, matn o'quvchi darajasida.
-// Original mashq matnlari (Bandly). Rasmiy IELTS materiali emas.
+// Original mashq matnlari (Sellzen). Rasmiy IELTS materiali emas.
 
 const TFNG = (from: number, to: number) => `Questions ${from}–${to}: Do the following statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.`;
 

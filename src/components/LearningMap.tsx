@@ -167,7 +167,7 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
         <div className="hud-lvl">
           <span className="hud-badge">L{lp.level}</span>
           <div className="grow">
-            <b>{L('Bandly darajasi')} {lp.level}</b>
+            <b>{L('Sellzen darajasi')} {lp.level}</b>
             <div className="hud-bar" role="progressbar" aria-valuemin={0} aria-valuemax={lp.span} aria-valuenow={lp.into} aria-label={L('Bosqich XP')}><i style={{ width: `${Math.round(lp.pct * 100)}%` }} /></div>
             <span className="muted">{lp.into} / {lp.span}  {L('XP · ingliz tili:')} {level ?? 'aniqlanmagan'}</span>
           </div>

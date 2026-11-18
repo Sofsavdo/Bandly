@@ -14,4 +14,13 @@ for (const f of boot) {
   const bad = [...src.matchAll(/from\s*["']\.\/(app-[\w-]+\.js)["']|import\s*["']\.\/(app-[\w-]+\.js)["']/g)].map((m) => m[1] ?? m[2]);
   assert.deepEqual(bad, [], `${f} app bo‘lagini statik import qilmasligi kerak (circular → oq ekran)`);
 }
+// Javob kalitlari (src/content/readingTests.ts, listeningTests.ts) faqat serverda: brauzer fayllarida "evidence"/"answers" bo'lmasligi kerak
+const { readingTests } = await import('../../src/content/readingTests');
+const { listeningTests } = await import('../../src/content/listeningTests');
+const all = files.filter((f) => f.endsWith('.js')).map((f) => readFileSync(`${dir}/${f}`, 'utf8')).join('\n');
+const evid = [...readingTests, ...listeningTests].flatMap((t) => [...(t.questions ?? []), ...((t as { sections?: { questions: typeof t.questions }[] }).sections ?? []).flatMap((s) => s.questions)])
+  .map((q) => (q as { evidence?: string } | undefined)?.evidence).filter((e): e is string => typeof e === 'string' && e.length > 30);
+assert.ok(evid.length > 50, 'tekshirish uchun yetarli dalil matni bor');
+const leaked = evid.filter((e) => all.includes(JSON.stringify(e).slice(1, -1)));
+assert.deepEqual(leaked.slice(0, 3), [], `javob dalillari brauzer bundle'iga tushgan (${leaked.length} ta)`);
 console.log('chunks.test: OK');

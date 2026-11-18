@@ -38,6 +38,7 @@ export const uz = {
   'brand.tagline': 'Ingliz tili, imtihonlar va AI ustoz — bir joyda',
   'nav.mistakes': 'Xatolarim',
   'nav.pricing': 'Obuna turlari',
+  'nav.certificates': 'Sertifikatlarim',
   'nav.group.main': 'Asosiy',
   'nav.group.practice': 'Mashq qilish',
   'nav.group.exam': 'Imtihon (IELTS · CEFR · SAT)',

@@ -92,7 +92,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'streak-30', title: L('30 kunlik seriya'), desc: L('Ketma-ket 30 kun kunlik maqsadni bajaring'), check: (p) => p.streak >= 30 },
   { id: 'boss-1', title: L('Birinchi boss'), desc: L('Birinchi bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 1 },
   { id: 'boss-5', title: L('Boss ovchisi'), desc: L('5 ta bo‘lim boss sinovini yuting'), check: (p) => (p.bossWins ?? 0) >= 5 },
-  { id: 'level-10', title: L('10-daraja'), desc: L('Bandly darajasi 10 ga yeting'), check: (p) => levelFromXp(p.xp) >= 10 },
+  { id: 'level-10', title: L('10-daraja'), desc: L('Sellzen darajasi 10 ga yeting'), check: (p) => levelFromXp(p.xp) >= 10 },
 ];
 
 export interface XpResult {

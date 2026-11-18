@@ -30,7 +30,7 @@ void initI18n().then(async () => {
     import('./content/curriculum/inventory'), import('./content/curriculum/pilot'), import('./content/mockShared'), import('./content/speakingModels'),
     import('./content/speakingEasy'), import('./content/speaking'), import('./content/scenes'), import('./content/practice'), import('./content/placement'),
     import('./content/grammar'), import('./content/writing'), import('./content/tips'), import('./content/skillCheck'), import('./content/personas'),
-    import('./content/listeningTests'), import('./content/readingTests'), import('./content/examFormats'), import('./content/lines'), import('./content/vocabWriting'),
+    import('./content/mockTests'), import('./content/examFormats'), import('./content/lines'), import('./content/vocabWriting'),
     import('./content/satPractice'),
   ]);
   for (const m of mods) for (const v of Object.values(m as Record<string, unknown>)) deepTranslate(v);

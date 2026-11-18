@@ -2,7 +2,7 @@ import type { Unit } from '../lessons/types';
 import { ch, gap, lch, lgap, ord } from '../lessons/helpers';
 
 // IELTS kursi — Listening. Savollarning ko'pchiligi "eshitib javob berish": matn ovozda o'qiladi, yozuvi javobdan keyin ochiladi.
-// Original o'quv materiali (Bandly). Rasmiy IELTS materiali emas.
+// Original o'quv materiali (Sellzen). Rasmiy IELTS materiali emas.
 
 export const IE_LISTENING_START: Unit = {
   id: 'ie-ls', level: 'A2', title: 'IELTS Listening: Start', titleUz: 'Listening: boshlang‘ich ko‘nikmalar',

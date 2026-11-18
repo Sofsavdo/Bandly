@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt } from './coach';
 import { tzDay } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
@@ -15,6 +16,7 @@ import { listStudioTests, publicStudioTests, publishedStudioTests, saveStudioTes
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { startAutoBackup } from './autoBackup';
+import { PHOTO_MAX, auditLog, audit, claimAll, composeFull, issueFor, myCertificates, profileOf, publicCertificate, recordResult, revokeCertificate, rules as certRules, savePhoto, searchCertificates, setFullName, setRule, setSettings as setCertSettings, settings as certSettings } from './certificates';
 import { gradeRequest } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
 import { createReadStream, existsSync, statSync } from 'node:fs';
@@ -110,6 +112,7 @@ function readRaw(req: IncomingMessage, limit: number): Promise<Buffer> {
   });
 }
 const MEDIA_DIR = `${dirname(DB_FILE)}/media`;
+const certProfile = (id: number) => { const p = profileOf(db, id); return { fullName: p.fullName, photoUrl: p.photo ? `/media/${p.photo}` : null }; };
 
 function readJson(req: IncomingMessage, limit = 2048): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
@@ -159,7 +162,7 @@ const httpServer = createServer(async (req, res) => {
         const on = cmd.startsWith('/remind');
         const ok = setRemind(db, m.from.id, on);
         const lc = ((m.from as { language_code?: string }).language_code ?? '').split('-')[0];
-        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, !ok ? 'Avval Bandly’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind') });
+        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, !ok ? 'Avval Sellzen’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind') });
       }
       const reply = handleUpdate(upd, bot.publicUrl, (lc) => (t: string) => trServer(db, (lc ?? '').split('-')[0], t));
       return send(res, 200, reply ? { method: reply.method, ...reply.body } : {}); // javob webhook javobining o'zida yuboriladi
@@ -332,10 +335,40 @@ const httpServer = createServer(async (req, res) => {
     // Bepul tarif (B varianti): har kursda kuniga 1 ta yangi dars (birinchi kuni 3 ta); obunachiga cheklov yo'q
     if (req.method === 'GET' && url.pathname === '/api/free') return send(res, 200, freeStatus(db, String(req.headers['x-token'] ?? ''), freeLimitsFromEnv()));
     if (req.method === 'POST' && url.pathname === '/api/free/unlock') { const b = await readJson(req); return send(res, 200, unlockLesson(db, String(req.headers['x-token'] ?? ''), b.course, b.lessonId, freeLimitsFromEnv())); }
-    if (req.method === 'GET' && url.pathname === '/api/mock/tests') return send(res, 200, publicStudioTests(db)); // kabinetda e'lon qilingan testlar (javobsiz)
+    if (req.method === 'GET' && url.pathname === '/api/mock/tests') { byToken(db, String(req.headers['x-token'] ?? '')); return send(res, 200, publicStudioTests(db)); } // kabinetda e'lon qilingan testlar (javobsiz), faqat hisob bilan
     if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
       const b = await readJson(req, 16_384);
-      return send(res, 200, gradeRequest(db, String(req.headers['x-token'] ?? ''), b, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : []));
+      return send(res, 200, gradeRequest(db, String(req.headers['x-token'] ?? ''), b, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : [], Date.now(), MEDIA_DIR));
+    }
+    // ---- Sertifikatlar ----
+    if (url.pathname.startsWith('/api/certificates/verify/') && req.method === 'GET') return send(res, 200, publicCertificate(db, decodeURIComponent(url.pathname.slice('/api/certificates/verify/'.length))));
+    if (url.pathname === '/api/certificates' && req.method === 'GET') { const p = byToken(db, String(req.headers['x-token'] ?? '')); return send(res, 200, { certificates: myCertificates(db, p.id), profile: certProfile(p.id) }); }
+    if (url.pathname === '/api/certificates/claim' && req.method === 'POST') { const p = byToken(db, String(req.headers['x-token'] ?? '')); return send(res, 200, { issued: claimAll(db, p.id, MEDIA_DIR), certificates: myCertificates(db, p.id) }); }
+    if (url.pathname === '/api/exam/full' && req.method === 'POST') {
+      const p = byToken(db, String(req.headers['x-token'] ?? '')); const b = await readJson(req);
+      const r = composeFull(db, p.id, Number(b.startedAt), String(b.listeningId ?? ''), String(b.readingId ?? ''));
+      const iss = issueFor(db, p.id, r.id, MEDIA_DIR);
+      return send(res, 200, { resultId: r.id, overall: r.overall, skills: r.skills, certificates: iss.issued, certMissing: iss.missing });
+    }
+    if (url.pathname === '/api/profile/cert') {
+      const p = byToken(db, String(req.headers['x-token'] ?? ''));
+      if (req.method === 'GET') return send(res, 200, certProfile(p.id));
+      if (req.method === 'PUT') { const b = await readJson(req); setFullName(db, p.id, b.fullName); return send(res, 200, certProfile(p.id)); }
+    }
+    if (url.pathname === '/api/profile/photo' && req.method === 'POST') {
+      const p = byToken(db, String(req.headers['x-token'] ?? ''));
+      savePhoto(db, p.id, await readRaw(req, PHOTO_MAX), MEDIA_DIR);
+      return send(res, 200, certProfile(p.id));
+    }
+    if (url.pathname.startsWith('/api/certadmin/')) {
+      const adm = requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
+      const sub = url.pathname.slice('/api/certadmin/'.length);
+      if (sub === 'list' && req.method === 'GET') return send(res, 200, { certificates: searchCertificates(db, url.searchParams.get('q') ?? '') });
+      if (sub === 'revoke' && req.method === 'POST') { const b = await readJson(req); return send(res, 200, revokeCertificate(db, adm.id, String(b.id ?? ''), String(b.reason ?? ''))); }
+      if (sub === 'rules') { if (req.method === 'PUT') { const b = await readJson(req); setRule(db, adm.id, b as Parameters<typeof setRule>[2]); } return send(res, 200, { rules: certRules(db) }); }
+      if (sub === 'settings') { if (req.method === 'PUT') { const b = await readJson(req); setCertSettings(db, adm.id, b); } return send(res, 200, certSettings(db)); }
+      if (sub === 'audit' && req.method === 'GET') return send(res, 200, { audit: auditLog(db, Number(url.searchParams.get('limit') ?? 100) || 100) });
+      return send(res, 404, { error: 'Topilmadi' });
     }
     if (req.method === 'POST' && url.pathname === '/api/xp') {
       const b = await readJson(req, 16_384);
@@ -439,7 +472,10 @@ const httpServer = createServer(async (req, res) => {
         try {
           const nat = nativeOf(req.headers['x-lang']);
           const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns, undefined, nat) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text, undefined, nat);
-          return send(res, 200, { ...r, quota: { used: q.used, limit: q.limit } });
+          // Server natijasi (to'liq imtihon va sertifikat uchun): band AI baholashdan, mijozdan emas
+          const att = /^[\w:.-]{6,60}$/.test(String(b.attemptId ?? '')) ? String(b.attemptId) : randomUUID();
+          const rec = recordResult(db, q.playerId, { module: 'ai', kind, testId: `ai-${kind}`, title: kind === 'writing' ? 'Writing' : 'Speaking', attemptKey: `ai:${kind}:${att}`, band: r.overall }, now);
+          return send(res, 200, { ...r, quota: { used: q.used, limit: q.limit }, resultId: rec.result.id });
         } catch (e) { refundAssessment(db, q.playerId, kind, now); refundGlobalAi(db, now); throw e; }
       }
       return send(res, 404, { error: 'Topilmadi' });
@@ -519,14 +555,14 @@ const httpServer = createServer(async (req, res) => {
       if (!ADMIN_TOKEN || String(req.headers['x-admin'] ?? '') !== ADMIN_TOKEN) throw new ApiError(403, 'Taqiqlangan');
       if (req.method === 'GET' && url.pathname === '/api/admin/payments') return send(res, 200, { payments: recent(db, 100) });
       if (req.method === 'GET' && url.pathname === '/api/admin/ai-costs') return send(res, 200, aiCostSummary(db, Number(url.searchParams.get('days') ?? 30) || 30));
-      if (req.method === 'POST' && url.pathname === '/api/admin/role') { const b = await readJson(req); return send(res, 200, setRole(db, String(b.nickname ?? ''), b.role === null || b.role === '' ? null : String(b.role) as 'admin' | 'methodologist')); }
-      if (req.method === 'POST' && url.pathname === '/api/admin/grant') { const b = await readJson(req); return send(res, 200, { until: grant(db, String(b.nickname ?? ''), String(b.track ?? ''), Number(b.days)) }); }
+      if (req.method === 'POST' && url.pathname === '/api/admin/role') { const b = await readJson(req); audit(db, null, 'role.set', String(b.nickname ?? ''), { role: b.role ?? null }); return send(res, 200, setRole(db, String(b.nickname ?? ''), b.role === null || b.role === '' ? null : String(b.role) as 'admin' | 'methodologist')); }
+      if (req.method === 'POST' && url.pathname === '/api/admin/grant') { const b = await readJson(req); const until = grant(db, String(b.nickname ?? ''), String(b.track ?? ''), Number(b.days)); audit(db, null, 'subscription.grant', String(b.nickname ?? ''), { track: b.track, days: b.days }); return send(res, 200, { until }); }
     }
     if (req.method === 'GET' && url.pathname.startsWith('/media/')) {
       const file = url.pathname.slice('/media/'.length);
       if (!/^[\w.-]+$/.test(file) || !existsSync(`${MEDIA_DIR}/${file}`)) return send(res, 404, { error: 'Topilmadi' });
       const full = `${MEDIA_DIR}/${file}`; const size = statSync(full).size;
-      const type = ({ mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4a: 'audio/mp4', mp3: 'audio/mpeg' } as Record<string, string>)[file.split('.').pop()!] ?? 'application/octet-stream';
+      const type = ({ mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4a: 'audio/mp4', mp3: 'audio/mpeg', jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' } as Record<string, string>)[file.split('.').pop()!] ?? 'application/octet-stream';
       const m = String(req.headers.range ?? '').match(/bytes=(\d+)-(\d*)/);
       if (m) {
         const start = Number(m[1]); const end = m[2] ? Math.min(Number(m[2]), size - 1) : size - 1;
@@ -562,7 +598,7 @@ if (live) attachLive(httpServer, {
     recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 60) * live.pricePerMin, estimated: true });
   },
 });
-httpServer.listen(PORT, HOST, () => console.log(`Bandly: http://${HOST}:${PORT} (AI: ${ai.provider}${aiOffReason() ? ` — ${aiOffReason()}` : ''}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'}, Live: ${live ? `${live.model}/${live.voice}` : 'yo‘q'})`));
+httpServer.listen(PORT, HOST, () => console.log(`Sellzen: http://${HOST}:${PORT} (AI: ${ai.provider}${aiOffReason() ? ` — ${aiOffReason()}` : ''}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'}, Live: ${live ? `${live.model}/${live.voice}` : 'yo‘q'})`));
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)

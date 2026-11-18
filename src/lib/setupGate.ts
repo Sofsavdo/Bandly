@@ -1,15 +1,28 @@
-// Kirgan o'quvchi uchun majburiy boshlang'ich qadamlar: 1) shaxsiy reja savolnomasi (Bandi uslubi shu yerda tanlanadi),
+// Kirgan o'quvchi uchun majburiy boshlang'ich qadamlar: 1) shaxsiy reja savolnomasi (ustoz uslubi shu yerda tanlanadi),
 // 2) daraja testi. Ular bajarilmaguncha asosiy sahifalardan shu qadamlarga yo'naltiriladi (to'lov, profil va xodim sahifalari ochiq).
 import { getAccount } from './account';
 import { loadAnswers } from './onboarding';
 import { getProfile } from './store';
 
-const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|groups|welcome|duel\/)/;
+const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|groups|welcome|login|certificates|duel\/)/;
 
-/** Ro'yxatdan o'tmagan mehmon ko'radigan sahifalar: bosh sahifa, reja savolnomasi, tariflar va bepul Mock Arena
- *  (Reading/Listening obyektiv testlari, to'liq mock). Qolgan hammasi — hisob bilan. */
-const GUEST = /^#\/((welcome|start|pricing)?|mocks|mocks\/full|mocks\/(reading|listening)(\/[\w-]+)?)$/;
-export const needsLogin = (hash: string, account: boolean): boolean => !account && !GUEST.test(hash.split('?')[0]);
+/** Mehmon (kirmagan) faqat bosh sahifani ko'radi. Qolgan barcha ichki sahifalar — hisob bilan (bepul tarif ham). */
+const PUBLIC = /^#\/(welcome)?$/;
+const LOGIN = /^#\/login(\?|$)/;
+const path = (hash: string): string => hash.split('?')[0] || '#/';
+export const needsLogin = (hash: string, account: boolean): boolean => !account && !PUBLIC.test(path(hash)) && !LOGIN.test(hash);
+/** Kirishdan keyin qaytiladigan sahifa (faqat ichki hash yo'llari — tashqi manzilga yo'naltirib bo'lmaydi). */
+export function nextOf(hash: string): string {
+  const q = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '';
+  const n = new URLSearchParams(q).get('next') ?? '';
+  return /^#\/[\w\-/]*$/.test(n) && !LOGIN.test(n) ? n : '#/';
+}
+/** Yagona kirish qoidasi: mehmon ichki sahifada — login sahifasiga (qaytish manzili bilan); kirgan o'quvchi login sahifasida — qaytish manziliga. */
+export function authRoute(hash: string, account: boolean): string | null {
+  const h = hash || '#/';
+  if (!account) return needsLogin(h, false) ? `#/login?next=${encodeURIComponent(path(h))}` : null;
+  return LOGIN.test(h) ? nextOf(h) : null;
+}
 
 export function setupRoute(hash: string, s: { account: boolean; onboarded: boolean; level: string | null } = { account: !!getAccount(), onboarded: !!loadAnswers(), level: getProfile().level }): string | null {
   if (!s.account || FREE.test(hash)) return null;

@@ -1,6 +1,6 @@
 import { L } from '../i18n';
 import type { IlloKind } from './Illo';
-// O'quv xaritasi uchun Bandly'ning o'z illyustratsiyalari (original vektor shakllar, tashqi rasm yo'q).
+// O'quv xaritasi uchun Sellzen'ning o'z illyustratsiyalari (original vektor shakllar, tashqi rasm yo'q).
 // Har bir daraja — alohida "dunyo": A1 mahalla, A2 bozor, B1 ko'l bo'yi, B2 tog' yo'li, C1 tungi shahar, C2 cho'qqi.
 
 export interface ZoneTheme {
@@ -20,7 +20,7 @@ export const ZONES: Record<string, ZoneTheme> = {
   C2: { name: L('Cho‘qqi'), sub: L('Mukammallik'), sky: ['#fffbea', '#fff4cf'], hill: ['#ffd65c', '#ffe9a6'], road: '#ffffff', roadEdge: '#ffe9a6', accent: '#e9a300', accentDark: '#b47d00', props: ['peak', 'stars', 'cloud', 'peak', 'flag', 'cloud'] },
 };
 
-/** Xarita bezaklari: Bandly 3.0 tasvirlari (bosh sahifadagi bilan bir uslub), har daraja o'z mavzusida. */
+/** Xarita bezaklari: Sellzen 3.0 tasvirlari (bosh sahifadagi bilan bir uslub), har daraja o'z mavzusida. */
 export const ZONE_ILLO: Record<string, IlloKind[]> = {
   A1: ['books', 'chat', 'star', 'pencil'], A2: ['headphones', 'map', 'chat', 'clock'], B1: ['mic', 'books', 'target', 'headphones'],
   B2: ['megaphone', 'chat', 'cap', 'pencil'], C1: ['star', 'mic', 'trophy', 'clock'], C2: ['trophy', 'cap', 'star', 'target'],

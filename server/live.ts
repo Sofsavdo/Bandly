@@ -1,7 +1,7 @@
 // Gemini Live — ovozdan-ovozga (speech-to-speech) AI ustoz. Brauzer bizning serverga WebSocket bilan ulanadi, server esa
 // Gemini Live API'ga (BidiGenerateContent): API kalit brauzerga chiqmaydi, daqiqalar va limitlar serverda hisoblanadi.
 // Brauzer → server: ikkilik kadrlar = 16 kHz PCM16 mikrofon ovozi; JSON {type:'end'} — tugatish.
-// Server → brauzer: ikkilik kadrlar = 24 kHz PCM16 Bandi ovozi; JSON {type:'ready'|'interrupted'|'turn'|'in'|'out'|'error'|'limit'}.
+// Server → brauzer: ikkilik kadrlar = 24 kHz PCM16 Sellzen AI ovozi; JSON {type:'ready'|'interrupted'|'turn'|'in'|'out'|'error'|'limit'}.
 import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
 import type { DatabaseSync } from 'node:sqlite';
@@ -58,7 +58,7 @@ export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriber
   return Math.min(cfg.maxSessionSec, personal, global);
 }
 
-/** Gemini Live'ga birinchi xabar: model, ovoz, Bandi ko'rsatmasi, ikkala tomon matn nusxasi. */
+/** Gemini Live'ga birinchi xabar: model, ovoz, Sellzen AI ko'rsatmasi, ikkala tomon matn nusxasi. */
 export function setupMessage(cfg: LiveConfig, model: string, systemText: string): Record<string, unknown> {
   return {
     setup: {
@@ -130,7 +130,7 @@ function handleClient(client: WebSocket, url: URL, d: LiveDeps, log: (m: string)
       if (m.setupComplete) {
         ready = true;
         send({ type: 'ready' });
-        // Bandi suhbatni o'zi boshlaydi
+        // Sellzen AI suhbatni o'zi boshlaydi
         ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: '(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)' }] }], turnComplete: true } }));
         for (const b of pending.splice(0)) forward(b);
         return;

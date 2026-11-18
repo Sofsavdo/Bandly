@@ -1,7 +1,7 @@
 import type { ReadingTest } from './types';
 
 // CEFR Multilevel uslubidagi Reading mashq testi: 35 savol, 60 daqiqa (umumiy hajm va vaqt rasmiy manbada tasdiqlangan —
-// examFormats.ts). Ichki qismlar va topshiriq turlari rasmiy manbada ko'rsatilmagan: bu yerdagi tuzilish Bandly'niki.
+// examFormats.ts). Ichki qismlar va topshiriq turlari rasmiy manbada ko'rsatilmagan: bu yerdagi tuzilish Sellzen'niki.
 // Original mashq materiali; metodist tekshiruvini kutmoqda (PXD-05).
 const T1 = [
   '1) NOTICE — City Library: From 1 March the library will close at 6 pm on Fridays instead of 8 pm. Books can still be returned at any time using the box next to the main door.',

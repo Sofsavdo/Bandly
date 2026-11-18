@@ -1,4 +1,4 @@
-// Bandly 3.0 tasvirlari: tekis (flat), yumshoq soyali jismlar — kitoblar, kubok, quloqchin, soat, mikrofon, suhbat,
+// Sellzen 3.0 tasvirlari: tekis (flat), yumshoq soyali jismlar — kitoblar, kubok, quloqchin, soat, mikrofon, suhbat,
 // shapka, nishon, karnay. Hammasi SVG (rasm yuklanmaydi), har qanday o'lchamda tiniq, kattalar uchun ham mos.
 import type { CSSProperties } from 'react';
 import { L } from '../i18n';

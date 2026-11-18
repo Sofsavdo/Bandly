@@ -29,7 +29,7 @@ const SKILL_STEP: Record<Skill, string> = { speaking: L('Speaking: AI ustoz bila
 
 const QUESTION: Record<StepId, string> = {
   goal: L('Nimaga tayyorlanyapsiz?'), why: L('Ingliz tili sizga nima uchun kerak?'), when: L('Imtihon qachon?'), target: L('Qaysi natija kerak?'),
-  level: L('Hozirgi darajangiz qanday?'), hard: L('Nima eng qiyin? (bir nechtasini tanlang)'), minutes: L('Kuniga qancha vaqt ajratasiz?'), tutor: L('AI ustoz Bandi qanday gaplashsin?'),
+  level: L('Hozirgi darajangiz qanday?'), hard: L('Nima eng qiyin? (bir nechtasini tanlang)'), minutes: L('Kuniga qancha vaqt ajratasiz?'), tutor: L('Sellzen AI ustoz qanday gaplashsin?'),
 };
 
 const blank = (): Partial<Answers> => ({ hard: [], examDate: null, target: null });

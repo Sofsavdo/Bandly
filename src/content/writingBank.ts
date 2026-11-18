@@ -1,7 +1,7 @@
 import type { WritingPrompt } from './writing';
 import type { EssayTypeId } from './writingGuide';
 
-// IELTS Writing topshiriqlari banki (original, Bandly). Rasmiy IELTS materiali emas.
+// IELTS Writing topshiriqlari banki (original, Sellzen). Rasmiy IELTS materiali emas.
 // Task 1 — ma'lumotlar jadval ko'rinishida (grafik o'rniga); Task 2 — beshta insho turi bo'yicha.
 
 const t1 = (id: string, title: string, prompt: string, head: string[], rows: string[][]): WritingPrompt =>

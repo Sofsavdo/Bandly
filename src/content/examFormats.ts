@@ -40,7 +40,7 @@ export const UZ_MULTILEVEL: ExamFormat = {
   notesUz: [
     'Har bo‘limning ichki qismlari (masalan, Listening nechta qismdan iboratligi) va topshiriq turlari rasmiy manbalarda ko‘rsatilmagan — boshqa saytlardagi ma’lumotlar bir-biriga zid, shuning uchun bu yerda keltirilmadi.',
     'Ball chegaralari 2023-yilgi rasmiy jurnal maqolasidan olingan; ular keyinchalik o‘zgargan bo‘lishi mumkin.',
-    'Bandly bu imtihonning rasmiy materiallaridan foydalanmaydi; mashqlar Bandly’ning o‘z kontenti.',
+    'Sellzen bu imtihonning rasmiy materiallaridan foydalanmaydi; mashqlar Sellzen’ning o‘z kontenti.',
   ],
 };
 
@@ -84,7 +84,7 @@ export const DIGITAL_SAT: SatFormat = {
   ],
   notesUz: [
     'Ko‘pchilik savollar test shaklida; Math’dagi ba’zi savollarda javobni o‘zingiz kiritasiz (student-produced response).',
-    'Bandly SAT ballini taxmin qilmaydi: haqiqiy ball moslashuvchan modullar va rasmiy shkala asosida hisoblanadi. Ishonchli baho uchun College Board’ning bepul rasmiy Bluebook amaliy testlaridan foydalaning.',
+    'Sellzen SAT ballini taxmin qilmaydi: haqiqiy ball moslashuvchan modullar va rasmiy shkala asosida hisoblanadi. Ishonchli baho uchun College Board’ning bepul rasmiy Bluebook amaliy testlaridan foydalaning.',
     'Kalkulyator qoidalari va savollar soni bo‘yicha domenlar ulushi bu yerda keltirilmadi (rasmiy sahifadan to‘liq o‘qib bo‘lmadi).',
   ],
 };

@@ -2,7 +2,7 @@ import type { Unit } from '../lessons/types';
 import { ch, gap, ord } from '../lessons/helpers';
 
 // IELTS kursi — Writing. Har dars qisqa yozma topshiriq bilan tugaydi (qoidalar bilan tekshiriladi; to'liq AI baho — Writing bo'limida).
-// Original o'quv materiali (Bandly). Rasmiy IELTS materiali emas.
+// Original o'quv materiali (Sellzen). Rasmiy IELTS materiali emas.
 
 export const IE_WRITING_START: Unit = {
   id: 'ie-ws', level: 'A2', title: 'IELTS Writing: Start', titleUz: 'Writing: boshlang‘ich ko‘nikmalar',

@@ -1,7 +1,7 @@
 import type { ListeningTest } from './types';
 
 // CEFR Multilevel uslubidagi Listening mashq testi: 35 savol, 45 daqiqa (umumiy hajm va vaqt rasmiy manbada tasdiqlangan).
-// Ichki qismlar Bandly'niki (rasmiy manbada ko'rsatilmagan). Original mashq skripti; metodist tekshiruvini kutmoqda (PXD-05).
+// Ichki qismlar Sellzen'niki (rasmiy manbada ko'rsatilmagan). Original mashq skripti; metodist tekshiruvini kutmoqda (PXD-05).
 // Ovozlar: A — Sarah (UK), B — Alistair (UK), C — Hope (US), D — Max (US).
 type L = { speaker: 'A' | 'B' | 'C' | 'D'; text: string };
 

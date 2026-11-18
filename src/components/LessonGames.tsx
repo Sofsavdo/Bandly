@@ -5,7 +5,7 @@ import type { Lesson, Unit } from '../content/lessons/types';
 import { listenRound, pairsRound, reaction, type ListenItem, type PairsRound } from '../lib/lessonGame';
 import { say, stopSpeaking } from '../lib/speech';
 import { sfx } from '../lib/fx';
-import { BandiAvatar } from './BandiAvatar';
+import { AiAvatar } from './AiAvatar';
 import { L } from '../i18n';
 
 const playEn = (en: string, audio?: string) => { stopSpeaking(); if (audio) void new Audio(audio).play().catch(() => undefined); else void say(en, { cancelled: false }); };
@@ -15,9 +15,9 @@ export function MissionIntro({ unit, lesson, steps, onStart }: { unit: Unit; les
   return (
     <section className="card mission">
       <div className="mission-top">
-        <BandiAvatar phase="idle" emotion="sarcastic" size={96} />
+        <AiAvatar phase="idle" emotion="sarcastic" size={96} />
         <div className="bubble-say">
-          <small>{L('Bandi')}</small>
+          <small>{L('Sellzen AI')}</small>
           <p>{L('Missiya: {0}', [unit.situationUz])}</p>
         </div>
       </div>
@@ -152,7 +152,7 @@ export function ListenGame({ items, onDone }: { items: ListenItem[]; onDone: () 
   );
 }
 
-/** Javobdan keyingi panel: rang, Bandi reaksiyasi, to'g'ri javob va izoh, "Davom etish". */
+/** Javobdan keyingi panel: rang, Sellzen AI reaksiyasi, to'g'ri javob va izoh, "Davom etish". */
 export function FeedbackSheet({ ok, n, answer, explain, onNext, xp }: { ok: boolean; n: number; answer: string; explain: string; onNext: () => void; xp?: number }) {
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => { btn.current?.focus({ preventScroll: true }); btn.current?.scrollIntoView({ block: 'nearest' }); }, []);
