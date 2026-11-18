@@ -90,4 +90,25 @@ assert.throws(() => submitDuel(db, a.token, d3.code, 100, 1, 5000, D + 7_200_000
   refundAi(cdb, pid, 'voice', D);
   assert.equal(useAi(cdb, u.token, D, 5, 'voice'), 5);
 }
+// Regressiya: server qayta ishga tushganda (migratsiyalar takror) ma'lumot saqlanadi va xato bo'lmaydi
+{
+  const { mkdtempSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join: pj } = await import('node:path');
+  const dir = mkdtempSync(pj(tmpdir(), 'bandly-db-'));
+  const file = pj(dir, 'data.sqlite');
+  const d1 = createDb(file); const u1 = join(d1, 'Saqlanadi'); awardXp(d1, byToken(d1, u1.token).id, 'keep-xp-1', 'lesson', 40); d1.close();
+  for (let i = 0; i < 3; i++) { const d = createDb(file); assert.equal(byToken(d, u1.token).xp, 40, `qayta ochilish ${i + 1}: XP saqlandi`); d.close(); }
+  // Eski sxema (yangi ustunlarsiz) bazani ochish — ustunlar qo'shiladi, yozuvlar qoladi
+  const legacy = pj(dir, 'old.sqlite');
+  { const { DatabaseSync } = await import('node:sqlite'); const o = new DatabaseSync(legacy);
+    o.exec("CREATE TABLE players (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL UNIQUE, nickname TEXT NOT NULL, xp INTEGER NOT NULL DEFAULT 0, streak INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)");
+    o.exec("INSERT INTO players (token, nickname, xp, created_at, updated_at) VALUES ('" + 'a'.repeat(48) + "', 'Eski', 77, 1, 1)"); o.close(); }
+  const d2 = createDb(legacy);
+  assert.equal(byToken(d2, 'a'.repeat(48)).xp, 77, 'eski bazadagi o‘yinchi va eski token ishlaydi');
+  const cols = (d2.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map((c) => c.name);
+  for (const c of ['tg_id', 'role', 'league_tier', 'ref_code', 'lang']) assert.ok(cols.includes(c), `ustun qo‘shildi: ${c}`);
+  d2.close(); createDb(legacy).close(); // ikkinchi marta — xato yo'q
+  rmSync(dir, { recursive: true, force: true });
+}
 console.log('db.test: OK');
