@@ -21,6 +21,8 @@ export interface ExamAttempt {
   /** Server bahosi (Mock Arena javoblari serverda tekshiriladi) va natija bir marta yozilganmi */
   graded?: import('../content/mockShared').Graded;
   recorded?: boolean;
+  /** Shu test bo'yicha anonim statistika (serverdan, baholash paytida) */
+  stats?: { count: number; avgPct?: number; percentile?: number };
   audioPlays: number;
 }
 

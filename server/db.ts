@@ -12,6 +12,7 @@ import { ensureCallTable } from './callMinutes';
 import { ensureLiveTable } from './live';
 import { ensureLeagueTables } from './league';
 import { ensureBandTable } from './bands';
+import { ensureMockStatsTable } from './mockStats';
 import { vocab } from '../src/content/vocab';
 
 export const MAX_DELTA_PER_SYNC = 400; // bitta so'rovda qabul qilinadigan eng ko'p XP (aldovga qarshi)
@@ -123,6 +124,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   ensureLiveTable(db);
   ensureLeagueTables(db);
   ensureBandTable(db);
+  ensureMockStatsTable(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;
 }

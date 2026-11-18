@@ -10,6 +10,7 @@ import { cancelPayment, createPayment, entitlements, findByCallback, grant, mark
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
+import { mockStats, recordMockStat } from './mockStats';
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { gradeMock } from './mockGrade';
@@ -325,7 +326,10 @@ const httpServer = createServer(async (req, res) => {
       if (tk && /^[\w:.-]{6,60}$/.test(String(b.attemptId ?? ''))) {
         try { const p = byToken(db, tk); xp = awardXp(db, p.id, `mock:${String(b.testId)}:${String(b.attemptId)}`, 'mock', g.correct * 5 + (g.correct / Math.max(1, g.total) >= 0.8 ? 20 : 0)); } catch { /* mehmon */ }
       }
-      return send(res, 200, { ...g, xp });
+      // Anonim test statistikasi: avval solishtirish (o'zini hisobga olmasdan), keyin shu urinish yoziladi
+      const stats = mockStats(db, String(b.testId), g.correct);
+      recordMockStat(db, String(b.testId), String(b.attemptId ?? ''), g.correct, g.total);
+      return send(res, 200, { ...g, xp, stats });
     }
     if (req.method === 'POST' && url.pathname === '/api/xp') {
       const b = await readJson(req, 16_384);

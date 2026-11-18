@@ -892,3 +892,11 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 @keyframes minora-shake { from { transform: translateX(-3px) rotate(-2deg); } to { transform: translateX(3px) rotate(2deg); } }
 @keyframes minora-fall { to { transform: translate(40px, 60px) rotate(35deg); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .minora-stack i.shake, .minora-stack i.fall { animation: none; } }
+
+/* Test natijasi tahlili */
+.test-report h3 { display: flex; align-items: center; gap: 6px; margin: 18px 0 8px; font-size: 16px; }
+.tr-rows { display: grid; gap: 8px; }
+.tr-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(60px, 1fr) auto; gap: 10px; align-items: center; font-size: 14px; }
+.tr-bar { height: 10px; border-radius: 99px; background: var(--surface, #eee); overflow: hidden; }
+.tr-bar i { display: block; height: 100%; border-radius: 99px; }
+.test-report .notice { display: block; }
