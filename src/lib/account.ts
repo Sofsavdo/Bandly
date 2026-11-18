@@ -26,7 +26,7 @@ export function logout(): void {
 
 const KEEP = new Set(['bandly.lang', 'bandly.sound', 'bandly.tg']);
 /**
- * Chiqish. wipe=true — bu qurilmadagi barcha Bandly ma'lumotlari (progress, XP, natijalar, xatolar) ham o'chiriladi:
+ * Chiqish. wipe=true — bu qurilmadagi barcha Sellzen ma'lumotlari (progress, XP, natijalar, xatolar) ham o'chiriladi:
  * sayt yangi foydalanuvchiga qanday ko'rinsa, shunday ochiladi. Hisobdagi obuna va reyting serverda qoladi.
  */
 export async function signOut(wipe: boolean): Promise<void> {

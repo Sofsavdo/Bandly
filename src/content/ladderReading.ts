@@ -1,7 +1,7 @@
 import type { ReadingTest } from './types';
 
 // IELTS zinapoyasi uchun Reading mini-testlari: IELTS savol turlari, lekin matn va lug'at o'quvchi darajasida.
-// Original mashq matnlari (Bandly). Rasmiy IELTS materiali emas.
+// Original mashq matnlari (Sellzen). Rasmiy IELTS materiali emas.
 
 export const reading7: ReadingTest = {
   id: 'reading-7', level: 'A2', title: 'Reading mini-test 7: A New Sports Centre', minutes: 12,

@@ -1,5 +1,5 @@
 import { L } from '../i18n';
-// "Jim qolma! — Minora": Bandly'ning o'z gapirish o'yini.
+// "Jim qolma! — Minora": Sellzen'ning o'z gapirish o'yini.
 // Mexanika: har bir aytilgan so'z minoraga g'isht bo'lib qo'shiladi (BRICKS_PER_FLOOR g'isht = 1 qavat).
 // Bog'lovchi iboralar (because, however, for example…) "oltin g'isht" — LINKER_BONUS g'isht beradi: ravon, bog'langan nutqni o'rgatadi.
 // Jim qolinsa, eng yuqori qavat tebranadi; daraja chegarasidan oshsa, bitta qavat quladi (o'yin tugamaydi). Raund ROUND_MS davom etadi.

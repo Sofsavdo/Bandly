@@ -1,7 +1,7 @@
 import type { ListeningTest } from './types';
 
 // IELTS zinapoyasi uchun Listening mini-testlari: IELTS savol turlari (forma, test), lekin nutq va lug'at darajaga mos.
-// Original skriptlar (Bandly). Rasmiy IELTS materiali emas. Audio: tayyor bo'lguncha brauzer ovozi.
+// Original skriptlar (Sellzen). Rasmiy IELTS materiali emas. Audio: tayyor bo'lguncha brauzer ovozi.
 
 export const listening6: ListeningTest = {
   id: 'listening-6', level: 'A2', title: 'Listening mini-test 6: Joining a library', minutes: 7,

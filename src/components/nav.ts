@@ -1,4 +1,4 @@
-import { Bot, BookOpenCheck, GraduationCap, BookOpen, Clapperboard, ClipboardList, CreditCard, LineChart as ChartIcon, ListChecks, PenLine, Gamepad2, House, Puzzle, Swords, Target, Timer, Trophy, User, type LucideIcon } from 'lucide-react';
+import { Award, Bot, BookOpenCheck, GraduationCap, BookOpen, Clapperboard, ClipboardList, CreditCard, LineChart as ChartIcon, ListChecks, PenLine, Gamepad2, House, Puzzle, Swords, Target, Timer, Trophy, User, type LucideIcon } from 'lucide-react';
 
 import type { Key } from '../i18n';
 
@@ -17,6 +17,7 @@ export const NAV: NavItem[] = [
 export const MISTAKES: NavItem = { href: '#/mistakes', label: 'nav.mistakes', icon: ClipboardList };
 export const HOME: NavItem = { href: '#/', label: 'nav.home', icon: House };
 export const PROFILE: NavItem = { href: '#/profile', label: 'nav.profile', icon: User };
+export const CERTIFICATES: NavItem = { href: '#/certificates', label: 'nav.certificates', icon: Award };
 export const TABS: NavItem[] = [HOME, NAV[0]!, NAV[1]!, NAV[2]!, PROFILE]; // Home, General English, AI Coach, Exam, Profile
 export const PRACTICE: NavItem = { href: '#/practice', label: 'nav.practice', icon: PenLine };
 export const HOMEWORK: NavItem = { href: '#/homework', label: 'nav.homework', icon: ListChecks };
@@ -41,7 +42,7 @@ export const SECTIONS: Section[] = [
   { id: 'exam', item: by('#/exam'), children: [by('#/exam'), IELTS_COURSE, by('#/mocks'), RESULTS, TOOLS] },
   { id: 'practice', item: PRACTICE_SECTION, children: [PRACTICE, MISTAKES, SHADOW, HOMEWORK] },
   { id: 'league', item: by('#/league'), children: [by('#/league'), by('#/duel')] },
-  { id: 'profile', item: PROFILE, children: [PROFILE, PRICING] },
+  { id: 'profile', item: PROFILE, children: [PROFILE, CERTIFICATES, PRICING] },
 ];
 
 /** Joriy manzil qaysi bo'limga va qaysi ichki sahifaga tegishli (eng uzun mos keluvchi). */

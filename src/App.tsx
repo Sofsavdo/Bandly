@@ -7,7 +7,7 @@ import { TabBar } from './components/TabBar';
 import { PaySheet } from './components/PaySheet';
 import { Toasts } from './components/Toasts';
 import { sectionOf } from './components/nav';
-import { needsLogin, setupRoute } from './lib/setupGate';
+import { authRoute, setupRoute } from './lib/setupGate';
 import { getAccount, onAccountChange } from './lib/account';
 import { SubNav } from './components/SubNav';
 import { PlanRunBar } from './components/PlanRunBar';
@@ -51,6 +51,9 @@ import Creator from './pages/Creator';
 import IeltsCourse from './pages/IeltsCourse';
 import Groups from './pages/Groups';
 import Login from './pages/Login';
+import Certificates from './pages/Certificates';
+import CertificateVerify from './pages/CertificateVerify';
+import { L } from './i18n';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
@@ -82,6 +85,7 @@ const routes: Record<string, () => ReactNode> = {
   '#/league': () => <League />,
   '#/duel': () => <DuelHub />,
   '#/profile': () => <Profile />,
+  '#/certificates': () => <Certificates />,
   '#/placement': () => <Placement />,
   '#/start': () => <Start />,
   '#/practice': () => <Practice />,
@@ -105,7 +109,13 @@ function testRoute(hash: string): ReactNode | null {
   return <>{body}</>;
 }
 
+/** Ommaviy sertifikat tekshirish: /certificate/<ID> (QR-kod) — hash yo'llaridan oldin, hisobsiz. */
 export default function App() {
+  const certId = typeof location !== 'undefined' ? location.pathname.match(/^\/certificate\/([A-Za-z0-9-]{6,40})\/?$/)?.[1] : undefined;
+  return certId ? <CertificateVerify id={certId.toUpperCase()} /> : <MainApp />;
+}
+
+function MainApp() {
   const hash = useHash();
   const t = useT();
   const [acc, setAcc] = useState(() => !!getAccount());
@@ -116,7 +126,8 @@ export default function App() {
   // Menyu bosilganda yangi sahifa har doim tepadan boshlansin
   // Sahifa almashganda tepaga (o'quv xaritasi o'zi hozirgi dars joyini ochadi)
   useLayoutEffect(() => { if (hash !== '#/learn') window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, [hash]);
-  // Kirgan o'quvchi: avval shaxsiy reja (Bandi uslubi bilan), keyin daraja testi — shundan keyin darslar darajaga qarab ochiladi
+  useEffect(() => { document.title = section ? `${t(section.label)} — Sellzen` : L('Sellzen — ingliz tili, IELTS, CEFR, SAT va Sellzen AI ustoz'); }, [section, t]);
+  // Kirgan o'quvchi: avval shaxsiy reja (Sellzen AI uslubi bilan), keyin daraja testi — shundan keyin darslar darajaga qarab ochiladi
   useEffect(() => {
     const check = () => { const to = setupRoute(window.location.hash || '#/'); if (to) window.location.hash = to; };
     const t = setTimeout(check, 600); // hisob progressi tiklanishiga vaqt
@@ -128,7 +139,10 @@ export default function App() {
   const bossUnit = hash.match(/^#\/boss\/([\w-]+)$/)?.[1];
   const duelCode = hash.match(/^#\/duel\/([A-Za-z0-9]{4,8})$/)?.[1];
   const tr = testRoute(hash);
-  const wall = needsLogin(hash, acc);
+  // Yagona kirish qoidasi (setupGate.authRoute): mehmon ichki sahifada — login sahifasiga, kirgandan keyin — so'ralgan sahifaga
+  const redirect = authRoute(hash, acc);
+  useLayoutEffect(() => { if (redirect) window.location.replace(redirect); }, [redirect]);
+  const wall = !acc ? redirect !== null || hash.startsWith('#/login') : hash.startsWith('#/login');
   const page = wall ? <Login /> : tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
   return (
     <>

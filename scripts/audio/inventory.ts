@@ -14,7 +14,7 @@ import { splitSentences } from '../../src/lib/speech';
 
 /** Speaking imtihonchisining doimiy gaplari (examiner.ts dagi qoliplar, ikkala variant: oson / odatiy). */
 const EXAMINER_LINES = [
-  'Good morning. My name is Bandi, and I will be your examiner today. Could you tell me your full name, please?',
+  "Good morning. I'm Sellzen AI, and I'll be your examiner today. Could you tell me your full name, please?",
   'Thank you. Now, in this first part, I would like to ask you some questions about yourself.',
   'Could you tell me a little more about that?',
   ...['about one minute', 'one to two minutes'].flatMap((d) => [

@@ -9,7 +9,7 @@ export type QLang = 'en' | 'ru' | 'kk' | 'ky' | 'tg';
 
 /** Doim lotinda, o'zgarishsiz qolishi shart bo'lgan atamalar. */
 const PROTECTED = [
-  'Bandly', 'IELTS', 'CEFR', 'Multilevel', 'SAT', 'XP', 'AI', 'Telegram', 'Mock Arena', 'General English', 'Exam Preparation', 'All Access',
+  'Sellzen', 'IELTS', 'CEFR', 'Multilevel', 'SAT', 'XP', 'AI', 'Telegram', 'Mock Arena', 'General English', 'Exam Preparation', 'All Access',
   'Reading', 'Listening', 'Writing', 'Speaking', 'Task 1', 'Task 2', 'Part 1', 'Part 2', 'Part 3', 'College Board', 'Hamyon',
   'Present Simple', 'Present Continuous', 'Present Perfect', 'Past Simple', 'Past Continuous', 'Past Perfect', 'Future Simple', 'Passive voice', 'Reported speech',
 ];

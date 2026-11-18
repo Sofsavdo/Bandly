@@ -108,9 +108,9 @@ export default function Challenge() {
 
   const share = async () => {
     if (!res) return;
-    const blob = await renderCard({ title: L('Jim qolma! — Minora · {0}', [levelOf(res.level).labelUz]), body: L('{0} qavatli minora qurdim!', [res.floors]), sub: L('{0} so‘z · {1} oltin g‘isht · {2} ball', [res.words, res.linkers, score(res)]), foot: L('Bandly — sen ham sinab ko‘r') });
+    const blob = await renderCard({ title: L('Jim qolma! — Minora · {0}', [levelOf(res.level).labelUz]), body: L('{0} qavatli minora qurdim!', [res.floors]), sub: L('{0} so‘z · {1} oltin g‘isht · {2} ball', [res.words, res.linkers, score(res)]), foot: L('Sellzen — sen ham sinab ko‘r') });
     if (!blob) return;
-    const r = await shareCard(blob, 'bandly-minora', L('Jim qolma! — {0} qavat, {1} ball. {2}/#/challenge', [res.floors, score(res), location.origin]));
+    const r = await shareCard(blob, 'sellzen-minora', L('Jim qolma! — {0} qavat, {1} ball. {2}/#/challenge', [res.floors, score(res), location.origin]));
     setMsg(r === 'shared' ? L('Ulashildi') : L('Rasm yuklab olindi'));
   };
 

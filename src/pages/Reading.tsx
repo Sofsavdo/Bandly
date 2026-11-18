@@ -89,7 +89,7 @@ export default function Reading({ test: t }: { test: ReadingTest }) {
       groups={t.groups}
       questions={t.questions}
       table={READING_ACADEMIC_TABLE}
-      intro={<p>{t.sections?.length ? L('{0} ta matn', [t.sections.length]) : L('Bitta matn')}  {L('va')} {t.questions.length}  {L('ta savol')}{t.exam === 'cefr' ? L(' — CEFR Multilevel uslubida (umumiy hajm va vaqt rasmiy formatga mos; ichki tuzilish Bandly’niki)') : t.sections?.length ? L(' — haqiqiy IELTS Academic Reading formatida') : ''}{L('. Vaqt tugagach test avtomatik yakunlanadi. Matnlar original mashq materiali (rasmiy IELTS emas).')}</p>}
+      intro={<p>{t.sections?.length ? L('{0} ta matn', [t.sections.length]) : L('Bitta matn')}  {L('va')} {t.questions.length}  {L('ta savol')}{t.exam === 'cefr' ? L(' — CEFR Multilevel uslubida (umumiy hajm va vaqt rasmiy formatga mos; ichki tuzilish Sellzen’niki)') : t.sections?.length ? L(' — haqiqiy IELTS Academic Reading formatida') : ''}{L('. Vaqt tugagach test avtomatik yakunlanadi. Matnlar original mashq materiali (rasmiy IELTS emas).')}</p>}
       left={(state) => <Passage t={t} state={state} />}
     />
   );

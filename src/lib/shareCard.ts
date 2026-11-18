@@ -26,7 +26,7 @@ export async function renderCard(opts: { title: string; body: string; foot: stri
   if (opts.sub) { g.fillStyle = '#c9cde6'; g.font = '500 38px system-ui, sans-serif'; wrapLines(opts.sub, 44).slice(0, 3).forEach((l, i) => g.fillText(l, 80, 390 + Math.min(lines.length, 7) * 84 + 30 + i * 52)); }
   g.fillStyle = '#ffb02e'; g.fillRect(80, 930, 110, 6);
   g.fillStyle = '#fff'; g.font = 'italic 600 38px system-ui, sans-serif'; g.fillText(opts.foot, 80, 990);
-  g.textAlign = 'right'; g.fillStyle = '#ff4b3a'; g.font = '800 44px system-ui, sans-serif'; g.fillText(BRAND.name, S - 80, 990);
+  g.textAlign = 'right'; g.fillStyle = '#0F766E'; g.font = '700 44px Outfit Variable, system-ui, sans-serif'; g.fillText(BRAND.name, S - 80, 990);
   return new Promise((r) => c.toBlob((b) => r(b), 'image/png'));
 }
 

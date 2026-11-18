@@ -13,6 +13,7 @@ import { ensureLiveTable } from './live';
 import { ensureLeagueTables } from './league';
 import { ensureBandTable } from './bands';
 import { ensureMockStatsTable } from './mockStats';
+import { ensureCertTables } from './certificates';
 import { ensureStudioTestsTable } from './studioTests';
 import { ensureFreeTables } from './freeQuota';
 import { vocab } from '../src/content/vocab';
@@ -129,6 +130,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   ensureMockStatsTable(db);
   ensureStudioTestsTable(db);
   ensureFreeTables(db);
+  ensureCertTables(db);
   db.exec('CREATE TABLE IF NOT EXISTS progress (player_id INTEGER PRIMARY KEY REFERENCES players(id), data TEXT NOT NULL, rev INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)');
   return db;
 }

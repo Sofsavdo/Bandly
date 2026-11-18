@@ -71,7 +71,7 @@ export class Examiner {
   }
 
   start(): Step {
-    return { say: "Good morning. My name is Bandi, and I will be your examiner today. Could you tell me your full name, please?", wait: 'answer', part: 0 };
+    return { say: "Good morning. I'm Sellzen AI, and I'll be your examiner today. Could you tell me your full name, please?", wait: 'answer', part: 0 };
   }
 
   private record(part: 1 | 2 | 3, q: string): void {

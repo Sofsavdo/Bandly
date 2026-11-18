@@ -37,9 +37,8 @@ assert.equal(gradeMock('reading', t.id, { [t.questions[0]!.id]: { evil: 1 } }).c
   assert.equal(xpOf(), first.xp);
   const n = (db.prepare('SELECT COUNT(*) AS n FROM mock_stats WHERE test_id = ?').get(t.id) as { n: number }).n;
   assert.equal(n, 2, 'statistika: har urinish bir marta');
-  const guest = gradeRequest(db, '', { kind: 'reading', testId: t.id, answers: right, attemptId: 'att-guest1' }, [], now);
-  assert.equal(guest.correct, t.questions.length, 'mehmon ham baholanadi'); assert.equal(guest.xp, 0);
-  assert.equal(gradeRequest(db, 'f'.repeat(48), { kind: 'reading', testId: t.id, answers: right, attemptId: 'att-bad01' }, [], now).xp, 0, 'noto‘g‘ri token — XP yo‘q, xato emas');
+  assert.throws(() => gradeRequest(db, '', { kind: 'reading', testId: t.id, answers: right, attemptId: 'att-guest1' }, [], now), (e: { status?: number }) => e.status === 401, 'mehmon Mock Arena ishlata olmaydi');
+  assert.throws(() => gradeRequest(db, 'f'.repeat(48), { kind: 'reading', testId: t.id, answers: right, attemptId: 'att-bad01' }, [], now), (e: { status?: number }) => e.status === 401, 'noto‘g‘ri token — 401');
   assert.ok(gradeRequest(db, u.token, { kind: 'reading', testId: t.id, answers: right, attemptId: 'att-000003' }, [], now + 86_400_000).xp > 0, 'ertasi kuni yana');
 }
 console.log('mockGrade.test: OK');

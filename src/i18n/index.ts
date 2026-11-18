@@ -1,4 +1,4 @@
-// Bandly interfeysi 6 tilda: o'zbekcha (manba), English, Русский, Қазақша, Кыргызча, Тоҷикӣ.
+// Sellzen interfeysi 6 tilda: o'zbekcha (manba), English, Русский, Қазақша, Кыргызча, Тоҷикӣ.
 // Usul (gettext): kalit — o'zbekcha manba matnning o'zi. L('Darslar') tanlangan tildagi tarjimani qaytaradi, topilmasa — o'zbekchani.
 // Tarjimalar serverda saqlanadi (/api/i18n/:lang, Metodist kabineti → Tarjimalar), brauzerda keshlanadi va ilova modullari
 // yuklanishidan OLDIN o'qiladi (main.tsx), shuning uchun modul darajasidagi L() chaqiruvlari ham to'g'ri tilda bo'ladi.

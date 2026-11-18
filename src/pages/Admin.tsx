@@ -3,6 +3,7 @@ import { BarChart3, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
+import { CertAdmin } from '../components/CertAdmin';
 import { L } from '../i18n';
 
 interface Day { day: string; signups: number; active: number; paid: number; revenue: number; aiUsd: number }
@@ -138,6 +139,7 @@ export default function Admin() {
           <p className="muted">{L('Jami: ${0}', [data.days.reduce((a, d) => a + d.aiUsd, 0).toFixed(2)])}</p>
         </section>
       </div>
+      <CertAdmin />
     </div>
   );
 }

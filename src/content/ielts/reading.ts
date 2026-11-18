@@ -2,7 +2,7 @@ import type { Unit } from '../lessons/types';
 import { ch, gap, ord } from '../lessons/helpers';
 
 // IELTS kursi — Reading. Start (A2–B1): format va asosiy ko'nikmalar; Core (B2–C1): qiyin savol turlari va vaqt.
-// Original o'quv materiali (Bandly). Rasmiy IELTS materiali emas.
+// Original o'quv materiali (Sellzen). Rasmiy IELTS materiali emas.
 
 export const IE_READING_START: Unit = {
   id: 'ie-rs', level: 'A2', title: 'IELTS Reading: Start', titleUz: 'Reading: boshlang‘ich ko‘nikmalar',

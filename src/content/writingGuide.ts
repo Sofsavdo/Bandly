@@ -1,5 +1,5 @@
 // Writing Task 2 bo'yicha original dars materiali: insho turlari, tipik xatolar va 10 asosiy mavzu.
-// Hamma namuna insholar va so'z ro'yxatlari Bandly uchun alohida yozilgan (boshqa kitoblardan ko'chirilmagan).
+// Hamma namuna insholar va so'z ro'yxatlari Sellzen uchun alohida yozilgan (boshqa kitoblardan ko'chirilmagan).
 
 export type EssayTypeId = 'discuss' | 'agree' | 'problem' | 'cause' | 'evaluate';
 

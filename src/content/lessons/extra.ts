@@ -1,7 +1,7 @@
 import type { Unit } from './types';
 import { ch, gap, ord } from './helpers';
 
-// PILOT content — second units for A1, A2 and B1 (the levels most learners start at). Original, written for Bandly.
+// PILOT content — second units for A1, A2 and B1 (the levels most learners start at). Original, written for Sellzen.
 
 export const A1_U3: Unit = {
   id: 'a1-u3', level: 'A1', title: 'Home and abilities', titleUz: 'Uy va qobiliyatlar',

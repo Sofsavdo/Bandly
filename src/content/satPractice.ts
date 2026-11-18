@@ -1,7 +1,7 @@
 import type { Item } from './lessons/types';
 import { ch, gap } from './lessons/helpers';
 
-// ORIGINAL Bandly practice items in the style of the Digital SAT domains. Not official College Board material. No SAT score is estimated from them.
+// ORIGINAL Sellzen practice items in the style of the Digital SAT domains. Not official College Board material. No SAT score is estimated from them.
 export interface SatItem { domain: string; item: Item }
 
 export const SAT_RW: SatItem[] = [
