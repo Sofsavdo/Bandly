@@ -1,4 +1,5 @@
-export const part1Topics: { topic: string; questions: string[] }[] = [
+import { morePart1, morePart2 } from './speakingBank';
+export const basePart1: { topic: string; questions: string[] }[] = [
   { topic: 'Hometown', questions: ['Where is your hometown?', 'What do you like most about it?', 'Has it changed much in recent years?', 'Would you like to live there in the future?'] },
   { topic: 'Studies and work', questions: ['Do you work or are you a student?', 'Why did you choose that field?', 'What is the most difficult part of it?', 'What would you like to do in the future?'] },
   { topic: 'Food', questions: ['What kind of food do you enjoy most?', 'Do you prefer eating at home or in restaurants?', 'Is there any food you dislike?', 'Do you like cooking?'] },
@@ -7,7 +8,7 @@ export const part1Topics: { topic: string; questions: string[] }[] = [
   { topic: 'Travel', questions: ['Do you like travelling?', 'Where did you go on your last trip?', 'Do you prefer to travel alone or in a group?', 'Which place would you like to visit next?'] },
 ];
 
-export const part2Cards: { title: string; points: string[]; part3: string[] }[] = [
+export const basePart2: { title: string; points: string[]; part3: string[] }[] = [
   {
     title: 'Describe a person who has helped you.',
     points: ['who this person is', 'how you know them', 'how they helped you', 'and explain how you felt about it.'],
@@ -34,3 +35,7 @@ export const part2Cards: { title: string; points: string[]; part3: string[] }[] 
     part3: ['Why are people busier than in the past?', 'How can people manage stress better?', 'Do employers expect too much from workers today?'],
   },
 ];
+
+/** Asosiy va bankdagi savollar birga (Examiner tasodifiy tanlaydi). */
+export const part1Topics = [...basePart1, ...morePart1];
+export const part2Cards = [...basePart2, ...morePart2];
