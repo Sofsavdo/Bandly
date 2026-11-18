@@ -1,14 +1,17 @@
-import { CheckCircle2, RotateCcw, XCircle } from 'lucide-react';
+import { CheckCircle2, RotateCcw, Volume2, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { Item } from '../content/lessons/types';
 import { checkItem, correctAnswerText, type ItemAnswer } from '../lib/lessons';
+import { say, stopSpeaking, ttsSupported } from '../lib/speech';
 import { L } from '../i18n';
 
 /** Renders one deterministic exercise item (choice / gap / order) with optional reveal of the answer. Shared by lessons and mistake review. */
 export function ItemView({ item, value, onChange, revealed, quiet = false }: { item: Item; value: ItemAnswer; onChange: (v: ItemAnswer) => void; revealed: boolean; /** o'yin rejimi: izoh pastki panelda ko'rsatiladi */ quiet?: boolean }) {
   const ok = revealed && checkItem(item, value);
+  const listen = item.kind !== 'order' ? item.listen : undefined;
   return (
     <div className="q">
+      {listen && <ListenClip key={listen} text={listen} revealed={revealed} />}
       <p><b>{item.kind === 'order' ? L('So‘zlardan to‘g‘ri gap tuzing:') : item.prompt}</b></p>
       {item.kind === 'choice' && (
         <div className="stack">
@@ -47,3 +50,16 @@ export function OrderInput({ item, value, onChange, disabled }: { item: Extract<
   );
 }
 
+
+/** Listening savoli: audio ikki martagacha eshitiladi (imtihonda bir marta — o'rganishda ikki marta), matn javobdan keyin ochiladi. */
+function ListenClip({ text, revealed }: { text: string; revealed: boolean }) {
+  const [plays, setPlays] = useState(0);
+  const noVoice = !ttsSupported();
+  const play = () => { stopSpeaking(); setPlays((n) => n + 1); void say(text, { cancelled: false }); };
+  return (
+    <div className="listen-clip">
+      {!noVoice && <button type="button" className="btn listen-btn" disabled={plays >= 2 && !revealed} onClick={play}><Volume2 size={18} />  {plays === 0 ? L('Eshitish') : plays >= 2 && !revealed ? L('2 marta eshitildi') : L('Yana eshitish')}</button>}
+      {(revealed || noVoice) && <p className="muted listen-script">«{text}»</p>}
+    </div>
+  );
+}
