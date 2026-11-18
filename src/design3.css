@@ -1017,3 +1017,4 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 .cert-admin input[type=number] { width: 80px; }
 .cert-admin input[type=search], .cert-admin input[type=text] { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
 .table-scroll { overflow-x: auto; max-width: 100%; }
+.cert-score { font-weight: 700; font-size: 14.5px; color: var(--ink); }

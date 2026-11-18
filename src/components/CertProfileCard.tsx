@@ -40,7 +40,7 @@ export function CertProfileCard({ onChange }: { onChange?: (p: CertProfile) => v
       </div>
       <p className="muted cert-req">
         <span className={p.fullName ? 'ok' : ''}>{p.fullName ? <Check size={14} /> : '•'} {L('To‘liq ism')}</span>
-        <span className={p.photoUrl ? 'ok' : ''}>{p.photoUrl ? <Check size={14} /> : '•'} {L('Yuz aniq ko‘rinadigan rasm (JPG, PNG, WebP)')}</span>
+        <span className={p.photoUrl ? 'ok' : ''}>{p.photoUrl ? <Check size={14} /> : '•'} {L('O‘zingizning haqiqiy rasmingiz — yuz aniq ko‘rinsin (JPG, PNG, WebP)')}</span>
       </p>
       {msg && <p className="notice" role="status">{msg}</p>}
     </section>
