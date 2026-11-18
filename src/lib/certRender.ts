@@ -8,9 +8,9 @@ export type CertType = 'participation' | 'achievement';
 export interface CertData {
   name: string; photo: string; examName: string; module: string; kind: string; testDate: string;
   skills: { listening?: number; reading?: number; writing?: number; speaking?: number }; overall: number | null; cefr: string | null;
-  correct: number | null; total: number | null; percent: number | null; signerName: string; signerTitle: string;
+  correct: number | null; total: number | null; percent: number | null; signerName: string; signerTitle: string; validUntil?: number;
 }
-export interface CertView { id: string; type: CertType; status: 'valid' | 'revoked'; issuedAt: number; revokedAt: number | null; data: CertData; verifyUrl: string; photoUrl: string }
+export interface CertView { id: string; type: CertType; status: 'valid' | 'revoked' | 'expired'; issuedAt: number; validUntil: number; revokedAt: number | null; data: CertData; verifyUrl: string; photoUrl: string }
 
 export const W = 1654, H = 2339;
 const NAVY = '#16233D', NAVY2 = '#22324F', INK = '#16233D', MUTED = '#4B5870', GOLD = '#B89B5E', GOLD_L = '#D9C79B', PAPER = '#F7F5EF', LINE = '#C9CED8', RULE = '#7C879B';
@@ -107,14 +107,15 @@ export async function renderCertificate(c: CertView, origin = typeof location !=
   const badge = d.module === 'cefr' ? 'CEFR' : d.kind === 'full' ? 'FULL MOCK' : 'IELTS FMT';
   g.fillStyle = NAVY; g.textAlign = 'center'; g.font = `800 ${fit(g, badge, (p) => `800 ${p}px ${DISPLAY}`, 30, 150)}px ${DISPLAY}`; g.fillText(badge, bx, byc + 1);
   // Sertifikat nomi
-  let y = hy + hh + 96;
+  let y = hy + hh + 90;
   const tp = fit(g, TITLE[c.type], (px) => `800 ${px}px ${DISPLAY}`, 56, CW); g.fillStyle = INK; g.font = `800 ${tp}px ${DISPLAY}`; g.textAlign = 'center'; g.fillText(TITLE[c.type], W / 2, y);
-  y += 52; g.fillStyle = GOLD; g.fillRect(W / 2 - 120, y, 240, 5);
+  y += 48; g.fillStyle = GOLD; g.fillRect(W / 2 - 120, y, 240, 5);
   // Nomzod ma'lumotlari
-  y += 84; g.textAlign = 'left'; g.fillStyle = INK; g.font = `800 44px ${DISPLAY}`; g.fillText('CANDIDATE DETAILS', L, y);
-  y += 36;
-  const tw = CW - 420 - 36, rowH = 100, kx = 290;
-  const rows: [string, string][] = [['Candidate Name', d.name.toUpperCase()], ['Certificate ID', c.id], ['Test', d.examName], ['Test Date', fmtIso(d.testDate)], ['Issue Date', fmt(new Date(c.issuedAt))]];
+  y += 72; g.textAlign = 'left'; g.fillStyle = INK; g.font = `800 42px ${DISPLAY}`; g.fillText('CANDIDATE DETAILS', L, y);
+  y += 30;
+  const tw = CW - 400 - 36, rowH = 86, kx = 280;
+  // Test Date — imtihon topshirilgan kun; Issue Date — sertifikat berilgan kun; Valid Until — amal qilish muddati (1 yil)
+  const rows: [string, string][] = [['Candidate Name', d.name.toUpperCase()], ['Certificate ID', c.id], ['Test', d.examName], ['Test Date', fmtIso(d.testDate)], ['Issue Date', fmt(new Date(c.issuedAt))], ['Valid Until', fmt(new Date(c.validUntil))]];
   panel(g, L, y, tw, rowH * rows.length);
   rows.forEach(([k, v], i) => {
     const ry = y + i * rowH;
@@ -126,38 +127,39 @@ export async function renderCertificate(c: CertView, origin = typeof location !=
     else { g.font = `700 ${px}px ${BODY}`; g.fillText(v, L + kx + 18, ry + rowH / 2); }
   });
   g.strokeStyle = RULE; g.lineWidth = 1.5; g.beginPath(); g.moveTo(L + kx, y); g.lineTo(L + kx, y + rowH * rows.length); g.stroke();
-  const px0 = R - 420, ph = rowH * rows.length;
-  panel(g, px0, y, 420, ph);
+  const px0 = R - 400, ph = rowH * rows.length;
+  panel(g, px0, y, 400, ph);
   const img = await loadImage(`${origin}${c.photoUrl}`);
-  g.save(); box(g, px0 + 18, y + 18, 384, ph - 36, 8); g.clip();
-  if (img) { const s = Math.max(384 / img.width, (ph - 36) / img.height); const iw = img.width * s, ih = img.height * s; g.drawImage(img, px0 + 18 + (384 - iw) / 2, y + 18 + (ph - 36 - ih) / 2, iw, ih); }
-  else { g.fillStyle = '#D8DDE6'; g.fillRect(px0 + 18, y + 18, 384, ph - 36); }
+  g.save(); box(g, px0 + 18, y + 18, 364, ph - 36, 8); g.clip();
+  if (img) { const s = Math.max(364 / img.width, (ph - 36) / img.height); const iw = img.width * s, ih = img.height * s; g.drawImage(img, px0 + 18 + (364 - iw) / 2, y + 18 + (ph - 36 - ih) / 2, iw, ih); }
+  else { g.fillStyle = '#D8DDE6'; g.fillRect(px0 + 18, y + 18, 364, ph - 36); }
   g.restore();
-  y += ph + 96;
+  y += ph + 80;
   // Natijalar
-  g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillStyle = INK; g.font = `800 44px ${DISPLAY}`; g.fillText(ach ? 'TEST RESULTS' : 'TEST COMPLETION', L, y);
-  y += 36;
+  g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillStyle = INK; g.font = `800 44px ${DISPLAY}`; g.fillText('TEST RESULTS', L, y);
+  y += 30;
   const skills = SKILLS.filter(([k]) => typeof d.skills[k] === 'number');
-  if (ach && skills.length > 1) { // bitta bo'limli testda natija pastdagi katta blokda (takrorlanmaydi)
-    const cw = CW / skills.length; panel(g, L, y, CW, 230);
+  // Har ikkala turda ham 4 ko'nikma va Overall ko'rsatiladi (sertifikat faqat to'liq imtihon uchun beriladi)
+  if (skills.length > 1) {
+    const cw = CW / skills.length; panel(g, L, y, CW, 220);
     g.strokeStyle = RULE; g.lineWidth = 1.5; g.beginPath(); g.moveTo(L, y + 84); g.lineTo(R, y + 84); g.stroke();
     skills.forEach(([k, label], i) => {
-      const x = L + i * cw; if (i) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 230); g.stroke(); }
+      const x = L + i * cw; if (i) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 220); g.stroke(); }
       g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = INK; g.font = `500 38px ${BODY}`; g.fillText(label, x + cw / 2, y + 44);
-      g.font = `800 92px ${DISPLAY}`; g.fillText(d.skills[k]!.toFixed(1), x + cw / 2, y + 160);
+      g.font = `800 92px ${DISPLAY}`; g.fillText(d.skills[k]!.toFixed(1), x + cw / 2, y + 154);
     });
-    y += 230 + 56;
+    y += 220 + 50;
   } else if (ach && d.module === 'cefr') {
     panel(g, L, y, CW, 150);
     g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = INK; g.font = `600 40px ${BODY}`; g.fillText(`Correct answers: ${d.correct ?? 0} / ${d.total ?? 0}`, W / 2, y + 75);
     y += 150 + 56;
   }
   // Asosiy natija bloki (to'q ko'k, oltin ramka)
-  const by = y, bh = 250;
+  const by = y, bh = 236;
   g.fillStyle = GOLD; box(g, L - 10, by - 10, CW + 20, bh + 20, 22); g.fill();
   const bg = g.createLinearGradient(L, by, R, by + bh); bg.addColorStop(0, NAVY); bg.addColorStop(1, NAVY2); g.fillStyle = bg; box(g, L, by, CW, bh, 16); g.fill();
   g.textBaseline = 'middle'; g.fillStyle = '#fff';
-  if (ach) {
+  if (ach || d.kind === 'full') {
     const main = d.kind === 'full' ? ['OVERALL', 'BAND SCORE'] : d.module === 'cefr' ? ['TEST', 'SCORE'] : [(skills[0]?.[1] ?? 'SKILL').toUpperCase(), 'BAND SCORE'];
     const val = d.module === 'cefr' ? `${d.percent ?? 0}%` : typeof d.overall === 'number' ? d.overall.toFixed(1) : '—';
     g.textAlign = 'left'; g.font = `800 62px ${DISPLAY}`; g.fillText(main[0]!, L + 60, by + 92); g.fillText(main[1]!, L + 60, by + 164);
@@ -177,14 +179,14 @@ export async function renderCertificate(c: CertView, origin = typeof location !=
   g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillStyle = INK; g.font = `800 30px ${DISPLAY}`; g.fillText('SCAN TO VERIFY', L + 40 + qs / 2, y + 34 + qs + 50);
   g.strokeStyle = RULE; g.lineWidth = 1.5; g.beginPath(); g.moveTo(L + qs + 80, y + 30); g.lineTo(L + qs + 80, y + fh - 30); g.stroke();
   const vx = L + qs + 110; g.textAlign = 'left'; g.fillStyle = MUTED; g.font = `500 30px ${BODY}`; g.fillText('Certificate', vx, y + 120); g.fillText('Verification Number', vx, y + 160);
-  g.fillStyle = INK; g.font = `800 ${fit(g, c.id, (p) => `800 ${p}px ${BODY}`, 30, L + CW * 0.66 - 175 - vx)}px ${BODY}`; g.fillText(c.id, vx, y + 228);
-  seal(g, L + CW * 0.66, y + fh / 2, Math.min(155, fh / 2 - 22));
+  g.fillStyle = INK; g.font = `800 ${fit(g, c.id, (p) => `800 ${p}px ${BODY}`, 30, L + CW * 0.6 - 160 - vx)}px ${BODY}`; g.fillText(c.id, vx, y + 228);
+  seal(g, L + CW * 0.6, y + fh / 2, Math.min(140, fh / 2 - 22));
   const sx = R - 190; g.textAlign = 'center';
   g.fillStyle = MUTED; g.font = `500 28px ${BODY}`; g.fillText('Authorized Signature', sx, y + 92);
   g.fillStyle = INK; const sp = fit(g, d.signerName, (p) => `italic 600 ${p}px ${DISPLAY}`, 40, 320); g.font = `italic 600 ${sp}px ${DISPLAY}`; g.fillText(d.signerName, sx, y + 182);
   g.strokeStyle = INK; g.lineWidth = 2; g.beginPath(); g.moveTo(sx - 165, y + 206); g.lineTo(sx + 165, y + 206); g.stroke();
   g.fillStyle = INK; const tt = fit(g, d.signerTitle, (p) => `600 ${p}px ${BODY}`, 26, 330); g.font = `600 ${tt}px ${BODY}`; g.fillText(d.signerTitle, sx, y + 248);
-  if (c.status === 'revoked') { g.save(); g.translate(W / 2, H / 2); g.rotate(-0.5); g.globalAlpha = 0.18; g.fillStyle = '#B91C1C'; g.font = `800 220px ${DISPLAY}`; g.textAlign = 'center'; g.fillText('REVOKED', 0, 0); g.restore(); }
+  if (c.status !== 'valid') { g.save(); g.translate(W / 2, H / 2); g.rotate(-0.5); g.globalAlpha = 0.18; g.fillStyle = '#B91C1C'; g.font = `800 220px ${DISPLAY}`; g.textAlign = 'center'; g.fillText(c.status === 'revoked' ? 'REVOKED' : 'EXPIRED', 0, 0); g.restore(); }
   return cv;
 }
 

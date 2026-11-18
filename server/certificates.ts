@@ -62,7 +62,7 @@ export const auditLog = (db: DatabaseSync, limit = 100) => db.prepare(`SELECT a.
 const MODULES: CertModule[] = ['ielts-skill', 'ielts-full', 'cefr'];
 export function rules(db: DatabaseSync): Rule[] {
   return (db.prepare('SELECT * FROM cert_rules').all() as { module: CertModule; participation: number; achievement: number; min_band: number; min_percent: number; min_answered_pct: number }[])
-    .filter((r) => MODULES.includes(r.module))
+    .filter((r) => r.module === 'ielts-full') // faqat to'liq imtihon (bo'lim testlari uchun sertifikat berilmaydi)
     .map((r) => ({ module: r.module, participation: !!r.participation, achievement: !!r.achievement, minBand: r.min_band, minPercent: r.min_percent, minAnsweredPct: r.min_answered_pct }));
 }
 const ruleOf = (db: DatabaseSync, m: CertModule): Rule => rules(db).find((r) => r.module === m) ?? DEFAULT_RULES.find((r) => r.module === m)!;
@@ -132,7 +132,7 @@ export function composeFull(db: DatabaseSync, playerId: number, startedAt: numbe
   const skills: Skills = { listening: Number(l.band), reading: Number(r.band), writing: Number(w.band), speaking: Number(s.band) };
   if (Object.values(skills).some((x) => !Number.isFinite(x))) throw new ApiError(409, 'Bo‘lim natijasi yetarli emas');
   const answered = Number(l.answered ?? 0) + Number(r.answered ?? 0), total = Number(l.total ?? 0) + Number(r.total ?? 0);
-  return recordResult(db, playerId, { module: 'ielts-full', kind: 'full', testId: `${listeningId}+${readingId}`, title: 'Full Mock Exam: Listening, Reading, Writing, Speaking', attemptKey: `full:${startedAt}`,
+  return recordResult(db, playerId, { module: 'ielts-full', kind: 'full', testId: `${listeningId}+${readingId}`, title: 'Listening · Reading · Writing · Speaking', attemptKey: `full:${startedAt}`,
     answered, total, skills, overall: roundOverall(Object.values(skills) as number[]) }, now).result;
 }
 
@@ -150,7 +150,7 @@ export const cefrOfBand = (b: number): string => (b >= 8.5 ? 'C2' : b >= 7 ? 'C1
 
 export interface CertData {
   name: string; photo: string; examName: string; module: CertModule; kind: ResultKind; testDate: string;
-  skills: Skills; overall: number | null; cefr: string | null; correct: number | null; total: number | null; percent: number | null; signerName: string; signerTitle: string;
+  skills: Skills; overall: number | null; cefr: string | null; correct: number | null; total: number | null; percent: number | null; signerName: string; signerTitle: string; validUntil?: number;
 }
 export interface Profile { fullName: string | null; photo: string | null }
 export const profileOf = (db: DatabaseSync, playerId: number): Profile => {
@@ -158,10 +158,15 @@ export const profileOf = (db: DatabaseSync, playerId: number): Profile => {
   return { fullName: r?.full_name ?? null, photo: r?.photo ?? null };
 };
 
+const SKILL_KEYS = ['listening', 'reading', 'writing', 'speaking'] as const;
+/** Sertifikat amal qilish muddati: berilgan kundan 1 yil. */
+export const VALID_MS = 365 * 86_400_000;
+
 export interface Eligibility { module: CertModule | null; participation: boolean; achievement: boolean; reason: string | null }
 /** Natija qaysi sertifikatlarga loyiq (profilga bog'liq emas). */
 export function eligibility(db: DatabaseSync, r: ExamResult): Eligibility {
-  if (r.kind === 'writing' || r.kind === 'speaking' || r.module === 'ai') return { module: null, participation: false, achievement: false, reason: 'Bu mashq uchun sertifikat berilmaydi' };
+  // Sertifikat faqat to'liq imtihon uchun: 4 ko'nikma (Listening, Reading, Writing, Speaking) va Overall — bitta ball bilan sertifikat berilmaydi
+  if (r.kind !== 'full' || r.module !== 'ielts-full' || SKILL_KEYS.some((k) => typeof r.skills[k] !== 'number')) return { module: null, participation: false, achievement: false, reason: 'Sertifikat faqat to‘liq imtihon (4 bo‘lim) uchun beriladi' };
   const m = r.module as CertModule; const rule = ruleOf(db, m);
   const answeredPct = r.total ? ((r.answered ?? 0) / r.total) * 100 : 0;
   if (answeredPct < rule.minAnsweredPct) return { module: m, participation: false, achievement: false, reason: `Test to‘liq yakunlanmagan: savollarning kamida ${rule.minAnsweredPct}% iga javob bering` };
@@ -170,14 +175,14 @@ export function eligibility(db: DatabaseSync, r: ExamResult): Eligibility {
   return { module: m, participation: rule.participation, achievement: rule.achievement && score, reason: null };
 }
 
-function buildData(db: DatabaseSync, r: ExamResult, name: string, photo: string): CertData {
+function buildData(db: DatabaseSync, r: ExamResult, name: string, photo: string, now: number): CertData {
   const s = settings(db); const m = r.module as CertModule;
   const pct = r.total ? Math.round(((r.correct ?? 0) / r.total) * 100) : null;
   const skills: Skills = r.kind === 'full' ? r.skills : r.module === 'cefr' ? {} : { [r.kind]: r.band ?? undefined };
   const overall = r.kind === 'full' ? r.overall : r.module === 'cefr' ? null : r.band;
   const cefr = r.module === 'cefr' ? (r.level ?? null) : overall !== null && overall !== undefined ? cefrOfBand(overall) : null;
   return { name, photo, examName: `${MODULE_LABEL[m]} — ${r.title}`, module: m, kind: r.kind, testDate: new Date(r.at + 5 * 3_600_000).toISOString().slice(0, 10),
-    skills, overall: overall ?? null, cefr, correct: r.correct, total: r.total, percent: pct, signerName: s.signerName, signerTitle: s.signerTitle };
+    skills, overall: overall ?? null, cefr, correct: r.correct, total: r.total, percent: pct, signerName: s.signerName, signerTitle: s.signerTitle, validUntil: now + VALID_MS };
 }
 
 /** Natija uchun sertifikat(lar) yaratadi. Profil rasmi va to'liq ism shart. Takror chaqirilsa — mavjudlari qoladi (bir natija — bir turdan bitta). */
@@ -198,7 +203,7 @@ export function issueFor(db: DatabaseSync, playerId: number, resultId: number, m
     const ext = pr.photo!.split('.').pop();
     const photo = `cert-${id.toLowerCase()}.${ext}`;
     copyFileSync(`${mediaDir}/${pr.photo}`, `${mediaDir}/${photo}`); // berilgan paytdagi rasm nusxasi
-    db.prepare('INSERT INTO certificates (id, player_id, result_id, type, data, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(id, playerId, resultId, type, JSON.stringify(buildData(db, r, pr.fullName!, photo)), now);
+    db.prepare('INSERT INTO certificates (id, player_id, result_id, type, data, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(id, playerId, resultId, type, JSON.stringify(buildData(db, r, pr.fullName!, photo, now)), now);
     issued.push({ id, type });
   }
   return { issued, missing: [], reason: null };
@@ -211,17 +216,22 @@ export function claimAll(db: DatabaseSync, playerId: number, mediaDir: string, n
 
 // ---------------- Ko'rish ----------------
 interface CertRow { id: string; player_id: number; result_id: number; type: CertType; data: string; status: 'valid' | 'revoked'; revoked_at: number | null; revoke_reason: string | null; created_at: number }
-export interface CertView { id: string; type: CertType; status: 'valid' | 'revoked'; issuedAt: number; revokedAt: number | null; data: CertData; verifyUrl: string; photoUrl: string }
+export interface CertView { id: string; type: CertType; status: 'valid' | 'revoked' | 'expired'; issuedAt: number; validUntil: number; revokedAt: number | null; data: CertData; verifyUrl: string; photoUrl: string }
 export const verifyUrl = (id: string, base = process.env.PUBLIC_CERT_BASE ?? 'https://sellzen.uz') => `${base.replace(/\/$/, '')}/certificate/${id}`;
-const view = (r: CertRow): CertView => { const data = JSON.parse(r.data) as CertData; return { id: r.id, type: r.type, status: r.status, issuedAt: r.created_at, revokedAt: r.revoked_at, data, verifyUrl: verifyUrl(r.id), photoUrl: `/media/${data.photo}` }; };
+const view = (r: CertRow, now = Date.now()): CertView => {
+  const data = JSON.parse(r.data) as CertData;
+  const validUntil = data.validUntil ?? r.created_at + VALID_MS; // eski yozuvlar: berilgan kundan 1 yil
+  const status = r.status === 'revoked' ? 'revoked' : now > validUntil ? 'expired' : 'valid';
+  return { id: r.id, type: r.type, status, issuedAt: r.created_at, validUntil, revokedAt: r.revoked_at, data: { ...data, validUntil }, verifyUrl: verifyUrl(r.id), photoUrl: `/media/${data.photo}` };
+};
 export const myCertificates = (db: DatabaseSync, playerId: number): CertView[] => (db.prepare('SELECT * FROM certificates WHERE player_id = ? ORDER BY created_at DESC').all(playerId) as unknown as CertRow[]).map(view);
 /** Ommaviy tekshirish: faqat sertifikatdagi ma'lumot (ism, rasm, natija) — hisob, Telegram yoki boshqa shaxsiy ma'lumot qaytarilmaydi. */
-export function publicCertificate(db: DatabaseSync, id: string): CertView {
+export function publicCertificate(db: DatabaseSync, id: string, now = Date.now()): CertView {
   const key = String(id ?? '').toUpperCase();
   if (!CERT_ID_RE.test(key)) throw new ApiError(404, 'Sertifikat topilmadi');
   const r = db.prepare('SELECT * FROM certificates WHERE id = ?').get(key) as CertRow | undefined;
   if (!r) throw new ApiError(404, 'Sertifikat topilmadi');
-  return view(r);
+  return view(r, now);
 }
 
 // ---------------- Admin ----------------
