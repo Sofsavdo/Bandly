@@ -1,4 +1,5 @@
 import { ArrowRight, CheckCircle2, GraduationCap, Lock } from 'lucide-react';
+import { useState } from 'react';
 import { PRing } from '../components/PRing';
 import { IELTS_TRACKS, type IeltsSkill } from '../content/ielts';
 import { ieltsUnlocked, nextIeltsLesson } from '../content/lessons';
@@ -16,6 +17,7 @@ export default function IeltsCourse() {
   const all = IELTS_TRACKS.flatMap((t) => [...t.start.lessons, ...t.core.lessons]);
   const passed = all.filter((l) => progress[l.id]?.passedAt).length;
   const next = nextIeltsLesson(progress, p.level);
+  const [skill, setSkill] = useState<IeltsSkill | 'all'>(() => (next ? IELTS_TRACKS.find((t) => t.start.id === next.unit.id || t.core.id === next.unit.id)?.skill ?? 'all' : 'all'));
   const unitBlock = (u: Unit, tier: string) => {
     const done = u.lessons.filter((l) => progress[l.id]?.passedAt).length;
     return (
@@ -51,12 +53,16 @@ export default function IeltsCourse() {
         <p className="muted" style={{ margin: '0 0 12px' }}>{passed}/{all.length}  {L('dars')} · {L('Start — A2–B1 uchun, Core — B2 va undan yuqori uchun (Start tugagach ham ochiladi).')}</p>
         {next && <a className="btn primary ielts-cta" href={`#/learn/${next.lesson.id}`}>{passed ? L('Davom ettirish') : L('Boshlash')}: {next.lesson.titleUz} <ArrowRight size={16} /></a>}
       </section>
-      {IELTS_TRACKS.map((t) => (
+      <div className="chips" role="tablist" aria-label={L('Ko‘nikma')}>
+        <button type="button" role="tab" aria-selected={skill === 'all'} className={`chip ${skill === 'all' ? 'on' : ''}`} onClick={() => setSkill('all')}>{L('Barchasi')}</button>
+        {IELTS_TRACKS.map((t) => { const n = [...t.start.lessons, ...t.core.lessons]; const d = n.filter((l) => progress[l.id]?.passedAt).length; return <button key={t.skill} type="button" role="tab" aria-selected={skill === t.skill} className={`chip ${skill === t.skill ? 'on' : ''}`} onClick={() => setSkill(t.skill)}>{SKILL_UZ[t.skill]} {d}/{n.length}</button>; })}
+      </div>
+      {IELTS_TRACKS.filter((t) => skill === 'all' || t.skill === skill).map((t) => (
         <div key={t.skill} className="ielts-track">
           <h2 className="list-h">{SKILL_UZ[t.skill]}</h2>
           {unitBlock(t.start, 'Start')}
           {unitBlock(t.core, 'Core')}
-          <a className="btn" href={t.practiceHref}>{L('{0} testlarida mashq qilish', [SKILL_UZ[t.skill]])} <ArrowRight size={14} /></a>
+          <a className="btn" href={t.practiceHref}>{L('{0} bo‘yicha imtihon mashqi', [SKILL_UZ[t.skill]])} <ArrowRight size={14} /></a>
         </div>
       ))}
     </div>

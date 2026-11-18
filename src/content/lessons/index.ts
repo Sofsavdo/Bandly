@@ -52,10 +52,11 @@ export function nextInCourse(id: string) {
   if (!n || !isIeltsLesson(id)) return n;
   return n.unit.id.slice(0, 4) === list[i]!.unit.id.slice(0, 4) ? n : undefined; // ie-r* → faqat Reading ichida
 }
-/** IELTS kursidagi keyingi ochiq, o'tilmagan dars (kunlik reja uchun). Daraja B2+ bo'lsa Core darslaridan boshlanadi. */
+/** IELTS kursidagi keyingi ochiq, o'tilmagan dars (kunlik reja uchun): A2–B1 — to'rt ko'nikmaning Start darslari, so'ng Core; B2+ — Core dan boshlanadi. */
 export function nextIeltsLesson(progress: Progress, level: string | null | undefined): { unit: Unit; lesson: Lesson; index: number } | undefined {
   const strong = LV.indexOf(level ?? 'A1') >= LV.indexOf('B2');
-  const order = strong ? IELTS_TRACKS.flatMap((t) => [t.core, t.start]) : IELTS_UNITS;
+  const starts = IELTS_TRACKS.map((t) => t.start), cores = IELTS_TRACKS.map((t) => t.core);
+  const order = strong ? [...cores, ...starts] : [...starts, ...cores]; // avval barcha ko'nikmalarning Start darslari, keyin Core
   for (const u of order) for (let i = 0; i < u.lessons.length; i++) {
     if (!progress[u.lessons[i]!.id]?.passedAt && ieltsUnlocked(u, i, progress, level)) return { unit: u, lesson: u.lessons[i]!, index: i };
   }

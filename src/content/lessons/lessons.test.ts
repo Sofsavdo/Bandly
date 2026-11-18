@@ -76,7 +76,7 @@ const allIds = [...ALL_LESSONS, ...IELTS_LESSONS].map((x) => x.lesson.id);
 assert.equal(new Set(allIds).size, allIds.length, 'GE va IELTS dars id lari takrorlanmaydi');
 assert.ok(IELTS_UNITS.every((u) => u.status === 'pilot'));
 // prompt bir dars ichida takrorlanmasin
-for (const { lesson } of IELTS_LESSONS) { const pr = [...lesson.practice, ...lesson.check].map((it) => it.kind === 'order' ? it.answer : it.prompt); assert.equal(new Set(pr).size, pr.length, `${lesson.id}: takror savol`); }
+for (const { lesson } of IELTS_LESSONS) { const pr = [...lesson.practice, ...lesson.check].map((it) => it.kind === 'order' ? it.answer : `${it.listen ?? ''}|${it.prompt}`); assert.equal(new Set(pr).size, pr.length, `${lesson.id}: takror savol`); }
 const rt = IELTS_TRACKS[0]!;
 const passAll = Object.fromEntries(rt.start.lessons.map((l) => [l.id, { attempts: 1, best: 1, passedAt: 1 }]));
 assert.ok(ieltsUnlocked(rt.start, 0, {}, 'A2'), 'Start doim ochiq');
@@ -86,6 +86,8 @@ assert.ok(ieltsUnlocked(rt.core, 0, {}, 'B2'), 'B2 uchun Core ochiq');
 assert.ok(ieltsUnlocked(rt.core, 0, passAll, 'A2'), 'Start tugagach Core ochiladi');
 assert.equal(nextIeltsLesson({}, 'A2')!.lesson.id, rt.start.lessons[0]!.id);
 assert.equal(nextIeltsLesson({}, 'B2')!.lesson.id, rt.core.lessons[0]!.id, 'B2 Core dan boshlaydi');
+assert.equal(nextIeltsLesson(passAll, 'A2')!.lesson.id, IELTS_TRACKS[1]!.start.lessons[0]!.id, 'A2: Reading Start dan keyin Listening Start');
+assert.equal(IELTS_LESSONS.length, 36, 'IELTS kursi: 36 dars'); assert.deepEqual(IELTS_TRACKS.map((t) => t.skill), ['reading', 'listening', 'writing', 'speaking']);
 assert.equal(nextInCourse(rt.start.lessons[0]!.id)!.lesson.id, rt.start.lessons[1]!.id);
 assert.equal(nextInCourse(rt.start.lessons.at(-1)!.id)!.lesson.id, rt.core.lessons[0]!.id, 'Start → Core');
 assert.equal(nextInCourse('a1-u1-l1')!.lesson.id, ALL_LESSONS[1]!.lesson.id, 'GE darsidan keyin GE darsi');

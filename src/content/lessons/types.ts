@@ -3,8 +3,8 @@ import type { TaxonomyId } from '../../lib/adaptive/taxonomy';
 
 /** Exercise items. All answers are checked deterministically (no AI). */
 export type Item =
-  | { kind: 'choice'; prompt: string; options: string[]; answer: number; explainUz: string }
-  | { kind: 'gap'; prompt: string; accept: string[]; explainUz: string }    // prompt contains "___"
+  | { kind: 'choice'; prompt: string; options: string[]; answer: number; explainUz: string; listen?: string }
+  | { kind: 'gap'; prompt: string; accept: string[]; explainUz: string; listen?: string }    // prompt contains "___"
   | { kind: 'order'; words: string[]; answer: string; explainUz: string };   // arrange words into the answer sentence
 
 /** Short guided writing task, checked by rules (no AI): length, required structures, forbidden patterns, known learner errors. */
