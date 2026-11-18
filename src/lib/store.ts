@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { hasAnyTrack } from './entitlement';
 import { applyXp, dayKey } from './game';
 import { newCard, review } from './srs';
 import { effectiveLevel } from './roast';
@@ -127,7 +128,7 @@ export function recordReview(wordId: string, correct: boolean): void {
 }
 
 export function hasAnyPlan(p: Profile = state): boolean {
-  return p.plan.exam || p.plan.grammar || p.plan.mocks;
+  return hasAnyTrack(p);
 }
 
 export function freeGamesLeft(p: Profile = state): number {
