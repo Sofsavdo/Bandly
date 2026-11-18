@@ -1,7 +1,7 @@
 import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt } from './coach';
 import { tzDay } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, PROGRESS_MAX, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -52,6 +52,7 @@ const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
+expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();

@@ -55,9 +55,10 @@ export function chunkReply(text: string): string[] {
 type VoiceMode = 'neural' | 'browser' | null;
 let callVoice: VoiceMode = null;
 export const resetCallVoice = (): void => { callVoice = null; };
-async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 'happy' | 'angry' | 'laugh' = 'happy'): Promise<'ok' | 'limit'> {
+/** 'silent' — hech qaysi bo'lak ovozda aytilmadi (provayder xatosi): javob ekranda matn bo'lib ko'rsatiladi. */
+export async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 'happy' | 'angry' | 'laugh' = 'happy'): Promise<'ok' | 'limit' | 'silent'> {
   const parts = chunkReply(text);
-  let limited = false;
+  let limited = false; let played = false;
   if (callVoice !== 'browser') {
     let next: Promise<string | null> = prepareUz(parts[0]!, emotion, 'coach', 0);
     for (let i = 0; i < parts.length; i++) {
@@ -66,14 +67,14 @@ async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 
       if (!url && i === 0 && callVoice === null) { limited = lastTtsStatus === 429; break; } // neyron ovoz ishlamadi (limit yoki o'chiq) — brauzer ovozi ishlatilmaydi, javob matnda qoladi
       if (!url && !signal.cancelled) url = await prepareUz(parts[i]!, emotion, 'coach', i); // bir marta qayta
       if (i + 1 < parts.length) next = prepareUz(parts[i + 1]!, emotion, 'coach', i + 1);
-      if (url) { callVoice = 'neural'; if (!signal.cancelled) await playPrepared(url, signal); else URL.revokeObjectURL(url); }
+      if (url) { callVoice = 'neural'; played = true; if (!signal.cancelled) await playPrepared(url, signal); else URL.revokeObjectURL(url); }
       // url yo'q (tarmoq xatosi) — bu bo'lak o'tkazib yuboriladi, boshqa ovoz bilan aytilmaydi
     }
-    if (!limited) return 'ok';
+    if (!limited) return played || signal.cancelled ? 'ok' : 'silent';
   }
   if (lastTtsStatus === 429) limited = true;
   // Brauzer ovozi ishlatilmaydi (egasi qarori): ElevenLabs ovozi ishlamasa, javob matn ko'rinishida qoladi.
-  return limited ? 'limit' : 'ok';
+  return limited ? 'limit' : 'silent';
 }
 
 export default function Coach() {
@@ -82,6 +83,9 @@ export default function Coach() {
   const [acc, setAcc] = useState<Account | null>(() => getAccount());
   const [live, setLive] = useState(false);
   const [phase, setPhaseState] = useState<Phase>('idle');
+  const [caption, setCaption] = useState(''); // ovoz ishlamaganda Bandi javobining matni
+  const [typed, setTyped] = useState('');
+  const [textMode, setTextMode] = useState(false); // mikrofon/tanish ishlamasa — yozib javob berish
   const phaseRef = useRef<Phase>('idle');
   const setPhase = (ph: Phase) => { phaseRef.current = ph; setPhaseState(ph); };
   const [err, setErr] = useState('');
@@ -115,7 +119,11 @@ export default function Coach() {
     setPhase('speaking');
     const s = { cancelled: false }; sig.current = s;
     const stopWatch = server ? await watchBargeIn(() => { s.cancelled = true; stopSpeaking(); }) : () => undefined;
-    try { const res = await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy'); if (res === 'limit') { setLimitHit(true); end(); return; } } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } finally { stopWatch(); }
+    try {
+      const res = await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy');
+      if (res === 'limit') { setCaption(line); setLimitHit(true); end(); return; }
+      setCaption(res === 'silent' ? line : ''); // ovoz chiqmadi — javob matn bo'lib ko'rinadi, suhbat davom etadi
+    } catch { setCaption(line); } finally { stopWatch(); }
     if (!liveRef.current) return;
     setPhase('idle');
     if (canListen) void listen();
@@ -216,11 +224,11 @@ export default function Coach() {
       setLvl(0);
       if (e instanceof SttError) {
         if (e.status === 429 || e.status === 503) setServerDown(true); // limit tugadi — bu qo'ng'iroqda brauzer tanishiga o'tamiz
-        setErr(e.message); setPhase('error'); return;
+        setErr(e.message); setTextMode(true); setPhase('error'); return;
       }
       const code = e instanceof SpeechError ? e.code : 'unstable';
       setErr(code === 'denied' ? L('Mikrofonga ruxsat berilmagan.') : code === 'nomic' ? L('Mikrofon topilmadi.') : code === 'network' ? L('Internet aloqasi uzildi.') : L('Nutqni tanib bo‘lmadi.'));
-      setPhase('error');
+      setTextMode(true); setPhase('error');
     }
   }
 
@@ -259,6 +267,7 @@ export default function Coach() {
         <div className="voice-stage">
           {orb}
           <p className="voice-status" aria-live="polite">{PHASE_UZ[phase]}</p>
+          {caption && <p className="tutor-caption" aria-live="polite"><b>{L('Bandi')}:</b> {caption}</p>}
           {err && <p className="tutor-err">{err}</p>}
           {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Bandi ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         </div>
@@ -271,6 +280,12 @@ export default function Coach() {
           )}
           <button type="button" className="icon-btn end" onClick={end} aria-label={L('Suhbatni tugatish')}><PhoneOff size={22} /></button>
         </div>
+        {(textMode || !canListen || !!caption) && !liveRefCall.current && (
+          <form className="tutor-type" onSubmit={(e) => { e.preventDefault(); const v = typed.trim(); if (v) { setTyped(''); void send(v); } }}>
+            <input type="text" value={typed} maxLength={500} placeholder={L('Javobingizni ingliz tilida yozing')} aria-label={L('Javobingizni ingliz tilida yozing')} onChange={(e) => setTyped(e.target.value)} />
+            <button type="submit" className="btn primary sm" disabled={!typed.trim() || phase === 'thinking'}>{L('Yuborish')}</button>
+          </form>
+        )}
       </section>
     </div>
   );

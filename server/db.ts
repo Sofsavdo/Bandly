@@ -227,8 +227,6 @@ export function playerIdOf(db: DatabaseSync, token: string | undefined, now = Da
   const s = db.prepare('SELECT id, player_id, revoked_at, last_seen FROM sessions WHERE token_hash = ?').get(h) as { id: number; player_id: number; revoked_at: number | null; last_seen: number } | undefined;
   if (s) {
     if (s.revoked_at) return null;
-    // Uzoq ishlatilmagan sessiya (yo'qolgan/sotilgan telefon) o'z-o'zidan yopiladi; faol foydalanuvchi soatiga yangilanadi
-    if (now - s.last_seen > SESSION_IDLE_MS) { db.prepare('UPDATE sessions SET revoked_at = ? WHERE id = ?').run(now, s.id); return null; }
     if (now - s.last_seen > 3_600_000) db.prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').run(now, s.id);
     return s.player_id;
   }
@@ -268,6 +266,12 @@ export function setRole(db: DatabaseSync, nickname: string, role: Role | null): 
   if (!p) throw new ApiError(404, 'Foydalanuvchi topilmadi');
   db.prepare('UPDATE players SET role = ? WHERE id = ?').run(role, p.id);
   return { nickname: p.nickname, role };
+}
+
+/** Uzoq ishlatilmagan sessiyalarni yopadi (yo'qolgan/sotilgan telefon). Server ishga tushganda va kuniga bir marta chaqiriladi.
+ *  Faol foydalanuvchining last_seen'i soatiga yangilanadi, shuning uchun unga ta'sir qilmaydi. Qaytaradi: yopilganlar soni. */
+export function expireIdleSessions(db: DatabaseSync, now = Date.now()): number {
+  return Number(db.prepare('UPDATE sessions SET revoked_at = ? WHERE revoked_at IS NULL AND last_seen < ?').run(now, now - SESSION_IDLE_MS).changes);
 }
 
 /** Chiqish: shu qurilma sessiyasi bekor qilinadi (eski umumiy token bo'lsa — u ham shu sessiya orqali bekor bo'ladi). */
