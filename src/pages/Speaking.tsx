@@ -152,7 +152,7 @@ export default function Speaking() {
     const useTimed = !textModeRef.current;
     const s = summarize(ex.turns, useTimed);
     setTurns(ex.turns); setSummary(s); setTimed(useTimed); setStage('report');
-    if (useAiNow) { setAiState('loading'); aiEvaluateSpeaking(ex.turns.map((t) => ({ q: t.q, text: t.text }))).then((e) => { setAiEval(e); setAiState('idle'); }).catch((e: Error) => { setAiErr(e.message); setAiState('error'); }); }
+    if (useAiNow) { setAiState('loading'); aiEvaluateSpeaking(ex.turns.map((t) => ({ q: t.q, text: t.text }))).then((e) => { setAiEval(e); setAiState('idle'); saveResult({ kind: 'speaking', title: L('Speaking: AI baho'), correct: ex.turns.filter((t) => t.words >= 12).length, total: ex.turns.length, band: e.overall, level: profile.level ?? undefined }); }).catch((e: Error) => { setAiErr(e.message); setAiState('error'); }); }
     saveResult({ kind: 'speaking', title: 'Speaking: jonli suhbat', correct: ex.turns.filter((t) => t.words >= 12).length, total: ex.turns.length, band: capBand(Math.min(6.5, Math.round(((s.fluencyBand + s.lexicalBand) / 2) * 2) / 2), profile.level ?? undefined), level: profile.level ?? undefined });
     addXp(30);
   };

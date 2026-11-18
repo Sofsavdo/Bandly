@@ -159,7 +159,7 @@ export default function Writing() {
             <textarea className="essay" value={text} onChange={(e) => setText(e.target.value)} placeholder={L('Javobingizni inglizcha yozing... (abzatslarni bo‘sh qator bilan ajrating)')} />
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <span className={words >= p.minWords ? 'ok' : 'pill'}>{words}  {L('so‘z')}</span>
-              {aiOn && acct && <button className="btn" disabled={aiBusy || words < 30} onClick={() => { setAiBusy(true); setAiErr(''); aiEvaluateWriting(p.task, p.prompt, text).then((e) => { setAiEval(e); addXp(10); }).catch((e: Error) => setAiErr(e.message)).finally(() => setAiBusy(false)); }}>{aiBusy ? L('AI baholayapti…') : L('AI baholash')}</button>}
+              {aiOn && acct && <button className="btn" disabled={aiBusy || words < 30} onClick={() => { setAiBusy(true); setAiErr(''); aiEvaluateWriting(p.task, p.prompt, text).then((e) => { setAiEval(e); addXp(10); saveResult({ kind: 'writing', title: `${p.title} · AI`, correct: Object.values(e.bands).filter((x) => x !== null).length, total: 4, band: e.overall }); }).catch((e: Error) => setAiErr(e.message)).finally(() => setAiBusy(false)); }}>{aiBusy ? L('AI baholayapti…') : L('AI baholash')}</button>}
               <button className="btn primary" onClick={check} disabled={words === 0}>{L('Tekshirish')}</button>
             </div>
             <p className="notice" style={{ marginTop: 12 }}>

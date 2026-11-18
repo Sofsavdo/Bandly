@@ -12,6 +12,7 @@ interface Data {
   days: Day[]; retention: { cohort: number; d1: number | null; d7: number | null; d30: number | null };
   funnel: { step: string; n: number }[]; bySource: { source: string; events: number; xp: number }[];
   aiByFeature: { feature: string; usd: number }[]; revenue30: number; paid30: number;
+  bands?: { learners: number; withBaseline: number; measured: number; avgGain: number | null; medianGain: number | null; shareHalf: number | null; shareOne: number | null; avgDays: number | null; officials: number; officialVsBaseline: number | null };
 }
 
 /** Oddiy ustunli grafik (SVG): kunlik qiymatlar, eng kattasi ustida raqam. */
@@ -72,6 +73,25 @@ export default function Admin() {
         <Bars days={data.days} pick={(d) => d.signups} color="var(--teal)" label={L('Yangi o‘quvchilar')} />
         <Bars days={data.days} pick={(d) => d.revenue} color="var(--yellow)" label={L('Tushum (so‘m)')} />
       </section>
+
+      {data.bands && (
+        <section className="card">
+          <h3>{L('Band o‘sishi (haqiqiy natijalar)')}</h3>
+          <p className="muted" style={{ marginTop: 0 }}>{L('Boshlang‘ich to‘liq imtihondan kamida 14 kun keyin yana imtihon topshirganlar hisoblanadi. Marketingda faqat shu raqamlarga tayaning.')}</p>
+          <div className="kpis three">
+            <div className="kpi2"><span>{L('Boshlang‘ich o‘lchangan')}</span><b>{data.bands.withBaseline}</b></div>
+            <div className="kpi2"><span>{L('Qayta o‘lchangan')}</span><b>{data.bands.measured}</b></div>
+            <div className="kpi2"><span>{L('O‘rtacha o‘sish')}</span><b>{data.bands.avgGain === null ? '—' : `${data.bands.avgGain >= 0 ? '+' : ''}${data.bands.avgGain.toFixed(2)}`}</b></div>
+            <div className="kpi2"><span>{L('Mediana')}</span><b>{data.bands.medianGain === null ? '—' : `${data.bands.medianGain >= 0 ? '+' : ''}${data.bands.medianGain.toFixed(1)}`}</b></div>
+            <div className="kpi2"><span>{L('+0.5 va undan ko‘p')}</span><b>{pct(data.bands.shareHalf)}</b></div>
+            <div className="kpi2"><span>{L('+1.0 va undan ko‘p')}</span><b>{pct(data.bands.shareOne)}</b></div>
+            <div className="kpi2"><span>{L('O‘rtacha muddat')}</span><b>{data.bands.avgDays === null ? '—' : L('{0} kun', [data.bands.avgDays])}</b></div>
+            <div className="kpi2"><span>{L('Rasmiy natija kiritgan')}</span><b>{data.bands.officials}</b></div>
+            <div className="kpi2"><span>{L('Rasmiy − boshlang‘ich')}</span><b>{data.bands.officialVsBaseline === null ? '—' : `${data.bands.officialVsBaseline >= 0 ? '+' : ''}${data.bands.officialVsBaseline.toFixed(2)}`}</b></div>
+          </div>
+          {data.bands.measured < 30 && <p className="notice">{L('Hozircha {0} ta o‘lchov. Ishonchli xulosa uchun kamida 30 ta qayta o‘lchangan o‘quvchi kerak.', [data.bands.measured])}</p>}
+        </section>
+      )}
 
       <div className="dash2">
         <section className="card">

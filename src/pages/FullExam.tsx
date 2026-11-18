@@ -1,9 +1,9 @@
 import { ArrowRight, CheckCircle2, Circle, ClipboardCheck, RotateCcw } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { levelIndex } from '../lib/levels';
-import { roundHalf } from '../lib/progress';
 import { recordMock } from '../lib/history';
+import { syncMock } from '../lib/bands';
 import { loadResults, type ResultRecord } from '../lib/storage';
 import { useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
@@ -19,6 +19,13 @@ const nearest = <T extends { level: Parameters<typeof levelIndex>[0] }>(list: T[
   [...list].sort((a, b) => Math.abs(levelIndex(a.level) - levelIndex(level)) - Math.abs(levelIndex(b.level) - levelIndex(level)))[0];
 
 const since = (results: ResultRecord[], t0: number, pred: (r: ResultRecord) => boolean) => results.find((r) => Date.parse(r.date) >= t0 && pred(r));
+
+/** Natija qurilmaga va (hisob bo'lsa) serverga yoziladi — o'sishni boshlang'ichdan o'lchash uchun. Bir xil natija qayta yozilmaydi. */
+function RecordMock({ entry }: { entry: Parameters<typeof recordMock>[0] }) {
+  const key = JSON.stringify(entry);
+  useEffect(() => { recordMock(entry); syncMock(entry); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
 
 export default function FullExam() {
   const p = useProfile();
@@ -52,18 +59,20 @@ export default function FullExam() {
   const R = readingTests.find((t) => t.id === st.readingId)!;
   const rl = since(results, st.startedAt, (r) => r.kind === 'listening' && r.title === LT.title);
   const rr = since(results, st.startedAt, (r) => r.kind === 'reading' && r.title === R.title);
+  const rw = since(results, st.startedAt, (r) => r.kind === 'writing' && typeof r.band === 'number');
   const rs = since(results, st.startedAt, (r) => r.kind === 'speaking');
   const parts = [
     { name: 'Listening', sub: L('{0} · {1} daqiqa', [LT.title.replace(/^Listening mini-test \d+: /, ''), LT.minutes]), res: rl, href: `#/mocks/listening/${LT.id}`, done: !!rl },
     { name: 'Reading', sub: L('{0} · {1} daqiqa', [R.title.replace(/^Reading mini-test \d+: /, ''), R.minutes]), res: rr, href: `#/mocks/reading/${R.id}`, done: !!rr },
-    { name: 'Writing', sub: L('Task 2 insho: yozib, tekshiruvdan o‘tkazing (band berilmaydi)'), res: undefined, href: '#/exam/writing', done: st.writingDone },
+    { name: 'Writing', sub: L('Task 2 insho: yozing va “AI baholash”ni bosing — 4 mezon bo‘yicha band chiqadi'), res: rw, href: '#/exam/writing', done: st.writingDone || !!rw },
     { name: 'Speaking', sub: L('Ustoz bilan jonli suhbat (Part 1–3)'), res: rs, href: '#/exam/speaking', done: !!rs },
   ];
-  const bands = [rl?.band, rr?.band, rs?.band].filter((b): b is number => typeof b === 'number');
+  const bands = [rl?.band, rr?.band, rw?.band, rs?.band].filter((b): b is number => typeof b === 'number');
   const doneN = parts.filter((x) => x.done).length;
-  const overall = bands.length ? roundHalf(bands.reduce((a, b) => a + b, 0) / bands.length) : null;
+  // IELTS yaxlitlash (server bilan bir xil): o'rtacha .25 → .5, .75 → butun
+  const overall = bands.length ? Math.floor((bands.reduce((a, b) => a + b, 0) / bands.length) * 2 + 0.5) / 2 : null;
   const all = doneN === 4;
-  if (overall !== null && (rl || rr || rs) && doneN >= 3) recordMock({ at: st.startedAt, overall, listening: rl?.band, reading: rr?.band, speaking: rs?.band });
+  const entry = overall !== null && bands.length >= 2 && doneN >= 3 ? { at: st.startedAt, overall, listening: rl?.band, reading: rr?.band, writing: rw?.band, speaking: rs?.band } : null;
   const nextIdx = parts.findIndex((x) => !x.done);
 
   return (
@@ -78,7 +87,7 @@ export default function FullExam() {
               <div className="grow">
                 <b>{i + 1}. {x.name}</b>
                 <p className="evidence" style={{ margin: 0 }}>{x.sub}</p>
-                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' ? L('Bajarildi') : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · taxminiy band ${x.res.band.toFixed(1)}` : ''}</p>}
+                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' || x.res.kind === 'writing' ? L('Bajarildi') : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · ${L('taxminiy band')} ${x.res.band.toFixed(1)}` : ''}</p>}
               </div>
               {x.name === 'Writing' && !x.done && <button className="btn sm" onClick={() => { const n = { ...st, writingDone: true }; saveFull(n); setSt(n); }}>{L('Bajardim')}</button>}
               {!x.done && i === nextIdx && <a className="btn primary sm" href={x.href}>{L('Boshlash')}</a>}
@@ -99,6 +108,7 @@ export default function FullExam() {
           </div>
         </div>
       )}
+      {entry && <RecordMock entry={entry} />}
       <div className="row"><button className="btn" onClick={reset}><RotateCcw size={16} />  {L('Yangi imtihon')}</button></div>
     </div>
   );

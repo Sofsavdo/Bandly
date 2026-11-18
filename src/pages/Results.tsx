@@ -9,6 +9,7 @@ const fmtD = (ms: number) => new Date(ms).toLocaleDateString('uz-UZ', { day: '2-
 const KIND: Record<string, string> = { reading: 'Reading', listening: 'Listening', speaking: 'Speaking', writing: 'Writing', grammar: 'Grammar', practice: L('Gap tuzish') };
 
 import { MasteryCard } from '../components/MasteryCard';
+import { BandProgress } from '../components/BandProgress';
 import { L } from '../i18n';
 
 export default function Results() {
@@ -39,6 +40,7 @@ export default function Results() {
           </div>
         </div>
       </div>
+      <BandProgress />
       <MasteryCard />
       <div className="card">
         <h3 style={{ marginTop: 0 }}>{L('Overall o‘sishi')}</h3>
