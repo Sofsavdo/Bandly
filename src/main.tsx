@@ -34,11 +34,11 @@ void initI18n().then(async () => {
     import('./content/satPractice'),
   ]);
   for (const m of mods) for (const v of Object.values(m as Record<string, unknown>)) deepTranslate(v);
-  const [{ default: App }, { startSync }, { initPay }, { bootTelegram }, { pullIfNewer, startCloud }, { loadRemoteContent }] = await Promise.all([
-    import('./App'), import('./lib/account'), import('./lib/pay'), import('./lib/telegram'), import('./lib/cloud'), import('./content/remote'),
+  const [{ default: App }, { startSync }, { initPay }, { bootTelegram }, { pullIfNewer, startCloud }, { loadRemoteContent }, { loadStudioTests }] = await Promise.all([
+    import('./App'), import('./lib/account'), import('./lib/pay'), import('./lib/telegram'), import('./lib/cloud'), import('./content/remote'), import('./content/mockTests'),
   ]);
   // Telegram Mini App bo'lsa — avval Telegram skripti va avtomatik kirish; keyin hisob progressi (boshqa qurilmada yangilangan bo'lsa)
-  await Promise.all([bootTelegram().then(() => pullIfNewer()), loadRemoteContent()]).catch(() => undefined);
+  await Promise.all([bootTelegram().then(() => pullIfNewer()), loadRemoteContent(), loadStudioTests()]).catch(() => undefined);
   startSync();
   startCloud();
   void initPay();

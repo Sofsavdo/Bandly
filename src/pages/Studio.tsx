@@ -9,6 +9,7 @@ import { formatItems, formatPairs, parseItems, parsePairs } from '../lib/lessonD
 import { validateLesson } from '../lib/lessons';
 import { ImportPanel } from '../components/ImportPanel';
 import { TranslationsPanel } from '../components/TranslationsPanel';
+import { StudioTests } from '../components/StudioTests';
 import { L } from '../i18n';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
@@ -37,6 +38,7 @@ export default function Studio() {
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState('');
   const [role, setRole] = useState<string>('');
+  const [view, setView] = useState<'lessons' | 'tests'>('lessons');
 
   const load = useCallback(async () => {
     try { const j = await studio<{ units: TUnit[]; role: string }>('GET', 'tree'); setUnits(j.units); setRole(j.role); setErr(''); }
@@ -66,11 +68,16 @@ export default function Studio() {
       <div className="card">
         <h2 style={{ margin: 0 }}>{L('Metodist kabineti')}</h2>
         <p className="muted" style={{ margin: '6px 0 10px' }}>{L('O‘zgarishlar avval qoralama bo‘lib saqlanadi; o‘quvchilar faqat “E’lon qilish”dan keyin ko‘radi. O‘chirilgan (arxivlangan) dars tiklanishi mumkin.')}</p>
-        <div className="seg" role="tablist" aria-label={L('Daraja')}>{LEVELS.map((l) => <button key={l} type="button" role="tab" aria-selected={l === level} className={l === level ? 'on' : ''} onClick={() => setLevel(l)}>{l} <small>({units.filter((u) => u.level === l).reduce((s, u) => s + u.lessons.filter((x) => x.status !== 'archived').length, 0)})</small></button>)}</div>
+        <div className="seg" role="tablist" aria-label={L('Bo‘lim')} style={{ marginBottom: 8 }}>
+          <button type="button" role="tab" aria-selected={view === 'lessons'} className={view === 'lessons' ? 'on' : ''} onClick={() => setView('lessons')}>{L('Darslar')}</button>
+          <button type="button" role="tab" aria-selected={view === 'tests'} className={view === 'tests' ? 'on' : ''} onClick={() => setView('tests')}>{L('Testlar')}</button>
+        </div>
+        {view === 'lessons' && <div className="seg" role="tablist" aria-label={L('Daraja')}>{LEVELS.map((l) => <button key={l} type="button" role="tab" aria-selected={l === level} className={l === level ? 'on' : ''} onClick={() => setLevel(l)}>{l} <small>({units.filter((u) => u.level === l).reduce((s, u) => s + u.lessons.filter((x) => x.status !== 'archived').length, 0)})</small></button>)}</div>}
         {msg && <p className="notice" style={{ marginTop: 10 }} role="status">{msg}</p>}
       </div>
 
-      {list.map((u, ui) => (
+      {view === 'tests' && <StudioTests />}
+      {view === 'lessons' && list.map((u, ui) => (
         <section key={u.id} className={`card studio-unit ${u.status === 'archived' ? 'archived' : ''}`}>
           <div className="studio-row">
             <div style={{ minWidth: 0 }}><h3 style={{ margin: 0 }}>{u.data.titleUz}</h3><span className="muted" style={{ fontSize: 13 }}>{u.id} · {u.lessons.length}  {L('dars')}</span> {badge(u.status, u.dirty)}</div>
@@ -109,9 +116,9 @@ export default function Studio() {
         </section>
       ))}
 
-      {role === 'admin' && <StaffPanel />}
-      <TranslationsPanel admin={role === 'admin'} />
-      <button className="btn" onClick={() => { const t = prompt(L('{0} uchun yangi bo‘lim nomi (o‘zbekcha)', [level])); if (t) void act('unit', () => studio('POST', 'unit', { level, data: { titleUz: t } }), L('Bo‘lim yaratildi (qoralama).')); }}><FilePlus2 size={16} /> {level}  {L('uchun yangi bo‘lim')}</button>
+      {view === 'lessons' && role === 'admin' && <StaffPanel />}
+      {view === 'lessons' && <TranslationsPanel admin={role === 'admin'} />}
+      {view === 'lessons' && <button className="btn" onClick={() => { const t = prompt(L('{0} uchun yangi bo‘lim nomi (o‘zbekcha)', [level])); if (t) void act('unit', () => studio('POST', 'unit', { level, data: { titleUz: t } }), L('Bo‘lim yaratildi (qoralama).')); }}><FilePlus2 size={16} /> {level}  {L('uchun yangi bo‘lim')}</button>}
       {importTo && <ImportPanel unit={{ id: importTo.id, level: importTo.level, titleUz: importTo.data.titleUz }} onClose={() => setImportTo(null)} onDone={async (m: string) => { setImportTo(null); await load(); setMsg(m); }} />}
     </div>
   );

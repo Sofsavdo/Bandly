@@ -11,6 +11,7 @@ import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
 import { mockStats, recordMockStat } from './mockStats';
+import { listStudioTests, publicStudioTests, publishedStudioTests, saveStudioTest, setStudioTestStatus } from './studioTests';
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { gradeMock } from './mockGrade';
@@ -283,6 +284,14 @@ const httpServer = createServer(async (req, res) => {
         });
         return send(res, 200, { created });
       }
+      // Testlar (Reading/Listening): matn formatida yoziladi, xatosiz bo'lsa e'lon qilinadi
+      if (p[0] === 'tests') {
+        if (req.method === 'GET' && !p[1]) return send(res, 200, { tests: listStudioTests(db) });
+        const tb = await readJson(req, 80_000);
+        if (req.method === 'POST' && !p[1]) return send(res, 200, saveStudioTest(db, null, String(tb.source ?? ''), by));
+        if (req.method === 'PUT' && p[1] && !p[2]) return send(res, 200, saveStudioTest(db, p[1], String(tb.source ?? ''), by));
+        if (req.method === 'POST' && p[1] && ['publish', 'archive', 'restore'].includes(p[2] ?? '')) { setStudioTestStatus(db, p[1], p[2] as 'publish', by); return send(res, 200, { ok: true }); }
+      }
       if (req.method === 'GET' && p[0] === 'history' && p[1]) return send(res, 200, { history: history(db, p[1]) });
       const b = req.method === 'GET' ? {} : await readJson(req, 262_144);
       if (req.method === 'POST' && p[0] === 'unit' && !p[1]) return send(res, 200, createUnit(db, String(b.level ?? ''), (b.data ?? {}) as { titleUz?: string }, by));
@@ -317,9 +326,10 @@ const httpServer = createServer(async (req, res) => {
       if (req.method === 'POST' && p[0] === 'reorder') { reorder(db, (b.ids ?? []) as string[], by); return send(res, 200, { ok: true }); }
       return send(res, 404, { error: 'Topilmadi' });
     }
+    if (req.method === 'GET' && url.pathname === '/api/mock/tests') return send(res, 200, publicStudioTests(db)); // kabinetda e'lon qilingan testlar (javobsiz)
     if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
       const b = await readJson(req, 16_384);
-      const g = gradeMock(b.kind, b.testId, b.answers);
+      const g = gradeMock(b.kind, b.testId, b.answers, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : []);
       // Kirgan o'quvchiga XP'ni server o'zi beradi (natijani o'zi hisobladi); bir urinish — bir marta
       const tk = String(req.headers['x-token'] ?? '');
       let xp = 0;
