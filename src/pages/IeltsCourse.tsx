@@ -52,7 +52,7 @@ export default function IeltsCourse() {
         <h2 style={{ margin: 0 }}><GraduationCap size={22} />  {L('IELTS kursi')}</h2>
         <p style={{ margin: '6px 0 4px' }}>{L('Imtihon ko‘nikmalarini o‘rgatadigan darslar: savol turlari, usullar, vaqt. General English tilni beradi, bu kurs esa shu tilni imtihonda ballga aylantirishni o‘rgatadi.')}</p>
         <p className="muted" style={{ margin: '0 0 12px' }}>{passed}/{all.length}  {L('dars')} · {L('Start — A2–B1 uchun, Core — B2 va undan yuqori uchun (Start tugagach ham ochiladi).')}{freeLeft('ielts') !== null && <> · <a href="#/pricing">{L('Bugun bepul: {0} ta yangi dars', [freeLeft('ielts') ?? 0])}</a></>}</p>
-        {next && <a className="btn primary ielts-cta" href={`#/learn/${next.lesson.id}`}>{passed ? L('Davom ettirish') : L('Boshlash')}: {next.lesson.titleUz} <ArrowRight size={16} /></a>}
+        {next && <><p className="muted" style={{ margin: '0 0 8px', fontSize: 14 }}>{L('Keyingi dars:')} <b>{next.lesson.titleUz}</b></p><a className="btn primary" href={`#/learn/${next.lesson.id}`}>{passed ? L('Davom ettirish') : L('Boshlash')} <ArrowRight size={16} /></a></>}
       </section>
       <div className="chips" role="tablist" aria-label={L('Ko‘nikma')}>
         <button type="button" role="tab" aria-selected={skill === 'all'} className={`chip ${skill === 'all' ? 'on' : ''}`} onClick={() => setSkill('all')}>{L('Barchasi')}</button>

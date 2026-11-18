@@ -101,4 +101,13 @@ const port = (http.address() as { port: number }).port;
   assert.equal(JSON.parse(msg).type, 'limit');
 }
 http.close(); upstream.close();
+// Bepul foydalanuvchilar uchun platformaning kunlik umumiy chegarasi (xarajat nazorati)
+{
+  const capped = liveConfigFromEnv('k', { LIVE_FREE_GLOBAL_DAILY_MINUTES: '100' } as never)!;
+  assert.equal(capped.freeGlobalDailySeconds, 6000);
+  assert.equal(liveAllowance(capped, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 0, platformUsedTodaySec: 5970 }), 30, 'umumiy byudjet oxirida — qolgan soniyalar');
+  assert.equal(liveAllowance(capped, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 0, platformUsedTodaySec: 7000 }), 0, 'byudjet tugadi — bepulga Live yo‘q');
+  assert.ok(liveAllowance(capped, { staff: false, subscriberLeftSec: 600, freeUsedTodaySec: 0, platformUsedTodaySec: 7000 }) > 0, 'obunachiga ta’sir qilmaydi');
+  assert.equal(liveConfigFromEnv('k', {} as never)!.freeGlobalDailySeconds, 0, 'standart — chegarasiz (avvalgidek)');
+}
 console.log('live: OK');
