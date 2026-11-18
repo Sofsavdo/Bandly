@@ -6,10 +6,10 @@ import { loadResults } from '../lib/storage';
 import { useProfile } from '../lib/store';
 
 const fmtD = (ms: number) => new Date(ms).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit' });
-const KIND: Record<string, string> = { reading: 'Reading', listening: 'Listening', speaking: 'Speaking', writing: 'Writing', grammar: 'Grammar', practice: L('Gap tuzish') };
 
 import { MasteryCard } from '../components/MasteryCard';
 import { BandProgress } from '../components/BandProgress';
+import { ResultList, RESULT_KIND as KIND } from '../components/ResultList';
 import { L } from '../i18n';
 
 export default function Results() {
@@ -49,12 +49,7 @@ export default function Results() {
       </div>
       <div className="card">
         <h3 style={{ marginTop: 0 }}>{L('So‘nggi natijalar')}</h3>
-        {results.length === 0 ? <p>{L('Hozircha natija yo‘q.')}</p> : (
-          <table className="data">
-            <thead><tr><th>{L('Sana')}</th><th>{L('Bo‘lim')}</th><th>{L('Mavzu')}</th><th>{L('Natija')}</th><th>{L('Band')}</th></tr></thead>
-            <tbody>{results.slice(0, 15).map((r) => <tr key={r.id}><td>{new Date(r.date).toLocaleDateString('uz-UZ')}</td><td>{KIND[r.kind] ?? r.kind}</td><td>{r.title}</td><td>{r.correct} / {r.total}</td><td>{r.band !== undefined ? r.band.toFixed(1) : '—'}</td></tr>)}</tbody>
-          </table>
-        )}
+        <ResultList results={results} limit={15} />
       </div>
     </div>
   );

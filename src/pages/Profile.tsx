@@ -19,6 +19,7 @@ import { WeekBars } from '../components/WeekBars';
 import { LangPicker } from '../components/LangPicker';
 import { InviteCard } from '../components/InviteCard';
 import { JoinGroupCard } from '../components/JoinGroupCard';
+import { ResultList } from '../components/ResultList';
 import { L } from '../i18n';
 
 export default function Profile() {
@@ -121,12 +122,7 @@ export default function Profile() {
 
       <div className="card">
         <h3>{L('Natijalar tarixi')}</h3>
-        {results.length === 0 ? <p>{L('Hozircha natija yo‘q.')}</p> : (
-          <table className="data">
-            <thead><tr><th>{L('Sana')}</th><th>{L('Test')}</th><th>{L('Natija')}</th><th>{L('Band (taxm.)')}</th></tr></thead>
-            <tbody>{results.map((r) => <tr key={r.id}><td>{new Date(r.date).toLocaleDateString('uz-UZ')}</td><td>{r.title}</td><td>{r.correct} / {r.total}</td><td>{r.band !== undefined ? r.band.toFixed(1) : '—'}</td></tr>)}</tbody>
-          </table>
-        )}
+        <ResultList results={results} limit={10} moreHref="#/results" />
       </div>
     </div>
   );
