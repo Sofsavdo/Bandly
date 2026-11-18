@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
-import { listenTurn, SpeechError, sayWithVoice, stopSpeaking, sttSupported, ttsSupported, tutorVoice } from '../lib/speech';
+import { listenTurn, SpeechError, stopSpeaking, sttSupported } from '../lib/speech';
 import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
 import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
 import { useProfile } from '../lib/store';
@@ -63,22 +63,18 @@ async function speakLine(text: string, signal: { cancelled: boolean }, emotion: 
     for (let i = 0; i < parts.length; i++) {
       if (signal.cancelled) return 'ok';
       let url = await next;
-      if (!url && i === 0 && callVoice === null) { limited = lastTtsStatus === 429; callVoice = 'browser'; break; } // neyron ovoz hali ishlamagan (limit yoki o'chiq) — butun qo'ng'iroq bitta brauzer ovozida
+      if (!url && i === 0 && callVoice === null) { limited = lastTtsStatus === 429; break; } // neyron ovoz ishlamadi (limit yoki o'chiq) — brauzer ovozi ishlatilmaydi, javob matnda qoladi
       if (!url && !signal.cancelled) url = await prepareUz(parts[i]!, emotion, 'coach', i); // bir marta qayta
       if (i + 1 < parts.length) next = prepareUz(parts[i + 1]!, emotion, 'coach', i + 1);
       if (url) { callVoice = 'neural'; if (!signal.cancelled) await playPrepared(url, signal); else URL.revokeObjectURL(url); }
       // url yo'q (tarmoq xatosi) — bu bo'lak o'tkazib yuboriladi, boshqa ovoz bilan aytilmaydi
     }
-    if (callVoice !== 'browser') return 'ok';
+    if (!limited) return 'ok';
   }
   if (lastTtsStatus === 429) limited = true;
-  if (!browserVoiceUsable()) return limited ? 'limit' : 'ok';
-  const voice = tutorVoice();
-  for (const part of parts) { if (signal.cancelled) break; await sayWithVoice(part, signal, voice); }
+  // Brauzer ovozi ishlatilmaydi (egasi qarori): ElevenLabs ovozi ishlamasa, javob matn ko'rinishida qoladi.
   return limited ? 'limit' : 'ok';
 }
-/** Brauzer ovozi haqiqatan bormi (Telegram ichidagi Android brauzerida ko'pincha ovoz yo'q — jim qoladi). */
-const browserVoiceUsable = (): boolean => ttsSupported() && window.speechSynthesis.getVoices().length > 0;
 
 export default function Coach() {
   const p = useProfile();
@@ -119,7 +115,7 @@ export default function Coach() {
     setPhase('speaking');
     const s = { cancelled: false }; sig.current = s;
     const stopWatch = server ? await watchBargeIn(() => { s.cancelled = true; stopSpeaking(); }) : () => undefined;
-    try { const res = await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy'); if (res === 'limit') { setLimitHit(true); if (!browserVoiceUsable()) { end(); return; } } } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } finally { stopWatch(); }
+    try { const res = await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy'); if (res === 'limit') { setLimitHit(true); end(); return; } } catch { /* ovoz bo'lmasa ham suhbat davom etadi */ } finally { stopWatch(); }
     if (!liveRef.current) return;
     setPhase('idle');
     if (canListen) void listen();

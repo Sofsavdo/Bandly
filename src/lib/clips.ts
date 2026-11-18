@@ -11,6 +11,14 @@ export const loadManifest = (): Promise<Manifest> =>
     .then((j: { clips: string[]; listening: Manifest['listening'] }) => ({ clips: new Set(j.clips), listening: j.listening }))
     .catch(() => ({ clips: new Set<string>(), listening: {} })));
 
+/** Matn uchun ElevenLabs audiosi bormi (butun matn yoki uning har bir gapi). */
+export async function hasClip(text: string): Promise<boolean> {
+  const m = await loadManifest();
+  if (m.clips.has(clipKey(text))) return true;
+  const parts = text.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+(?=[A-Z"“‘'])/).filter(Boolean);
+  return parts.length > 1 && parts.every((p) => m.clips.has(clipKey(p)));
+}
+
 let current: HTMLAudioElement | null = null;
 export const stopClip = (): void => { if (current) { current.pause(); current = null; } };
 

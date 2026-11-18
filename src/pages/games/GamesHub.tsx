@@ -6,7 +6,7 @@ import { Illo } from '../../components/Illo';
 import { L } from '../../i18n';
 
 const games = [
-  { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: L('Jim qolma!'), text: L('60 soniya to‘xtamay gapiring — jim qolsangiz shar yoriladi') },
+  { href: '#/challenge', icon: <Mic size={26} color="#ff6b5b" />, cls: '', title: L('Jim qolma! — Minora'), text: L('Gapirgan sari minora o‘sadi: bog‘lovchilar oltin g‘isht, jimlikda qavat quladi') },
   { href: '#/games/rush', icon: <Zap size={26} color="#ffb02e" />, cls: '', title: L('So‘z poygasi'), text: L('60 soniya, 3 jon, kombo ball') },
   { href: '#/games/pairs', icon: <Puzzle size={26} color="#5cd6ff" />, cls: 'g2', title: L('Juftlik'), text: L('So‘z va ma’noni juftlang') },
   { href: '#/games/spell', icon: <BookOpen size={26} color="#ff8fb1" />, cls: 'g3', title: L('Imlo sinovi'), text: L('Misol gapdan so‘zni yozing') },

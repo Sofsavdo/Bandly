@@ -5,3 +5,4 @@ dist
 server/data.sqlite*
 voice-demo-out
 pseudo-left.txt
+.audio-cache/
