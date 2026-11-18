@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Star } from 'lucide-react';
 import { ItemView } from '../components/LessonItem';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { lessonById, lessonNodeId, lessonWordIds, ALL_LESSONS, UNITS } from '../content/lessons';
+import { lessonById, lessonNodeId, lessonWordIds, nextInCourse, isIeltsLesson, ieltsUnlocked, UNITS } from '../content/lessons';
 import { checkItem, correctAnswerText, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
 import { advanceQueue, bossHp, lessonStars } from '../lib/lessonGame';
 import { BossBar, DiscoverDeck, FeedbackSheet, MissionIntro } from '../components/LessonGames';
@@ -64,13 +64,15 @@ export default function LessonPage({ id }: { id: string }) {
   // G'alaba: konfeti va fanfara
   useEffect(() => { if (step === 'result' && result?.passed) { confetti(); sfx('level'); } }, [step, result]);
   useEffect(() => { window.scrollTo({ top: 0 }); }, [step, started]);
-  const next = useMemo(() => { const i = ALL_LESSONS.findIndex((x) => x.lesson.id === id); return i >= 0 ? ALL_LESSONS[i + 1] : undefined; }, [id]);
+  const next = useMemo(() => nextInCourse(id), [id]);
+  const ielts = isIeltsLesson(id);
+  const back = ielts ? '#/ielts' : '#/learn';
 
-  if (!found) return <div className="card"><h2>{L('Dars topilmadi')}</h2><a className="btn" href="#/learn">{L('Darslar ro‘yxati')}</a></div>;
+  if (!found) return <div className="card"><h2>{L('Dars topilmadi')}</h2><a className="btn" href={back}>{L('Darslar ro‘yxati')}</a></div>;
   const { unit, lesson, index } = found;
-  if (!isUnlocked(unit, index, loadProgress(), { units: UNITS, level: getProfile().level })) return <div className="card"><h2>{lesson.titleUz}</h2><p>{L('Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.')}</p><a className="btn" href="#/learn">{L('Darslar ro‘yxati')}</a></div>;
+  if (!(ielts ? ieltsUnlocked(unit, index, loadProgress(), getProfile().level) : isUnlocked(unit, index, loadProgress(), { units: UNITS, level: getProfile().level }))) return <div className="card"><h2>{lesson.titleUz}</h2><p>{ielts && index === 0 ? L('Bu bo‘lim Start darslarini tugatganingizdan keyin (yoki darajangiz B2 bo‘lsa) ochiladi.') : L('Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.')}</p><a className="btn" href={back}>{L('Darslar ro‘yxati')}</a></div>;
 
-  const ORDER: Step[] = ['learn', 'practice', 'speak', ...(lesson.writing ? ['write' as const] : []), 'check', 'result'];
+  const ORDER: Step[] = ['learn', 'practice', ...(lesson.skipSpeak ? [] : ['speak' as const]), ...(lesson.writing ? ['write' as const] : []), 'check', 'result'];
   /** Qadamga o'tish: faqat ochilgan qadamlar yoki navbatdagisi. */
   const setStep = (s: Step) => { const i = ORDER.indexOf(s); setReached((r) => Math.max(r, i)); setStepState(s); };
   const submitCheck = () => {
@@ -124,7 +126,7 @@ export default function LessonPage({ id }: { id: string }) {
     const key = `${lesson.id}:practice`;
     const today = localDayKey(Date.now());
     if (play.xp > 0 && lessonXpDay(key) !== today) { addXp(play.xp); markLessonXp(key, today); setGained((g) => g + play.xp); } // mashq XP kuniga bir marta
-    setStep('speak');
+    setStep(lesson.skipSpeak ? (lesson.writing ? 'write' : 'check') : 'speak');
   };
   const relearnPanel = () => relearn !== null && (
             <div className="relearn card">
@@ -141,12 +143,12 @@ export default function LessonPage({ id }: { id: string }) {
         <button className="btn primary" disabled={!relearn.every((i) => rShown[i] && checkItem(lesson.practice[i]!, rAns[i]))} onClick={() => { setPlay((p) => refill(p)); setRelearn(null); setWrongs([]); setRAns({}); setRShown({}); }}>{L('Tushundim — 3 ta jonni qaytarish')}</button>
       </div>
   );
-  const steps = ['learn', 'practice', 'speak', ...(lesson.writing ? ['write' as const] : []), 'check'] as const;
+  const steps = ['learn', 'practice', ...(lesson.skipSpeak ? [] : ['speak' as const]), ...(lesson.writing ? ['write' as const] : []), 'check'] as const;
   const stepIdx = step === 'result' ? steps.length : steps.indexOf(step as (typeof steps)[number]);
 
   return (
     <div>
-      <a className="btn sm" href="#/learn"><ArrowLeft size={14} />  {L('Darslar')}</a>
+      <a className="btn sm" href={back}><ArrowLeft size={14} />  {ielts ? L('IELTS kursi') : L('Darslar')}</a>
       <div className="lesson-hud sticky" aria-label={L('Dars holati')}>
         <div className="seg-progress" role="img" aria-label={L('{0} / {1} qadam', [Math.min(stepIdx + 1, steps.length), steps.length])}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
         <span className="hud-hearts" role="img" aria-label={L('{0} ta jon', [play.hearts])}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
@@ -246,6 +248,7 @@ export default function LessonPage({ id }: { id: string }) {
           <div className="row" style={{ marginTop: 14 }}>
             <button className="btn" onClick={retry}><RotateCcw size={14} />  {L('Qayta jang')}</button>
             {result.passed && next && <a className="btn primary" href={`#/learn/${next.lesson.id}`}>{L('Keyingi dars:')} {next.lesson.titleUz} <ArrowRight size={14} /></a>}
+            {result.passed && !next && ielts && <a className="btn primary" href="#/ielts">{L('IELTS kursiga qaytish')} <ArrowRight size={14} /></a>}
             {!result.passed && <button className="btn" onClick={() => setStep('learn')}>{L('Qoidani qayta ko‘rish')}</button>}
           </div>
         </section>

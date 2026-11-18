@@ -17,6 +17,7 @@ export const uz = {
   'nav.homework': 'Uyga vazifa',
   'nav.shadow': 'Eshit va takrorla',
   'nav.results': 'Natijalar',
+  'nav.ieltsCourse': 'IELTS kursi',
   'nav.menu': 'Menyu',
   'nav.close': 'Yopish',
   'nav.main': 'Asosiy menyu',

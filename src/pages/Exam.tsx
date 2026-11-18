@@ -8,6 +8,7 @@ import { CefrPrep } from '../components/CefrPrep';
 import { SatPrep } from '../components/SatPrep';
 import { Illo } from '../components/Illo';
 import { takeExamTab, type ExamTab } from '../lib/examTab';
+import { IeltsCourseCard } from './IeltsCourse';
 import { L } from '../i18n';
 
 const skills = [
@@ -32,6 +33,7 @@ export default function Exam() {
       </div>
       {tab === 'cefr' && <CefrPrep />}
       {tab === 'sat' && <SatPrep />}
+      {tab === 'ielts' && <IeltsCourseCard />}
       {tab === 'ielts' && <BandProgress compact />}
       {tab === 'ielts' && <ReadinessCard />}
       {tab === 'ielts' && (

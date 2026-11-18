@@ -16,6 +16,7 @@ import { B1_U4, B1_U5, B1_U6, B1_U7, B1_U8 } from './b1more';
 import { B2_U4, B2_U5, B2_U6, B2_U7, B2_U8 } from './b2more';
 import { C1_U4, C1_U5, C1_U6, C1_U7, C1_U8 } from './c1more';
 import { C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8 } from './c2more';
+import { IELTS_UNITS, IELTS_TRACKS } from '../ielts';
 
 /** General English path (pilot slice A1–C2). Order matters: units and lessons follow the learning sequence. */
 const withWriting = (u: Unit): Unit => ({ ...u, lessons: u.lessons.map((l) => {
@@ -26,7 +27,40 @@ export const UNITS: Unit[] = [A1_U1, A1_U2, A1_U3, A1_U4, A1_U5, A1_U6, A1_U7, A
 
 const flatten = (units: Unit[]) => units.flatMap((unit) => unit.lessons.map((lesson, index) => ({ unit, lesson, index })));
 export const ALL_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(UNITS);
-export const lessonById = (id: string) => ALL_LESSONS.find((x) => x.lesson.id === id);
+/** IELTS kursi darslari (General English yo'lidan alohida, o'z tartibi bilan). */
+export { IELTS_UNITS };
+export const IELTS_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(IELTS_UNITS);
+export const isIeltsLesson = (id: string): boolean => id.startsWith('ie-');
+export const lessonById = (id: string) => ALL_LESSONS.find((x) => x.lesson.id === id) ?? IELTS_LESSONS.find((x) => x.lesson.id === id);
+
+type Progress = Record<string, { passedAt: number | null } | undefined>;
+const LV = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+/** IELTS darsining ochiqligi: bo'lim ichida ketma-ket; Start bo'limi doim ochiq;
+ *  Core bo'limi — shu ko'nikmaning Start bo'limi to'liq o'tilganda yoki o'quvchi darajasi B2 va undan yuqori bo'lsa. */
+export function ieltsUnlocked(unit: Unit, index: number, progress: Progress, level: string | null | undefined): boolean {
+  if (index > 0) return !!progress[unit.lessons[index - 1]!.id]?.passedAt;
+  const track = IELTS_TRACKS.find((t) => t.core.id === unit.id);
+  if (!track) return true;
+  return LV.indexOf(level ?? 'A1') >= LV.indexOf('B2') || track.start.lessons.every((l) => !!progress[l.id]?.passedAt);
+}
+/** Keyingi dars shu kurs ichida: GE darsidan keyin GE darsi, IELTS darsidan keyin shu ko'nikmaning keyingi darsi. */
+export function nextInCourse(id: string) {
+  const list = isIeltsLesson(id) ? IELTS_LESSONS : ALL_LESSONS;
+  const i = list.findIndex((x) => x.lesson.id === id);
+  if (i < 0) return undefined;
+  const n = list[i + 1];
+  if (!n || !isIeltsLesson(id)) return n;
+  return n.unit.id.slice(0, 4) === list[i]!.unit.id.slice(0, 4) ? n : undefined; // ie-r* → faqat Reading ichida
+}
+/** IELTS kursidagi keyingi ochiq, o'tilmagan dars (kunlik reja uchun). Daraja B2+ bo'lsa Core darslaridan boshlanadi. */
+export function nextIeltsLesson(progress: Progress, level: string | null | undefined): { unit: Unit; lesson: Lesson; index: number } | undefined {
+  const strong = LV.indexOf(level ?? 'A1') >= LV.indexOf('B2');
+  const order = strong ? IELTS_TRACKS.flatMap((t) => [t.core, t.start]) : IELTS_UNITS;
+  for (const u of order) for (let i = 0; i < u.lessons.length; i++) {
+    if (!progress[u.lessons[i]!.id]?.passedAt && ieltsUnlocked(u, i, progress, level)) return { unit: u, lesson: u.lessons[i]!, index: i };
+  }
+  return undefined;
+}
 export const lessonNodeId = (lessonId: string): string => `ge.lesson.${lessonId}`;
 
 /** Each lesson is a curriculum node; its prerequisite is the previous lesson in the global sequence, so the graph is a single A1-rooted path. */
