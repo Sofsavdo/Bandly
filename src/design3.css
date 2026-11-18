@@ -957,12 +957,12 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 .tutor-type input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 16px; }
 
 /* Sellzen logotipi va Sellzen AI belgisi */
-.logo-lockup { display: inline-flex; align-items: center; gap: .42em; line-height: 1; }
-.logo-lockup .logo-mark { flex: none; border-radius: 28%; }
-.logo-word { font-family: var(--display, 'Outfit Variable', sans-serif); font-weight: 650; letter-spacing: -.02em; color: var(--ink); }
-.logo-word em { font-style: normal; color: #0F766E; }
-@media (prefers-color-scheme: dark) { .logo-word em { color: #2DD4BF; } }
-html[data-tg='1'][data-theme='dark'] .logo-word em { color: #2DD4BF; }
+.logo-lockup { display: inline-flex; align-items: center; gap: .45em; line-height: 1; }
+.logo-lockup .logo-mark { flex: none; }
+.logo-word { font-family: var(--display, 'Outfit Variable', sans-serif); font-weight: 800; letter-spacing: .02em; color: #1E2B45; }
+.logo-word em { font-style: normal; color: #5B6E8C; }
+:root { --steel-a: #3A4A66; --steel-b: #9DB0C9; --steel-c: #5B6E8C; --steel-d: #26344E; }
+@media (prefers-color-scheme: dark) { :root { --steel-a: #8FA3C0; --steel-b: #E4ECF6; --steel-c: #A9BAD2; --steel-d: #7486A3; } .logo-word { color: #E8EEF7; } .logo-word em { color: #9DB0C9; } }
 .ai-mark { display: inline-grid; place-items: center; flex: none; border-radius: 30%; box-shadow: 0 0 0 3px var(--ring, #2DD4BF); background: #0B1F3A; }
 .ai-mark .logo-mark { border-radius: 28%; }
 .ai-mark.talking { animation: ai-pulse 1.1s ease-in-out infinite; }

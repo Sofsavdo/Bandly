@@ -1,7 +1,8 @@
 // i18n-ignore-file: PDF tuzilmasi matnlari tarjima qilinmaydi.
-// Bitta JPEG rasmdan A4 landscape (842×595 pt) PDF yasaydi — tashqi kutubxonasiz, sof funksiya (test: pdf.test.ts).
+// Bitta JPEG rasmdan A4 PDF yasaydi (rasm nisbatiga qarab portrait 595×842 yoki landscape 842×595 pt) — tashqi kutubxonasiz (test: pdf.test.ts).
 // Sertifikat Canvas'da chiziladi, so'ng shu rasm PDF sahifasini to'liq egallaydi.
 export const A4_LANDSCAPE = { w: 842, h: 595 } as const;
+export const A4_PORTRAIT = { w: 595, h: 842 } as const;
 
 export function jpegToPdf(jpeg: Uint8Array, widthPx: number, heightPx: number, title = 'Sellzen certificate'): Uint8Array {
   const enc = new TextEncoder();
@@ -12,7 +13,7 @@ export function jpegToPdf(jpeg: Uint8Array, widthPx: number, heightPx: number, t
     if (typeof body === 'string') push(body); else body.forEach(push);
     push('\nendobj\n');
   };
-  const { w, h } = A4_LANDSCAPE;
+  const { w, h } = heightPx > widthPx ? A4_PORTRAIT : A4_LANDSCAPE;
   const safeTitle = title.replace(/[()\\]/g, '').slice(0, 120);
   push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
   obj(1, '<< /Type /Catalog /Pages 2 0 R >>');

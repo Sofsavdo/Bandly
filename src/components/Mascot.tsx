@@ -9,7 +9,7 @@ const RING: Record<Mood, string> = { idle: '#2DD4BF', happy: '#2DD4BF', laugh: '
 export function Mascot({ size = 96, talking = false, mood = 'happy' }: { mood?: Mood; size?: number; talking?: boolean }) {
   return (
     <span className={`ai-mark${talking ? ' talking' : ''}`} style={{ width: size, height: size, ['--ring' as string]: RING[mood] }} role="img" aria-label={L('Sellzen AI')}>
-      <LogoMark size={Math.round(size * 0.86)} />
+      <LogoMark size={Math.round(size * 0.86)} tile />
     </span>
   );
 }

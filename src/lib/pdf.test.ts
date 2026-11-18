@@ -14,4 +14,6 @@ assert.ok(s.slice(xrefAt).startsWith('xref'), 'startxref xref jadvaliga ishora q
 const offs = s.slice(xrefAt).split('\n').slice(3, 9).map((l) => Number(l.slice(0, 10)));
 offs.forEach((o, i) => assert.ok(s.slice(o).startsWith(`${i + 1} 0 obj`), `obyekt ${i + 1} ofseti`));
 assert.ok(!s.includes('(SZ-TEST (x))'), 'sarlavhadagi qavslar tozalanadi');
+const port = new TextDecoder('latin1').decode(jpegToPdf(jpeg, 1654, 2339));
+assert.ok(port.includes('/MediaBox [0 0 595 842]'), 'A4 portrait (595×842 pt)');
 console.log('pdf.test: OK');

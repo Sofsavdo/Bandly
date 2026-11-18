@@ -14,7 +14,7 @@ export function AiAvatar({ phase, emotion = 'neutral', level = 0, size = 200 }: 
   return (
     <span className={`ai-avatar ${phase}`} style={style} role="img" aria-label={L('Sellzen AI')}>
       <span className="ai-ring" />
-      <LogoMark size={Math.round(size * 0.62)} />
+      <LogoMark size={Math.round(size * 0.62)} tile />
     </span>
   );
 }

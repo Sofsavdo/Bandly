@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect x="2" y="2" width="96" height="96" rx="26" fill="#0B1F3A"/>
-  <path d="M69 31.5C65.5 24.5 57.5 20.5 49 20.5C38.5 20.5 31 26.5 31 35C31 44.5 40 47 50 49.5C60.5 52 69.5 55 69.5 65C69.5 73.5 61.5 79.5 50.5 79.5C41.5 79.5 34 75.5 30.5 68.5" fill="none" stroke="#2DD4BF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Sellzen"><defs><linearGradient id="sl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8FA3C0"/><stop offset=".45" stop-color="#E4ECF6"/><stop offset=".6" stop-color="#A9BAD2"/><stop offset="1" stop-color="#7486A3"/></linearGradient></defs><rect width="100" height="100" rx="24" fill="#16233D"/><g transform="translate(16 16) scale(.68)"><path d="M86 38V30.5L50 9.5L14 30.5V46.5L86 53.5V69.5L50 90.5L14 69.5V62" fill="none" stroke="url(#sl)" stroke-width="13" stroke-linejoin="round"/></g></svg>
