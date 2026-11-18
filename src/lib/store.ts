@@ -79,18 +79,20 @@ const sourceFromHash = (): string => {
 const XPQ = 'bandly.xpq.v1';
 export function takeXpQueue(): { id: string; source: string; amount: number }[] { try { return JSON.parse(localStorage.getItem(XPQ) ?? '[]'); } catch { return []; } }
 export function dropXpQueue(ids: string[]): void { try { localStorage.setItem(XPQ, JSON.stringify(takeXpQueue().filter((e) => !ids.includes(e.id)))); } catch { /* */ } }
-function queueXp(amount: number, source: string): void {
+function queueXp(amount: number, source: string, ref?: string): void {
   try {
     const q = takeXpQueue();
-    const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    // ref — aniq obyekt (masalan dars id + kun): server shu bo'yicha bir marta beradi (server/xp.ts eventKey)
+    const id = ref ? `${source}:${ref}` : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    if (q.some((e) => e.id === id)) return;
     localStorage.setItem(XPQ, JSON.stringify([...q, { id, source, amount: Math.round(amount) }].slice(-300)));
   } catch { /* */ }
 }
 
 /** source: 'server' — XP'ni server o'zi bergan (masalan Mock Arena), navbatga qo'yilmaydi. */
-export function addXp(amount: number, source?: string): void {
+export function addXp(amount: number, source?: string, ref?: string): void {
   if (amount <= 0) return;
-  if (source !== 'server') queueXp(amount, source ?? sourceFromHash());
+  if (source !== 'server') queueXp(amount, source ?? sourceFromHash(), ref);
   const r = applyXp(state, amount, dayKey());
   const day = dayKey();
   const act = { ...r.profile.activity, [day]: (r.profile.activity[day] ?? 0) + Math.round(amount) };
@@ -102,9 +104,9 @@ export function addXp(amount: number, source?: string): void {
 }
 
 /** Boss g'alabasi: hisoblagich (yutuqlar uchun) va XP bitta amalda — yutuq tekshiruvi yangi qiymatni ko'radi. */
-export function addBossWin(xp: number): void {
+export function addBossWin(xp: number, ref?: string): void {
   commit({ ...state, bossWins: (state.bossWins ?? 0) + 1 });
-  addXp(xp);
+  addXp(xp, 'boss', ref);
 }
 
 /** Put words into the spaced-repetition deck (due now) without recording an answer; words already in the deck are left unchanged. Returns how many were added. */

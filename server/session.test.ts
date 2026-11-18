@@ -26,4 +26,18 @@ revokeSession(db, old);
 assert.throws(() => byToken(db, old), (e: ApiError) => e.status === 401);
 // Noto'g'ri shakl
 assert.throws(() => byToken(db, 'x'), (e: ApiError) => e.status === 401);
+// Regressiya: 180 kun ishlatilmagan sessiya yopiladi, faol sessiya ishlaydi
+{
+  const { playerIdOf, SESSION_IDLE_MS } = await import('./db');
+  const T = Date.now();
+  const live = loginTelegram(db, 6, 'faol').token;
+  assert.ok(playerIdOf(db, live, T + SESSION_IDLE_MS - 60_000) !== null, 'muddat ichida ishlaydi');
+  assert.ok(playerIdOf(db, live, T + 2 * SESSION_IDLE_MS - 120_000) !== null, 'ishlatilgan sessiya uzayadi');
+  const idle = loginTelegram(db, 7, 'unut').token;
+  assert.equal(playerIdOf(db, idle, T + SESSION_IDLE_MS + 60_000), null, 'uzoq ishlatilmagan sessiya bekor');
+  assert.equal(playerIdOf(db, idle, T), null, 'bekor qilingan sessiya qaytib ochilmaydi');
+  // Boshqa o'yinchi tokeni bilan boshqa birovning ma'lumoti ochilmaydi
+  const a = loginTelegram(db, 8, 'aaa').token, b = loginTelegram(db, 9, 'bbb').token;
+  assert.notEqual(byToken(db, a).id, byToken(db, b).id);
+}
 console.log('session.test: OK');

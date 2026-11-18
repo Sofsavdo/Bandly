@@ -1,5 +1,6 @@
 // Bo'lim boss sinovi (GAMIFIED_LEARNING_SPEC.md §3.5). Bitta ekranda bitta savol, 3 ta jon, o'tish ≥ 80%.
 // Boss ixtiyoriy (PXD-17): keyingi bo'lim baribir dars zanjiri bilan ochiladi.
+import { localDayKey } from '../lib/adaptive/store';
 import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Swords, Trophy } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { ItemView } from '../components/LessonItem';
@@ -166,7 +167,8 @@ export default function Boss({ unitId }: { unitId: string }) {
     if (passed) {
       const base = firstWin ? BOSS_XP_FIRST : BOSS_XP_REPEAT;
       const xp = Math.round(base * (correct - run.suppressed) / Math.max(1, correct)); // juda tez javoblar ulushi XP'dan chiqariladi
-      if (firstWin) addBossWin(xp); else addXp(xp);
+      const ref = `${unit.id}:${localDayKey(Date.now())}`; // server: bitta bo'lim — kuniga bir marta
+      if (firstWin) addBossWin(xp, ref); else addXp(xp, 'boss', ref);
       setGained(xp);
     }
     setRun({ ...run, done: passed ? 'won' : 'lost' });
