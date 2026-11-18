@@ -7,7 +7,7 @@ import { TabBar } from './components/TabBar';
 import { PaySheet } from './components/PaySheet';
 import { Toasts } from './components/Toasts';
 import { sectionOf } from './components/nav';
-import { needsLogin, setupRoute } from './lib/setupGate';
+import { authRoute, setupRoute } from './lib/setupGate';
 import { getAccount, onAccountChange } from './lib/account';
 import { SubNav } from './components/SubNav';
 import { PlanRunBar } from './components/PlanRunBar';
@@ -128,7 +128,10 @@ export default function App() {
   const bossUnit = hash.match(/^#\/boss\/([\w-]+)$/)?.[1];
   const duelCode = hash.match(/^#\/duel\/([A-Za-z0-9]{4,8})$/)?.[1];
   const tr = testRoute(hash);
-  const wall = needsLogin(hash, acc);
+  // Yagona kirish qoidasi (setupGate.authRoute): mehmon ichki sahifada — login sahifasiga, kirgandan keyin — so'ralgan sahifaga
+  const redirect = authRoute(hash, acc);
+  useLayoutEffect(() => { if (redirect) window.location.replace(redirect); }, [redirect]);
+  const wall = !acc ? redirect !== null || hash.startsWith('#/login') : hash.startsWith('#/login');
   const page = wall ? <Login /> : tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
   return (
     <>

@@ -332,7 +332,7 @@ const httpServer = createServer(async (req, res) => {
     // Bepul tarif (B varianti): har kursda kuniga 1 ta yangi dars (birinchi kuni 3 ta); obunachiga cheklov yo'q
     if (req.method === 'GET' && url.pathname === '/api/free') return send(res, 200, freeStatus(db, String(req.headers['x-token'] ?? ''), freeLimitsFromEnv()));
     if (req.method === 'POST' && url.pathname === '/api/free/unlock') { const b = await readJson(req); return send(res, 200, unlockLesson(db, String(req.headers['x-token'] ?? ''), b.course, b.lessonId, freeLimitsFromEnv())); }
-    if (req.method === 'GET' && url.pathname === '/api/mock/tests') return send(res, 200, publicStudioTests(db)); // kabinetda e'lon qilingan testlar (javobsiz)
+    if (req.method === 'GET' && url.pathname === '/api/mock/tests') { byToken(db, String(req.headers['x-token'] ?? '')); return send(res, 200, publicStudioTests(db)); } // kabinetda e'lon qilingan testlar (javobsiz), faqat hisob bilan
     if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
       const b = await readJson(req, 16_384);
       return send(res, 200, gradeRequest(db, String(req.headers['x-token'] ?? ''), b, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : []));

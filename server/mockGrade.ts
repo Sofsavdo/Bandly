@@ -28,17 +28,16 @@ export function gradeMock(kind: unknown, testId: unknown, answers: unknown, extr
   return { graded, correct, total: t.questions.length };
 }
 
-/** POST /api/mock/grade: baholash (bepul, mehmon ham), kirgan o'quvchiga XP va anonim statistika.
+/** POST /api/mock/grade: baholash (bepul tarif, hisob talab qilinadi), XP va anonim statistika.
  *  XP: bitta test — kuniga bir marta (yangi attemptId bilan qayta yuborib XP yig'ib bo'lmaydi).
  *  Statistika: bitta urinish bir marta (ikki marta yuborilgan submit takror yozilmaydi). */
 export function gradeRequest(db: DatabaseSync, token: string, b: { kind?: unknown; testId?: unknown; answers?: unknown; attemptId?: unknown },
   studio: { kind: string; id: string; questions: import('../src/content/types').Question[] }[] = [], now = Date.now()): ReturnType<typeof gradeMock> & { xp: number; stats: MockStats } {
+  const p = byToken(db, token); // Mock Arena faqat ro'yxatdan o'tganlar uchun (bepul tarif ham hisob bilan) — mehmon 401
   const g = gradeMock(b.kind, b.testId, b.answers, studio);
   const testId = String(b.testId); const attemptId = String(b.attemptId ?? '');
   let xp = 0;
-  if (token && /^[\w:.-]{6,60}$/.test(attemptId)) {
-    try { const p = byToken(db, token); xp = awardXp(db, p.id, `mock:${testId}:${tzDay(now)}`, 'mock', g.correct * 5 + (g.correct / Math.max(1, g.total) >= 0.8 ? 20 : 0), now); } catch { /* mehmon yoki eskirgan token */ }
-  }
+  if (/^[\w:.-]{6,60}$/.test(attemptId)) xp = awardXp(db, p.id, `mock:${testId}:${tzDay(now)}`, 'mock', g.correct * 5 + (g.correct / Math.max(1, g.total) >= 0.8 ? 20 : 0), now);
   const stats = mockStats(db, testId, g.correct); // avval solishtirish (o'zini hisobga olmasdan), keyin shu urinish yoziladi
   recordMockStat(db, testId, attemptId, g.correct, g.total, now);
   return { ...g, xp, stats };
