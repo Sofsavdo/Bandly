@@ -169,8 +169,8 @@ function Result({ a, acc, onJoined, onRedo }: { a: Answers; acc: Account | null;
       {acc
         ? <div className="row"><a className="btn primary lg" href="#/placement"><Rocket size={18} />  {L('Boshlash')}</a><button className="btn lg" onClick={onRedo}>{L('Javoblarni o‘zgartirish')}</button></div>
         : <>
-          <JoinForm onJoined={onJoined} text={L('Rejangiz va natijalaringiz hisobingizda saqlanadi.')} />
-          <div className="row"><a className="btn lg" href="#/placement">{L('Keyinroq — darajani aniqlash')} <ArrowRight size={18} /></a><button className="btn lg" onClick={onRedo}>{L('Javoblarni o‘zgartirish')}</button></div>
+          <JoinForm onJoined={onJoined} text={L('Rejangiz hisobingizda saqlanadi.')} />
+          <button className="btn" onClick={onRedo}>{L('Javoblarni o‘zgartirish')}</button>
         </>}
     </div>
   );

@@ -6,6 +6,10 @@ import { getProfile } from './store';
 
 const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|groups|welcome|duel\/)/;
 
+/** Ro'yxatdan o'tmagan mehmon faqat shu sahifalarni ko'radi: bosh sahifa, reja savolnomasi, tariflar. */
+const GUEST = /^#\/(welcome|start|pricing)?$/;
+export const needsLogin = (hash: string, account: boolean): boolean => !account && !GUEST.test(hash.split('?')[0]);
+
 export function setupRoute(hash: string, s: { account: boolean; onboarded: boolean; level: string | null } = { account: !!getAccount(), onboarded: !!loadAnswers(), level: getProfile().level }): string | null {
   if (!s.account || FREE.test(hash)) return null;
   if (!s.onboarded) return '#/start';
