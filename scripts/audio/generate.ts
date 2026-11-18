@@ -65,7 +65,7 @@ async function tts(text: string, voice: string): Promise<string> {
   mkdirSync(CACHE, { recursive: true });
   const file = join(CACHE, createHash('sha256').update(`${voice}|${MODEL}|${FORMAT}|${text}`).digest('hex').slice(0, 24) + '.mp3');
   if (existsSync(file)) return file;
-  const cost = Math.ceil(text.length * 0.5);
+  const cost = Math.ceil(text.length * 0.3); // o‘lchangan haqiqiy narx ~0.24 kredit/belgi (eleven_v4_turbo); har 50 ishda serverdan aniqlanadi
   if (credits - cost < RESERVE) throw new Error('RESERVE');
   for (let attempt = 1; ; attempt++) {
     const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=${FORMAT}`, {
