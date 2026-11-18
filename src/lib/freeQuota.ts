@@ -1,6 +1,7 @@
 // Bepul tarif kvotasi ilova tomonida. Hisobli o'quvchi — server hisoblaydi (POST /api/free/unlock); mehmon — shu qurilmada,
 // bir xil qoidalar bilan (src/lib/freeRules.ts). Obunachiga cheklov yo'q.
 import { getAccount, logout } from './account';
+import { hasTrack } from './entitlement';
 import { getProfile } from './store';
 import { COURSE_TRACK, DEFAULT_LIMITS, applyUnlock, decide, emptyState, leftToday, nextReset, tashkentDay, type Course, type FreeLimits, type FreeState } from './freeRules';
 
@@ -10,7 +11,7 @@ let limits: FreeLimits = DEFAULT_LIMITS;
 const load = (): FreeState => { try { const s = JSON.parse(localStorage.getItem(KEY) ?? 'null') as FreeState | null; return s && typeof s.unlocked === 'object' ? s : emptyState(); } catch { return emptyState(); } };
 const save = (s: FreeState) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* */ } };
 
-export const isSubscribed = (course: Course): boolean => !!getProfile().plan[COURSE_TRACK[course]];
+export const isSubscribed = (course: Course): boolean => hasTrack(getProfile(), COURSE_TRACK[course]);
 
 /** Serverdagi holatni olish (hisob bo'lsa): chegaralar va ochilgan darslar boshqa qurilmalar bilan mos bo'ladi. */
 export async function syncFree(): Promise<void> {

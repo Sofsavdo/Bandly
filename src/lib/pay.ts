@@ -13,7 +13,8 @@ const OPEN_KEY = 'bandly.pay.open';
 let cfg: Promise<PayConfig> | null = null;
 export const payConfig = (): Promise<PayConfig> =>
   (cfg ??= fetch('/api/pay/config').then((r) => (r.ok ? (r.json() as Promise<PayConfig>) : Promise.reject(new Error('cfg'))))
-    .catch(() => ({ enabled: false, demo: true, periods: [] } as PayConfig)));
+    // Tarmoq xatosi demo rejim EMAS: aks holda pullik bo'limlar "Demo" tugmasi bilan ochilib qolardi. Keyingi chaqiruv qayta so'raydi.
+    .catch(() => { cfg = null; return { enabled: false, demo: false, periods: [] } as PayConfig; }));
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;

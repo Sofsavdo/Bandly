@@ -20,6 +20,7 @@ export default function Pricing() {
     void fetch('/api/ai/status').then((r) => r.json()).then((j: { enabled?: boolean }) => setAi(!!j.enabled)).catch(() => setAi(false));
   }, []);
   const live = !!cfg?.enabled;
+  const demo = !live && !!cfg?.demo; // tarmoq xatosida demo tugmalari chiqmaydi
   const per = SALE_PERIODS.find((x) => x.days === days)!;
   const priceOf = (id: PlanId) => cfg?.periods.find((x) => x.days === days)?.prices[id] ?? periodPrice(SALE_PLANS.find((x) => x.id === id)!.monthlyUzs, days);
   const activeUntil = (id: PlanId): number | null => {
@@ -36,7 +37,8 @@ export default function Pricing() {
         <div className="price-tabs" role="tablist" aria-label={L('Muddat')}>
           {SALE_PERIODS.map((x) => <button key={x.days} role="tab" aria-selected={x.days === days} className={x.days === days ? 'on' : ''} onClick={() => setDays(x.days)}>{x.label}{x.note && <small> {x.note}</small>}</button>)}
         </div>
-        {!live && <p className="note muted">{L('Demo rejim: to‘lov hali ulanmagan.')}</p>}
+        {demo && <p className="note muted">{L('Demo rejim: to‘lov hali ulanmagan.')}</p>}
+        {cfg && !live && !demo && <p className="note muted">{L('To‘lov ma’lumotini yuklab bo‘lmadi. Sahifani yangilang.')}</p>}
         {ai === false && <p className="note muted"><Info size={14} />  {L('AI imkoniyatlari tez orada — limitlar AI yoqilgan kundan hisoblanadi.')}</p>}
         <Illo kind="star" size={124} />
       </div>
@@ -71,7 +73,7 @@ export default function Pricing() {
               <ul>{pl.features.map((f) => <li key={f}><Check size={16} />{f}</li>)}</ul>
               {live
                 ? <button className={`btn ${pl.recommended ? 'primary' : ''}`} onClick={() => startPurchase(pl.id, days)}>{until ? 'Uzaytirish' : L('Sotib olish')}</button>
-                : <button className="btn" onClick={() => { const on = demoOn(pl.id); pl.tracks.forEach((t) => setPlan(t, !on)); }}>{demoOn(pl.id) ? L('Demo: o‘chirish') : L('Demo: yoqish')}</button>}
+                : demo && <button className="btn" onClick={() => { const on = demoOn(pl.id); pl.tracks.forEach((t) => setPlan(t, !on)); }}>{demoOn(pl.id) ? L('Demo: o‘chirish') : L('Demo: yoqish')}</button>}
             </div>
           );
         })}

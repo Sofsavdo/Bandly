@@ -3,43 +3,7 @@ import { L } from './i18n';
 
 export const FREE_GAMES_PER_DAY = 2;
 
-export interface Plan {
-  id: TrackId;
-  title: string;
-  short: string;
-  features: string[];
-  /** NAMUNAVIY narx (so'm/oy). Haqiqiy narx oldindan sotuv (pre-sale) sinovidan keyin belgilanadi. */
-  priceUzs: number;
-  icon: string;
-}
-
-export const PLANS: Plan[] = [
-  {
-    id: 'exam',
-    title: L('Imtihon tayyorgarligi'),
-    short: L('IELTS (Reading, Listening, Writing, Speaking). SAT va CEFR tez orada.'),
-    features: [L('IELTS 4 ta bo‘lim'), L('Kunlik reja va maqsad'), L('So‘z o‘yinlari cheksiz'), L('SAT va CEFR qo‘shilganda bepul')],
-    priceUzs: 149_000,
-    icon: '🎯',
-  },
-  {
-    id: 'grammar',
-    title: 'Grammar',
-    short: L('Mavzular bo‘yicha mashqlar, o‘zbekcha tushuntirish, xatolar ustida ishlash.'),
-    features: [L('Barcha grammar mavzulari'), L('O‘zbekcha izohlar'), L('Xatolarni takrorlash'), L('So‘z o‘yinlari cheksiz')],
-    priceUzs: 79_000,
-    icon: '🧩',
-  },
-  {
-    id: 'mocks',
-    title: L('Mock testlar'),
-    short: L('Reading va Listening mocklar endi bepul (Mock Arena). Obuna: to‘liq imtihon simulyatsiyasi (Writing + Speaking bilan).'),
-    features: [L('To‘liq imtihon simulyatsiyasi'), L('Writing va Speaking qismlari'), L('Natijalar tarixi'), L('So‘z o‘yinlari cheksiz')],
-    priceUzs: 99_000,
-    icon: '⏱️',
-  },
-];
-
+// Eski alohida obunalar (exam/grammar/mocks) endi sotilmaydi: tariflar SALE_PLANS'da, ular shu bo'limlarni ochadi.
 export const TRACK_NAME: Record<TrackId, string> = {
   exam: L('Imtihon tayyorgarligi'),
   grammar: 'Grammar',

@@ -8,7 +8,7 @@ export default defineConfig({
   // matnlar shuning uchun tanlangan tilda hosil bo'ladi. Ko'p mayda fayl bo'lmaydi (so'rovlar soni kam).
   build: { rollupOptions: { output: { manualChunks: (id) => {
     if (id.includes('/src/i18n/catalog.json')) return 'catalog';
-    if (/\.css($|\?)/.test(id) || /\/src\/(main\.tsx|i18n\/(index|uz)\.ts|lib\/(cloudBoot|referral)\.ts)$/.test(id) || /node_modules\/(react|react-dom|scheduler|@fontsource|@fontsource-variable)\//.test(id)) return 'boot';
+    if (/\.css($|\?)/.test(id) || /\/src\/(main\.tsx|i18n\/(index|uz)\.ts|lib\/(cloudBoot|progressMerge|referral)\.ts)$/.test(id) || /node_modules\/(react|react-dom|scheduler|@fontsource|@fontsource-variable)\//.test(id)) return 'boot';
     if (id.includes('/src/') || id.includes('node_modules')) return 'app';
     return undefined;
   } } } },

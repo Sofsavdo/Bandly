@@ -3,7 +3,7 @@
 // Kodga yangi statik dars qo'shilsa, bazada yo'q bo'lsa qo'shiladi — mavjudlarini hech qachon ustidan yozmaydi.
 import type { DatabaseSync } from 'node:sqlite';
 import { randomBytes } from 'node:crypto';
-import { UNITS as STATIC_UNITS } from '../src/content/lessons';
+import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
 import type { Lesson, Unit } from '../src/content/lessons/types';
 import { validateLesson } from '../src/lib/lessons';
 import { ApiError } from './db';
@@ -59,6 +59,13 @@ export function publishedUnits(db: DatabaseSync): Unit[] {
     ...(JSON.parse(u.published!) as UnitMeta),
     lessons: all.filter((r) => r.kind === 'lesson' && r.parent === u.id).sort(byOrder).map((r) => JSON.parse(r.published!) as Lesson),
   })).filter((u) => u.lessons.length > 0);
+}
+/** XP tekshiruvi uchun: bunday dars/bo'lim mavjudmi (bazadagi kontent yoki IELTS kursi). */
+const IELTS_LESSON_IDS = new Set(IELTS_UNITS.flatMap((u) => u.lessons.map((l) => l.id)));
+const IELTS_UNIT_IDS = new Set(IELTS_UNITS.map((u) => u.id));
+export function knownContent(db: DatabaseSync): { lesson: (id: string) => boolean; unit: (id: string) => boolean } {
+  const q = db.prepare("SELECT 1 FROM content WHERE kind = ? AND id = ? AND status != 'archived'");
+  return { lesson: (id) => IELTS_LESSON_IDS.has(id) || !!q.get('lesson', id), unit: (id) => IELTS_UNIT_IDS.has(id) || !!q.get('unit', id) };
 }
 /** Kontent versiyasi (mijoz keshi uchun). */
 export const contentVersion = (db: DatabaseSync): number => (db.prepare("SELECT COALESCE(MAX(updated_at),0) AS v FROM content WHERE published IS NOT NULL").get() as { v: number }).v;

@@ -1,4 +1,4 @@
-import { PLANS, SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '../src/config';
+import { SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '../src/config';
 import type { TrackId } from '../src/lib/types';
 
 // Narxlar serverda belgilanadi (mijozdan kelgan summaga ishonilmaydi).
@@ -28,4 +28,3 @@ export function tracksOf(planOrTrack: string): TrackId[] {
   return (TRACKS as string[]).includes(planOrTrack) ? [planOrTrack as TrackId] : [];
 }
 export const isPlan = (x: string): x is PlanId => (PLAN_IDS as string[]).includes(x);
-export { PLANS };
