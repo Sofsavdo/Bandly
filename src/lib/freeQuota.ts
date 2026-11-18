@@ -1,6 +1,6 @@
 // Bepul tarif kvotasi ilova tomonida. Hisobli o'quvchi — server hisoblaydi (POST /api/free/unlock); mehmon — shu qurilmada,
 // bir xil qoidalar bilan (src/lib/freeRules.ts). Obunachiga cheklov yo'q.
-import { getAccount } from './account';
+import { getAccount, logout } from './account';
 import { getProfile } from './store';
 import { COURSE_TRACK, DEFAULT_LIMITS, applyUnlock, decide, emptyState, leftToday, nextReset, tashkentDay, type Course, type FreeLimits, type FreeState } from './freeRules';
 
@@ -36,6 +36,7 @@ export async function requestUnlock(course: Course, lessonId: string, now = Date
   if (acc) {
     try {
       const r = await fetch('/api/free/unlock', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': acc.token }, body: JSON.stringify({ course, lessonId }) });
+      if (r.status === 401) { logout(); return { ok: false, resetAt }; } // soxta yoki eskirgan token — qayta kirish kerak
       if (r.ok) {
         const j = await r.json() as { ok: boolean; resetAt: number };
         if (j.ok) save(applyUnlock(s, course, lessonId, today));

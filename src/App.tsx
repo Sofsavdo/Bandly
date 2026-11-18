@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { Gate } from './components/Gate';
 import { useHash } from './components/hooks';
 import { Footer } from './components/Footer';
@@ -7,8 +7,8 @@ import { TabBar } from './components/TabBar';
 import { PaySheet } from './components/PaySheet';
 import { Toasts } from './components/Toasts';
 import { sectionOf } from './components/nav';
-import { setupRoute } from './lib/setupGate';
-import { onAccountChange } from './lib/account';
+import { needsLogin, setupRoute } from './lib/setupGate';
+import { getAccount, onAccountChange } from './lib/account';
 import { SubNav } from './components/SubNav';
 import { PlanRunBar } from './components/PlanRunBar';
 import { useT } from './i18n';
@@ -50,6 +50,7 @@ import Admin from './pages/Admin';
 import Creator from './pages/Creator';
 import IeltsCourse from './pages/IeltsCourse';
 import Groups from './pages/Groups';
+import Login from './pages/Login';
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
@@ -107,6 +108,8 @@ function testRoute(hash: string): ReactNode | null {
 export default function App() {
   const hash = useHash();
   const t = useT();
+  const [acc, setAcc] = useState(() => !!getAccount());
+  useEffect(() => onAccountChange(() => setAcc(!!getAccount())), []);
   // Har sahifada bitta h1 (ekran o'quvchilar uchun): bo'lim nomi menyudan
   const where = sectionOf(hash);
   const section = where?.page;
@@ -125,11 +128,12 @@ export default function App() {
   const bossUnit = hash.match(/^#\/boss\/([\w-]+)$/)?.[1];
   const duelCode = hash.match(/^#\/duel\/([A-Za-z0-9]{4,8})$/)?.[1];
   const tr = testRoute(hash);
-  const page = tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
+  const wall = needsLogin(hash, acc);
+  const page = wall ? <Login /> : tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
   return (
     <>
       <Header hash={hash} />
-      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{where && where.section.children.some((c) => c.href === hash) && <SubNav items={where.section.children} hash={hash} />}{page}</main>
+      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.some((c) => c.href === hash) && <SubNav items={where.section.children} hash={hash} />}{page}</main>
       <Footer />
       <PlanRunBar hash={hash} />
       <TabBar hash={hash} />

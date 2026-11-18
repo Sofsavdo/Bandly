@@ -28,12 +28,12 @@ const levelOf = (l: string): number => ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].inde
 
 function whyUz(t: PlanTask): string {
   switch (t.reason) {
-    case 'revision_due': return L('Takrorlash vaqti keldi ({0} kun kechikkan).', [t.params.days]);
-    case 'repeated_error': return L('Yaqinda «{0}» xatosini {1} marta qildingiz — shu ustida ishlaymiz.', [ERR_UZ[String(t.params.taxonomy)] ?? t.params.taxonomy, t.params.count]);
+    case 'revision_due': return L('Takrorlash vaqti');
+    case 'repeated_error': return L('«{0}» xatosi {1} marta', [ERR_UZ[String(t.params.taxonomy)] ?? t.params.taxonomy, t.params.count]);
     case 'exam_soon': return L('Imtihongacha {0} kun qoldi.', [t.params.days]);
-    case 'goal_match': return L('Tanlagan maqsadingizga mos (yoki tekshiruv bo‘yicha zaif ko‘nikma).');
-    case 'weak_skill': return L('Hozirgi o‘zlashtirish darajangiz: {0}%.', [t.params.mastery]);
-    default: return L('Yo‘lingizdagi keyingi qadam.');
+    case 'goal_match': return L('Maqsadingizga mos');
+    case 'weak_skill': return L('O‘zlashtirish {0}%', [t.params.mastery]);
+    default: return '';
   }
 }
 
@@ -116,20 +116,19 @@ function PlanBody() {
       )}
       {load.lowered && !full && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% i bajarildi, shuning uchun bugungi reja')} {prefs.minutes} → {load.minutes}  {L('daqiqaga yengillashtirildi.')} <button type="button" className="btn sm" onClick={() => setFull(true)}>{L('To‘liq rejani ko‘rsatish')}</button></p>}
       {load.suggestMore && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% ini bajardingiz — zo‘r! Xohlasangiz, “Rejani sozlash”da kunlik vaqtni oshiring.')}</p>}
-      {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>{L('Ko‘nikmalar tekshiruvi bo‘yicha')} {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(L(' va '))}  {L('umumiy darajangizdan past — rejada unga ko‘proq joy beriladi.')}</p>}
-      {ieRow && <a className="path-step" href={ieRow.href}><b>{ieRow.title}</b><span>{ieRow.minutes}  {L('daq ·')} {L('IELTS kursi: savol turi va usul — tilni ballga aylantirish.')}</span></a>}
+      {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>{L('Ko‘nikmalar tekshiruvi bo‘yicha')} {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(L(' va '))}  {L('zaifroq — rejada ko‘proq beriladi.')}</p>}
+      {ieRow && <a className="path-step" href={ieRow.href}><b>{ieRow.title}</b><span>{ieRow.minutes}  {L('daq')} · {L('IELTS kursi')}</span></a>}
       {prefs.goal === 'sat' && <a className="path-step" href="#/exam"><b>{L('SAT mashqi')}</b><span>{L('Imtihon → SAT: Reading and Writing va Math savollari')}</span></a>}
       {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>{L('CEFR Multilevel')}</b><span>{L('Imtihon → CEFR: format va yozma ish mashqi')}</span></a>}
-      {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>{L('Xatolar ustida ishlash ·')} {mistakesDue}  {L('ta')}</b><span>{L('Avval qilgan xatolaringiz takrorlash vaqti keldi — eng foydali 5 daqiqa.')}</span></a>}
+      {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>{L('Xatolar ustida ishlash ·')} {mistakesDue}  {L('ta')}</b><span>{L('5 daq')}</span></a>}
       {plan.length === 0 && <p className="muted">{L('Bugun uchun yangi vazifa topilmadi. Grammar bo‘limida mashq qilib ko‘ring.')}</p>}
       <div className="stack">
         {rows.map(({ t, title, href }) => (
           <a key={t.nodeId} className="path-step" href={href} onClick={() => { if (href === '#/grammar') { try { sessionStorage.setItem('bandly.nextTopic', title); } catch { /* ignore */ } } }}>
-            <b>{title}</b><span>{t.minutes}  {L('daq ·')} {whyUz(t)}</span>
+            <b>{title}</b><span>{t.minutes}  {L('daq')}{whyUz(t) && <> · {whyUz(t)}</>}</span>
           </a>
         ))}
       </div>
-      <p className="muted" style={{ fontSize: 13 }}>{L('Reja natijalaringizga qarab har kuni yangilanadi.')}</p>
     </section>
   );
 }

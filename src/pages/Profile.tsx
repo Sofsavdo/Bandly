@@ -1,6 +1,6 @@
 import { Lock, LogOut, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { authConfig, getAccount, onAccountChange, restoreAccount } from '../lib/account';
+import { authConfig, getAccount, onAccountChange } from '../lib/account';
 import { JoinForm } from '../components/JoinForm';
 import { SignOutDialog } from '../components/SignOutDialog';
 import { fmtDate, refreshEntitlements } from '../lib/pay';
@@ -25,7 +25,6 @@ import { L } from '../i18n';
 export default function Profile() {
   const p = useProfile();
   const [snd, setSnd] = useState(soundOn());
-  const [code, setCode] = useState('');
   const [msg, setMsg] = useState('');
   const [acc, setAcc] = useState(getAccount());
   const [tgOn, setTgOn] = useState(false);
@@ -39,7 +38,7 @@ export default function Profile() {
     <div>
       <section className="card prof-head">
         <span className="avatar" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
-        <h2>{acc?.nickname ?? L('Mehmon')}</h2>
+        <h2>{acc?.nickname}</h2>
         <p className="muted">{p.level ? `${p.level} · ${LEVEL_INFO[p.level].name}` : L('Daraja aniqlanmagan')} · {lp.level}{L('-bosqich · jami')} {p.xp}  {L('XP')}</p>
         <div className="bar" style={{ width: '100%', maxWidth: 420 }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
         <small className="muted">{lp.into} / {lp.span}  {L('XP keyingi bosqichgacha')}</small>
@@ -59,17 +58,12 @@ export default function Profile() {
 
       <div className="card">
         <h3>{L('Hisob')}</h3>
-        {acc ? (
-          <div className="row" style={{ justifyContent: 'space-between' }}>
-            <p style={{ margin: 0 }}>{L('Siz')} <b>{acc.nickname}</b>  {L('sifatida kirgansiz.')}</p>
-            <button className="btn sm" onClick={() => setBye(true)}><LogOut size={14} />  {L('Chiqish')}</button>
-          </div>
-        ) : <>
-          <JoinForm onJoined={(a) => setAcc(a)} text={L('Kirsangiz hozirgi XP, darslar va natijalaringiz hisobingizga yoziladi va boshqa qurilmada ham ochiladi.')} />
-          <button className="btn sm danger btn-wrap" style={{ marginTop: 10 }} onClick={() => setBye(true)}><LogOut size={14} />  {L('Qurilmani tozalash va boshidan boshlash')}</button>
-        </>}
+        <div className="row" style={{ justifyContent: 'space-between' }}>
+          <p style={{ margin: 0 }}><b>{acc?.nickname}</b></p>
+          <button className="btn sm" onClick={() => setBye(true)}><LogOut size={14} />  {L('Chiqish')}</button>
+        </div>
         {bye && <SignOutDialog onClose={() => setBye(false)} />}
-        {acc && tgOn && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text={L('Hisobingizni Telegram\'ga bog‘lang: XP va obuna saqlanadi, keyin istalgan qurilmada Telegram orqali kirasiz.')} /></div>}
+        {acc && tgOn && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text={L('Hisobni Telegram\'ga bog‘lang.')} /></div>}
         <h4 style={{ margin: '14px 0 4px' }}>{L('Obunalar')}</h4>
         {(() => {
           const now = Date.now(); const u = p.planUntil;
@@ -80,15 +74,7 @@ export default function Profile() {
           const demo = (['exam', 'grammar'] as const).filter((t) => p.plan[t]);
           return <p style={{ margin: '4px 0' }}>{demo.length ? <>{L('Demo:')} {demo.map((t) => TRACK_NAME[t]).join(', ')}  {L('(faqat shu qurilmada)')}</> : <span className="evidence">{L('Bepul tarif.')}</span>} <a href="#/pricing">{L('Tariflar')}</a></p>;
         })()}
-        <details className="fold" style={{ marginTop: 10 }}>
-          <summary>{L('Eski hisob kodi')}</summary>
-          {acc && !acc.tg && <div className="row"><button className="btn sm" onClick={async () => { await navigator.clipboard.writeText(acc.token).catch(() => {}); setMsg(L('Hisob kodi nusxalandi. Xavfsiz joyda saqlang, hech kimga bermang.')); }}>{L('Hisob kodini nusxalash')}</button></div>}
-          <div className="row" style={{ marginTop: 8 }}>
-            <input type="text" value={code} placeholder={L('Boshqa qurilmadagi hisob kodi')} onChange={(e) => setCode(e.target.value)} style={{ minWidth: 220 }} />
-            <button className="btn sm" disabled={code.trim().length < 20} onClick={async () => { try { const a = await restoreAccount(code); await refreshEntitlements(); setMsg(`Kirdingiz: ${a.nickname}`); setCode(''); } catch (e) { setMsg((e as Error).message); } }}>{L('Kod bilan kirish')}</button>
-          </div>
-          <p className="evidence">{L('Telegram\'dan oldin ochilgan hisoblar uchun. Kod bilan kirgach, hisobni Telegram\'ga bog‘lab qo‘ying.')}</p>
-        </details>
+        {acc && !acc.tg && <button className="btn sm" style={{ marginTop: 8 }} onClick={async () => { await navigator.clipboard.writeText(acc.token).catch(() => {}); setMsg(L('Hisob kodi nusxalandi. Hech kimga bermang.')); }}>{L('Hisob kodini nusxalash')}</button>}
         {msg && <p className="evidence">{msg}</p>}
       </div>
 

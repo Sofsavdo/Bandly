@@ -31,9 +31,9 @@ const faq: [string, string][] = [
 export default function Home({ preview = false }: { preview?: boolean }) {
   const p = useProfile();
   const lvl = p.level;
-  const isNew = preview || (!lvl && p.xp === 0);
-  const [bot, setBot] = useState<string | null>(null);
   const acc = getAccount();
+  const isNew = preview || !acc || (!lvl && p.xp === 0);
+  const [bot, setBot] = useState<string | null>(null);
   useEffect(() => { void authConfig().then((c) => setBot(c.telegram?.bot ?? null)); }, []);
   const tests = readingTests.length + listeningTests.length;
   const onboarded = !!loadAnswers();

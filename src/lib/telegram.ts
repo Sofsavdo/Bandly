@@ -42,6 +42,9 @@ export async function bootTelegram(): Promise<void> {
   }
 }
 
+/** Telegram ichida avtomatik kirish qayta urinishi. */
+export async function retryWebAppLogin(): Promise<void> { const wa = webApp(); if (wa) await loginTelegram('webapp', wa.initData); }
+
 /** Saytdagi "Telegram orqali kirish" tugmasini (rasmiy widget) berilgan elementga joylaydi. */
 export function mountLoginWidget(el: HTMLElement, bot: string, onDone: (err: string | null) => void): void {
   window.bandlyTgAuth = (u: unknown) => { loginTelegram('widget', u).then(() => onDone(null), (e: Error) => onDone(e.message)); };
@@ -51,6 +54,8 @@ export function mountLoginWidget(el: HTMLElement, bot: string, onDone: (err: str
   s.setAttribute('data-telegram-login', bot);
   s.setAttribute('data-size', 'large');
   s.setAttribute('data-radius', '12');
+  s.setAttribute('data-userpic', 'false');
+  s.setAttribute('data-lang', 'uz');
   s.setAttribute('data-request-access', 'write');
   s.setAttribute('data-onauth', 'bandlyTgAuth(user)');
   el.appendChild(s);

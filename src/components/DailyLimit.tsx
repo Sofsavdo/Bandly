@@ -19,7 +19,7 @@ export function DailyLimit({ course, resetAt, back }: { course: Course; resetAt:
   return (
     <section className="card daily-limit">
       <h2 style={{ marginTop: 0 }}>{L('Bugungi bepul dars bajarildi! 🎉')}</h2>
-      <p>{L('{0}: bepul tarifda har kuni bitta yangi dars ochiladi. Keyingisi ertaga — yoki obuna bilan hoziroq davom eting.', [COURSE_UZ[course]])}</p>
+      <p>{L('{0}: kuniga 1 ta yangi dars bepul.', [COURSE_UZ[course]])}</p>
       <div className="dl-timer"><Clock size={18} />  {L('Keyingi bepul dars:')} <b>{hms(resetAt - now)}</b></div>
       <div className="row" style={{ marginTop: 12 }}>
         {cfg?.enabled
@@ -27,7 +27,7 @@ export function DailyLimit({ course, resetAt, back }: { course: Course; resetAt:
           : <a className="btn primary" href="#/pricing"><Crown size={16} />  {L('Obuna bilan davom etish')}</a>}
         <a className="btn" href={back}>{L('Orqaga')}</a>
       </div>
-      <p className="muted" style={{ margin: '14px 0 0', fontSize: 14 }}><Repeat size={14} />  {L('Bepul davom etadi: o‘tilgan darslarni takrorlash, “Xatolarim”, Mock Arena testlari, o‘yinlar va reyting.')}</p>
+      <p className="muted" style={{ margin: '14px 0 0', fontSize: 14 }}><Repeat size={14} />  {L('Bepul: o‘tilgan darslar, “Xatolarim” va Mock testlar.')}</p>
     </section>
   );
 }
