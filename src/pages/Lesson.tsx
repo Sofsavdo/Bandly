@@ -16,6 +16,8 @@ import { LessonSpeak } from '../components/LessonSpeak';
 import { LessonWrite } from '../components/LessonWrite';
 import { Illo } from '../components/Illo';
 import { PRing } from '../components/PRing';
+import { DailyLimit } from '../components/DailyLimit';
+import { requestUnlock } from '../lib/freeQuota';
 import { L } from '../i18n';
 
 type Step = 'learn' | 'practice' | 'speak' | 'write' | 'check' | 'result';
@@ -24,6 +26,7 @@ const STEP_UZ: Record<Exclude<Step, 'result'>, string> = { learn: L('Kashf et'),
 export default function LessonPage({ id }: { id: string }) {
   const found = lessonById(id);
   const [started, setStarted] = useState(false);
+  const [limitAt, setLimitAt] = useState<number | null>(null); // kunlik bepul dars tugagan bo'lsa — qachon ochiladi
   const [step, setStepState] = useState<Step>('learn');
   const [reached, setReached] = useState(0); // eng uzoq ochilgan qadam (oldinga sakrab bo'lmaydi)
   const [speakDone, setSpeakDone] = useState(false);
@@ -154,8 +157,14 @@ export default function LessonPage({ id }: { id: string }) {
         <span className="hud-hearts" role="img" aria-label={L('{0} ta jon', [play.hearts])}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
         {play.combo >= 2 && <span className="hud-combo" role="img" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
       </div>
-      {!started ? (
-        <MissionIntro unit={unit} lesson={lesson} steps={steps.map((st) => STEP_UZ[st])} onStart={() => setStarted(true)} />
+      {!started && limitAt !== null ? (
+        <DailyLimit course={ielts ? 'ielts' : 'ge'} resetAt={limitAt} back={back} />
+      ) : !started ? (
+        <MissionIntro unit={unit} lesson={lesson} steps={steps.map((st) => STEP_UZ[st])} onStart={() => {
+          // Bepul tarif: o'tilgan dars — takrorlash bepul; yangi dars — kunlik kvotadan (obunachiga cheklov yo'q)
+          if (loadProgress()[lesson.id]?.passedAt) { setStarted(true); return; }
+          void requestUnlock(ielts ? 'ielts' : 'ge', lesson.id).then((r) => { if (r.ok) setStarted(true); else setLimitAt(r.resetAt); });
+        }} />
       ) : (
       <section className="card page-head lesson-head" style={{ marginTop: 10 }}>
         <small className="muted" style={{ fontWeight: 650 }}>{unit.level} · {unit.titleUz} · {lesson.minutes}  {L('daq')}</small>

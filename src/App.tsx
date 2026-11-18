@@ -65,8 +65,9 @@ const routes: Record<string, () => ReactNode> = {
   '#/challenge': () => <Challenge />,
   '#/exam': () => <Exam />,
   '#/ielts': () => <IeltsCourse />,
-  '#/exam/writing': () => <Gate track="exam"><Writing /></Gate>,
-  '#/exam/speaking': () => <Gate track="exam"><Speaking /></Gate>,
+  // B varianti: Writing/Speaking mashqi ochiq; AI baho obunasizlarga haftasiga 1 tadan (server tekshiradi)
+  '#/exam/writing': () => <Writing />,
+  '#/exam/speaking': () => <Speaking />,
   '#/grammar': () => <Grammar />,
   '#/mocks': () => <Mocks />,
   // PXD-09 (owner, 2026-11-15): the full objective mock (Listening + Reading) is free (DR-19); AI-scored Writing/Speaking stay in the plan (their own routes are gated).

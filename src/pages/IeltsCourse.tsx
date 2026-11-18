@@ -6,6 +6,7 @@ import { ieltsUnlocked, nextIeltsLesson } from '../content/lessons';
 import type { Unit } from '../content/lessons/types';
 import { loadProgress } from '../lib/lessons';
 import { useProfile } from '../lib/store';
+import { freeLeft } from '../lib/freeQuota';
 import { L } from '../i18n';
 
 /** IELTS kursi: imtihon ko'nikmalari darslari (Start → Core). Har dars real savol turi bilan tugaydi, so'ng testga yo'naltiradi. */
@@ -50,7 +51,7 @@ export default function IeltsCourse() {
       <section className="card page-head">
         <h2 style={{ margin: 0 }}><GraduationCap size={22} />  {L('IELTS kursi')}</h2>
         <p style={{ margin: '6px 0 4px' }}>{L('Imtihon ko‘nikmalarini o‘rgatadigan darslar: savol turlari, usullar, vaqt. General English tilni beradi, bu kurs esa shu tilni imtihonda ballga aylantirishni o‘rgatadi.')}</p>
-        <p className="muted" style={{ margin: '0 0 12px' }}>{passed}/{all.length}  {L('dars')} · {L('Start — A2–B1 uchun, Core — B2 va undan yuqori uchun (Start tugagach ham ochiladi).')}</p>
+        <p className="muted" style={{ margin: '0 0 12px' }}>{passed}/{all.length}  {L('dars')} · {L('Start — A2–B1 uchun, Core — B2 va undan yuqori uchun (Start tugagach ham ochiladi).')}{freeLeft('ielts') !== null && <> · <a href="#/pricing">{L('Bugun bepul: {0} ta yangi dars', [freeLeft('ielts') ?? 0])}</a></>}</p>
         {next && <a className="btn primary ielts-cta" href={`#/learn/${next.lesson.id}`}>{passed ? L('Davom ettirish') : L('Boshlash')}: {next.lesson.titleUz} <ArrowRight size={16} /></a>}
       </section>
       <div className="chips" role="tablist" aria-label={L('Ko‘nikma')}>

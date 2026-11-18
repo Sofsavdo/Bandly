@@ -900,3 +900,7 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 .tr-bar { height: 10px; border-radius: 99px; background: var(--surface, #eee); overflow: hidden; }
 .tr-bar i { display: block; height: 100%; border-radius: 99px; }
 .test-report .notice { display: block; }
+
+/* Kunlik bepul dars tugaganda */
+.daily-limit .dl-timer { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 14px; background: var(--butter-50, #fff6d8); font-variant-numeric: tabular-nums; }
+.daily-limit .dl-timer b { font-size: 20px; }

@@ -4,6 +4,8 @@ import { SAT_MATH, SAT_RW, type SatItem } from '../content/satPractice';
 import { checkItem, type ItemAnswer } from '../lib/lessons';
 import { addXp } from '../lib/store';
 import { ItemView } from './LessonItem';
+import { DailyLimit } from './DailyLimit';
+import { requestUnlock } from '../lib/freeQuota';
 import { L } from '../i18n';
 
 function Practice({ items, title }: { items: SatItem[]; title: string }) {
@@ -37,7 +39,10 @@ function Practice({ items, title }: { items: SatItem[]; title: string }) {
 
 /** Digital SAT: verified structure + Bandly's ORIGINAL practice items. No SAT score is estimated. */
 export function SatPrep() {
-  const [set, setSet] = useState<'rw' | 'math' | null>(null);
+  const [set, setSetState] = useState<'rw' | 'math' | null>(null);
+  const [limitAt, setLimitAt] = useState<number | null>(null);
+  // Bepul tarif: har bir SAT to'plami — "dars"; kuniga bittasi yangi ochiladi (ochilgani doim ochiq)
+  const setSet = (v: 'rw' | 'math') => { setLimitAt(null); void requestUnlock('sat', `sat-${v}`).then((r) => { if (r.ok) setSetState(v); else { setSetState(null); setLimitAt(r.resetAt); } }); };
   return (
     <div>
       <div className="card">
@@ -65,6 +70,7 @@ export function SatPrep() {
           <button type="button" className={`chipbtn ${set === 'rw' ? 'on' : ''}`} onClick={() => setSet('rw')}>{L('Reading and Writing ·')} {SAT_RW.length}  {L('savol')}</button>
           <button type="button" className={`chipbtn ${set === 'math' ? 'on' : ''}`} onClick={() => setSet('math')}>{L('Math ·')} {SAT_MATH.length}  {L('savol')}</button>
         </p>
+        {limitAt !== null && <DailyLimit course="sat" resetAt={limitAt} back="#/exam" />}
         {set === 'rw' && <Practice key="rw" items={SAT_RW} title={L('Reading and Writing')} />}
         {set === 'math' && <Practice key="math" items={SAT_MATH} title={L('Math')} />}
       </div>
