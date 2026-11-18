@@ -49,6 +49,9 @@ export default function FullExam() {
             <li>{L('Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.')}</li>
             <li>{L('Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.')}</li>
           </ul>
+          {levelIndex(p.level) < levelIndex('B2') && (
+            <p className="notice" style={{ maxWidth: 620 }}>{L('Bu haqiqiy IELTS qiyinligidagi imtihon. Darajangiz {0} bo‘lgani uchun past natija tabiiy — u boshlang‘ich o‘lchov sifatida kerak. Kundalik mashq uchun', [p.level ?? 'A2'])} <a href="#/mocks/reading">{L('o‘z pog‘onangizdagi testlar')}</a>{L('dan foydalaning.')}</p>
+          )}
           <button className="btn primary lg" onClick={start}>{L('Imtihonni boshlash')} <ArrowRight size={18} /></button>
         </div>
       </div>

@@ -27,10 +27,10 @@ import { readingTests } from '../content/readingTests';
 import { listeningTests } from '../content/listeningTests';
 
 const clean = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ');
-assert.equal(readingTests.length, 9);
+assert.equal(readingTests.length, 13);
 // To'liq formatli mock: 3 matn, 40 savol, 60 daqiqa
 for (const t of readingTests.filter((x) => x.sections?.length && x.exam !== 'cefr')) { assert.equal(t.questions.length, 40, `${t.id}: 40 savol`); assert.equal(t.sections!.length, 3); assert.equal(t.minutes, 60); assert.equal(t.sections![0]!.at, 0); }
-assert.equal(listeningTests.length, 7);
+assert.equal(listeningTests.length, 11);
 // CEFR Multilevel uslubi: rasmiy tasdiqlangan hajm va vaqt (examFormats.ts)
 for (const t of readingTests.filter((x) => x.exam === 'cefr')) { assert.equal(t.questions.length, 35); assert.equal(t.minutes, 60); }
 for (const t of listeningTests.filter((x) => x.exam === 'cefr')) { assert.equal(t.questions.length, 35); assert.equal(t.minutes, 45); }
