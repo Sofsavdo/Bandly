@@ -351,7 +351,7 @@ export const A1_U6: Unit = {
       vocab: [{ en: 'menu', uz: 'menyu' }, { en: 'bill', uz: 'hisob (kafeda)' }, { en: 'glass', uz: 'stakan' }, { en: 'sugar', uz: 'shakar' }],
       practice: [
         ch('Waiter: What can I get you? — You: ___', ['I want a coffee.', 'I’d like a coffee, please.', 'Give coffee.'], 1, 'Eng muloyim: I’d like…, please.'),
-        ch('___ I have the menu, please?', ['Can', 'Do', 'Am'], 0, 'Can I have…?'),
+        ch('___ I have a cup of coffee, please?', ['Can', 'Do', 'Am'], 0, 'Can I have…?'),
         ch('Would you like some bread? — ___', ['Yes, I like.', 'Yes, please.', 'Yes, I would like bread like.'], 1, 'Taklifga javob: Yes, please.'),
         gap('I’___ like a sandwich, please.', ['d'], 'I’d = I would.'),
         ord(['you', 'tea', 'like', 'Would', 'some'], 'Would you like some tea', 'Taklif: Would you like + narsa?'),
