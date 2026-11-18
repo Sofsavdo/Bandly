@@ -1,4 +1,5 @@
 import { writingTopics, type EssayTypeId } from './writingGuide';
+import { writingBank } from './writingBank';
 
 export interface WritingPrompt {
   id: string;
@@ -44,6 +45,7 @@ const TYPE_OF: Record<string, EssayTypeId> = { 'w2-tech': 'agree', 'w2-work': 'e
 export const writingPrompts: WritingPrompt[] = [
   ...base.map((w) => ({ ...w, type: TYPE_OF[w.id] })),
   ...writingTopics.map((t): WritingPrompt => ({ id: `wt-${t.id}`, task: 2, title: `Task 2: ${t.title}`, prompt: t.prompt, minWords: 250, minutes: 40, type: t.type, topicId: t.id })),
+  ...writingBank,
 ];
 
 export const linkingWords = [
