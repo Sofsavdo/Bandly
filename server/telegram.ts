@@ -98,9 +98,9 @@ export function startReply(chatId: number, publicUrl: string, firstName?: string
   const hi = firstName ? tr('Salom, {0}!').replace('{0}', firstName.slice(0, 32)) : tr('Salom!');
   return {
     chat_id: chatId,
-    text: `${hi} ${tr('Bandly — ingliz tili darslari, IELTS / CEFR / SAT tayyorgarligi va bepul mock testlar.')}\n\n${tr('Quyidagi tugma bilan ilovani shu yerning o‘zida oching. Hisobingiz Telegram orqali avtomatik ulanadi.')}`,
+    text: `${hi} ${tr('Sellzen — ingliz tili darslari, IELTS / CEFR / SAT tayyorgarligi va bepul mock testlar.')}\n\n${tr('Quyidagi tugma bilan ilovani shu yerning o‘zida oching. Hisobingiz Telegram orqali avtomatik ulanadi.')}`,
     reply_markup: { inline_keyboard: [
-      [{ text: `📚 ${tr('Bandly’ni ochish')}`, web_app: { url: appUrl(publicUrl, '/', ref) } }],
+      [{ text: `📚 ${tr('Sellzen’ni ochish')}`, web_app: { url: appUrl(publicUrl, '/', ref) } }],
       [{ text: `⏱ ${tr('Bepul mock test')}`, web_app: { url: appUrl(publicUrl, '/mocks', ref) } }, { text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: { url: appUrl(publicUrl, '/placement', ref) } }],
     ] },
   };
@@ -111,8 +111,8 @@ export async function setupBot(cfg: BotConfig, f: Fetch = fetch): Promise<string
   const me = await tgApi<{ username: string }>(cfg.token, 'getMe', {}, f);
   if (cfg.publicUrl) {
     await tgApi(cfg.token, 'setWebhook', { url: `${cfg.publicUrl}/api/telegram/webhook`, secret_token: webhookSecret(cfg.token), allowed_updates: ['message'], drop_pending_updates: true }, f);
-    await tgApi(cfg.token, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Bandly', web_app: { url: appUrl(cfg.publicUrl, '/') } } }, f);
-    await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Bandly ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }, { command: 'stop', description: 'Seriya eslatmalarini o‘chirish' }, { command: 'remind', description: 'Seriya eslatmalarini yoqish' }] }, f);
+    await tgApi(cfg.token, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Sellzen', web_app: { url: appUrl(cfg.publicUrl, '/') } } }, f);
+    await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Sellzen ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }, { command: 'stop', description: 'Seriya eslatmalarini o‘chirish' }, { command: 'remind', description: 'Seriya eslatmalarini yoqish' }] }, f);
   }
   return me.username;
 }
