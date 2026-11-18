@@ -15,9 +15,14 @@ assert.deepEqual([planOf(db, id('Free1'), T0), planOf(db, id('Gen1'), T0), planO
 assert.equal(planOf(db, id('Exam1'), T0 + 31 * 86_400_000), null, 'muddati tugagan obuna hisoblanmaydi');
 assert.deepEqual([assessLimit('exam', 'writing'), assessLimit('all', 'speaking'), assessLimit('general', 'writing'), assessLimit(null, 'speaking')], [10, 20, 0, 0]);
 
-// Bepul va General — AI baholash yo'q (402); mijoz "plan" belgisiga ishonilmaydi
-assert.throws(() => useAssessment(db, free.token, 'writing', T0), (e: ApiError) => e.status === 402);
+// Bepul va General — haftasiga 1 ta bepul AI baho (B varianti), keyin 402; mijoz "plan" belgisiga ishonilmaydi
+assert.equal(useAssessment(db, free.token, 'writing', T0).limit, 1);
+assert.throws(() => useAssessment(db, free.token, 'writing', T0), (e: ApiError) => e.status === 402 && /haftalik/.test(e.message));
+assert.equal(useAssessment(db, gen.token, 'speaking', T0).used, 1);
 assert.throws(() => useAssessment(db, gen.token, 'speaking', T0), (e: ApiError) => e.status === 402);
+assert.equal(useAssessment(db, free.token, 'writing', T0 + 7 * 86_400_000).used, 1, 'keyingi haftada yana bitta');
+refundAssessment(db, id('Free1'), 'writing', T0 + 7 * 86_400_000);
+assert.equal(useAssessment(db, free.token, 'writing', T0 + 7 * 86_400_000).used, 1, 'bepul ulush ham qaytariladi');
 assert.throws(() => useAssessment(db, 'yolgon', 'writing', T0), (e: ApiError) => e.status === 401);
 
 // EXAM: oyiga 10 ta; 11-chisi rad etiladi; xato bo'lsa qaytariladi; yangi oyda yangilanadi
@@ -27,5 +32,5 @@ refundAssessment(db, id('Exam1'), 'writing', T0);
 assert.equal(useAssessment(db, ex.token, 'writing', T0).used, 10, 'provayder xatosidan keyin qaytarilgan kvota qayta ishlatiladi');
 assert.equal(useAssessment(db, ex.token, 'speaking', T0).used, 1, 'writing va speaking alohida hisoblanadi');
 assert.equal(useAssessment(db, ex.token, 'writing', Date.UTC(2026, 11, 2)).used, 1, 'yangi oy');
-assert.deepEqual(assessmentUsage(db, id('All1'), T0), { writing: { used: 0, limit: 20 }, speaking: { used: 0, limit: 20 } });
+assert.deepEqual(assessmentUsage(db, id('All1'), T0), { writing: { used: 0, limit: 20, period: 'month' }, speaking: { used: 0, limit: 20, period: 'month' } });
 console.log('entitle.test: OK');

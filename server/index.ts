@@ -11,6 +11,7 @@ import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
 import { mockStats, recordMockStat } from './mockStats';
+import { freeLimitsFromEnv, freeStatus, unlockLesson, wallStats } from './freeQuota';
 import { listStudioTests, publicStudioTests, publishedStudioTests, saveStudioTest, setStudioTestStatus } from './studioTests';
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
@@ -231,7 +232,7 @@ const httpServer = createServer(async (req, res) => {
     // ---- Admin analitikasi ----
     if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
       requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
-      return send(res, 200, { ...analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))), bands: bandStats(db) });
+      return send(res, 200, { ...analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))), bands: bandStats(db), walls: wallStats(db) });
     }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {
@@ -326,6 +327,9 @@ const httpServer = createServer(async (req, res) => {
       if (req.method === 'POST' && p[0] === 'reorder') { reorder(db, (b.ids ?? []) as string[], by); return send(res, 200, { ok: true }); }
       return send(res, 404, { error: 'Topilmadi' });
     }
+    // Bepul tarif (B varianti): har kursda kuniga 1 ta yangi dars (birinchi kuni 3 ta); obunachiga cheklov yo'q
+    if (req.method === 'GET' && url.pathname === '/api/free') return send(res, 200, freeStatus(db, String(req.headers['x-token'] ?? ''), freeLimitsFromEnv()));
+    if (req.method === 'POST' && url.pathname === '/api/free/unlock') { const b = await readJson(req); return send(res, 200, unlockLesson(db, String(req.headers['x-token'] ?? ''), b.course, b.lessonId, freeLimitsFromEnv())); }
     if (req.method === 'GET' && url.pathname === '/api/mock/tests') return send(res, 200, publicStudioTests(db)); // kabinetda e'lon qilingan testlar (javobsiz)
     if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
       const b = await readJson(req, 16_384);

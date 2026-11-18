@@ -58,12 +58,12 @@ export const SALE_PLANS: SalePlan[] = [
   {
     id: 'general', title: 'General English', short: L('A1–C2 darslar, grammar va AI ustoz bilan ovozli suhbat.'), monthlyUzs: 69_000, usd: '$5.99',
     tracks: ['grammar', 'mocks'], voiceMin: 60, writing: 0, speaking: 0,
-    features: [L('Grammar: barcha mavzular, o‘zbekcha izohlar'), L('AI ustoz bilan ovozli suhbat: 60 daqiqa / oy'), L('Darslar, xatolar ustida ishlash va kunlik reja'), L('So‘z o‘yinlari cheksiz')],
+    features: [L('A1–C2 darslar — kunlik cheklovsiz'), L('Grammar: barcha mavzular, o‘zbekcha izohlar'), L('AI ustoz bilan ovozli suhbat: 60 daqiqa / oy'), L('Darslar, xatolar ustida ishlash va kunlik reja'), L('So‘z o‘yinlari cheksiz')],
   },
   {
     id: 'exam', title: 'Exam Preparation', short: L('IELTS, CEFR (Multilevel) va SAT: bo‘limlar bo‘yicha tayyorgarlik va AI baholash.'), monthlyUzs: 99_000, usd: '$7.99',
     tracks: ['exam', 'mocks'], voiceMin: 60, writing: 10, speaking: 10,
-    features: [L('Reading, Listening, Writing, Speaking mashqlari'), L('AI Writing baholash: 10 ta / oy'), L('AI Speaking baholash (to‘liq mock): 10 ta / oy'), L('AI ustoz bilan ovozli suhbat: 60 daqiqa / oy'), L('Eshit va takrorla, so‘z o‘yinlari cheksiz')],
+    features: [L('IELTS kursi, CEFR va SAT — kunlik cheklovsiz'), L('Reading, Listening, Writing, Speaking mashqlari'), L('AI Writing baholash: 10 ta / oy'), L('AI Speaking baholash (to‘liq mock): 10 ta / oy'), L('AI ustoz bilan ovozli suhbat: 60 daqiqa / oy'), L('Eshit va takrorla, so‘z o‘yinlari cheksiz')],
   },
   {
     id: 'all', title: 'All Access', short: L('Hammasi bitta obunada: General English + imtihon tayyorgarligi.'), monthlyUzs: 129_000, usd: '$9.99',

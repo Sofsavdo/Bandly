@@ -12,6 +12,7 @@ interface Data {
   days: Day[]; retention: { cohort: number; d1: number | null; d7: number | null; d30: number | null };
   funnel: { step: string; n: number }[]; bySource: { source: string; events: number; xp: number }[];
   aiByFeature: { feature: string; usd: number }[]; revenue30: number; paid30: number;
+  walls?: { walled: number; converted: number; rate: number | null; today: number };
   bands?: { learners: number; withBaseline: number; measured: number; avgGain: number | null; medianGain: number | null; shareHalf: number | null; shareOne: number | null; avgDays: number | null; officials: number; officialVsBaseline: number | null };
 }
 
@@ -74,6 +75,19 @@ export default function Admin() {
         <Bars days={data.days} pick={(d) => d.revenue} color="var(--yellow)" label={L('Tushum (so‘m)')} />
       </section>
 
+      {data.walls && (
+        <section className="card">
+          <h3>{L('Bepul tarif: kunlik devor (30 kun)')}</h3>
+          <p className="muted" style={{ marginTop: 0 }}>{L('Kunlik bepul darsni tugatib, yangisini ochmoqchi bo‘lgan (devorga urilgan) o‘quvchilar va ulardan 7 kun ichida to‘lov qilganlar.')}</p>
+          <div className="kpis three">
+            <div className="kpi2"><span>{L('Devorga urilgan')}</span><b>{data.walls.walled}</b></div>
+            <div className="kpi2"><span>{L('7 kunda obuna olgan')}</span><b>{data.walls.converted}</b></div>
+            <div className="kpi2"><span>{L('Konversiya')}</span><b>{data.walls.rate === null ? '—' : `${data.walls.rate}%`}</b></div>
+            <div className="kpi2"><span>{L('Bugun devorda')}</span><b>{data.walls.today}</b></div>
+          </div>
+          <p className="note muted">{L('Chegaralarni Railway’da o‘zgartirish mumkin: FREE_LESSONS_PER_DAY, FREE_FIRST_DAY_LESSONS, FREE_WRITING_PER_WEEK, FREE_SPEAKING_PER_WEEK.')}</p>
+        </section>
+      )}
       {data.bands && (
         <section className="card">
           <h3>{L('Band o‘sishi (haqiqiy natijalar)')}</h3>

@@ -40,6 +40,7 @@ void initI18n().then(async () => {
   // Telegram Mini App bo'lsa — avval Telegram skripti va avtomatik kirish; keyin hisob progressi (boshqa qurilmada yangilangan bo'lsa)
   await Promise.all([bootTelegram().then(() => pullIfNewer()), loadRemoteContent(), loadStudioTests()]).catch(() => undefined);
   startSync();
+  void import('./lib/freeQuota').then((m) => m.syncFree());
   startCloud();
   void initPay();
   createRoot(document.getElementById('root')!).render(

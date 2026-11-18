@@ -7,6 +7,7 @@ import { QuestsCard } from '../components/QuestsCard';
 import { UNITS } from '../content/lessons';
 import { isUnlocked, loadProgress, nextLesson } from '../lib/lessons';
 import { useProfile } from '../lib/store';
+import { freeLeft } from '../lib/freeQuota';
 import { L } from '../i18n';
 
 /** General English path: level → unit → lesson. Pilot slice (A1–C2). */
@@ -28,7 +29,7 @@ export default function Learn() {
     <div>
       <section className="card page-head with-illo learn-head">
         <h2 style={{ margin: 0 }}>{L('Yangi darsni')} <em className="it">{L('tanlang')}</em></h2>
-        <p style={{ margin: '6px 0 14px' }}>{passed}/{total}  {L('dars ·')} {p.level ? L('darajangiz {0}', [p.level]) : <a href="#/placement">{L('darajani aniqlash')}</a>}</p>
+        <p style={{ margin: '6px 0 14px' }}>{passed}/{total}  {L('dars ·')} {p.level ? L('darajangiz {0}', [p.level]) : <a href="#/placement">{L('darajani aniqlash')}</a>}{freeLeft('ge') !== null && <> · <a href="#/pricing" className="pill">{L('Bugun bepul: {0} ta yangi dars', [freeLeft('ge') ?? 0])}</a></>}</p>
         <div className="row" style={{ gap: 10 }}>
           <div className="seg" role="tablist" aria-label={L('Ko‘rinish')}>
             <button type="button" role="tab" aria-selected={view === 'map'} className={view === 'map' ? 'on' : ''} onClick={() => pick('map')}><MapIcon size={15} />  {L('Xarita')}</button>
