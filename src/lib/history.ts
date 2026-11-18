@@ -1,6 +1,6 @@
 // To'liq imtihon (mock) natijalari tarixi: o'sish grafigi uchun (qurilmada saqlanadi).
 const KEY = 'bandly.fullhist.v1';
-export interface MockEntry { at: number; overall: number; listening?: number; reading?: number; speaking?: number }
+export interface MockEntry { at: number; overall: number; listening?: number; reading?: number; writing?: number; speaking?: number }
 
 export function loadMocks(): MockEntry[] {
   try { const j = JSON.parse(localStorage.getItem(KEY) ?? '[]') as MockEntry[]; return Array.isArray(j) ? j : []; } catch { return []; }

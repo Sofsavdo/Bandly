@@ -25,6 +25,9 @@ assert.equal(ev.overall, roundBand((6.5 + 8 + 9) / 3));
 assert.deepEqual(ev.strengths, ['a']);
 assert.equal(ev.corrections.length, 1);
 assert.throws(() => parseEvaluation('no json', ['a']), (e) => e instanceof AiError);
+// focus: bandni tushirayotgan mezon va +0.5 uchun qadam (ixtiyoriy maydon)
+assert.equal(parseEvaluation('{"a":6,"b":7,"focus":"  Grammar — use more complex sentences.  "}', ['a', 'b']).focus, 'Grammar — use more complex sentences.');
+assert.equal(parseEvaluation('{"a":6,"b":7}', ['a', 'b']).focus, undefined);
 assert.throws(() => parseEvaluation('{"a":5}', ['a', 'b']), (e) => e instanceof AiError, 'kamida 2 ta baho kerak');
 
 // ---- Soxta provayder serveri (uchala format) ----

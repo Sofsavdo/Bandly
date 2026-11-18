@@ -9,6 +9,7 @@ import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
+import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { gradeMock } from './mockGrade';
@@ -215,10 +216,20 @@ const httpServer = createServer(async (req, res) => {
       if (req.method === 'DELETE' && gp[1] === 'members') { removeMember(db, gid, me.id, admin, Number(gp[2])); return send(res, 200, { ok: true }); }
       throw new ApiError(404, 'Topilmadi');
     }
+    // ---- Band o'lchovi: mock va rasmiy IELTS natijalari (o'sishni isbotlash uchun) ----
+    if (url.pathname === '/api/bands' || url.pathname.startsWith('/api/bands/')) {
+      const me = byToken(db, String(req.headers['x-token'] ?? ''));
+      const id = Number(url.pathname.split('/')[3]);
+      if (req.method === 'POST' && url.pathname === '/api/bands') { addBand(db, me.id, await readJson(req)); }
+      else if (req.method === 'DELETE' && Number.isInteger(id)) deleteBand(db, me.id, id);
+      else if (req.method !== 'GET') throw new ApiError(404, 'Topilmadi');
+      const records = listBands(db, me.id);
+      return send(res, 200, { records, summary: bandSummary(records) });
+    }
     // ---- Admin analitikasi ----
     if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
       requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
-      return send(res, 200, analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))));
+      return send(res, 200, { ...analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))), bands: bandStats(db) });
     }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {

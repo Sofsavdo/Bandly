@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Tile } from '../components/Tile';
 import { useProfile } from '../lib/store';
 import { ReadinessCard } from '../components/ReadinessCard';
+import { BandProgress } from '../components/BandProgress';
 import { CefrPrep } from '../components/CefrPrep';
 import { SatPrep } from '../components/SatPrep';
 import { Illo } from '../components/Illo';
@@ -31,6 +32,7 @@ export default function Exam() {
       </div>
       {tab === 'cefr' && <CefrPrep />}
       {tab === 'sat' && <SatPrep />}
+      {tab === 'ielts' && <BandProgress compact />}
       {tab === 'ielts' && <ReadinessCard />}
       {tab === 'ielts' && (
         <div className="grid">

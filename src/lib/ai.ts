@@ -8,6 +8,8 @@ export interface Evaluation {
   strengths: string[];
   improve: string[];
   corrections: { said: string; better: string }[];
+  /** Bandni eng ko'p tushirayotgan mezon va +0.5 uchun aniq qadam */
+  focus?: string;
 }
 
 let statusP: Promise<boolean> | null = null;
