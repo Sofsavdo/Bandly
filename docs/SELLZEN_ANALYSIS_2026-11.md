@@ -108,4 +108,4 @@ O'zbekistonda o'sish kanallari: **Telegram** (kanallar, guruhlar, Mini App), **I
 | Xavfsizlik: WS crash (R1), token URL'da (R2) | Tuzatildi, regression testlar bilan |
 | Tashqi zaxira (R4) | Kod tayyor: har kunlik nusxa S3-mos omborga (Railway Bucket) — bucket yaratish va `BACKUP_S3_*` — egasi |
 | Mock natijasini ulashish | Bajarildi: story rasm, "taxminiy band" belgisi, referal havola |
-| Bandly → Sellzen qoldiqlari | Tozalandi: ichki nomlar (CSS, audio worklet, Telegram callback, to'lov hodisasi, npm paket), hujjatlar (32+ fayl), bot ko'rinadigan nomi/tavsifi avtomatik. Ataylab qoldirilganlar va sabablari — README "Brend" jadvali |
+| Rebrend qoldiqlari (avvalgi nomi Bandly) | Tozalandi: ichki nomlar (CSS, audio worklet, Telegram callback, to'lov hodisasi, npm paket), hujjatlar (32+ fayl), bot ko'rinadigan nomi/tavsifi avtomatik. Ataylab qoldirilganlar va sabablari — README "Brend" jadvali |
