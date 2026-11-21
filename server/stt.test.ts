@@ -35,5 +35,10 @@ console.log('stt: OK');
   const uz = (async (_u: string, init: { body: FormData }) => { calls2.push(init.body.get('language_code') as string | null); return { ok: true, status: 200, json: async () => ({ text: 'salom qalaysan', language_code: 'uzb', words: [] }) }; }) as never;
   const r2 = await transcribeLearner({ ...cfg, fetchImpl: uz }, Buffer.alloc(2000), 'audio/webm', 'uzb');
   assert.equal(r2.forced, false); assert.equal(r2.text, 'salom qalaysan', 'o‘zbekcha — o‘zi aniqlagani olinadi');
+  // Mashqlar (matnni ovoz chiqarib o'qish, speaking): faqat ingliz tili kutiladi — aksentli ovoz o'zbekcha deb tanilmaydi
+  const calls3: (string | null)[] = [];
+  const en = (async (_u: string, init: { body: FormData }) => { calls3.push(init.body.get('language_code') as string | null); return { ok: true, status: 200, json: async () => ({ text: 'I go to school', language_code: 'eng', words: [{ end: 1 }] }) }; }) as never;
+  const r3 = await transcribeLearner({ ...cfg, fetchImpl: en }, Buffer.alloc(2000), 'audio/webm', 'uzb', 'en');
+  assert.deepEqual(calls3, ['eng'], 'bitta so‘rov, ingliz tili majburiy'); assert.equal(r3.text, 'I go to school');
   console.log('stt (til): OK');
 }

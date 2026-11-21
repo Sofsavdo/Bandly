@@ -9,7 +9,7 @@ import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach
 import { listenTurn, SpeechError, stopSpeaking, sttSupported } from '../lib/speech';
 import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
 import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn, watchBargeIn } from '../lib/voiceTurn';
-import { useProfile } from '../lib/store';
+import { personaLevel, useProfile } from '../lib/store';
 import { liveSupported, startLive, type LiveCall } from '../lib/liveCall';
 import { getLang } from '../i18n';
 import { AiAvatar } from '../components/AiAvatar';
@@ -137,7 +137,7 @@ export default function Coach() {
     return new Promise<boolean>((resolve) => {
       let settled = false;
       const done = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
-      void startLive({ token: a.token, adult: p.adult, level: p.level, lang: getLang() }, {
+      void startLive({ token: a.token, adult: p.adult, level: p.level, lang: getLang(), style: personaLevel(p) }, {
         onReady: () => { setPhase('listening'); done(true); },
         onSpeaking: (on) => setPhase(on ? 'speaking' : 'listening'),
         onLevel: (v) => setLvl(v),
@@ -146,6 +146,7 @@ export default function Coach() {
         onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); end(); } },
         onLimit: () => { setLimitHit(true); end(); },
         onClosed: () => { if (settled && liveRef.current) end(); done(false); },
+        onEmotion: (e) => setEmotion(e),
       }).then((c) => { liveRefCall.current = c; }).catch(() => { setLiveFailed(true); done(false); });
     });
   };
@@ -180,7 +181,8 @@ export default function Coach() {
     setPhase('thinking');
     try {
       const history = turns.current.slice(0, -1);
-      const r = await coachSay({ persona: 'bandi', mode: 'practice', adult: p.adult, level: p.level, history, text: turn.text, turnId: turn.turnId });
+      // Profil xarakteri: Yumshoq → friendly, Hazil → comedy, Qattiq → bandi, Jallod → savage (18+ server ham tekshiradi)
+      const r = await coachSay({ persona: (['friendly', 'comedy', 'bandi', 'savage'] as const)[personaLevel(p)] ?? 'friendly', mode: 'practice', adult: p.adult, level: p.level, history, text: turn.text, turnId: turn.turnId });
       pending.current = null;
       if (r.correction) {
         const tax: TaxonomyId[] = r.correction.errorType && isTaxonomyId(r.correction.errorType) ? [r.correction.errorType] : [];
@@ -215,7 +217,7 @@ export default function Coach() {
         heard = (await transcribeTurn(r)).text;
         if (!heard) { setPhase('idle'); if (liveRef.current) void listen(); return; } // aniq so'z chiqmadi — jim qolmay qayta tinglaydi
       } else {
-        heard = (await listenTurn({ silenceMs: 1600, maxMs: 45_000, noSpeechMs: 9000, lang: 'en-US', onInterim: () => undefined, signal: ls, endRef })).text.trim();
+        heard = (await listenTurn({ silenceMs: 1600, maxMs: 45_000, noSpeechMs: 9000, lang: 'en-US', mixed: true, onInterim: () => undefined, signal: ls, endRef })).text.trim();
       }
       if (!liveRef.current) return;
       setPhase('idle');
@@ -259,7 +261,7 @@ export default function Coach() {
 
   return (
     <div className="tutor">
-      <section className="tutor-call voice">
+      <section className={`tutor-call voice${phase === 'speaking' && emotion !== 'neutral' ? ` emo-${emotion}` : ''}`}>
         <div className="voice-top">
           <b>{L('Sellzen')}</b>
           <span className="muted">{mmss(secs)}{minutes?.subscribed ? ` · ${L('{0} daqiqa qoldi', [minutes.left])}` : ''}</span>

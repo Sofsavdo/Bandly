@@ -41,7 +41,9 @@ export const NATIVE_STT_CODE: Record<string, string> = { uz: 'uzb', ru: 'rus', k
 
 /** Tanish: avval tilni o'zi aniqlaydi; qisqa gapda boshqa til (masalan, marathi yoki shved) chiqsa — ingliz tili deb qayta tanadi.
  *  O'quvchi faqat ingliz tilida yoki o'z ona tilida gapiradi. */
-export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb'): Promise<SttResult & { forced: boolean }> {
+export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb', expect: 'en' | 'any' = 'any'): Promise<SttResult & { forced: boolean }> {
+  // Inglizcha mashq (o'qish, speaking, shadowing): faqat ingliz tilida — aksentli inglizcha o'zbek tili deb aniqlanib qolmasin; bitta so'rov
+  if (expect === 'en') return { ...(await transcribe(cfg, audio, mime, 'eng')), forced: false };
   // Ikkalasi parallel: tilni o'zi aniqlagani va "ingliz tili" deb tanilgani — ketma-ket ikki marta kutilmaydi
   const [auto, eng] = await Promise.all([transcribe(cfg, audio, mime), transcribe(cfg, audio, mime, 'eng').catch(() => null)]);
   if (!auto.text || !auto.lang || auto.lang === 'eng' || auto.lang === native || !eng) return { ...auto, forced: false };

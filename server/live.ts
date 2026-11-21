@@ -8,6 +8,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer, type RawData } from 'ws';
 import { tzDay } from './day';
 import { CALL_MONTH_SECONDS } from './callMinutes';
+import { clampStyle, emotionOf, type LiveEmotion } from './coach';
 
 export interface LiveConfig {
   key: string; model: string; fallbackModel: string | null; voice: string; url: string;
@@ -33,7 +34,7 @@ export function liveConfigFromEnv(geminiKey: string | null, env: NodeJS.ProcessE
     maxSessionSec: Math.max(60, Number(env.LIVE_MAX_SESSION_MINUTES ?? 10) * 60),
     pricePerMin: Number(env.PRICE_LIVE_PER_MIN ?? 0.03),
     freeGlobalDailySeconds: Math.max(0, Number(env.LIVE_FREE_GLOBAL_DAILY_MINUTES ?? 0) || 0) * 60,
-    silenceMs: Math.min(2000, Math.max(300, Number(env.LIVE_SILENCE_MS ?? 600) || 600)),
+    silenceMs: Math.min(2000, Math.max(300, Number(env.LIVE_SILENCE_MS ?? 900) || 900)),
   };
 }
 
@@ -69,8 +70,9 @@ export function setupMessage(cfg: LiveConfig, model: string, systemText: string)
       model: `models/${model}`,
       generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: cfg.voice } } } },
       systemInstruction: { parts: [{ text: systemText }] },
-      // Tezroq navbat almashish: gap tugashini sezgirroq aniqlash va qisqaroq jimlik (standart ancha uzun — "javob kech keladi" shikoyati)
-      realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_HIGH', prefixPaddingMs: 120, silenceDurationMs: cfg.silenceMs } },
+      // Navbat almashish: o'quvchilar o'ylab, to'xtab gapiradi — sezgirlik past va ~0.9 s jimlik (0.6 s + yuqori sezgirlik gapni
+      // o'rtasida kesib, ustoz "tushunmadim, qattiqroq gapir" deyaverardi — 2026-11-21 shikoyati). LIVE_SILENCE_MS bilan sozlanadi.
+      realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', prefixPaddingMs: 200, silenceDurationMs: cfg.silenceMs } },
       inputAudioTranscription: {},
       outputAudioTranscription: {},
     },
@@ -96,7 +98,7 @@ interface LiveDeps {
   cfg: LiveConfig;
   /** Token → o'quvchi; null — yaroqsiz */
   auth: (token: string) => { id: number; staff: boolean; subscriberLeftSec: number } | null;
-  prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string }) => string;
+  prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string; style: 0 | 1 | 2 | 3 }) => string;
   /** O'quvchi uchun: birinchi qo'ng'iroqmi va xotira matni (ko'rsatmaga qo'shiladi) */
   context?: (playerId: number) => { firstCall: boolean; memory: string };
   /** Qo'ng'iroq boshidagi ko'rsatma (o'quvchi hali gapirmagan) */
@@ -142,11 +144,14 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
 
   const lang = String(url.searchParams.get('lang') ?? 'uz').slice(0, 2);
   const ctx = d.context?.(who.id) ?? { firstCall: false, memory: '' };
-  const systemText = d.prompt({ adult: url.searchParams.get('adult') === '1', native: d.native(lang), level: url.searchParams.get('level'), firstCall: ctx.firstCall, memory: ctx.memory });
+  const adult = url.searchParams.get('adult') === '1';
+  // Xarakter (profil): 0 Yumshoq, 1 Hazil, 2 Qattiq, 3 Jallod; 2–3 faqat 18+ bilan
+  const style = clampStyle(url.searchParams.get('style') ?? (adult ? 2 : 0), adult);
+  const systemText = d.prompt({ adult, native: d.native(lang), level: url.searchParams.get('level'), firstCall: ctx.firstCall, memory: ctx.memory, style });
   // Suhbat yozuvi (xotira uchun) va noto'g'ri til himoyasi
   const turns: { who: 'learner' | 'coach'; text: string }[] = [];
   const addText = (who: 'learner' | 'coach', t: string) => { const last = turns[turns.length - 1]; if (last && last.who === who) last.text = `${last.text}${t}`.slice(-600); else turns.push({ who, text: t.slice(0, 600) }); if (turns.length > 80) turns.shift(); };
-  let turnOut = '', muted = false, wrongCount = 0;
+  let turnOut = '', muted = false, wrongCount = 0, emo: LiveEmotion = 'neutral';
   const started = Date.now();
   let upstream: WebSocket | null = null;
   let ready = false, closed = false, model = d.cfg.model, triedFallback = false;
@@ -191,13 +196,18 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
             muted = true; wrongCount++;
             send({ type: 'interrupted' });
             const nat = d.native(lang).replace(/\s*\(.*\)\s*$/, '');
-            ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: your last reply was in a forbidden language — the learner's audio was misheard. Speak ONLY English or ${nat}. Now say ONE short line in ${nat}, in your style, that you did not hear and they must speak louder and clearer.)` }] }], turnComplete: true } }));
-          } else if (!muted) { send({ type: 'out', text: t }); addText('coach', t); }
+            ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: your last reply was in a forbidden language — the learner's audio was misheard. Speak ONLY English or ${nat}. Now say ONE short line in ${nat}, in your style, that you did not catch that and ask them to say it again (do not tell them to speak louder).)` }] }], turnComplete: true } }));
+          } else if (!muted) {
+            send({ type: 'out', text: t }); addText('coach', t);
+            // Ekrandagi hissiyot effekti (jahl — olov, kulgi, quvonch): faqat o'zgarganda yuboriladi
+            const e = emotionOf(turnOut);
+            if (e !== 'neutral' && e !== emo) { emo = e; send({ type: 'emotion', value: e }); }
+          }
         }
         if (!muted) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
         if (sc.inputTranscription?.text) { const t = String(sc.inputTranscription.text); send({ type: 'in', text: t }); addText('learner', t); }
         if (sc.interrupted) { send({ type: 'interrupted' }); turnOut = ''; muted = false; }
-        if (sc.turnComplete) { send({ type: 'turn' }); turnOut = ''; muted = false; }
+        if (sc.turnComplete) { send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; }
       }
       if (m.goAway) { send({ type: 'error', code: 503, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
     });

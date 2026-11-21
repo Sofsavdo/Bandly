@@ -84,6 +84,8 @@ export interface TurnOptions {
   maxMs: number;           // eng ko'p davomiylik
   noSpeechMs?: number;     // umuman gapirilmasa
   lang?: string;           // tanish tili: en-US, en-GB, en-IN
+  /** Ona tilida ham gapirish mumkin (ovozli ustoz). Bo'lmasa — mashq inglizcha: server faqat ingliz tilida taniydi */
+  mixed?: boolean;
   onInterim: (text: string) => void;
   onStatus?: (s: MicStatus) => void;
   signal: Signal;
@@ -103,6 +105,12 @@ const isMobile = (): boolean => /Android|iPhone|iPad|Mobile/i.test(navigator.use
 export function listenTurn(o: TurnOptions & { live?: boolean }): Promise<TurnResult> {
   // Aniq tanish va bitta mikrofon ruxsati: server tanishi bor bo'lsa — u (jonli matn kerak bo'lgan o'yinlardan tashqari)
   if (!o.live && serverSttReady()) return serverTurn(o);
+  // Sahifa endi ochilgan va server holati hali kelmagan: brauzer tanishiga (Telegramda yo'q) tushib qolmaslik uchun kutamiz
+  if (!o.live && sttStatusPending()) return waitSttStatus().then(() => (serverSttReady() ? serverTurn(o) : browserTurn(o)));
+  return browserTurn(o);
+}
+
+function browserTurn(o: TurnOptions & { live?: boolean }): Promise<TurnResult> {
   return new Promise((resolve, reject) => {
     const C = ctor();
     if (!C) { reject(new SpeechError('unsupported', L('Brauzer nutqni tanishni qo‘llamaydi'))); return; }
@@ -187,7 +195,7 @@ export function listenTurn(o: TurnOptions & { live?: boolean }): Promise<TurnRes
 import type { Emotion, Reaction } from '../content/roasts';
 import { playClip, stopClip } from './clips';
 import { playUz, stopUz, uzTtsExpressive } from './tts';
-import { serverSttReady, serverTurn } from './voiceTurn';
+import { serverSttReady, serverTurn, sttStatusPending, waitSttStatus } from './voiceTurn';
 import { L } from '../i18n';
 
 /** Brauzer ovozida hissiyot faqat ohang (pitch), tezlik va balandlik orqali beriladi. */

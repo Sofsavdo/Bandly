@@ -21,8 +21,8 @@ assert.equal(sm.setup.model, 'models/gemini-3.8-live');
 assert.deepEqual(sm.setup.generationConfig.responseModalities, ['AUDIO']);
 assert.equal(sm.setup.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Puck');
 assert.equal(sm.setup.systemInstruction.parts[0].text, 'SYS');
-// Tezroq navbat: gap tugashi sezgir, jimlik 600 ms (LIVE_SILENCE_MS bilan 300–2000)
-assert.deepEqual(sm.setup.realtimeInputConfig.automaticActivityDetection, { endOfSpeechSensitivity: 'END_SENSITIVITY_HIGH', prefixPaddingMs: 120, silenceDurationMs: 600 });
+// O'quvchi o'ylab, pauza bilan gapiradi: gap tugashini shoshilmay aniqlaydi (past sezgirlik, 900 ms jimlik; LIVE_SILENCE_MS 300–2000)
+assert.deepEqual(sm.setup.realtimeInputConfig.automaticActivityDetection, { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', prefixPaddingMs: 200, silenceDurationMs: 900 });
 assert.equal(liveConfigFromEnv('k', { LIVE_SILENCE_MS: '50' } as never)!.silenceMs, 300);
 // Noto'g'ri til: boshqa yozuvlar, o'zbek uchun kirill, ispan/portugal so'zlari; ingliz va o'zbek matni — to'g'ri
 for (const t of ['你好，我们开始吧', '안녕하세요', 'مرحبا', 'Hola, ¿cómo estás? Muy bien, gracias', 'Olá, você está bem? Muito obrigado']) assert.equal(wrongLanguage(t, 'uz'), true, t);
@@ -50,7 +50,7 @@ upstream.on('connection', (ws, req) => {
       gotAudio.push(Buffer.from(m.realtimeInput.audio.data, 'base64').length);
       const pcm = Buffer.alloc(480).toString('base64');
       ws.send(JSON.stringify({ serverContent: { inputTranscription: { text: 'I go school' }, modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: pcm } }] } } }));
-      ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Not I go — I went!' }, turnComplete: true } }));
+      ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Hahaha! Not I go — I went!' }, turnComplete: true } }));
     }
   });
 });
@@ -58,12 +58,12 @@ await new Promise((r) => upstream.once('listening', r));
 const upPort = (upstream.address() as { port: number }).port;
 
 const cfg = { ...cfg0, model: 'bad-model', fallbackModel: 'gemini-2.5-flash-native-audio-preview-12-2025', url: `ws://127.0.0.1:${upPort}` };
-const ended: { pid: number; secs: number; model: string }[] = [];
+const ended: { pid: number; secs: number; model: string }[] = []; const styles: number[] = [];
 const http = createServer((_q, s) => { s.end(); });
 attachLive(http, {
   db, cfg,
   auth: (t) => (t === 'good' ? { id: 7, staff: false, subscriberLeftSec: 0 } : null),
-  prompt: (o) => `bandi adult=${o.adult} native=${o.native}`,
+  prompt: (o) => { styles.push(o.style); return `bandi adult=${o.adult} native=${o.native}`; },
   native: (l) => (l === 'ru' ? 'Russian' : 'Uzbek'),
   onEnd: (pid, secs, model) => { ended.push({ pid, secs, model }); recordLive(db, pid, secs); },
   log: () => undefined,
@@ -80,11 +80,11 @@ const port = (http.address() as { port: number }).port;
 // to'g'ri: ready → ovoz yuboriladi → Sellzen ovozi (ikkilik) va matn nusxalari keladi
 {
   const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?token=good&adult=1&lang=uz&level=B1`);
-  const events: string[] = []; let audioBytes = 0;
+  const events: string[] = []; let audioBytes = 0; const emotions: string[] = [];
   await new Promise<void>((resolve) => {
     ws.on('message', (d, bin) => {
       if (bin) { audioBytes += (d as Buffer).length; return; }
-      const m = JSON.parse(d.toString()); events.push(m.type);
+      const m = JSON.parse(d.toString()); events.push(m.type); if (m.type === 'emotion') emotions.push(m.value);
       if (m.type === 'ready') ws.send(Buffer.alloc(640), { binary: true });
       if (m.type === 'turn') resolve();
     });
@@ -95,7 +95,9 @@ const port = (http.address() as { port: number }).port;
   assert.ok(sawGreeting, 'Sellzen suhbatni o‘zi boshlaydi');
   assert.deepEqual(gotAudio, [640]);
   assert.equal(audioBytes, 480);
-  assert.deepEqual(events.filter((e) => e !== 'in' && e !== 'out'), ['ready', 'turn']);
+  assert.deepEqual(events.filter((e) => e !== 'in' && e !== 'out'), ['ready', 'emotion', 'turn']);
+  assert.deepEqual(emotions, ['laugh'], 'kulgi ekranga hissiyot sifatida yuborildi');
+  assert.deepEqual(styles, [2], '18+ va uslub berilmagan — Qattiq (2)');
   assert.ok(events.includes('in') && events.includes('out'));
   await new Promise((r) => setTimeout(r, 50));
   assert.equal(ended.length, 1); assert.equal(ended[0]!.pid, 7); assert.equal(ended[0]!.model, 'gemini-2.5-flash-native-audio-preview-12-2025');

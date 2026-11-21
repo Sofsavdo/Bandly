@@ -12,6 +12,8 @@ export interface LiveHandlers {
   onError(message: string, beforeReady: boolean): void;
   onLimit(message: string): void;
   onClosed(): void;
+  /** Ustoz hissiyoti (server ustoz matnidan aniqlaydi): ekrandagi effekt uchun */
+  onEmotion?(e: 'angry' | 'laugh' | 'happy' | 'disappointed' | 'neutral'): void;
 }
 export interface LiveCall { end(): void }
 
@@ -38,7 +40,7 @@ export function downsample(input: Float32Array, fromRate: number, carry: number[
 }
 const rms = (f: Float32Array): number => { let s = 0; for (let i = 0; i < f.length; i++) s += f[i]! * f[i]!; return Math.sqrt(s / Math.max(1, f.length)); };
 
-export async function startLive(o: { token: string; adult: boolean; level: string | null; lang: string }, h: LiveHandlers): Promise<LiveCall> {
+export async function startLive(o: { token: string; adult: boolean; level: string | null; lang: string; style?: number }, h: LiveHandlers): Promise<LiveCall> {
   const { stream, ctx } = await micContext();
   if (ctx.state === 'suspended') await ctx.resume().catch(() => undefined);
   if (!loaded.has(ctx)) { await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET], { type: 'application/javascript' }))); loaded.add(ctx); }
@@ -50,7 +52,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
 
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   // Token URL'da emas (proksi loglariga tushmasin) — subprotocol sarlavhasida (server/live.ts tokenFromProtocols)
-  const q = new URLSearchParams({ adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang });
+  const q = new URLSearchParams({ adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang, style: String(o.style ?? (o.adult ? 2 : 0)) });
   const ws = new WebSocket(`${proto}://${location.host}/api/ai/live?${q}`, ['sellzen.v1', `tk.${o.token}`]);
   ws.binaryType = 'arraybuffer';
 
@@ -94,13 +96,16 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
       s.onended = () => { playing.delete(s); if (!playing.size && ctx.currentTime >= nextAt - 0.05) setSpeaking(false); };
       return;
     }
-    let m: { type?: string; text?: string; message?: string };
+    let m: { type?: string; text?: string; message?: string; value?: string };
     try { m = JSON.parse(e.data as string); } catch { return; }
     if (m.type === 'ready') { ready = true; h.onReady(); }
+    // Javob tugadi: hissiyot effekti ovoz chalinib bo'lgach o'chadi (keyingi javobda eski hissiyot qolmasin)
+    else if (m.type === 'turn') { const left = Math.max(0, (nextAt - ctx.currentTime) * 1000); setTimeout(() => h.onEmotion?.('neutral'), left + 400); }
     else if (m.type === 'interrupted') stopPlayback();
     else if (m.type === 'in' && m.text) h.onHeard(m.text);
     else if (m.type === 'out' && m.text) h.onSaid(m.text);
     else if (m.type === 'limit') h.onLimit(m.message ?? '');
+    else if (m.type === 'emotion' && (m.value === 'angry' || m.value === 'laugh' || m.value === 'happy' || m.value === 'disappointed')) h.onEmotion?.(m.value);
     else if (m.type === 'error') h.onError(m.message ?? L('Xato'), !ready);
   };
   ws.onerror = () => { if (!ended) h.onError(L('Aloqa yo‘q'), !ready); };

@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
+import { findUsers } from './adminUsers';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
@@ -428,7 +429,7 @@ const httpServer = createServer(async (req, res) => {
       sttAllowed(db, stt, p.id);
       const audio = await readRaw(req, MAX_AUDIO + 1024);
       const xl = String(req.headers['x-lang'] ?? 'uz').slice(0, 2);
-      const r = await transcribeLearner(stt, audio, String(req.headers['content-type'] ?? ''), NATIVE_STT_CODE[xl] ?? 'uzb');
+      const r = await transcribeLearner(stt, audio, String(req.headers['content-type'] ?? ''), NATIVE_STT_CODE[xl] ?? 'uzb', req.headers['x-expect'] === 'en' ? 'en' : 'any');
       const secs = r.seconds || audio.length / 4000; // so'z vaqti bo'lmasa — hajmdan taxmin
       recordStt(db, p.id, secs);
       console.log(`[stt] ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
@@ -561,6 +562,16 @@ const httpServer = createServer(async (req, res) => {
       // role: 'methodologist' | 'creator' | 'teacher' (true — eski mijozlar uchun metodist), false/null — olib tashlash; admin faqat ADMIN_NICKNAMES orqali
       const want = b.role === true ? 'methodologist' : typeof b.role === 'string' && ['methodologist', 'creator', 'teacher'].includes(b.role) ? b.role as 'methodologist' | 'creator' | 'teacher' : null;
       return send(res, 200, setRole(db, String(b.nickname ?? ''), want));
+    }
+    // Admin kabineti (rol: admin): foydalanuvchi qidirish, to'lovlar, qo'lda obuna berish (har biri audit jurnalida)
+    if (req.method === 'GET' && url.pathname === '/api/staff/users') { requireRole(db, String(req.headers['x-token'] ?? ''), []); return send(res, 200, { users: findUsers(db, url.searchParams.get('q') ?? '') }); }
+    if (req.method === 'GET' && url.pathname === '/api/staff/payments') { requireRole(db, String(req.headers['x-token'] ?? ''), []); return send(res, 200, { payments: recent(db, 100) }); }
+    if (req.method === 'POST' && url.pathname === '/api/staff/grant') {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), []);
+      const b = await readJson(req);
+      const until = grant(db, String(b.nickname ?? ''), String(b.track ?? ''), Number(b.days));
+      audit(db, me.id, 'subscription.grant', String(b.nickname ?? ''), { track: b.track, days: b.days });
+      return send(res, 200, { until });
     }
     if (url.pathname.startsWith('/api/admin/')) {
       if (!ADMIN_TOKEN || String(req.headers['x-admin'] ?? '') !== ADMIN_TOKEN) throw new ApiError(403, 'Taqiqlangan');

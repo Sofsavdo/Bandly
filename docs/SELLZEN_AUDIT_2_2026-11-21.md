@@ -48,7 +48,7 @@ Hali qolgan (ovoz):
 | Yangi foydalanuvchi: kirish → shaxsiy reja savolnomasi → daraja testi → bosh sahifa | Mantiqiy, majburiy qadamlar aniq |
 | Bosh sahifa | Asosiy tugma aniq ("Rejani boshlash"), lekin pastida bir xil darsga ikkinchi "Davom ettirish" kartasi, statistika, vazifalar, kun so'zi — uzun va takrorlanadi. Tavsiya: bitta asosiy harakat + yig'iladigan qo'shimcha bloklar |
 | Menyu (7 bo'lim) | Tushunarli. Lekin landing sahifada asosiy mahsulot sifatida reklama qilingan **Mock Arena** menyuda alohida yo'q (Imtihon ichida), o'yinlar/duel "Mashq" va "Reyting" ichida yashiringan |
-| Mehmon | Bosh sahifa, daraja testi, narxlar, duel taklifi ochiq; qolgani — Telegram orqali kirish |
+| Mehmon | Faqat landing (egasi qarori, 2026-11-21); daraja testi, narxlar, duel taklifi va qolgani — Telegram orqali kirgandan keyin |
 | `sellzen.uz` (www'siz) DNS | Ochilmaydi — QR kodlar, SEO canonical. Egasi registratorda tuzatishi kerak |
 
 ## 4. Keyingi ishlar (ustuvorlik bo'yicha)
