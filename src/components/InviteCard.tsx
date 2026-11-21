@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { L } from '../i18n';
 
-interface Ref { code: string; invited: number; activated: number; xpEach: number; bot: string | null }
+interface Ref { code: string; invited: number; activated: number; xpEach: number; planDays?: number; bot: string | null }
 
 export function InviteCard() {
   const acc = getAccount();
@@ -27,7 +27,7 @@ export function InviteCard() {
         <span className="blob orange"><Gift /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ margin: 0 }}>{L('Do‘stlarni taklif qiling')}</h3>
-          <p className="muted" style={{ margin: '2px 0 10px' }}>{L('Do‘stingiz birinchi darsni tugatsa — ikkalangizga +{0} XP.', [r.xpEach])}</p>
+          <p className="muted" style={{ margin: '2px 0 10px' }}>{r.planDays ? L('Do‘stingiz birinchi darsni tugatsa — ikkalangizga +{0} kun All Access va +{1} XP.', [r.planDays, r.xpEach]) : L('Do‘stingiz birinchi darsni tugatsa — ikkalangizga +{0} XP.', [r.xpEach])}</p>
         </div>
       </div>
       <div className="invite-link"><code>{link}</code><button className="icon-btn sm" aria-label={L('Nusxalash')} onClick={() => { void navigator.clipboard?.writeText(link).then(() => setMsg(L('Havola nusxalandi'))); }}><Copy size={16} /></button></div>
