@@ -125,7 +125,7 @@ export default function Admin() {
             <div className="kpis">
               <div className="kpi2"><span>{L('Daraja testi → ro‘yxat')}</span><b>{pct(data.growth.placementToSignupPct)}</b><small>{L('Maqsad: 35%')} · {data.growth.events.placement_done} → {data.growth.signups}</small></div>
               <div className="kpi2"><span>{L('Taklif orqali kelganlar')}</span><b>{pct(data.growth.referredSharePct)}</b><small>{L('{0} ta, faollashgan: {1}', [data.growth.referredSignups, data.growth.referredActivated])}</small></div>
-              <div className="kpi2"><span>{L('Ulashishlar')}</span><b>{(data.growth.events.share_placement_tg ?? 0) + (data.growth.events.share_placement_img ?? 0) + (data.growth.events.duel_share ?? 0)}</b><small>{L('Duel taklifini ochgan mehmonlar: {0}', [data.growth.events.duel_guest_view ?? 0])}</small></div>
+              <div className="kpi2"><span>{L('Ulashishlar')}</span><b>{(data.growth.events.share_placement_tg ?? 0) + (data.growth.events.share_placement_img ?? 0) + (data.growth.events.duel_share ?? 0) + (data.growth.events.share_mock ?? 0)}</b><small>{L('Duel taklifini ochgan mehmonlar: {0}', [data.growth.events.duel_guest_view ?? 0])}</small></div>
               <div className="kpi2"><span>{L('Daraja testini boshlagan')}</span><b>{data.growth.events.placement_start ?? 0}</b><small>{L('SEO sahifadan: {0}', [data.growth.events.seo_cta ?? 0])}</small></div>
             </div>
           </section>

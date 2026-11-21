@@ -4,7 +4,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { tzDay } from './day';
 
-export const EVENT_NAMES = ['placement_start', 'placement_done', 'share_placement_tg', 'share_placement_img', 'duel_guest_view', 'duel_share', 'seo_cta'] as const;
+export const EVENT_NAMES = ['placement_start', 'placement_done', 'share_placement_tg', 'share_placement_img', 'duel_guest_view', 'duel_share', 'share_mock', 'seo_cta'] as const;
 export type EventName = (typeof EVENT_NAMES)[number];
 export const isEventName = (x: unknown): x is EventName => (EVENT_NAMES as readonly unknown[]).includes(x);
 
