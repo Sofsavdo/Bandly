@@ -129,8 +129,8 @@ function MainApp() {
   // Menyu bosilganda yangi sahifa har doim tepadan boshlansin
   // Sahifa almashganda tepaga (o'quv xaritasi o'zi hozirgi dars joyini ochadi)
   useLayoutEffect(() => { if (hash !== '#/learn') window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, [hash]);
-  useEffect(() => { document.title = section ? `${t(section.label)} — Sellzen` : L('Sellzen — ingliz tili, IELTS, CEFR, SAT va Sellzen AI ustoz'); }, [section, t]);
-  // Kirgan o'quvchi: avval shaxsiy reja (Sellzen AI uslubi bilan), keyin daraja testi — shundan keyin darslar darajaga qarab ochiladi
+  useEffect(() => { document.title = section ? `${t(section.label)} — Sellzen` : L('Sellzen — ingliz tili, IELTS, CEFR, SAT va Sellzen ustoz'); }, [section, t]);
+  // Kirgan o'quvchi: avval shaxsiy reja (Sellzen uslubi bilan), keyin daraja testi — shundan keyin darslar darajaga qarab ochiladi
   useEffect(() => {
     const check = () => { const to = setupRoute(window.location.hash || '#/'); if (to) window.location.hash = to; };
     const t = setTimeout(check, 600); // hisob progressi tiklanishiga vaqt

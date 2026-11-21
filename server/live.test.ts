@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
-import { attachLive, tokenFromProtocols, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, tokenFromProtocols, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
@@ -21,6 +21,14 @@ assert.equal(sm.setup.model, 'models/gemini-3.8-live');
 assert.deepEqual(sm.setup.generationConfig.responseModalities, ['AUDIO']);
 assert.equal(sm.setup.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Puck');
 assert.equal(sm.setup.systemInstruction.parts[0].text, 'SYS');
+// Tezroq navbat: gap tugashi sezgir, jimlik 600 ms (LIVE_SILENCE_MS bilan 300–2000)
+assert.deepEqual(sm.setup.realtimeInputConfig.automaticActivityDetection, { endOfSpeechSensitivity: 'END_SENSITIVITY_HIGH', prefixPaddingMs: 120, silenceDurationMs: 600 });
+assert.equal(liveConfigFromEnv('k', { LIVE_SILENCE_MS: '50' } as never)!.silenceMs, 300);
+// Noto'g'ri til: boshqa yozuvlar, o'zbek uchun kirill, ispan/portugal so'zlari; ingliz va o'zbek matni — to'g'ri
+for (const t of ['你好，我们开始吧', '안녕하세요', 'مرحبا', 'Hola, ¿cómo estás? Muy bien, gracias', 'Olá, você está bem? Muito obrigado']) assert.equal(wrongLanguage(t, 'uz'), true, t);
+assert.equal(wrongLanguage('Привет, как дела?', 'uz'), true, 'o‘zbek (lotin) uchun kirill — xato');
+assert.equal(wrongLanguage('Привет, как дела?', 'ru'), false, 'rus tili tanlangan bo‘lsa — to‘g‘ri');
+for (const t of ['Not "I go" — "I went", it is past! Say it again.', 'Eshitmadim! Qattiqroq gapir. Bu nima endi?', 'What do you do para... sorry, for fun?']) assert.equal(wrongLanguage(t, 'uz'), false, t);
 
 // To'liq yo'l: soxta Gemini serveri. Birinchi model "topilmaydi" (1008), zaxira model ishlaydi.
 const db = new DatabaseSync(':memory:'); ensureLiveTable(db);
@@ -69,7 +77,7 @@ const port = (http.address() as { port: number }).port;
   const msg = await new Promise<string>((r) => ws.on('message', (d) => r(d.toString())));
   assert.equal(JSON.parse(msg).code, 401);
 }
-// to'g'ri: ready → ovoz yuboriladi → Sellzen AI ovozi (ikkilik) va matn nusxalari keladi
+// to'g'ri: ready → ovoz yuboriladi → Sellzen ovozi (ikkilik) va matn nusxalari keladi
 {
   const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?token=good&adult=1&lang=uz&level=B1`);
   const events: string[] = []; let audioBytes = 0;
@@ -84,7 +92,7 @@ const port = (http.address() as { port: number }).port;
   ws.send(JSON.stringify({ type: 'end' }));
   await new Promise((r) => ws.on('close', r));
   assert.deepEqual(seenModels, ['models/bad-model', 'models/gemini-2.5-flash-native-audio-preview-12-2025'], 'zaxira modelga o‘tdi');
-  assert.ok(sawGreeting, 'Sellzen AI suhbatni o‘zi boshlaydi');
+  assert.ok(sawGreeting, 'Sellzen suhbatni o‘zi boshlaydi');
   assert.deepEqual(gotAudio, [640]);
   assert.equal(audioBytes, 480);
   assert.deepEqual(events.filter((e) => e !== 'in' && e !== 'out'), ['ready', 'turn']);
@@ -121,6 +129,51 @@ assert.equal(tokenFromProtocols(undefined), null);
   // server hali tirik: oddiy ulanish ishlaydi
   const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?token=bad`);
   assert.equal(JSON.parse(await new Promise<string>((r) => ws.on('message', (d) => r(d.toString())))).code, 401, 'buzuq so‘rovdan keyin server ishlayapti');
+}
+// Noto'g'ri tilga o'tish himoyasi + xotira oqimi (alohida soxta Gemini): ustoz xitoycha gapira boshlasa — ovoz to'xtaydi,
+// mijozga 'interrupted', matn yuborilmaydi, modelga "faqat ingliz/o'zbek, qayta so'ra" ko'rsatmasi ketadi; suhbat yozuvi onTranscript'ga
+{
+  const up2 = new WebSocketServer({ port: 0 });
+  const toModel: string[] = [];
+  up2.on('connection', (ws) => {
+    ws.on('message', (raw) => {
+      const m = JSON.parse(raw.toString());
+      if (m.setup) { ws.send(JSON.stringify({ setupComplete: {} })); return; }
+      if (m.clientContent) { toModel.push(m.clientContent.turns[0].parts[0].text); if (toModel.length === 1) {
+        for (const t of ['I go school', 'yesterday I go park', 'he like football']) { ws.send(JSON.stringify({ serverContent: { inputTranscription: { text: t } } })); ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Not that! Again.' }, turnComplete: true } })); }
+        ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: '你好，我们' }, modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] } } }));
+        ws.send(JSON.stringify({ serverContent: { modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] }, turnComplete: true } }));
+        ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Eshitmadim, qattiqroq gapir!' }, turnComplete: true } }));
+      } }
+    });
+  });
+  await new Promise((r) => up2.once('listening', r));
+  const transcripts: { pid: number; n: number; lang: string }[] = []; const kicks: string[] = [];
+  const http2 = createServer((_q, s) => { s.end(); });
+  attachLive(http2, {
+    db, cfg: { ...cfg0, url: `ws://127.0.0.1:${(up2.address() as { port: number }).port}` },
+    auth: (t) => (t === 'm' ? { id: 9, staff: true, subscriberLeftSec: 0 } : null),
+    prompt: (o) => `first=${o.firstCall} mem=${o.memory}`,
+    native: () => 'Uzbek (Latin script)',
+    context: () => ({ firstCall: false, memory: 'MEMORY x' }),
+    kickoff: (o) => { const k = `kick first=${o.firstCall} mem=${o.hasMemory}`; kicks.push(k); return k; },
+    onTranscript: (pid, turns, lang) => transcripts.push({ pid, n: turns.filter((t) => t.who === 'learner').length, lang }),
+    onEnd: () => undefined, log: () => undefined,
+  });
+  await new Promise<void>((r) => http2.listen(0, '127.0.0.1', () => r()));
+  const ws = new WebSocket(`ws://127.0.0.1:${(http2.address() as { port: number }).port}/api/ai/live?lang=uz`, ['sellzen.v1', 'tk.m']);
+  const events: { type: string; text?: string }[] = []; let audio = 0;
+  await new Promise<void>((resolve) => ws.on('message', (d, bin) => { if (bin) { audio++; return; } const m = JSON.parse(d.toString()); events.push(m); if (m.type === 'out' && /Eshitmadim/.test(m.text)) resolve(); }));
+  await new Promise((r) => setTimeout(r, 100)); // modelga ketgan tuzatish xabari yetib kelsin
+  assert.deepEqual(kicks, ['kick first=false mem=true'], 'qo‘ng‘iroq boshi: tanishtirmaydi, xotiradan boshlaydi');
+  assert.ok(events.some((e) => e.type === 'interrupted'), 'mijozda ovoz to‘xtatildi');
+  assert.ok(!events.some((e) => e.type === 'out' && /你好/.test(e.text ?? '')), 'xitoycha matn mijozga yuborilmadi');
+  assert.equal(audio, 0, 'noto‘g‘ri tildagi ovoz mijozga yuborilmadi');
+  assert.match(toModel[1] ?? '', /forbidden language.*ONLY English or Uzbek/, 'modelga qayta so‘rash ko‘rsatmasi ketdi');
+  ws.send(JSON.stringify({ type: 'end' }));
+  await new Promise((r) => setTimeout(r, 50));
+  assert.deepEqual(transcripts, [{ pid: 9, n: 3, lang: 'uz' }], 'suhbat yozuvi (3 ta o‘quvchi navbati) xotira uchun berildi');
+  http2.close(); up2.close();
 }
 http.close(); upstream.close();
 // Bepul foydalanuvchilar uchun platformaning kunlik umumiy chegarasi (xarajat nazorati)

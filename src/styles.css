@@ -290,7 +290,7 @@ a.plan-step[href]:hover { transform: translateX(4px); border-color: var(--brand)
 @media (max-width: 980px) { .path { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .path { grid-template-columns: 1fr; } }
 
-/* ===== Sellzen AI v2 animatsiyalari ===== */
+/* ===== Sellzen v2 animatsiyalari ===== */
 .mascot { overflow: visible; }
 .mascot .m-eye { transform-box: fill-box; transform-origin: center; animation: eyeblink 4.6s infinite; }
 @keyframes eyeblink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.08); } }

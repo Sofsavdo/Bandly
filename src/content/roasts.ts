@@ -1,4 +1,4 @@
-// Ustoz Sellzen AI shaxsiyati. Darajalar: 0 yumshoq, 1 hazil (kinoya), 2 qattiq (yengil so'kish), 3 jallod (dramatik g'azab).
+// Ustoz Sellzen shaxsiyati. Darajalar: 0 yumshoq, 1 hazil (kinoya), 2 qattiq (yengil so'kish), 3 jallod (dramatik g'azab).
 // 2 va 3 faqat 18+ tasdiqlangan foydalanuvchiga. Taqiqlangan: oila, din, millat, jins, tashqi ko'rinish, nogironlik, siyosat, jinsiy mazmun.
 export type Emotion = 'happy' | 'angry' | 'laugh' | 'disappointed' | 'impressed';
 export interface Reaction { uz: string; en: string; emotion: Emotion }

@@ -41,7 +41,7 @@ for (const ok2 of ['Ona tilingda ayt, keyin inglizchasini aytamiz.', 'Qiz do‘s
   assert.ok(parseCoachReply(JSON.stringify({ reply: ok2, emotion: 'laugh' })), `allowed: ${ok2}`);
 for (const bad of ['Onangga ayt', 'Otangni chaqir', 'Uzbeks are stupid', 'fuck you'])
   assert.equal(parseCoachReply(JSON.stringify({ reply: bad, emotion: 'angry' })), null, `blocked: ${bad}`);
-// Sellzen AI: 18+ bo'lsa so'kinish ruxsat, bo'lmasa — toza hazil; takrorlamaslik qoidasi hamma xarakterda
+// Sellzen: 18+ bo'lsa so'kinish ruxsat, bo'lmasa — toza hazil; takrorlamaslik qoidasi hamma xarakterda
 assert.match(buildPrompt('bandi', [], 'hi', { mode: 'practice', adult: true }).system, /SWEAR for real/);
 assert.match(buildPrompt('bandi', [], 'hi', { mode: 'practice', adult: false }).system, /no real swear words/);
 for (const p of ps) assert.match(p.system, /VARIETY: never repeat/);

@@ -731,7 +731,7 @@ body.has-planrun main.container { padding-bottom: 96px; }
 .weekbars.empty { height: 64px; }
 @media (max-width: 420px) { .card .seg:not(.subnav) { display: flex; width: 100%; } .card .seg:not(.subnav) button { flex: 1 1 auto; padding: 8px 9px; } }
 
-/* Sellzen AI ovozli suhbat: avatar atrofidagi holat halqasi */
+/* Sellzen ovozli suhbat: avatar atrofidagi holat halqasi */
 .voice-stage .ai-orb-wrap { position: relative; display: grid; place-items: center; }
 .voice-stage .ai-orb-wrap::after { content: ''; position: absolute; inset: -12px; border-radius: 50%; border: 4px solid transparent; pointer-events: none; }
 .voice-stage .ai-orb-wrap.listening::after { border-color: var(--mint); animation: pulse 1.2s ease-out infinite; }
@@ -936,7 +936,7 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 .tutor-type { display: flex; gap: 8px; margin: 12px auto 0; max-width: 520px; width: 100%; }
 .tutor-type input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 16px; }
 
-/* Sellzen logotipi va Sellzen AI belgisi */
+/* Sellzen logotipi va Sellzen belgisi */
 .logo-lockup { display: inline-flex; align-items: center; gap: .45em; line-height: 1; }
 .logo-lockup .logo-mark { flex: none; }
 .logo-word { font-family: var(--display, 'Outfit Variable', sans-serif); font-weight: 800; letter-spacing: .02em; color: #1E2B45; }

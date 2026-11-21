@@ -1,4 +1,4 @@
-// Gemini Live qo'ng'irog'i (ovozdan-ovozga): mikrofon ovozi uzluksiz 16 kHz PCM bo'lib serverga boradi, Sellzen AI ovozi 24 kHz PCM
+// Gemini Live qo'ng'irog'i (ovozdan-ovozga): mikrofon ovozi uzluksiz 16 kHz PCM bo'lib serverga boradi, Sellzen ovozi 24 kHz PCM
 // bo'laklarda keladi va darhol navbat bilan chalinadi. Gap tugashini va gapni bo'lishni Gemini o'zi aniqlaydi ("interrupted").
 import { micContext, parkMic } from './voiceTurn';
 import { L } from '../i18n';
@@ -67,7 +67,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     const f = e.data;
     const v = rms(f);
     if (!speaking) { h.onLevel(Math.min(1, v * 12)); if (v < floor * 2.5) floor = floor * 0.97 + v * 0.03; }
-    // Sellzen AI gapirayotganda: karnaydan qaytgan uning o'z ovozini yubormaymiz — faqat baland gap (gapni bo'lish) o'tadi
+    // Sellzen gapirayotganda: karnaydan qaytgan uning o'z ovozini yubormaymiz — faqat baland gap (gapni bo'lish) o'tadi
     const pass = !speaking || v > Math.max(0.06, floor * 8);
     const pcm = downsample(pass ? f : new Float32Array(f.length), ctx.sampleRate, carry);
     pendingPcm.push(pcm); pendingLen += pcm.length;
