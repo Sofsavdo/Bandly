@@ -102,21 +102,38 @@ npm run server           # AI holati ishga tushganda yoziladi: "(AI: anthropic)"
 - Talaffuz matndan baholanmaydi ("baholanmaydi" deb ko'rsatiladi).
 - Sinash: `npm test` uchala provayder formatini soxta server bilan tekshiradi; haqiqiy kalit bilan sinalmagan.
 
+## Kirish siyosati
+
+Ro'yxatdan o'tmagan mehmon faqat landing sahifasini (`#/`) va ochiq SEO vositalarini (`/vositalar/...`) ko'radi; ilovaning qolgan bo'limlari (darslar, mock, o'yinlar, ustoz) hisob talab qiladi. Bu egasining qarori (2026-11). Ochiq server marshrutlari: duel natijasi (`getDuel` — faqat laqab, ball va so'zlar), sertifikatni tekshirish, `/api/i18n`, `/api/event`, to'lov callback'lari.
+
+## Tillar (6 ta)
+
+- Interfeys tillari: **o'zbekcha (asosiy, manba)**, ruscha, inglizcha, qozoqcha, qirg'izcha, tojikcha. Til tanlovi `bandly.lang` da saqlanadi; birinchi ochilishda Telegram yoki brauzer tili aniqlanadi.
+- Kalit — o'zbekcha manba matn: `L('...')`. Katalog: `npx tsx scripts/i18n/extract.ts` → `src/i18n/catalog.json` (hammasi) va `src/i18n/catalog-ui.json` (ekranlar, server xabarlari, bot).
+- Tarjimalar **kodda**: `src/i18n/locales/{en,ru,kk,ky,tg}.json`. Server birlashtirish tartibi: AI tarjima (baza) < repo fayllari < metodist tahriri (baza). Til interfeys katalogi 100% bo'lganda yoqiladi.
+- `scripts/i18n/locales.test.ts` (`npm test` ichida): eskirgan/bo'sh kalit, `{0}` o'rinbosarlar, kirill yozuvi, qo'shtirnoqdagi inglizcha o'quv iboralari o'zgarmaganini va **5 tilda interfeys 100%** ekanini tekshiradi.
+- Inglizcha o'quv materiali (so'zlar, misol gaplar, matnlar, audio skriptlar, javob variantlari) **tarjima qilinmaydi**; faqat atrofidagi tushuntirish va interfeys tarjima qilinadi. Bunga `src/i18n/keep-english.json` va extractor filtrlari xizmat qiladi.
+- Hali qolgan ish: dars tushuntirishlari (katalogdagi ~5 600 kontent matni) repo fayllarida yo'q — ular bazadagi AI/metodist tarjimasi bo'lsa shundan, bo'lmasa o'zbekcha ko'rsatiladi. SEO vositalar sahifalari hozircha o'zbekcha + ruscha.
+
+## Zaxira nusxa
+
+Kunlik avtomatik zaxira (`server/autoBackup.ts`), `BACKUP_KEEP_DAYS`. Tashqi S3-mos ombor ixtiyoriy (`BACKUP_S3_*` — to'liq bo'lmasa xato ko'rsatiladi). Holat admin panelida (Analitika → Zaxira): oxirgi nusxa vaqti, soni, tashqi ombor holati, xatolar, 27 soatdan eski bo'lsa ogohlantirish. Tiklash: `docs/runbooks/backup-restore.md`.
+
+## Analitika
+
+Hodisalar (`server/events.ts`): umumiy son va **noyob brauzerlar** (anonim `bandly.vid` → tuzli sha256; xom IP saqlanmaydi; 10 daqiqada 120 hodisa chegarasi; 180 kun saqlanadi). Admin voronkasi kogorta bo'yicha: tanlangan davrda ro'yxatdan o'tganlarning qanchasi daraja testi, dars, mock, to'lov (≥1) va qayta to'lov (≥2) qilgani, oldingi teng davr bilan solishtirish.
+
 ## Ma'lum cheklovlar
 
-- Kontent hali kichik: 4 Reading, 4 Listening (13/10 savoldan), 50 Grammar, 152 so'z. Savol turlari: True/False/Not Given, bo'sh joy, test, moslashtirish (sarlavha/harf). Mini-test bandi 40 ballik shkalaga keltirilgan, faqat taxminiy.
-- Parolli hisoblar, do'stlar bilan duel, to'lov yo'q. Reyting tokeni shu qurilmada saqlanadi (yo'qolsa, laqab qayta olinmaydi).
-- AI Writing/Speaking baholash yo'q (kalit kerak); Writing tekshiruvi qoidaviy.
-- Listening audiosi qurilmadagi ingliz ovoziga bog'liq.
-- SAT va CEFR hali yo'q.
+- Live (jonli ovoz) provayderi ishlamasa ilova avtomatik oddiy ovozli rejimga o'tadi (STT + matnli AI + TTS) va buni foydalanuvchiga aytadi; ikkinchi Live provayder yo'q.
+- Asosiy JS bo'lagi ~1.7 MB (gzip ~550 KB), asosan dars kontenti; kontent sinxron ishlatilgani uchun hozircha bo'linmagan.
+- SEO sahifalari 2 tilda (uz, ru).
 
 ## Keyingi bosqichlar
 
-1. **Kontent:** har ko'nikmaga 10 ta test, 500+ so'z, 150+ grammar savol (original, dalil izohlari bilan).
-2. **Backend**: parolli/Telegram orqali kirish, obuna huquqlari, duellar, duelda ball hisobini serverda qilish, serverda XP hisoblash, Postgres, hostingga joylash.
-3. **To'lov** (Payme/Click/Uzum) va haqiqiy obuna tekshiruvi (hozirgi demo o'rniga serverdagi huquqlar).
-4. **AI qatlami:** Writing va Speaking baholash (kalit `.env` da, hech qachon chatga yozilmaydi), xarajat hisoblagichi.
-5. **SAT va CEFR** yo'nalishlari; o'zbekcha SEO qo'llanmalar; kreator/affiliate dasturi.
+1. Dars tushuntirishlarini 5 tilga tarjima qilib repo fayllariga qo'shish (metodist tekshiruvi bilan).
+2. SEO vositalar sahifalarini en/kk/ky/tg ga kengaytirish (hreflang, sitemap).
+3. Tashqi zaxira omborini ulash (`BACKUP_S3_*`) va zaxiradan tiklashni muntazam sinash.
 
 ## Kontent qoidalari
 
@@ -151,7 +168,7 @@ Fidem loyihasidagi kabi **kartaga o'tkazma** orqali ishlaydi (`server/hamyon.ts`
 3. Callback yo'qolsa: mijoz holatni so'raganda va har 90 soniyada server Hamyon'dan o'zi tekshiradi.
 4. Kech kelgan to'lov (bekor qilingandan keyin) ham yetkaziladi; summa mos kelmasa yetkazilmaydi va `note` ga yoziladi.
 
-Sozlash (Railway Variables): `HAMYON_SHOP_ID`, `HAMYON_SHOP_KEY`; Hamyon botida `prepare_url` va `complete_url` ni `/api/pay/hamyon/prepare|complete` ga qo'ying. `HAMYON_*` bo'lmasa demo rejim ishlaydi. Qo'llab-quvvatlash: `ADMIN_TOKEN` bilan `GET /api/admin/payments` va `POST /api/admin/grant {nickname, track, days}` (sarlavha `x-admin`).
+Sozlash (Railway Variables): `HAMYON_SHOP_ID`, `HAMYON_SHOP_KEY`; Hamyon botida `prepare_url` va `complete_url` ni `/api/pay/hamyon/prepare|complete` ga qo'ying. `HAMYON_*` bo'lmasa: productionda to'lov o'chiq ("To'lov hali ulanmagan"), demo faqat development'da yoki `PAY_DEMO=1` bilan (`server/pricing.ts` → `demoMode`). Production'da Hamyon ulangan. Qo'llab-quvvatlash: `ADMIN_TOKEN` bilan `GET /api/admin/payments` va `POST /api/admin/grant {nickname, track, days}` (sarlavha `x-admin`).
 Obunalar serverda hisobga (laqab + token) bog'lanadi; boshqa qurilmada Profil'dagi "hisob kodi" bilan tiklanadi.
 
 
