@@ -97,4 +97,23 @@ assert.match(JSON.stringify(handleUpdate({ message: { chat: { id: 5, type: 'priv
   const broken = (async (url: string) => ({ json: async () => (url.endsWith('getMe') ? { ok: true, result: { username: 'x' } } : { ok: false, description: 'Too Many Requests' }) })) as never;
   assert.equal(await setupBot({ token: 't', publicUrl: null } as never, broken), 'x', 'profil xatosi setupBot’ni yiqitmaydi');
 }
+// Webhook DNS xatosi username'ni yo'qotmaydi va qayta urinadi (2026-11-21 production hodisasi)
+{
+  const { setupBot } = await import('./telegram');
+  let hooks = 0; let got: string | null = null;
+  const flaky = (async (url: string) => {
+    const m = url.split('/').pop()!;
+    if (m === 'getMe') return { json: async () => ({ ok: true, result: { username: 'Bandly_robot' } }) };
+    if (m === 'setWebhook') { hooks++; return { json: async () => (hooks < 3 ? { ok: false, description: 'Bad Request: bad webhook: Failed to resolve host' } : { ok: true, result: true }) }; }
+    if (m.startsWith('getMy')) return { json: async () => ({ ok: true, result: {} }) };
+    return { json: async () => ({ ok: true, result: true }) };
+  }) as never;
+  const u = await setupBot({ token: 't', username: null, publicUrl: 'https://x.example' }, flaky, { onUsername: (n) => { got = n; }, retries: 5, delayMs: 1 });
+  assert.equal(got, 'Bandly_robot', 'username webhook’dan oldin beriladi');
+  assert.equal(u, 'Bandly_robot');
+  assert.equal(hooks, 3, 'ikki xatodan keyin uchinchi urinishda o‘rnatildi');
+  hooks = -100; got = null;
+  assert.equal(await setupBot({ token: 't', username: null, publicUrl: 'https://x.example' }, flaky, { onUsername: (n) => { got = n; }, retries: 2, delayMs: 1 }), 'Bandly_robot', 'urinishlar tugasa ham username qaytadi (yiqilmaydi)');
+  assert.equal(got, 'Bandly_robot');
+}
 console.log('telegram.test: OK');

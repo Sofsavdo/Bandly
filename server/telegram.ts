@@ -106,13 +106,29 @@ export function startReply(chatId: number, publicUrl: string, firstName?: string
   };
 }
 
-/** Ishga tushganda: webhook va menyu tugmasini o'rnatadi, bot username'ini qaytaradi. Xato — faqat log (sayt ishlashda davom etadi). */
-export async function setupBot(cfg: BotConfig, f: Fetch = fetch): Promise<string | null> {
+/** Ishga tushganda: bot username'ini oladi (saytda Telegram orqali kirish shunga bog'liq), keyin webhook, menyu va profilni
+ *  o'rnatadi. Webhook/menyu xatosi username'ni yo'qotmaydi: 2026-11-21 da Telegram tomonida bir martalik DNS xatosi
+ *  ("bad webhook: Failed to resolve host") butun setupBot'ni yiqitib, saytda kirishni o'chirib qo'ygan edi.
+ *  onUsername — getMe muvaffaqiyatli bo'lishi bilan chaqiriladi; webhook xato bo'lsa retries marta (delayMs oralig'ida) qayta urinadi. */
+export async function setupBot(cfg: BotConfig, f: Fetch = fetch, opts: { onUsername?: (u: string) => void; retries?: number; delayMs?: number } = {}): Promise<string | null> {
   const me = await tgApi<{ username: string }>(cfg.token, 'getMe', {}, f);
+  opts.onUsername?.(me.username);
   if (cfg.publicUrl) {
-    await tgApi(cfg.token, 'setWebhook', { url: `${cfg.publicUrl}/api/telegram/webhook`, secret_token: webhookSecret(cfg.token), allowed_updates: ['message'], drop_pending_updates: true }, f);
-    await tgApi(cfg.token, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Sellzen', web_app: { url: appUrl(cfg.publicUrl, '/') } } }, f);
-    await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Sellzen ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }, { command: 'stop', description: 'Seriya eslatmalarini o‘chirish' }, { command: 'remind', description: 'Seriya eslatmalarini yoqish' }] }, f);
+    const retries = opts.retries ?? 5, delay = opts.delayMs ?? 60_000;
+    for (let i = 0; ; i++) {
+      try {
+        await tgApi(cfg.token, 'setWebhook', { url: `${cfg.publicUrl}/api/telegram/webhook`, secret_token: webhookSecret(cfg.token), allowed_updates: ['message'], drop_pending_updates: true }, f);
+        break;
+      } catch (e) {
+        if (i >= retries) { console.error('Telegram webhook o‘rnatilmadi (oldingi webhook amal qilishda davom etishi mumkin):', (e as Error).message); break; }
+        console.error(`Telegram webhook: ${(e as Error).message} — ${Math.round(delay / 1000)} s dan keyin qayta urinish (${i + 1}/${retries})`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+    try {
+      await tgApi(cfg.token, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Sellzen', web_app: { url: appUrl(cfg.publicUrl, '/') } } }, f);
+      await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Sellzen ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }, { command: 'stop', description: 'Seriya eslatmalarini o‘chirish' }, { command: 'remind', description: 'Seriya eslatmalarini yoqish' }] }, f);
+    } catch (e) { console.error('Telegram menyu/buyruqlar:', (e as Error).message); }
   }
   await syncBotProfile(cfg.token, f);
   return me.username;

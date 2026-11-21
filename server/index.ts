@@ -67,7 +67,7 @@ const ADMIN_TOKEN = (process.env.ADMIN_TOKEN ?? '').trim();
 // Telegram bot (ixtiyoriy): TELEGRAM_BOT_TOKEN bo'lsa — Telegram orqali kirish, webhook va Mini App tugmasi yoqiladi
 const bot = botFromEnv();
 let botUsername: string | null = bot?.username ?? null;
-if (bot) setupBot(bot).then((u) => { botUsername = u; console.log('Telegram bot: @%s (webhook: %s)', u, bot.publicUrl ? 'yoqildi' : 'PUBLIC_URL yo‘q'); }).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
+if (bot) setupBot(bot, fetch, { onUsername: (u) => { botUsername = u; } }).then((u) => console.log('Telegram bot: @%s (sozlash tugadi%s)', u, bot.publicUrl ? '' : ', PUBLIC_URL yo‘q')).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
 const tts = ttsConfigFromEnv(process.env.TTS_CACHE_DIR ?? `${dirname(DB_FILE)}/tts-cache`);
 
 // Oddiy so'rov tezligi cheklovi (IP bo'yicha, daqiqada 120 ta)

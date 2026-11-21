@@ -12,7 +12,7 @@ Railway deployment and configuration, reliability (deploy outages, crash loops, 
 
 ## Current infrastructure (verify — it changes)
 - Railway workspace "Fidem's Projects", project **Sellzen**, environment `production`, service **`bandly`**, 1 replica, region **sfo**, volume `bandly-data` 5 GB at `/data` (≈ 0.18 GB used on 2026-11-21), domains `sellzen.uz`, `www.sellzen.uz` (port 8080) and `bandly-production.up.railway.app`.
-- Build: **Railpack** from repo `Sofsavdo/Bandly` branch `main` (start = `package.json` `start` script). The `Dockerfile` exists for self-hosting but is **not** what production runs — change runtime flags in `package.json`. Healthcheck path `/api/health`, restart policy max 5 retries.
+- Build: repo `Sofsavdo/Bandly` branch `main`, built from the **`Dockerfile`** (Railway auto-detects it; the builder field shows RAILPACK — trust the build log, not the field). Runtime flags go in the Dockerfile `CMD` (keep `package.json` `start` in sync for local/self-hosted use). Healthcheck path `/api/health`, restart policy max 5 retries. Deploys trigger only from `main`.
 - Resource use (7-day, 2026-11-21): CPU avg ~0.001 vCPU, memory avg 0.18 GB / max 0.56 GB, ~4.5k requests/week, 5xx ≈ 0.9 % (deploy windows + AI 502/503).
 - Backups: daily SQLite copy to `/data/backups`, 14 kept — **same volume** (not disaster-safe). Scripts `npm run backup`, `npm run restore:check`, runbook `docs/runbooks/backup-restore.md`.
 - CI: `npm run test:ci` on PRs and pushes to `main`. No error tracker, no uptime alerting.
