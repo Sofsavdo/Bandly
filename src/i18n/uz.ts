@@ -47,6 +47,13 @@ export const uz = {
   'nav.lessons': 'Darslar',
   'nav.practiceSection': 'Mashq',
   'nav.sub': 'Bo‘lim sahifalari',
+  'nav.s.ielts': 'IELTS',
+  'nav.s.mocks': 'Mock',
+  'nav.s.tools': 'Hisoblash',
+  'nav.s.shadow': 'Takrorlash',
+  'nav.s.homework': 'Vazifa',
+  'nav.s.certificates': 'Sertifikat',
+  'nav.s.pricing': 'Obuna',
   'lang.label': 'Til',
   'greet.progress': '{n} ta qoldi',
 } as const;

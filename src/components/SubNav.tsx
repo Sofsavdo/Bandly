@@ -8,7 +8,7 @@ export function SubNav({ items, hash, active = hash }: { items: NavItem[]; hash:
   const t = useT();
   return (
     <nav className="subnav seg" aria-label={t('nav.sub')} style={{ ['--n' as string]: items.length }}>
-      {items.map((n) => <a key={n.href} href={n.href} className={active === n.href ? 'on' : ''} aria-current={hash === n.href ? 'page' : undefined}><n.icon size={15} /><span>{t(n.label)}</span></a>)}
+      {items.map((n) => <a key={n.href} href={n.href} className={active === n.href ? 'on' : ''} aria-current={hash === n.href ? 'page' : undefined} title={t(n.label)}><span>{t(n.short ?? n.label)}</span></a>)}
     </nav>
   );
 }

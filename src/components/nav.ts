@@ -2,7 +2,7 @@ import { Award, Bot, BookOpenCheck, GraduationCap, BookOpen, Clapperboard, Clipb
 
 import type { Key } from '../i18n';
 
-export interface NavItem { href: string; label: Key; icon: LucideIcon }
+export interface NavItem { href: string; label: Key; icon: LucideIcon; short?: Key }
 
 export const NAV: NavItem[] = [
   { href: '#/learn', label: 'nav.learn', icon: BookOpenCheck },
@@ -35,14 +35,16 @@ const by = (h: string): NavItem => NAV.find((n) => n.href === h)!;
 export interface Section { id: string; item: NavItem; children: NavItem[] }
 const LESSONS: NavItem = { href: '#/learn', label: 'nav.lessons', icon: BookOpenCheck };
 const PRACTICE_SECTION: NavItem = { href: '#/practice', label: 'nav.practiceSection', icon: PenLine };
+/** Ichki menyuda qisqa nom (telefonda bir qatorga sig'ishi uchun); to'liq nomi yon menyuda va title'da. */
+const sh = (n: NavItem, short: Key): NavItem => ({ ...n, short });
 export const SECTIONS: Section[] = [
   { id: 'home', item: HOME, children: [] },
   { id: 'learn', item: by('#/learn'), children: [LESSONS, by('#/grammar'), by('#/games')] },
   { id: 'coach', item: by('#/coach'), children: [] },
-  { id: 'exam', item: by('#/exam'), children: [by('#/exam'), IELTS_COURSE, by('#/mocks'), RESULTS, TOOLS] },
-  { id: 'practice', item: PRACTICE_SECTION, children: [PRACTICE, MISTAKES, SHADOW, HOMEWORK] },
+  { id: 'exam', item: by('#/exam'), children: [by('#/exam'), sh(IELTS_COURSE, 'nav.s.ielts'), sh(by('#/mocks'), 'nav.s.mocks'), RESULTS, sh(TOOLS, 'nav.s.tools')] },
+  { id: 'practice', item: PRACTICE_SECTION, children: [PRACTICE, MISTAKES, sh(SHADOW, 'nav.s.shadow'), sh(HOMEWORK, 'nav.s.homework')] },
   { id: 'league', item: by('#/league'), children: [by('#/league'), by('#/duel')] },
-  { id: 'profile', item: PROFILE, children: [PROFILE, CERTIFICATES, PRICING] },
+  { id: 'profile', item: PROFILE, children: [PROFILE, sh(CERTIFICATES, 'nav.s.certificates'), sh(PRICING, 'nav.s.pricing')] },
 ];
 
 /** Joriy manzil qaysi bo'limga va qaysi ichki sahifaga tegishli (eng uzun mos keluvchi). */

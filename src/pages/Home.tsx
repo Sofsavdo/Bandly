@@ -14,7 +14,6 @@ import { LangPicker } from '../components/LangPicker';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { vocab } from '../content/vocab';
 import { useProfile } from '../lib/store';
-import { LEVEL_INFO } from '../lib/levels';
 import { dayKey, displayStreak, levelProgress } from '../lib/game';
 import { loadProgress, nextLesson } from '../lib/lessons';
 import { openExamTab } from '../lib/examTab';
@@ -135,7 +134,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   return (
     <div>
       <div className="hello">
-        <span className="avatar sm" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
+        <span className="avatar xs" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
         <div className="grow">
           <h2>{hello}{acc?.nickname ? `, ${acc.nickname}` : ''}!</h2>
           <small>{lvl ? L('Daraja {0}', [lvl]) : L('Daraja aniqlanmagan')} · {Math.round(lp.pct * 100)}{L('% keyingi bosqichgacha')}</small>
@@ -153,34 +152,21 @@ export default function Home({ preview = false }: { preview?: boolean }) {
       <ExamHero />
       {lvl && <PlanCard />}
 
-      <section className="lvlcard">
-        <h3>{lvl ? `${lvl} · ${LEVEL_INFO[lvl].name}` : 'Sellzen'} — {lp.level}{L('-bosqich')}</h3>
-        <p>{left === 0 ? L('Bugungi maqsad bajarildi — seriya saqlandi!') : L('Bugungi maqsadgacha {0} XP', [left])}</p>
-        <div className="slider" role="progressbar" aria-valuemin={0} aria-valuemax={lp.span} aria-valuenow={lp.into} aria-label={L('Keyingi bosqichgacha XP')}><i style={{ width: `${lp.pct * 100}%` }} /><b style={{ left: `${Math.max(4, Math.min(96, lp.pct * 100))}%` }} /></div>
-        <Illo kind="trophy" />
-      </section>
-
-
-      <div className="dash2">
-        <a className="cont" href={nl ? `#/learn/${nl.id}` : '#/learn'}>
-          <small>{nl ? L('Davom ettirish') : L('Darslar')}</small>
-          <h3>{nl ? nl.titleUz : L('Darslar xaritasi')}</h3>
-          <p>{nu ? `${nu.level} · ${nu.titleUz}` : L('{0}/{1} dars o‘tildi', [passed, total])}</p>
-          <span className="btn primary sm">{L('Boshlash')} <ArrowRight size={16} /></span>
-          <Illo kind="books" />
+      {/* Bitta ixcham kartochka: davom ettirish + asosiy ko'rsatkichlar + bugungi maqsad (avval 4 ta katta blok edi) */}
+      <section className="card prog">
+        <a className="prog-next" href={nl ? `#/learn/${nl.id}` : '#/learn'}>
+          <span className="prog-ic"><BookOpenCheck size={20} /></span>
+          <span className="grow"><small>{nl ? L('Davom ettirish') : L('Darslar')}</small><b>{nl ? nl.titleUz : L('Darslar xaritasi')}</b><em>{nu ? `${nu.level} · ${nu.titleUz}` : L('{0}/{1} dars o‘tildi', [passed, total])}</em></span>
+          <ArrowRight size={18} className="prog-go" />
         </a>
-        <div className="twin">
-          <a className="stat2 s-lilac" href="#/learn"><div className="s-top"><span><BookOpenCheck size={20} /></span><span className="go"><ArrowRight size={15} /></span></div><b>{passed}</b><small>/ {total}  {L('dars')}</small></a>
-          <a className="stat2 s-mint" href="#/league"><div className="s-top"><span><Flame size={20} /></span><span className="go"><ArrowRight size={15} /></span></div><b>{streak}</b><small>{L('kunlik seriya')}</small></a>
+        <div className="prog-stats">
+          <a href="#/learn"><b>{passed}<small>/{total}</small></b><span>{L('dars')}</span></a>
+          <a href="#/league"><b><Flame size={15} />{streak}</b><span>{L('kunlik seriya')}</span></a>
+          <div><b>{Math.min(p.dailyXp, p.dailyGoal)}<small>/{p.dailyGoal}</small></b><span>{L('bugun XP')}</span></div>
+          <div><b>{lp.level}</b><span>{lvl ? `${lvl} · ${L('bosqich')}` : L('bosqich')}</span></div>
         </div>
-      </div>
-
-      <section className="card">
-        <div className="daytask">
-          <PRing value={p.dailyXp} max={p.dailyGoal} size={78} stroke={8} color="var(--coral)" label={L('Kunlik maqsad {0}/{1} XP', [p.dailyXp, p.dailyGoal])}><b style={{ fontSize: 19 }}>{Math.round(Math.min(1, p.dailyXp / Math.max(1, p.dailyGoal)) * 100)}%</b></PRing>
-          <div><h3>{L('Kunlik maqsad')}</h3><p>{Math.min(p.dailyXp, p.dailyGoal)} / {p.dailyGoal}  {L('XP · bu hafta')} {Object.entries(p.activity).filter(([k]) => Date.now() - new Date(k).getTime() < 7 * 86400000).reduce((s, [, v]) => s + v, 0)}  {L('XP')}</p></div>
-        </div>
-        <WeekBars activity={p.activity} />
+        <div className="prog-bar" role="progressbar" aria-valuemin={0} aria-valuemax={p.dailyGoal} aria-valuenow={Math.min(p.dailyXp, p.dailyGoal)} aria-label={L('Kunlik maqsad {0}/{1} XP', [p.dailyXp, p.dailyGoal])}><i style={{ width: `${Math.min(1, p.dailyXp / Math.max(1, p.dailyGoal)) * 100}%` }} /></div>
+        <p className="prog-note">{left === 0 ? L('Bugungi maqsad bajarildi — seriya saqlandi!') : L('Bugungi maqsadgacha {0} XP', [left])}</p>
       </section>
 
       {!acc && <p className="notice">{L('Progress hozir faqat shu qurilmada.')} <a href="#/profile">{L('Hisob oching')}</a>  {L('— boshqa qurilmada ham ochiladi.')}</p>}
