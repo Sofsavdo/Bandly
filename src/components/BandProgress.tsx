@@ -66,13 +66,13 @@ export function BandProgress({ compact = false }: { compact?: boolean }) {
             <div><span>{L('Oxirgi')}</span><b>{latest ? latest.overall.toFixed(1) : '—'}</b><small>{latest ? fmt(latest.at) : L('hali yo‘q')}</small></div>
             <div className={gain !== null && gain > 0 ? 'up' : ''}><span>{L('O‘sish')}</span><b>{gain === null ? '—' : `${gain >= 0 ? '+' : ''}${gain.toFixed(1)}`}</b><small>{latest ? L('{0} kunda', [Math.max(1, Math.round((latest.at - baseline.at) / DAY))]) : ''}</small></div>
           </div>
-          <table className="data band-table">
+          <div className="table-scroll"><table className="data band-table">
             <thead><tr><th></th>{SK.map(([, n]) => <th key={n} title={n}><span className="full">{n}</span><span className="short">{n[0]}</span></th>)}</tr></thead>
             <tbody>
               <tr><td>{L('Boshlang‘ich')}</td>{SK.map(([k]) => <td key={k}>{baseline[k]?.toFixed(1) ?? '—'}</td>)}</tr>
               {latest && <tr><td>{L('Oxirgi')}</td>{SK.map(([k]) => <td key={k}>{latest[k]?.toFixed(1) ?? '—'}</td>)}</tr>}
             </tbody>
-          </table>
+          </table></div>
           <p className={`notice ${due ? '' : 'muted'}`} style={{ marginBottom: 0 }}>
             <CalendarClock size={15} />  {due ? <>{L('Qayta o‘lchash vaqti keldi.')} <a href="#/mocks/full">{L('To‘liq imtihonni boshlash')}</a></> : L('Keyingi o‘lchov: {0}. Har 2 haftada bir marta — shunda o‘sish ishonchli ko‘rinadi.', [fmt(nextMockAt!)])}
           </p>

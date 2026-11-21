@@ -141,13 +141,13 @@ export default function Admin() {
       <div className="dash2">
         <section className="card">
           <h3>{L('Faoliyat turlari ({0} kun)', [span])}</h3>
-          <table className="data"><thead><tr><th>{L('Tur')}</th><th>{L('Hodisa')}</th><th>{L('XP')}</th></tr></thead>
-            <tbody>{data.bySource.map((s) => <tr key={s.source}><td>{s.source}</td><td>{s.events}</td><td>{s.xp}</td></tr>)}</tbody></table>
+          <div className="table-scroll"><table className="data"><thead><tr><th>{L('Tur')}</th><th>{L('Hodisa')}</th><th>{L('XP')}</th></tr></thead>
+            <tbody>{data.bySource.map((s) => <tr key={s.source}><td>{s.source}</td><td>{s.events}</td><td>{s.xp}</td></tr>)}</tbody></table></div>
         </section>
         <section className="card">
           <h3>{L('AI xarajati ({0} kun)', [span])}</h3>
-          <table className="data"><thead><tr><th>{L('Funksiya')}</th><th>{L('USD')}</th></tr></thead>
-            <tbody>{data.aiByFeature.map((s) => <tr key={s.feature}><td>{s.feature}</td><td>${s.usd.toFixed(2)}</td></tr>)}</tbody></table>
+          <div className="table-scroll"><table className="data"><thead><tr><th>{L('Funksiya')}</th><th>{L('USD')}</th></tr></thead>
+            <tbody>{data.aiByFeature.map((s) => <tr key={s.feature}><td>{s.feature}</td><td>${s.usd.toFixed(2)}</td></tr>)}</tbody></table></div>
           <p className="muted">{L('Jami: ${0}', [data.days.reduce((a, d) => a + d.aiUsd, 0).toFixed(2)])}</p>
         </section>
       </div>

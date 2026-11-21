@@ -37,16 +37,16 @@ export default function Creator() {
       </div>
       <section className="card">
         <h3 style={{ marginTop: 0 }}>{L('Oylar bo‘yicha')}</h3>
-        <table className="data"><thead><tr><th>{L('Oy')}</th><th>{L('Kelganlar')}</th><th>{L('To‘lov qilgan')}</th><th>{L('Tushum')}</th></tr></thead>
-          <tbody>{m.months.map((x) => <tr key={x.month}><td>{x.month}</td><td>{x.signups}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table>
+        <div className="table-scroll"><table className="data"><thead><tr><th>{L('Oy')}</th><th>{L('Kelganlar')}</th><th>{L('To‘lov qilgan')}</th><th>{L('Tushum')}</th></tr></thead>
+          <tbody>{m.months.map((x) => <tr key={x.month}><td>{x.month}</td><td>{x.signups}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table></div>
         <p className="muted" style={{ marginBottom: 0 }}>{m.commissionPct === null ? L('Hamkorlik shartlari alohida kelishiladi.') : L('Hamkorlik ulushi ({0}%): {1} so‘m', [m.commissionPct, fmtSum(m.commission ?? 0)])}</p>
       </section>
       {d.all && (
         <section className="card">
           <h3 style={{ marginTop: 0 }}>{L('Barcha hamkorlar (admin)')}</h3>
           {d.all.length === 0 ? <p className="muted">{L('Hali hamkor yo‘q. Metodist kabineti → Admin: xodimlar bo‘limida «hamkor» rolini bering.')}</p> : (
-            <table className="data"><thead><tr><th>{L('Laqab')}</th><th>{L('Kelganlar')}</th><th>{L('Faol')}</th><th>{L('To‘lov qilgan')}</th><th>{L('Tushum')}</th></tr></thead>
-              <tbody>{d.all.map((x) => <tr key={x.code}><td>{x.nickname}</td><td>{x.invited}</td><td>{x.activated}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table>
+            <div className="table-scroll"><table className="data"><thead><tr><th>{L('Laqab')}</th><th>{L('Kelganlar')}</th><th>{L('Faol')}</th><th>{L('To‘lov qilgan')}</th><th>{L('Tushum')}</th></tr></thead>
+              <tbody>{d.all.map((x) => <tr key={x.code}><td>{x.nickname}</td><td>{x.invited}</td><td>{x.activated}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table></div>
           )}
         </section>
       )}

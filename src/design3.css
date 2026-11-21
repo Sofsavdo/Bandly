@@ -501,7 +501,7 @@ html, body { overflow-x: clip; }
 }
 
 /* ---------- AI ustoz: ovozli suhbat ekrani ---------- */
-.tutor-call { position: relative; display: flex; flex-direction: column; border-radius: var(--r-xl); background: linear-gradient(180deg, var(--lilac-50), var(--surface) 60%); box-shadow: var(--shadow-1); padding: 18px; min-height: min(640px, calc(100dvh - 150px)); }
+.tutor-call { position: relative; display: flex; flex-direction: column; border-radius: var(--r-xl); background: linear-gradient(180deg, var(--lilac-50), var(--surface) 60%); box-shadow: var(--shadow-1); padding: 18px; min-height: min(640px, calc(100vh - 150px)); min-height: min(640px, calc(100svh - 150px)); }
 .tutor-call.idle-call { align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 36px 20px; }
 .tutor-call.idle-call h2 { margin: 8px 0 0; } .tutor-call.idle-call p { color: var(--ink-2); max-width: 420px; margin: 0 0 8px; }
 .tutor-orb { position: relative; display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #a996ff, var(--brand) 60%, var(--brand-700)); color: #fff; font-family: var(--display); font-weight: 700; font-size: 52px; box-shadow: 0 24px 50px -20px color-mix(in srgb, var(--brand) 80%, transparent); }
@@ -513,7 +513,7 @@ html, body { overflow-x: clip; }
 .tutor-top { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-2); }
 .tutor-top .grow { flex: 1; min-width: 0; } .tutor-top b { display: block; } .tutor-top small { color: var(--muted); font-weight: 600; }
 .tutor-top .seg button { padding: 7px 12px; height: 32px; }
-.tutor-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 14px 2px; min-height: 220px; max-height: 52dvh; }
+.tutor-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 14px 2px; min-height: 220px; max-height: 52vh; max-height: 52svh; }
 .bubble2 { max-width: 86%; padding: 11px 15px; border-radius: 20px; font-size: 15.5px; line-height: 1.45; }
 .bubble2.coach { align-self: flex-start; background: var(--surface); box-shadow: var(--shadow-1); border-bottom-left-radius: 6px; }
 .bubble2.learner { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 6px; }
@@ -533,9 +533,9 @@ html, body { overflow-x: clip; }
 .topic-card span { color: var(--ink-2); font-size: 14px; }
 .topic-card .icon-btn { position: absolute; right: 12px; top: 12px; width: 36px; height: 36px; box-shadow: none; background: var(--surface-2); }
 @media (max-width: 979px) {
-  .tutor-call { min-height: calc(100dvh - 210px); padding: 14px; }
+  .tutor-call { min-height: calc(100vh - 210px); min-height: calc(100svh - 210px); padding: 14px; }
   .tutor-log { max-height: none; min-height: 0; }
-  .tutor-call:not(.idle-call) { height: calc(100dvh - 210px); }
+  .tutor-call:not(.idle-call) { height: calc(100vh - 210px); height: calc(100svh - 210px); } /* svh — manzil satri yashirinsa ham balandlik o'zgarmaydi (dvh ekranni sakratardi) */
 }
 .challenge-start .seg button { padding: 7px 11px; font-size: 13.5px; }
 .lvlcard { background: var(--brand-600); }
@@ -999,3 +999,37 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 .cert-admin input[type=search], .cert-admin input[type=text] { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
 .table-scroll { overflow-x: auto; max-width: 100%; }
 .cert-score { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+
+/* ===== Mobil responsive tuzatishlar (2026-11-21 auditi: 320/360 px) ===== */
+/* Sahifa hech qachon yonga surilmasin (asosiy sabablar quyida alohida tuzatilgan; bu — xavfsizlik to'ri) */
+body { overflow-x: clip; }
+main.container { overflow-wrap: break-word; }
+main img, main video, main iframe, main canvas { max-width: 100%; }
+main img, main video { height: auto; }
+select, input, textarea { max-width: 100%; }
+/* Pill — qisqa yorliq; uzun matn bo'lsa o'z joyidan chiqmaydi */
+.pill { max-width: 100%; min-width: 0; }
+/* Jadvallar: kontent sig'masa karta ichida yonga suriladi, sahifa emas */
+.table-scroll { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 8px 0; }
+.table-scroll > table.data { margin: 0; }
+@media (max-width: 600px) {
+  table.data { font-size: 13.5px; }
+  table.data th { font-size: 11px; letter-spacing: .02em; }
+  table.data th, table.data td { padding: 8px 9px; }
+  table.data td { white-space: nowrap; }
+  table.data td:nth-child(2) { white-space: normal; min-width: 96px; }
+}
+/* Natijalar ro'yxati: telefonda nom to'liq kenglikda, ball va band ostida bir qatorda (nom 4–5 qatorga siqilmasin) */
+@media (max-width: 600px) {
+  .res-row { grid-template-columns: 1fr auto; grid-template-areas: "main main" "score band"; row-gap: 8px; align-items: end; }
+  .res-main { grid-area: main; }
+  .res-score { grid-area: score; flex-direction: row; align-items: baseline; gap: 8px; }
+  .res-band { grid-area: band; flex-direction: row; gap: 6px; padding: 4px 10px; }
+}
+/* Segment tugmalar (masalan Reyting: Mening ligam / Shu hafta / Hamma vaqt) tor ekranda to'liq sig'sin */
+@media (max-width: 420px) {
+  .seg.seg-dark { display: flex; width: 100%; }
+  .seg.seg-dark > * { flex: 1 1 auto; min-width: 0; padding-left: 8px; padding-right: 8px; font-size: 13px; white-space: nowrap; }
+}
+.tr-blank { margin: 8px 0 0; }
+@media (max-width: 600px) { table.data.wrap td { white-space: normal; min-width: 0; } }

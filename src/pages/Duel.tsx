@@ -107,7 +107,7 @@ function Play({ info, onDone }: { info: DuelInfo; onDone: (i: DuelInfo) => void 
 function Results({ info }: { info: DuelInfo }) {
   return (
     <div className="card">
-      <table className="data" style={{ width: '100%' }}>
+      <div className="table-scroll"><table className="data" style={{ width: '100%' }}>
         <thead><tr><th>#</th><th>{L('Laqab')}</th><th>{L('Ball')}</th><th>{L('To‘g‘ri')}</th><th>{L('Vaqt')}</th></tr></thead>
         <tbody>
           {info.players.map((p) => (
@@ -118,7 +118,7 @@ function Results({ info }: { info: DuelInfo }) {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
       <p className="evidence">{L('Ball teng bo‘lsa tezroq tugatgan yutadi. Natijalar har 4 soniyada yangilanadi.')}</p>
     </div>
   );

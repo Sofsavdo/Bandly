@@ -21,8 +21,8 @@ export function EvalCard({ ev, title = L('AI baho') }: { ev: Evaluation; title?:
       {ev.corrections.length > 0 && (
         <>
           <h4>{L('Tuzatishlar')}</h4>
-          <table className="data"><thead><tr><th>{L('Siz aytdingiz')}</th><th>{L('Yaxshiroq')}</th></tr></thead>
-            <tbody>{ev.corrections.map((c) => <tr key={c.said}><td>{c.said}</td><td>{c.better}</td></tr>)}</tbody></table>
+          <div className="table-scroll"><table className="data wrap"><thead><tr><th>{L('Siz aytdingiz')}</th><th>{L('Yaxshiroq')}</th></tr></thead>
+            <tbody>{ev.corrections.map((c) => <tr key={c.said}><td>{c.said}</td><td>{c.better}</td></tr>)}</tbody></table></div>
         </>
       )}
     </div>
