@@ -41,10 +41,27 @@ export default function Creator() {
           <tbody>{m.months.map((x) => <tr key={x.month}><td>{x.month}</td><td>{x.signups}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table></div>
         <p className="muted" style={{ marginBottom: 0 }}>{m.commissionPct === null ? L('Hamkorlik shartlari alohida kelishiladi.') : L('Hamkorlik ulushi ({0}%): {1} so‘m', [m.commissionPct, fmtSum(m.commission ?? 0)])}</p>
       </section>
+      <section className="card">
+        <h3 style={{ marginTop: 0 }}>{L('Tayyor post matnlari')}</h3>
+        <p className="muted" style={{ fontSize: 13 }}>{L('Nusxalang va Telegram, Instagram yoki TikTok’da ulashing — havolangiz matn ichida. Eng yaxshi natija: o‘z daraja testi natijangizni yoki mock balingizni ko‘rsatib, obunachilarni bellashuvga chaqirish.')}</p>
+        <div className="promo-list">
+          {[
+            L('Ingliz tili darajangizni 3 daqiqada bilib oling 👇 Men sinab ko‘rdim — natija darhol chiqadi, keyin shaxsiy reja tuzib beradi. Bepul: {0}', [link]),
+            L('IELTS’ga tayyorlanyapsizmi? Sellzen’da bepul mock testlar (Listening, Reading), AI Writing va Speaking bahosi bor. Mening balimni yengib ko‘ring: {0}', [link]),
+            L('Ingliz tilida gapirishdan qo‘rqasizmi? Sellzen ovozli ustozi bilan har kuni 5 daqiqa gaplashing — xatolaringizni o‘zbekcha tushuntiradi va eslab qoladi. Sinab ko‘ring: {0}', [link]),
+            L('Узнай свой уровень английского за 3 минуты — бесплатно, с личным планом и AI-репетитором: {0}', [link]),
+          ].map((txt) => (
+            <div key={txt} className="promo">
+              <p>{txt}</p>
+              <button className="btn sm" onClick={() => { void navigator.clipboard?.writeText(txt).then(() => setMsg(L('Matn nusxalandi'))); }}><Copy size={14} /> {L('Nusxalash')}</button>
+            </div>
+          ))}
+        </div>
+      </section>
       {d.all && (
         <section className="card">
           <h3 style={{ marginTop: 0 }}>{L('Barcha hamkorlar (admin)')}</h3>
-          {d.all.length === 0 ? <p className="muted">{L('Hali hamkor yo‘q. Metodist kabineti → Admin: xodimlar bo‘limida «hamkor» rolini bering.')}</p> : (
+          {d.all.length === 0 ? <p className="muted">{L('Hali hamkor yo‘q. Admin kabineti → Xodimlar bo‘limida «hamkor (bloger)» rolini bering.')}</p> : (
             <div className="table-scroll"><table className="data"><thead><tr><th>{L('Laqab')}</th><th>{L('Kelganlar')}</th><th>{L('Faol')}</th><th>{L('To‘lov qilgan')}</th><th>{L('Tushum')}</th></tr></thead>
               <tbody>{d.all.map((x) => <tr key={x.code}><td>{x.nickname}</td><td>{x.invited}</td><td>{x.activated}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table></div>
           )}

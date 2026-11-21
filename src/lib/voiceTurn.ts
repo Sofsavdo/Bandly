@@ -139,10 +139,10 @@ export async function watchBargeIn(onSpeech: () => void): Promise<() => void> {
 export class SttError extends Error { constructor(public status: number, message: string) { super(message); } }
 
 /** Yozilgan ovozni serverga yuboradi va tanilgan matnni qaytaradi. */
-export async function transcribeTurn(r: Recording): Promise<{ text: string; lang: string | null }> {
+export async function transcribeTurn(r: Recording, expect: 'en' | 'any' = 'any'): Promise<{ text: string; lang: string | null }> {
   const a = getAccount();
   if (!a || !r.blob) return { text: '', lang: null };
-  const res = await fetch('/api/ai/stt', { method: 'POST', headers: { 'content-type': r.mime.split(';')[0]!, 'x-token': a.token }, body: r.blob, signal: AbortSignal.timeout(35_000) })
+  const res = await fetch('/api/ai/stt', { method: 'POST', headers: { 'content-type': r.mime.split(';')[0]!, 'x-token': a.token, 'x-expect': expect }, body: r.blob, signal: AbortSignal.timeout(35_000) })
     .catch(() => { throw new SttError(0, L('Internet aloqasi uzildi.')); });
   const j = (await res.json().catch(() => ({}))) as { text?: string; lang?: string | null; error?: string };
   if (!res.ok) throw new SttError(res.status, j.error ?? L('Nutqni tanib bo‘lmadi.'));
@@ -160,7 +160,11 @@ if (typeof window !== 'undefined') {
 
 // ---------------- Barcha ovozli mashqlar uchun server tanishi ----------------
 let serverOk: boolean | null = null;
-if (typeof window !== 'undefined') void coachStatus().then((st) => { serverOk = st.stt; }).catch(() => { serverOk = false; });
+const statusP: Promise<void> = typeof window !== 'undefined' ? coachStatus().then((st) => { serverOk = st.stt; }).catch(() => { serverOk = false; }) : Promise.resolve();
+/** Server tanishi holati hali noma'lum (sahifa endi ochilgan): mikrofon bosilsa shu javobni kutamiz (ko'pi 3 s), aks holda
+ *  Telegram ichida yo'q brauzer tanishiga tushib qolardi. */
+export const sttStatusPending = (): boolean => serverOk === null && recorderSupported() && !!getAccount();
+export const waitSttStatus = (): Promise<void> => Promise.race([statusP, new Promise<void>((r) => setTimeout(r, 3000))]);
 /** Server tanishi ishlatiladimi (kalit bor, brauzer yozib oladi, o'quvchi kirgan, limit tugamagan). */
 export const serverSttReady = (): boolean => serverOk === true && recorderSupported() && !!getAccount();
 
@@ -173,7 +177,8 @@ export async function serverTurn(o: TurnOptions): Promise<TurnResult> {
   if (!r.blob) return { text: '', seconds: 0, latencyMs: performance.now() - start };
   o.onInterim('…');
   try {
-    const t = await transcribeTurn(r);
+    // Mashqlar inglizcha: aksentli inglizchani server o'zbekcha deb aniqlab, ma'nosiz matn qaytarardi — endi faqat ingliz tilida taniladi
+    const t = await transcribeTurn(r, o.mixed ? 'any' : 'en');
     return { text: t.text, seconds: r.speechMs / 1000, latencyMs: performance.now() - start };
   } catch (e) {
     if (e instanceof SttError && (e.status === 429 || e.status === 503)) serverOk = false;

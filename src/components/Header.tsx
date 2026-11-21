@@ -41,7 +41,7 @@ export function Header({ hash }: { hash: string }) {
   // Rolga qarab qo'shimcha bo'limlar: admin — analitika, hamkor — hamkor kabineti, o'qituvchi — guruhlar
   const extra = [
     ...(staff ? [{ href: '#/studio', icon: Pencil, label: L('Metodist kabineti') }] : []),
-    ...(role === 'admin' ? [{ href: '#/admin', icon: BarChart3, label: L('Analitika') }] : []),
+    ...(role === 'admin' ? [{ href: '#/admin', icon: BarChart3, label: L('Admin kabineti') }] : []),
     ...(role === 'admin' || role === 'creator' ? [{ href: '#/creator', icon: Megaphone, label: L('Hamkor kabineti') }] : []),
     ...(role === 'admin' || role === 'teacher' ? [{ href: '#/groups', icon: Users, label: L('Guruhlarim') }] : []),
   ];

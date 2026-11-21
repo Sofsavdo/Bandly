@@ -150,7 +150,7 @@ function MainApp() {
   return (
     <>
       <Header hash={hash} />
-      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.some((c) => c.href === hash) && <SubNav items={where.section.children} hash={hash} />}<Suspense fallback={<Loading />}>{page}</Suspense></main>
+      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.length > 1 && !lessonId && !tr && !bossUnit && !duelCode && <SubNav items={where.section.children} hash={hash} active={where.page.href} />}<Suspense fallback={<Loading />}>{page}</Suspense></main>
       <Footer />
       <PlanRunBar hash={hash} />
       <TabBar hash={hash} />

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt, MAX_MISTAKES } from './coachMemory';
-import { buildLivePrompt, liveKickoff } from './coach';
+import { buildLivePrompt, clampStyle, emotionOf, liveKickoff } from './coach';
 
 // AI javobini qat'iy tekshirish: shaxsiy ma'lumot, bo'sh/teng juftlar, buzuq JSON — tashlanadi
 const p = parseSummary('Here: {"mistakes":[{"wrong":"I am agree","right":"I agree"},{"wrong":"he go","right":"he goes"},{"wrong":"call me 998901234567","right":"x"},{"wrong":"same","right":"same"}],"topics":["football","email me a@b.uz"]} ok');
@@ -36,13 +36,32 @@ const again = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', lev
 for (const t of [first, again]) {
   assert.ok(t.includes('ONLY two languages: English and Uzbek (Latin script)') && /Never Spanish, Portuguese, Chinese/.test(t), 'faqat ingliz + ona tili');
   assert.ok(t.includes('Your name is "Sellzen" — never add "AI" to it') && !/Sellzen AI/.test(t), 'ism: Sellzen, "AI" so‘zisiz');
-  assert.ok(/WHEN YOU DO NOT HEAR CLEARLY/.test(t) && /do NOT guess/.test(t), 'eshitmasa — taxmin qilmaydi');
+  assert.ok(/Accented or broken English is NORMAL/.test(t) && /Never ask them to speak louder or repeat just because of an accent/.test(t), 'aksent uchun qayta so‘ramaydi');
+  assert.ok(/Never do this twice in a row/.test(t), 'qayta so‘rash ketma-ket emas');
   assert.ok(/at most 2 short spoken sentences/.test(t), 'qisqa javob');
   assert.ok(/Mixing English and Uzbek inside one turn is fine/.test(t), 'izoh ona tilida, faqat inglizcha emas');
   assert.ok(!/ONE language per reply/.test(t), 'eski "bitta til" qoidasi ovozli suhbatda yo‘q');
 }
 assert.ok(first.includes('introduce yourself once') && first.includes('MEMORY from previous calls') && first.includes('beginner'));
-assert.ok(again.includes('do NOT introduce yourself') && again.includes('qattiqroq gapir') && again.includes("g'o'ldirayapsan"), '18+: qo‘polroq qayta so‘rash');
+assert.ok(again.includes('do NOT introduce yourself') && again.includes('Aniqroq gapir'), '18+ standart: Qattiq uslub');
+// Xarakter tanlovi Live'da ham ishlaydi: 0 yumshoq, 1 hazil, 2 qattiq, 3 jallod; 18+ bo'lmasa 2–3 → 1
+assert.equal(clampStyle(3, false), 1);
+assert.equal(clampStyle(0, true), 0);
+assert.equal(clampStyle('x', true), 0);
+assert.equal(clampStyle(9, true), 3);
+const soft = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 0 });
+assert.ok(soft.includes('Kechirasiz, tushunmadim') && soft.includes('correct it kindly') && !/swearing/.test(soft), 'yumshoq: so‘kinmaydi');
+const fun = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 1 });
+assert.ok(fun.includes('Yana bir marta ayt-chi') && !/swearing is allowed/.test(fun), 'hazil: so‘kinishsiz');
+const jallod = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 3 });
+assert.ok(jallod.includes("g'o'ldirayapsan"), 'jallod: qo‘pol qayta so‘rash');
+assert.ok(!buildLivePrompt({ adult: false, native: 'Uzbek (Latin script)', style: 3 }).includes("g'o'ldirayapsan"), '18+ emas — jallod ishlamaydi');
+// Hissiyot (ekrandagi olov/kulgi)
+assert.equal(emotionOf('Hahaha, you said what?'), 'laugh');
+assert.equal(emotionOf('What the hell was that? Again!'), 'angry');
+assert.equal(emotionOf('Perfect! Barakalla.'), 'happy');
+assert.equal(emotionOf('Oh no, not again.'), 'disappointed');
+assert.equal(emotionOf('Tell me about your weekend.'), 'neutral');
 assert.ok(buildLivePrompt({ adult: false, native: 'English' }).includes('Speak ONLY English'));
 assert.match(liveKickoff({ firstCall: true, hasMemory: false }), /Introduce yourself once/);
 assert.match(liveKickoff({ firstCall: false, hasMemory: true }), /Do NOT introduce yourself.*MEMORY/);

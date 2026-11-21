@@ -58,7 +58,7 @@ unverified end-to-end · **Partial** · **Planned** (spec only). Update this tab
 | Progress sync across devices | P (blob) / Partial (as data layer) | `PUT /api/progress` in logs; rev-based 409 conflict + merge; server can't analyse it |
 | Lessons A1–C2 | Partial | 144 lessons exist and are tested structurally; **all pilot, no expert review**; entitlement client-side |
 | Adaptive engine | U | deterministic + tested; parameters uncalibrated; feeds plan cards; mastery opaque to server |
-| Placement test | P (short) | 41-line bank, A1–C1 only, ~20 items; guest-accessible since branch fix |
+| Placement test | P (short) | 41-line bank, A1–C1 only, ~20 items; requires sign-in (guests see only the landing, 2026-11-21 owner decision) |
 | IELTS Reading/Listening mocks | P | server grading, keys server-only, `mockGrade.test.ts`, `chunks.test.ts` |
 | AI Writing/Speaking evaluation | U | runs in prod (Gemini), 503/timeouts observed 2026-11-19; scoring not calibrated against human examiners |
 | Gemini Live tutor | U | sessions logged daily; no resumption; latency/cost per minute not measured in prod |

@@ -11,6 +11,7 @@ import { ImportPanel } from '../components/ImportPanel';
 import { TranslationsPanel } from '../components/TranslationsPanel';
 import { StudioTests } from '../components/StudioTests';
 import { L } from '../i18n';
+import { qualityReport } from '../lib/studioQuality';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 type Status = 'draft' | 'published' | 'archived';
@@ -38,7 +39,7 @@ export default function Studio() {
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState('');
   const [role, setRole] = useState<string>('');
-  const [view, setView] = useState<'lessons' | 'tests'>('lessons');
+  const [view, setView] = useState<'lessons' | 'tests' | 'quality'>('lessons');
 
   const load = useCallback(async () => {
     try { const j = await studio<{ units: TUnit[]; role: string }>('GET', 'tree'); setUnits(j.units); setRole(j.role); setErr(''); }
@@ -71,12 +72,33 @@ export default function Studio() {
         <div className="seg" role="tablist" aria-label={L('Bo‘lim')} style={{ marginBottom: 8 }}>
           <button type="button" role="tab" aria-selected={view === 'lessons'} className={view === 'lessons' ? 'on' : ''} onClick={() => setView('lessons')}>{L('Darslar')}</button>
           <button type="button" role="tab" aria-selected={view === 'tests'} className={view === 'tests' ? 'on' : ''} onClick={() => setView('tests')}>{L('Testlar')}</button>
+          <button type="button" role="tab" aria-selected={view === 'quality'} className={view === 'quality' ? 'on' : ''} onClick={() => setView('quality')}>{L('Sifat')}</button>
         </div>
         {view === 'lessons' && <div className="seg" role="tablist" aria-label={L('Daraja')}>{LEVELS.map((l) => <button key={l} type="button" role="tab" aria-selected={l === level} className={l === level ? 'on' : ''} onClick={() => setLevel(l)}>{l} <small>({units.filter((u) => u.level === l).reduce((s, u) => s + u.lessons.filter((x) => x.status !== 'archived').length, 0)})</small></button>)}</div>}
         {msg && <p className="notice" style={{ marginTop: 10 }} role="status">{msg}</p>}
       </div>
 
       {view === 'tests' && <StudioTests />}
+      {view === 'quality' && (() => {
+        const q = qualityReport(units, LEVELS);
+        const byId = new Map(units.flatMap((u) => u.lessons).map((l) => [l.id, l]));
+        return (
+          <>
+            <section className="card">
+              <h3 style={{ marginTop: 0 }}>{L('Kontent sifati')}</h3>
+              <p className="muted" style={{ fontSize: 13 }}>{L('Har daraja bo‘yicha: e’lon qilingan darslar, qoralamalar, tekshiruv xatolari, izohi qisqa mashqlar va audio/videosiz darslar. CEFR bo‘yicha bir daraja uchun o‘rtacha 100+ soat o‘qish kerak — "daqiqa" ustuni hozirgi hajmni ko‘rsatadi.')}</p>
+              <div className="table-scroll"><table className="data"><thead><tr><th>{L('Daraja')}</th><th>{L('Darslar')}</th><th>{L('E’lon')}</th><th>{L('Qoralama')}</th><th>{L('Xato')}</th><th>{L('Qisqa izoh')}</th><th>{L('Mediasiz')}</th><th>{L('Mashqlar')}</th><th>{L('Daqiqa')}</th></tr></thead>
+                <tbody>{q.rows.map((r) => <tr key={r.level}><td><b>{r.level}</b></td><td>{r.lessons}</td><td>{r.published}</td><td>{r.drafts}{r.dirty ? ` (+${r.dirty})` : ''}</td><td>{r.withErrors}</td><td>{r.weakExplain}</td><td>{r.noMedia}</td><td>{r.items}</td><td>{r.minutes}</td></tr>)}</tbody></table></div>
+            </section>
+            <section className="card">
+              <h3 style={{ marginTop: 0 }}>{L('Tuzatish kerak bo‘lgan darslar ({0})', [q.issues.length])}</h3>
+              {q.issues.length === 0 ? <p className="muted">{L('Muammo topilmadi.')}</p> : (
+                <ul className="studio-issues">{q.issues.slice(0, 60).map((i) => <li key={i.id}><div style={{ minWidth: 0 }}><b>{i.level} · {i.title}</b> <small className="muted">{i.id}</small><br /><small>{i.problems.join(' · ')}</small></div><button className="btn sm" onClick={() => { const l = byId.get(i.id); if (l) setEdit(l); }}><Pencil size={14} /> {L('Tahrirlash')}</button></li>)}</ul>
+              )}
+            </section>
+          </>
+        );
+      })()}
       {view === 'lessons' && list.map((u, ui) => (
         <section key={u.id} className={`card studio-unit ${u.status === 'archived' ? 'archived' : ''}`}>
           <div className="studio-row">
@@ -116,7 +138,7 @@ export default function Studio() {
         </section>
       ))}
 
-      {view === 'lessons' && role === 'admin' && <StaffPanel />}
+      {view === 'lessons' && role === 'admin' && <p className="muted">{L('Xodimlar, foydalanuvchilar va to‘lovlar:')} <a href="#/admin">{L('Admin kabineti')}</a></p>}
       {view === 'lessons' && <TranslationsPanel admin={role === 'admin'} />}
       {view === 'lessons' && <button className="btn" onClick={() => { const t = prompt(L('{0} uchun yangi bo‘lim nomi (o‘zbekcha)', [level])); if (t) void act('unit', () => studio('POST', 'unit', { level, data: { titleUz: t } }), L('Bo‘lim yaratildi (qoralama).')); }}><FilePlus2 size={16} /> {level}  {L('uchun yangi bo‘lim')}</button>}
       {importTo && <ImportPanel unit={{ id: importTo.id, level: importTo.level, titleUz: importTo.data.titleUz }} onClose={() => setImportTo(null)} onDone={async (m: string) => { setImportTo(null); await load(); setMsg(m); }} />}
@@ -194,25 +216,3 @@ function LessonEditor({ lesson, onClose, onSaved }: { lesson: TLesson; onClose: 
   );
 }
 
-/** Admin: metodistlarni qo'shish / olib tashlash (laqab bo'yicha). */
-const ROLE_UZ: Record<string, string> = { admin: 'admin', methodologist: L('metodist'), creator: L('hamkor (bloger)'), teacher: L('o‘qituvchi') };
-
-function StaffPanel() {
-  const [list, setList] = useState<{ nickname: string; role: string }[]>([]);
-  const [nick, setNick] = useState('');
-  const [kind, setKind] = useState<'methodologist' | 'creator' | 'teacher'>('methodologist');
-  const [msg, setMsg] = useState('');
-  const call = async (path: string, init?: RequestInit) => { const r = await fetch(path, { ...init, headers: { 'x-token': getAccount()?.token ?? '', 'content-type': 'application/json' } }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error((j as { error?: string }).error ?? L('Xato {0}', [r.status])); return j; };
-  const load = async () => { try { setList(((await call('/api/staff')) as { staff: { nickname: string; role: string }[] }).staff); } catch (e) { setMsg((e as Error).message); } };
-  useEffect(() => { void load(); }, []);
-  const setRole = async (nickname: string, on: boolean) => { try { await call('/api/staff/role', { method: 'POST', body: JSON.stringify({ nickname, role: on ? kind : null }) }); setNick(''); setMsg(on ? L('{0} — {1}.', [nickname, ROLE_UZ[kind]!]) : L('{0} — rol olib tashlandi.', [nickname])); await load(); } catch (e) { setMsg((e as Error).message); } };
-  return (
-    <section className="card">
-      <h3 style={{ marginTop: 0 }}>{L('Admin: xodimlar')}</h3>
-      <p className="muted" style={{ fontSize: 13 }}>{L('Xodim avval saytda hisob ochadi, so‘ng rolni tanlab, laqabini yozing.')}</p>
-      <div className="row"><select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} aria-label={L('Rol')}>{(['methodologist', 'creator', 'teacher'] as const).map((r) => <option key={r} value={r}>{ROLE_UZ[r]}</option>)}</select><input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={L('Laqab')} style={{ padding: 8, borderRadius: 10, border: '1.5px solid var(--line)' }} /><button className="btn sm primary" disabled={nick.trim().length < 2} onClick={() => void setRole(nick.trim(), true)}>{L('Metodist qilish')}</button></div>
-      <ul>{list.map((x) => <li key={x.nickname}>{x.nickname} — {ROLE_UZ[x.role] ?? x.role} {x.role !== 'admin' && <button className="btn sm" onClick={() => void setRole(x.nickname, false)}>{L('Olib tashlash')}</button>}</li>)}</ul>
-      {msg && <p className="notice">{msg}</p>}
-    </section>
-  );
-}

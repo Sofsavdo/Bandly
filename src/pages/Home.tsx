@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, Compass, Flame, Plus, Send } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Check, Compass, Flame, Plus, Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { authConfig, getAccount } from '../lib/account';
 import { ALL_LESSONS, UNITS } from '../content/lessons';
@@ -20,6 +20,12 @@ import { loadProgress, nextLesson } from '../lib/lessons';
 import { openExamTab } from '../lib/examTab';
 import { loadAnswers } from '../lib/onboarding';
 import { L } from '../i18n';
+import { SALE_PLANS } from '../config';
+import { fmtSum } from '../lib/pay';
+import { QuickLinks } from '../components/QuickLinks';
+
+/** Ro'yxatdan o'tish → shaxsiy reja (maqsad) → daraja testi: mehmon uchun yagona yo'l. */
+const SIGNUP = `#/login?next=${encodeURIComponent('#/start')}`;
 
 const faq: [string, string][] = [
   [L('Nima bepul?'), L('Darajani aniqlash testi, Mock Arena (Listening va Reading), so‘z o‘yinlari va darslarning bir qismi.')],
@@ -47,9 +53,8 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
           <div className="cta">
             {!acc ? <>
-              {/* Mehmon uchun birinchi qadam — ro'yxatdan o'tmasdan qiymat: 3 daqiqalik daraja testi (natijani saqlash uchun keyin kiradi) */}
-              <a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a>
-              <a className="btn lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')}</a>
+              {/* Mehmon faqat landingni ko'radi: ro'yxatdan o'tish → maqsad va reja → daraja testi (natija darhol hisobda) */}
+              <a className="btn primary lg" href={SIGNUP}>{L('Bepul boshlash')} <ArrowRight size={18} /></a>
               <a className="btn lg" href="#/login">{L('Kirish')}</a>
             </> : onboarded
               ? <><a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a><a className="btn lg" href="#/start">{L('Mening rejam')}</a></>
@@ -80,6 +85,25 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         <a className="course c-pink" href="#/coach"><h3>{L('AI ustoz')}</h3><p>{L('Ovozli suhbat')}</p><span className="go"><ArrowRight size={17} /></span><Illo kind="chat" /></a>
         <a className="course c-lilac wide" href="#/mocks"><h3>{L('Mock Arena')}</h3><p>{tests}  {L('ta test, taymer va izohlar')}</p><span className="go"><ArrowRight size={17} /></span><span className="tag">{L('Bepul')}</span><Illo kind="clock" /></a>
       </div>
+
+      {!acc && (
+        <>
+          <div className="section-title"><h2>{L('Qanday')} <em className="it">{L('ishlaydi?')}</em></h2></div>
+          <ol className="how-steps">
+            <li><b>1</b><div><h3>{L('Ro‘yxatdan o‘ting')}</h3><p>{L('Telegram orqali, bir bosishda — bepul.')}</p></div></li>
+            <li><b>2</b><div><h3>{L('Maqsad va daraja')}</h3><p>{L('Maqsadingizni tanlaysiz, 3 daqiqalik test darajangizni aniqlaydi.')}</p></div></li>
+            <li><b>3</b><div><h3>{L('O‘rganing va sinang')}</h3><p>{L('Darslar, AI ustoz va mock testlar — bitta joyda, natija hisobingizda.')}</p></div></li>
+          </ol>
+          <div className="section-title"><h2>{L('Narxlar')}</h2></div>
+          <div className="land-prices">
+            <div className="card"><h3>{L('Bepul')}</h3><p className="price">0 {L('so‘m')}</p><ul><li><Check size={15} />{L('Daraja testi va mock testlar')}</li><li><Check size={15} />{L('Har kuni bitta yangi dars')}</li><li><Check size={15} />{L('So‘z o‘yinlari va duel')}</li></ul></div>
+            {SALE_PLANS.map((pl) => (
+              <div key={pl.id} className={`card${pl.recommended ? ' best' : ''}`}><h3>{pl.title}</h3><p className="price">{fmtSum(pl.monthlyUzs)} {L('so‘m / oy')}</p><ul>{pl.features.slice(0, 3).map((f) => <li key={f}><Check size={15} />{f}</li>)}</ul></div>
+            ))}
+          </div>
+          <div className="row" style={{ justifyContent: 'center', margin: '6px 0 22px' }}><a className="btn primary lg" href={SIGNUP}>{L('Bepul boshlash')} <ArrowRight size={18} /></a></div>
+        </>
+      )}
 
       {bot && (
         <a className="card tg-promo" href={`https://t.me/${bot}`} target="_blank" rel="noopener noreferrer">
@@ -125,6 +149,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         </div>
       )}
 
+      <QuickLinks />
       <ExamHero />
       {lvl && <PlanCard />}
 

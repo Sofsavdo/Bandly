@@ -11,6 +11,7 @@ import { Illo } from '../components/Illo';
 import { takeExamTab, type ExamTab } from '../lib/examTab';
 import { IeltsCourseCard } from './IeltsCourse';
 import { L } from '../i18n';
+import { ExamPath } from '../components/ExamPath';
 
 const skills = [
   { href: '#/exam/reading', icon: BookOpen, tone: 'blue', title: 'Reading', text: L('Matn va savollar, taymer, dalil izohlari'), free: true },
@@ -32,7 +33,9 @@ export default function Exam() {
         </div>
         <Illo kind="target" size={128} />
       </div>
+      {tab === 'cefr' && <ExamPath exam="cefr" />}
       {tab === 'cefr' && <CefrPrep />}
+      {tab === 'sat' && <ExamPath exam="sat" />}
       {tab === 'sat' && <SatPrep />}
       {tab === 'ielts' && <IeltsCourseCard />}
       {tab === 'ielts' && <BandProgress compact />}
