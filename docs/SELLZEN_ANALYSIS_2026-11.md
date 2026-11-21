@@ -22,7 +22,7 @@ lokal production build (mobil emulyatsiya), raqobatchilar bo'yicha ochiq manbala
 2. **AI bitta provayderga bog'liq.** 19-noyabr loglarida Gemini'ning uchala modeli ham 503/timeout bergan — AI ustoz ishlamay qolgan. `AI_BACKUP_PROVIDER/API_KEY/MODEL` qo'shildi: Gemini band bo'lsa yoki kalit/mablag' tugasa avtomatik boshqa provayderga (masalan Claude Haiku) o'tadi. Testlar bilan.
 3. **Mehmon faqat bosh sahifani ko'rardi.** Bosh sahifada "3 daqiqalik daraja testi" va'da qilingan, lekin uni ochish uchun ro'yxatdan o'tish shart edi; narxlarni ham ko'rib bo'lmasdi. Endi `#/placement` va `#/pricing` mehmonga ochiq; bosh sahifadagi asosiy tugma — "Darajamni aniqlash".
 4. **Daraja testi natijasida ulashish yo'q edi.** "Telegramda ulashish" ("Mening darajam B1. Sen ham 3 daqiqada tekshir!") va mehmon uchun "Bepul ro'yxatdan o'tish" tugmasi qo'shildi.
-5. **Log shovqini.** Har ishga tushishda `ExperimentalWarning: SQLite` "error" sifatida yozilardi — o'chirildi. Production Dockerfile emas, **Railpack** bilan quriladi (`npm start`), shuning uchun flag `package.json` start skriptiga ham qo'shildi.
+5. **Log shovqini.** Har ishga tushishda `ExperimentalWarning: SQLite` "error" sifatida yozilardi — o'chirildi. Production repodagi `Dockerfile` bilan quriladi (2026-11-21 build logida tasdiqlandi); flag Dockerfile CMD'da va `npm start` skriptida ham bor.
 
 ### Hali qolgan (egasining qarori yoki kattaroq ish kerak)
 | # | Muammo | Dalil | Tavsiya |
@@ -96,7 +96,7 @@ O'zbekistonda o'sish kanallari: **Telegram** (kanallar, guruhlar, Mini App), **I
 
 | Reja bandi | Holat |
 |---|---|
-| Healthcheck | Railway'da allaqachon bor (`/api/health`); production Railpack bilan quriladi — start skripti tuzatildi |
+| Healthcheck | Railway'da allaqachon bor (`/api/health`); production `Dockerfile` bilan quriladi (build logi), ogohlantirish flag'i Dockerfile va start skriptida |
 | AI zaxira provayderi | Kod tayyor (`AI_BACKUP_*`); kalitni Railway'ga qo'shish — egasi |
 | Duel mehmonga ochiq | Bajarildi (+ duel havolasida referal kodi) |
 | Natija kartochkasi PNG | Bajarildi: daraja testi natijasi 1080×1920 story, referal havolasi bilan |
