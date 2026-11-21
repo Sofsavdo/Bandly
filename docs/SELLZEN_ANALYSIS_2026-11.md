@@ -91,3 +91,18 @@ O'zbekistonda o'sish kanallari: **Telegram** (kanallar, guruhlar, Mini App), **I
 | 4 | Rus tili (to'liq tarjima). Bundle bo'lish (tez ochilish). Natijalarni o'lchash: kunlik faol, daraja testi → ro'yxat konversiyasi, ro'yxat → to'lov. |
 
 **O'lchanadigan maqsadlar (30 kun):** daraja testi → ro'yxatdan o'tish ≥ 35%, har yangi foydalanuvchidan ≥ 0,3 taklif (K-faktor), to'lovga o'tish ≥ 2%.
+
+## 6. Bajarilish holati (2026-11-21, branch `claude/bandly-analysis-improvement-ywgxrb`)
+
+| Reja bandi | Holat |
+|---|---|
+| Healthcheck | Railway'da allaqachon bor (`/api/health`); production Railpack bilan quriladi — start skripti tuzatildi |
+| AI zaxira provayderi | Kod tayyor (`AI_BACKUP_*`); kalitni Railway'ga qo'shish — egasi |
+| Duel mehmonga ochiq | Bajarildi (+ duel havolasida referal kodi) |
+| Natija kartochkasi PNG | Bajarildi: daraja testi natijasi 1080×1920 story, referal havolasi bilan |
+| 5 ta SEO sahifa | Bajarildi: 5 uz + 3 ru sahifa, hreflang/canonical, FAQ; eski "Bandly" logotipi tuzatildi |
+| Referal: ikkala tomonga kunlar | Kod tayyor, standart o'chiq (`REF_PLAN_DAYS`, `REF_PLAN_MONTHLY_CAP`) — yoqish egasi qarori |
+| Voronka o'lchovi | Bajarildi: anonim hodisalar, admin'da "daraja testi → ro'yxat" va referal ulushi; sovg'a obunalar to'lovchiga qo'shilmaydi |
+| Bundle bo'lish | Qisman: xodim/sertifikat sahifalari alohida (app −87 KB); asosiy hajm — darslar kontenti, keyingi bosqich |
+| Region (Amsterdam), bot nomi, narx testi, Payme/Click | Egasi qarori / shartnoma kerak |
+| Xavfsizlik: WS crash (R1), token URL'da (R2) | Tuzatildi, regression testlar bilan |
