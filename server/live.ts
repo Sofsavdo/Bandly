@@ -9,6 +9,7 @@ import { WebSocket, WebSocketServer, type RawData } from 'ws';
 import { tzDay } from './day';
 import { CALL_MONTH_SECONDS } from './callMinutes';
 import { clampStyle, emotionOf, type LiveEmotion } from './coach';
+import { addLiveUsage, emptyLive, type LiveUsage } from './aiUsage';
 
 export interface LiveConfig {
   key: string; model: string; fallbackModel: string | null; voice: string; url: string;
@@ -107,7 +108,7 @@ interface LiveDeps {
   onTranscript?: (playerId: number, turns: { who: 'learner' | 'coach'; text: string }[], nativeCode: string) => void;
   native: (lang: string) => string;
   /** Qo'ng'iroq tugadi: daqiqa va xarajat yoziladi */
-  onEnd: (playerId: number, seconds: number, model: string) => void;
+  onEnd: (playerId: number, seconds: number, model: string, usage?: LiveUsage) => void;
   log?: (msg: string) => void;
 }
 
@@ -156,6 +157,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   let upstream: WebSocket | null = null;
   let ready = false, closed = false, model = d.cfg.model, triedFallback = false;
   const pending: Buffer[] = []; // tayyor bo'lguncha kelgan mikrofon ovozi (ko'p emas)
+  const usage = emptyLive(); // Gemini qaytargan haqiqiy tokenlar (xarajat hisobi uchun)
 
   const finish = (why: string) => {
     if (closed) return;
@@ -164,7 +166,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     try { upstream?.close(); } catch { /* */ }
     try { client.close(); } catch { /* */ }
     const secs = ready ? (Date.now() - started) / 1000 : 0;
-    if (secs > 0) d.onEnd(who.id, secs, model);
+    if (secs > 0) d.onEnd(who.id, secs, model, usage);
     if (turns.filter((t) => t.who === 'learner').length >= 3) { try { d.onTranscript?.(who.id, turns, lang); } catch { /* xotira ixtiyoriy */ } }
     log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why})${wrongCount ? ` til-xato:${wrongCount}` : ''}`);
   };
@@ -186,6 +188,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
         for (const b of pending.splice(0)) forward(b);
         return;
       }
+      if (m.usageMetadata) addLiveUsage(usage, m.usageMetadata);
       const sc = m.serverContent;
       if (sc) {
         if (sc.outputTranscription?.text) {

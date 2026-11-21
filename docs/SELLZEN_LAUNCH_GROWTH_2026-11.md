@@ -27,7 +27,7 @@ Raqamlar kod va Railway'dan olingan. Taxminlar alohida belgilangan.
 | # | Ish | Nega | Qayerda |
 |---|---|---|---|
 | 1 | `sellzen.uz` (www'siz) DNS: CNAME → Railway domeni yoki www'ga yo'naltirish | QR kodlar, reklama havolalari, SEO canonical ochilmaydi | Domen registratori |
-| 2 | To'lov provayderini yoqish (`HAMYON_*` kalitlari) va bitta haqiqiy to'lovni sinash | Hozir to'lov "demo" rejimda — pul tushmaydi | Railway variables |
+| 2 | Bitta haqiqiy to'lovni sinab, Admin → To'lovlar'da ko'rinishini tekshirish | Hamyon kalitlari ulangan (server logi: "To'lov: Hamyon"), lekin haqiqiy to'lov bilan sinalmagan | Sayt + Admin kabineti |
 | 3 | Xarajat chegaralarini qo'yish: `AI_GLOBAL_DAILY_CALLS`, `VOICE_GLOBAL_DAILY_CHARS`, `STT_GLOBAL_DAILY_MINUTES`, `LIVE_FREE_GLOBAL_DAILY_MINUTES` | Viral oqimda bepul foydalanuvchilar AI byudjetni bir kunda yeb qo'ymasligi uchun | Railway variables |
 | 4 | Zaxira AI kaliti (`AI_BACKUP_*`) | Gemini 503 to'lqinlarida AI baho va ustoz to'xtamasin | Railway variables |
 | 5 | Tashqi zaxira nusxa (`BACKUP_S3_*`) | Hozir zaxira bir xil diskda — disk yo'qolsa hammasi yo'qoladi | Railway bucket yoki S3 |
@@ -97,3 +97,36 @@ Raqamlar kod va Railway'dan olingan. Taxminlar alohida belgilangan.
 | Gemini 503 | `[ai]` 5xx | `AI_BACKUP_*` |
 | Disk yo'qolishi | — | Tashqi zaxira (2-bo'lim, 5-band) |
 | Bitta server (SQLite) | Kuniga 10 000+ faol foydalanuvchida yozuv navbati | O'lchab, keyin Postgres (spec tayyor: `docs/audit/phase-0.2/FINAL_MIGRATION_SPEC.md`) |
+
+## 8. AI xarajatini o'lchash (2026-11-21 tuzatildi)
+
+- **Avval**: matnli AI (AI ustoz chati, Writing/Speaking baholash, savollar) xarajati **umuman yozilmas edi**; ovozli suhbat daqiqasiga $0.03 deb taxmin qilinardi. Admin'dagi AI xarajati shuning uchun past ko'rinardi.
+- **Endi**: har javobdagi provayder qaytargan **haqiqiy token soni** yoziladi (Gemini `usageMetadata`, OpenAI/Anthropic `usage`), ovozli suhbatda Gemini Live'ning audio/matn tokenlari alohida. Xarajat = token × narx.
+- **Narxni aniqlash uchun** Railway'ga qo'ying (USD, 1 mln token uchun, Google AI Studio narx sahifasidagi qiymatlar): `AI_PRICE_IN_PER_M`, `AI_PRICE_OUT_PER_M`, `PRICE_LIVE_TEXT_IN_PER_M`, `PRICE_LIVE_AUDIO_IN_PER_M`, `PRICE_LIVE_TEXT_OUT_PER_M`, `PRICE_LIVE_AUDIO_OUT_PER_M`. Qo'yilmasa standart narx ishlatiladi va yozuv "estimated" deb belgilanadi.
+- Ovoz (ElevenLabs TTS) — haqiqiy belgilar soni × narx; nutqni tanish (STT) — haqiqiy soniyalar × `PRICE_STT_PER_HOUR`.
+- Eng aniq tekshiruv: oy oxirida Admin'dagi jami summani Google AI Studio va ElevenLabs hisob-fakturasi bilan solishtirish.
+
+## 9. Ishlamayotgan / yoqilmagan qismlar (2026-11-21, Railway o'zgaruvchilari bo'yicha)
+
+| Qism | Holat | Nima kerak |
+|---|---|---|
+| Seriya eslatmalari va liga xabarlari (Telegram) | Kod bor, **o'chiq** | `TG_REMINDERS=1` |
+| Referal bonusi (ikkala tomonga obuna kunlari) | Kod bor, **o'chiq** | `REF_PLAN_DAYS=7` (tavsiya) |
+| Tashqi zaxira nusxa | **O'chiq** | `BACKUP_S3_*` |
+| Zaxira AI provayder | **O'chiq** | `AI_BACKUP_*` |
+| Bepul ovozli suhbat uchun umumiy kunlik chegara | **Yo'q** (xarajat xavfi) | `LIVE_FREE_GLOBAL_DAILY_MINUTES` |
+| AI narxlari | Standart (taxminiy) | 8-bo'limdagi narx o'zgaruvchilari |
+| Talaffuzni akustik baholash | Yo'q (faqat matn bo'yicha) | Alohida loyiha |
+| Ovozli suhbat uzilsa davom ettirish | Yo'q | Live session resumption |
+| O'zbekcha ovoz sifati (Live) | Gemini Live hujjatlarida o'zbek tili qo'llab-quvvatlanadigan tillar ro'yxatida tasdiqlanmagan — sheva/xato so'zlar shundan. Ko'rsatma adabiy tilni talab qiladi, lekin to'liq kafolat yo'q | Kuzatish; zarur bo'lsa izohlarni ekranda matn qilib ko'rsatish |
+| Kontent hajmi | CEFR: 1 Reading + 1 Listening to'plam; to'liq IELTS mock: Reading 3, Listening 2; SAT Math 9 savol | Metodist (6-bo'lim) |
+
+Ishlaydigan (tekshirilgan): kirish (Telegram), darslar, mock testlar (20 ta Listening — tayyor audio fayllar), AI ustoz (matn va ovoz), AI baholash, to'lov ulangan, sertifikatlar, guruhlar, kabinetlar, Telegram bot.
+
+## 10. Lidlar (sotuv bo'limi)
+
+- O'quvchi **o'z roziligi bilan** raqam qoldiradi: shaxsiy reja oxirida va Profil'da "Bepul maslahat" kartochkasi (qo'lda yoki Telegram orqali — raqamni Telegram tasdiqlaydi).
+- Operator uchun rol: **operator (sotuv)** — Admin → Xodimlar'da beriladi; operator faqat `#/leads` sahifasini ko'radi (admin — Admin → Lidlar).
+- Ro'yxatda: laqab, telefon, maqsad, daraja, kunlik vaqt, ro'yxatdan o'tgan sana, XP, obuna holati; holat (yangi → qo'ng'iroq qilindi → qiziqdi → obuna oldi / rad etdi) va izoh; CSV eksport.
+- **Huquqiy eslatma**: O'zbekiston "Shaxsga doir ma'lumotlar to'g'risida"gi qonuni (2021-yildan) O'zbekiston fuqarolarining shaxsiy ma'lumotlarini O'zbekiston hududidagi serverlarda saqlashni talab qiladi; server hozir AQSh (Railway, sfo). Telefon raqamlarini yig'ishni keng boshlashdan oldin yurist bilan maslahatlashing (mahalliy server yoki ro'yxatdan o'tkazish).
+- Operator skripti uchun asos: o'quvchining maqsadi va darajasi ro'yxatda bor — "IELTS 6.5 maqsadingiz bor ekan, B1 darajadan boshlaysiz, kuniga 20 daqiqa bilan ~N hafta" kabi suhbat.

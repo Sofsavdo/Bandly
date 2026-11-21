@@ -79,7 +79,7 @@ function Watch({ sc, onDone }: { sc: Scene; onDone: () => void }) {
       <div className="row">{sc.phrases.map((p) => (
         <button key={p.phrase} className="chip-up" title={`${p.uz}: ${p.example}`} onClick={() => { const w = vocab.find((x) => x.word === p.phrase); if (w) recordReview(w.id, false); void pl.one(p.phrase); }}>{p.phrase} <small>· {p.uz}</small></button>
       ))}</div>
-      <p className="evidence">{L('Gap ustiga bossangiz, o‘sha gap qayta eshittiriladi. Iborani bossangiz, takrorlash tizimiga qo‘shiladi.')}</p>
+      <p className="evidence">{L('Gapni bosing — qayta eshittiriladi.')}</p>
     </div>
   );
 }
@@ -93,7 +93,7 @@ function Quiz({ sc, onDone }: { sc: Scene; onDone: (pct: number) => void }) {
   return (
     <div className="card">
       <div className="row"><button className="btn primary" onClick={() => void pl.all(sc.lines.map((l) => l.text), 1)}><Play size={16} />  {L('Tinglash (matnsiz)')}</button><button className="btn" onClick={pl.stop}><Square size={14} />  {L('To‘xtatish')}</button></div>
-      <p className="evidence">{L('Matn ko‘rinmaydi. Tinglab, savollarga javob bering (istagancha qayta tinglash mumkin).')}</p>
+      <p className="evidence">{L('Tinglang va savollarga javob bering.')}</p>
       {sc.quiz.map((q, i) => (
         <div key={i} className="fb-block">
           <p><b>{i + 1}. {q.q}</b></p>

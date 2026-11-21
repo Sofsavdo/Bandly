@@ -1,8 +1,9 @@
-import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Star, Volume2 } from 'lucide-react';
+import { say, stopSpeaking } from '../lib/speech';
 import { ItemView } from '../components/LessonItem';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { lessonById, lessonNodeId, lessonWordIds, nextInCourse, isIeltsLesson, ieltsUnlocked, UNITS } from '../content/lessons';
-import { checkItem, correctAnswerText, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
+import { checkItem, correctAnswerText, fullSentence, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
 import { advanceQueue, bossHp, lessonStars } from '../lib/lessonGame';
 import { BossBar, DiscoverDeck, FeedbackSheet, MissionIntro } from '../components/LessonGames';
 import { confetti, sfx } from '../lib/fx';
@@ -193,7 +194,7 @@ export default function LessonPage({ id }: { id: string }) {
               <div key={pTurn}>
                 <ItemView item={it} value={pVal} revealed={!!pFb} quiet onChange={(v) => setPVal(v)} />
                 {!pFb && <button className="btn primary block" disabled={relearn !== null || pVal === undefined || (Array.isArray(pVal) && !pVal.length) || (typeof pVal === 'string' && !pVal.trim())} onClick={revealPractice}>{L('Tekshirish')}</button>}
-                {pFb && relearn === null && <FeedbackSheet ok={pFb.ok} n={pTurn} xp={pFb.xp} answer={correctAnswerText(it)} explain={it.explainUz} onNext={nextPractice} />}
+                {pFb && relearn === null && <FeedbackSheet ok={pFb.ok} n={pTurn} xp={pFb.xp} answer={correctAnswerText(it)} sentence={fullSentence(it)} explain={it.explainUz} onNext={nextPractice} />}
               </div>
             );
           })() : (
@@ -232,7 +233,7 @@ export default function LessonPage({ id }: { id: string }) {
               <div key={cCur}>
                 <ItemView item={it} value={cAns[cCur]} revealed={!!cShown[cCur]} quiet onChange={(v) => setCAns((a) => { const n = [...a]; n[cCur] = v; return n; })} />
                 {!cShown[cCur] && <button className="btn primary block" disabled={relearn !== null || cAns[cCur] === undefined || (Array.isArray(cAns[cCur]) && !(cAns[cCur] as string[]).length) || (typeof cAns[cCur] === 'string' && !(cAns[cCur] as string).trim())} onClick={() => revealCheck(cCur)}>{L('Zarba berish')}</button>}
-                {cShown[cCur] && cFb !== null && relearn === null && <FeedbackSheet ok={cFb} n={cCur + 3} answer={correctAnswerText(it)} explain={it.explainUz} onNext={() => { setCFb(null); if (cCur + 1 >= lesson.check.length) submitCheck(); else setCCur(cCur + 1); }} />}
+                {cShown[cCur] && cFb !== null && relearn === null && <FeedbackSheet ok={cFb} n={cCur + 3} answer={correctAnswerText(it)} sentence={fullSentence(it)} explain={it.explainUz} onNext={() => { setCFb(null); if (cCur + 1 >= lesson.check.length) submitCheck(); else setCCur(cCur + 1); }} />}
               </div>
             );
           })()}
@@ -251,6 +252,12 @@ export default function LessonPage({ id }: { id: string }) {
             {result.passed && <Illo kind="trophy" size={96} />}
           </div>
           {play.maxCombo >= 2 && <p className="row"><span className="pill"><Flame size={13} />  {L('eng uzun combo ×')}{play.maxCombo}</span></p>}
+          {/* Esda tuting: darsning asosiy g'oyasi va 3 ta namuna gap — mustahkamlash uchun (takrorlash ro'yxatiga ham tushadi) */}
+          <div className="takeaway">
+            <b>{L('Esda tuting')}</b>
+            <p>{lesson.objectiveUz}</p>
+            <ul>{lesson.examples.slice(0, 3).map((e) => <li key={e.en}><button type="button" className="icon-btn sm" aria-label={L('Eshitish: {0}', [e.en])} onClick={() => { stopSpeaking(); if (e.audio) void new Audio(e.audio).play().catch(() => undefined); else void say(e.en, { cancelled: false }); }}><Volume2 size={14} /></button><span><b>{e.en}</b><small>{e.uz}</small></span></li>)}</ul>
+          </div>
           <details className="fold"><summary>{L('Javoblarni ko‘rish')}</summary>
           {lesson.check.map((it, i) => <ItemView key={i} item={it} value={cAns[i]} revealed onChange={() => undefined} />)}
           </details>

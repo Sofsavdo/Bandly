@@ -10,7 +10,7 @@ export default defineConfig({
     if (id.includes('/src/i18n/catalog.json')) return 'catalog';
     if (/\.css($|\?)/.test(id) || /\/src\/(main\.tsx|i18n\/(index|uz)\.ts|lib\/(cloudBoot|progressMerge|referral)\.ts)$/.test(id) || /node_modules\/(react|react-dom|scheduler|@fontsource|@fontsource-variable)\//.test(id)) return 'boot';
     // Faqat lazy() orqali ochiladigan sahifalar va ular yolg'iz ishlatadigan modullar (src/App.tsx): app'dan bu bo'laklarga statik import yo'q
-    if (/\/src\/(pages\/(Studio|Admin|Creator)|components\/(CertAdmin|ImportPanel|StudioTests|TranslationsPanel))\.tsx$/.test(id)) return 'staff';
+    if (/\/src\/(pages\/(Studio|Admin|Creator|Leads)|components\/(AdminOps|CertAdmin|ImportPanel|StudioTests|TranslationsPanel))\.tsx$/.test(id)) return 'staff';
     if (/\/src\/(pages\/(Certificates|CertificateVerify)\.tsx|lib\/(certRender|pdf)\.ts)$/.test(id) || /node_modules\/qrcode-generator\//.test(id)) return 'cert';
     // IELTS kursi kontenti umumiy dars indeksida (content/lessons/index.ts) sinxron ishlatiladi — alohida bo'lak foyda bermaydi
     if (id.includes('/src/') || id.includes('node_modules')) return 'app';

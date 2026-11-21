@@ -67,7 +67,7 @@ export function TestReport({ kind, title, questions, graded, answers, startedAt,
       <h3><Users size={18} />  {L('Boshqa o‘quvchilar bilan')}</h3>
       {stats?.percentile !== undefined ? (
         <p>{L('Bu testni {0} kishi yechgan, o‘rtacha natija {1}%. Siz ularning {2}% idan yaxshiroq natija ko‘rsatdingiz.', [stats.count, stats.avgPct ?? 0, stats.percentile])}</p>
-      ) : <p className="muted">{L('Solishtirish kamida 20 ta urinishdan keyin ko‘rsatiladi (hozir: {0}). Faqat haqiqiy natijalar hisoblanadi.', [stats?.count ?? 0])}</p>}
+      ) : <p className="muted">{L('Solishtirish 20 ta urinishdan keyin (hozir: {0}).', [stats?.count ?? 0])}</p>}
     </div>
   );
 }

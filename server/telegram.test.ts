@@ -116,4 +116,10 @@ assert.match(JSON.stringify(handleUpdate({ message: { chat: { id: 5, type: 'priv
   assert.equal(await setupBot({ token: 't', username: null, publicUrl: 'https://x.example' }, flaky, { onUsername: (n) => { got = n; }, retries: 2, delayMs: 1 }), 'Bandly_robot', 'urinishlar tugasa ham username qaytadi (yiqilmaydi)');
   assert.equal(got, 'Bandly_robot');
 }
+// /start phone — raqamni ulashish tugmasi (request_contact)
+{
+  const r = handleUpdate({ message: { chat: { id: 5, type: 'private' }, from: { id: 5 }, text: '/start phone' } }, 'https://www.sellzen.uz');
+  const kb = (r!.body.reply_markup as { keyboard: { request_contact?: boolean }[][] }).keyboard;
+  assert.equal(kb[0]![0]!.request_contact, true);
+}
 console.log('telegram.test: OK');

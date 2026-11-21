@@ -59,13 +59,13 @@ export default function FullExam() {
         <div className="stage-center">
           <span className="eyebrow"><ClipboardCheck size={15} />  {L('Imtihon simulyatsiyasi')}</span>
           <h1 className="say">{L('IELTS tartibida bir o‘tirishda')}</h1>
-          <p className="lead" style={{ maxWidth: 620 }}>{L('Haqiqiy imtihondagi tartib:')} <b>{L('Listening → Reading → Writing → Speaking')}</b>{L('. Har bo‘lim taymer bilan, Listening faqat bir marta eshittiriladi. Oxirida bo‘limlar bo‘yicha taxminiy umumiy band chiqadi.')}</p>
+          <p className="lead" style={{ maxWidth: 620 }}><b>{L('Listening → Reading → Writing → Speaking')}</b>{L('. Taymer bilan, oxirida umumiy band.')}</p>
           <ul className="rules">
             <li>{L('Telefonni o‘chiring, naushnik taqing va to‘xtamasdan bajaring.')}</li>
             <li>{L('Listening va Reading bepul. Writing va Speaking’ni AI baholashi tarifingizga kiradi.')}</li>
           </ul>
           {levelIndex(p.level) < levelIndex('B2') && (
-            <p className="notice" style={{ maxWidth: 620 }}>{L('Bu haqiqiy IELTS qiyinligidagi imtihon. Darajangiz {0} bo‘lgani uchun past natija tabiiy — u boshlang‘ich o‘lchov sifatida kerak. Kundalik mashq uchun', [p.level ?? 'A2'])} <a href="#/mocks/reading">{L('o‘z pog‘onangizdagi testlar')}</a>{L('dan foydalaning.')}</p>
+            <p className="notice" style={{ maxWidth: 620 }}>{L('IELTS qiyinligidagi imtihon. {0} darajada past natija — normal boshlanish.', [p.level ?? 'A2'])} <a href="#/mocks/reading">{L('o‘z pog‘onangizdagi testlar')}</a>{L('dan foydalaning.')}</p>
           )}
           <button className="btn primary lg" onClick={start}>{L('Imtihonni boshlash')} <ArrowRight size={18} /></button>
         </div>
@@ -105,7 +105,7 @@ export default function FullExam() {
               <div className="grow">
                 <b>{i + 1}. {x.name}</b>
                 <p className="evidence" style={{ margin: 0 }}>{x.sub}</p>
-                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' || x.res.kind === 'writing' ? L('Bajarildi') : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · ${L('taxminiy band')} ${x.res.band.toFixed(1)}` : ''}</p>}
+                {x.res && <p className="ok" style={{ margin: '2px 0 0' }}>{x.res.kind === 'speaking' || x.res.kind === 'writing' ? L('Bajarildi') : `${x.res.correct}/${x.res.total}`}{typeof x.res.band === 'number' ? ` · ${L('band')} ${x.res.band.toFixed(1)}` : ''}</p>}
               </div>
               {x.name === 'Writing' && !x.done && <button className="btn sm" onClick={() => { const n = { ...st, writingDone: true }; saveFull(n); setSt(n); }}>{L('Bajardim')}</button>}
               {!x.done && i === nextIdx && <a className="btn primary sm" href={x.href}>{L('Boshlash')}</a>}
@@ -121,7 +121,7 @@ export default function FullExam() {
           <div className="stage-center">
             <p className="evidence">{all ? L('Imtihon yakunlandi') : L('Hozirgacha {0} ta bo‘lim bo‘yicha', [bands.length])}</p>
             <div className="score">{overall.toFixed(1)}</div>
-            <p className="lead">{L('Taxminiy umumiy band')}</p>
+            <p className="lead">{L('Umumiy band')}</p>
             {p.baselineBand !== null && <p>{overall > p.baselineBand ? <b className="ok">{L('Boshlang‘ich')} {p.baselineBand.toFixed(1)}  {L('dan +')}{(overall - p.baselineBand).toFixed(1)}  {L('yuqori.')}</b> : overall === p.baselineBand ? L('Boshlang‘ich natijangiz bilan teng.') : L('Boshlang‘ich bahodan past: yana mashq kerak.')}</p>}
           </div>
         </div>

@@ -61,7 +61,7 @@ function FilePlayer({ file, seconds, practice, initialPlays = 0, onPlay }: { fil
 
 /** Audio fayl hali tayyor bo'lmasa: brauzer ovozi ishlatilmaydi (faqat ElevenLabs audiosi), shuning uchun transkript bilan ishlash taklif qilinadi. */
 function NoAudio() {
-  return <p className="notice">{L('Bu test uchun audio hali tayyorlanmoqda. Hozircha “Mashq rejimi”ni yoqib, transkript bilan ishlashingiz mumkin.')}</p>;
+  return <p className="notice">{L('Audio tayyorlanmoqda. Hozircha “Mashq rejimi”da transkript bilan ishlang.')}</p>;
 }
 
 function Player({ test, state }: { test: ListeningTest; state: ExamLeftState }) {

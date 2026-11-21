@@ -9,6 +9,8 @@ import { serveStatic } from './static';
 import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { findUsers } from './adminUsers';
+import { ensureLeadsTable, hasLead, listLeads, saveLead, saveTelegramContact, updateLead } from './leads';
+import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
@@ -60,6 +62,7 @@ startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
 expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
 ensureEventsTable(db);
 ensureMemoryTable(db);
+ensureLeadsTable(db);
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
@@ -175,6 +178,13 @@ const httpServer = createServer(async (req, res) => {
         const ok = setRemind(db, m.from.id, on);
         const lc = ((m.from as { language_code?: string }).language_code ?? '').split('-')[0];
         return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, !ok ? 'Avval Sellzen’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind') });
+      }
+      // O'quvchi "Raqamni ulashish" tugmasini bosdi: faqat o'z kontakti va ulangan hisob bo'lsa saqlanadi
+      const contact = (m as { contact?: { phone_number?: string; user_id?: number } } | undefined)?.contact;
+      if (m?.chat?.type === 'private' && m.from?.id && contact) {
+        const ok = saveTelegramContact(db, m.from.id, contact);
+        const lc = ((m.from as { language_code?: string }).language_code ?? '').split('-')[0];
+        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, ok ? 'Rahmat! Mutaxassisimiz tez orada siz bilan bog‘lanadi.' : 'Avval Sellzen’ni bot orqali oching — hisobingiz ulangach raqamni ulashing.'), reply_markup: { remove_keyboard: true } });
       }
       const reply = handleUpdate(upd, bot.publicUrl, (lc) => (t: string) => trServer(db, (lc ?? '').split('-')[0], t));
       return send(res, 200, reply ? { method: reply.method, ...reply.body } : {}); // javob webhook javobining o'zida yuboriladi
@@ -452,7 +462,7 @@ const httpServer = createServer(async (req, res) => {
       const reply = await once(`${player.id}:${turnId}`, async () => {
         useGlobalAi(db, COACH_GLOBAL_DAILY);                       // platform ceiling first (fail-closed)
         useAi(db, token, Date.now(), COACH_DAILY_LIMIT, 'coach');  // per-learner daily limit
-        return coachTurn(coachAi, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true });
+        return withAiCtx({ playerId: player.id, feature: 'coach' }, () => coachTurn(coachAi, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true }));
       });
       console.log(`[coach] ${Date.now() - t0}ms ${resolved.id} adult=${b.adult === true}`); // javob matni yozilmaydi
       return send(res, 200, { ...reply, persona: resolved.id, notice: resolved.downgraded });
@@ -468,8 +478,9 @@ const httpServer = createServer(async (req, res) => {
         useAi(db, token, now);                      // o'quvchining kunlik limiti
         try {
           const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
-          if (lv === 0) return send(res, 200, { question: await followUp(ai, String(b.question ?? ''), String(b.answer ?? '')), reaction: null });
-          return send(res, 200, await followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3, undefined, nativeOf(req.headers['x-lang'])));
+          const ctx = { playerId: player.id, feature: 'followup' };
+          if (lv === 0) return send(res, 200, { question: await withAiCtx(ctx, () => followUp(ai, String(b.question ?? ''), String(b.answer ?? ''))), reaction: null });
+          return send(res, 200, await withAiCtx(ctx, () => followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3, undefined, nativeOf(req.headers['x-lang']))));
         } catch (e) { refundAi(db, player.id, '', now); refundGlobalAi(db, now); throw e; }
       }
       if (url.pathname === '/api/ai/speaking' || url.pathname === '/api/ai/writing') {
@@ -483,7 +494,7 @@ const httpServer = createServer(async (req, res) => {
         try { useGlobalAi(db, COACH_GLOBAL_DAILY, now); } catch (e) { refundAssessment(db, q.playerId, kind, now); throw e; }
         try {
           const nat = nativeOf(req.headers['x-lang']);
-          const r = kind === 'speaking' ? await evaluateSpeaking(ai, turns, undefined, nat) : await evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text, undefined, nat);
+          const r = await withAiCtx({ playerId: q.playerId, feature: `${kind}_eval` }, () => (kind === 'speaking' ? evaluateSpeaking(ai, turns, undefined, nat) : evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text, undefined, nat)));
           // Server natijasi (to'liq imtihon va sertifikat uchun): band AI baholashdan, mijozdan emas
           const att = /^[\w:.-]{6,60}$/.test(String(b.attemptId ?? '')) ? String(b.attemptId) : randomUUID();
           const rec = recordResult(db, q.playerId, { module: 'ai', kind, testId: `ai-${kind}`, title: kind === 'writing' ? 'Writing' : 'Speaking', attemptKey: `ai:${kind}:${att}`, band: r.overall }, now);
@@ -560,8 +571,21 @@ const httpServer = createServer(async (req, res) => {
       requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']);
       const b = await readJson(req);
       // role: 'methodologist' | 'creator' | 'teacher' (true — eski mijozlar uchun metodist), false/null — olib tashlash; admin faqat ADMIN_NICKNAMES orqali
-      const want = b.role === true ? 'methodologist' : typeof b.role === 'string' && ['methodologist', 'creator', 'teacher'].includes(b.role) ? b.role as 'methodologist' | 'creator' | 'teacher' : null;
+      const want = b.role === true ? 'methodologist' : typeof b.role === 'string' && ['methodologist', 'creator', 'teacher', 'sales'].includes(b.role) ? b.role as 'methodologist' | 'creator' | 'teacher' | 'sales' : null;
       return send(res, 200, setRole(db, String(b.nickname ?? ''), want));
+    }
+    // Lidlar: o'quvchi o'zi raqam qoldiradi (rozilik bilan); operator (rol: sales) va admin ro'yxatni ko'radi
+    if (url.pathname === '/api/lead') {
+      const p = byToken(db, String(req.headers['x-token'] ?? ''));
+      if (req.method === 'GET') return send(res, 200, { has: hasLead(db, p.id), bot: botUsername });
+      if (req.method === 'POST') { const b = await readJson(req); return send(res, 200, saveLead(db, p.id, { phone: b.phone, consent: b.consent, source: 'form', goal: b.goal, level: b.level, minutes: b.minutes })); }
+    }
+    if (req.method === 'GET' && url.pathname === '/api/staff/leads') { requireRole(db, String(req.headers['x-token'] ?? ''), ['sales']); return send(res, 200, { leads: listLeads(db, url.searchParams.get('status')) }); }
+    if (req.method === 'POST' && url.pathname === '/api/staff/leads') {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['sales']);
+      const b = await readJson(req);
+      updateLead(db, Number(b.playerId), { status: b.status, note: b.note }, me.nickname);
+      return send(res, 200, { ok: true });
     }
     // Admin kabineti (rol: admin): foydalanuvchi qidirish, to'lovlar, qo'lda obuna berish (har biri audit jurnalida)
     if (req.method === 'GET' && url.pathname === '/api/staff/users') { requireRole(db, String(req.headers['x-token'] ?? ''), []); return send(res, 200, { users: findUsers(db, url.searchParams.get('q') ?? '') }); }
@@ -604,6 +628,8 @@ const httpServer = createServer(async (req, res) => {
     return send(res, 500, { error: 'Server xatosi' });
   }
 });
+// Matn AI xarajati: har javobdagi haqiqiy token soni × narx (AI_PRICE_IN_PER_M / AI_PRICE_OUT_PER_M)
+setUsageSink((ctx, provider, model, u) => { const p = textPrice(); recordAiCost(db, { playerId: ctx.playerId, feature: ctx.feature, provider, model, units: u.inTok + u.outTok, unitKind: 'tokens', costUsd: textCost(u, p), estimated: p.estimated }); });
 if (live) attachLive(httpServer, {
   db, cfg: live,
   auth: (token) => {
@@ -621,15 +647,18 @@ if (live) attachLive(httpServer, {
   onTranscript: (pid, turns, lang) => {
     if (ai.provider === 'none') return;
     const q = summaryPrompt(turns, nativeOf(lang));
-    void complete(ai, q.system, q.user, { maxTokens: 400, timeoutMs: 20_000 }).then((raw) => {
+    void withAiCtx({ playerId: pid, feature: 'live-memory' }, () => complete(ai, q.system, q.user, { maxTokens: 400, timeoutMs: 20_000 })).then((raw) => {
       const add = parseSummary(raw);
       if (add.mistakes.length || add.topics.length) saveMemory(db, pid, mergeMemory(getMemory(db, pid), add));
-      recordAiCost(db, { playerId: pid, feature: 'live-memory', provider: ai.provider, model: ai.model, units: q.system.length + q.user.length + raw.length, unitKind: 'chars', costUsd: 0.0005, estimated: true });
     }).catch((e) => console.warn('[live] xotira yozilmadi:', (e as Error).message));
   },
-  onEnd: (pid, secs, model) => {
+  onEnd: (pid, secs, model, usage) => {
     recordLive(db, pid, secs); addCall(db, pid, secs);
-    recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 60) * live.pricePerMin, estimated: true });
+    // Gemini qaytargan haqiqiy tokenlar bo'yicha (audio/matn alohida narx); tokenlar kelmagan bo'lsa — daqiqa narxi bilan taxmin
+    const tok = usage ? usage.textIn + usage.audioIn + usage.textOut + usage.audioOut : 0;
+    const lp = livePrice();
+    if (tok > 0) recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: tok, unitKind: 'tokens', costUsd: liveCost(usage!, lp), estimated: lp.estimated });
+    else recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 60) * live.pricePerMin, estimated: true });
   },
 });
 httpServer.listen(PORT, HOST, () => console.log(`Sellzen: http://${HOST}:${PORT} (AI: ${ai.provider}${ai.backup ? ` + zaxira ${ai.backup.provider}` : ''}${aiOffReason() ? ` — ${aiOffReason()}` : ''}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'}, Live: ${live ? `${live.model}/${live.voice}` : 'yo‘q'})`));

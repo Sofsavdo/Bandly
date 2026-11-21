@@ -33,7 +33,7 @@ export default function Pricing() {
     <div>
       <div className="card page-head with-illo t-mint pricing-head">
         <h2 style={{ margin: 0 }}>{L('Tarif')} <em className="it">{L('tanlang')}</em></h2>
-        <p style={{ margin: '6px 0 12px' }}>{L('Mock testlar bepul. Bepul tarifda har kuni bitta yangi dars; obuna bilan — cheksiz darslar, AI baho va AI ustoz.')}</p>
+        <p style={{ margin: '6px 0 12px' }}>{L('Mock testlar bepul. Obuna — cheksiz darslar, AI baho va AI ustoz.')}</p>
         <div className="price-tabs" role="tablist" aria-label={L('Muddat')}>
           {SALE_PERIODS.map((x) => <button key={x.days} role="tab" aria-selected={x.days === days} className={x.days === days ? 'on' : ''} onClick={() => setDays(x.days)}>{x.label}{x.note && <small> {x.note}</small>}</button>)}
         </div>

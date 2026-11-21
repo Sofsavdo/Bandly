@@ -94,7 +94,7 @@ export default function SkillCheck() {
             </>
           ) : (
             <>
-              <p className="bad">{L('Bu brauzer ovozli o‘qishni qo‘llamaydi, shuning uchun Listening qismini o‘tkazib bo‘lmaydi.')}</p>
+              <p className="bad">{L('Brauzer ovozni qo‘llamaydi — Listening o‘tkazib yuboriladi.')}</p>
               <button className="btn" onClick={() => setPhase('done')}>{L('Natijaga o‘tish')}</button>
             </>
           )}
@@ -113,7 +113,7 @@ export default function SkillCheck() {
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderTop: '1px solid var(--line)' }}><span>{k}</span><b>{v}</b></div>
             ))}
           </div>
-          <p className="muted" style={{ fontSize: 13 }}>{L('Taxminiy daraja — Bugungi rejaga ta’sir qiladi.')}</p>
+          <p className="muted" style={{ fontSize: 13 }}>{L('Bugungi reja shu darajaga moslanadi.')}</p>
           <div className="row"><a className="btn primary" href="#/learn">{L('Darslarga o‘tish')}</a><a className="btn" href="#/">{L('Bosh sahifa')}</a></div>
         </section>
       )}

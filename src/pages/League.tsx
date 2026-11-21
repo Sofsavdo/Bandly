@@ -94,7 +94,7 @@ function LeagueCard({ v }: { v: LeagueView }) {
       </div>
       <div className="league-tiers" aria-hidden="true">{TIER_COLORS.map((c, i) => <i key={c} style={{ background: c, opacity: i <= v.tier ? 1 : 0.25 }} />)}</div>
       <div className="countdown"><Timer size={26} color="var(--brand)" /><div><small>{L('Liga tugashiga')}</small><b>{d}k : {h}s : {m}d</b></div></div>
-      {!v.joined ? <p>{L('Bu hafta hali XP olmadingiz. Bitta dars yoki o‘yin — va siz ligangiz guruhiga qo‘shilasiz.')}</p> : (<>
+      {!v.joined ? <p>{L('Bitta dars yoki o‘yin — va ligaga qo‘shilasiz.')}</p> : (<>
         {v.rows.length >= 3 && <Podium rows={v.rows.slice(0, 3)} />}
         <ol className="league-rows" start={v.rows.length >= 3 ? 4 : 1}>
           {v.rows.slice(v.rows.length >= 3 ? 3 : 0).map((r) => (

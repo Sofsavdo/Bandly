@@ -86,11 +86,11 @@ export function PaymentsPanel() {
 }
 
 /** Xodimlar: metodist, hamkor (bloger), o'qituvchi rollarini laqab bo'yicha berish / olib tashlash. */
-const ROLE_UZ: Record<string, string> = { admin: 'admin', methodologist: L('metodist'), creator: L('hamkor (bloger)'), teacher: L('o‘qituvchi') };
+const ROLE_UZ: Record<string, string> = { admin: 'admin', methodologist: L('metodist'), creator: L('hamkor (bloger)'), teacher: L('o‘qituvchi'), sales: L('operator (sotuv)') };
 export function StaffPanel() {
   const [list, setList] = useState<{ nickname: string; role: string }[]>([]);
   const [nick, setNick] = useState('');
-  const [kind, setKind] = useState<'methodologist' | 'creator' | 'teacher'>('methodologist');
+  const [kind, setKind] = useState<'methodologist' | 'creator' | 'teacher' | 'sales'>('methodologist');
   const [msg, setMsg] = useState('');
   const load = async () => { try { setList((await call<{ staff: { nickname: string; role: string }[] }>('/api/staff')).staff); } catch (e) { setMsg((e as Error).message); } };
   useEffect(() => { void load(); }, []);
@@ -98,10 +98,55 @@ export function StaffPanel() {
   return (
     <section className="card">
       <h3 style={{ marginTop: 0 }}>{L('Xodimlar')}</h3>
-      <p className="muted" style={{ fontSize: 13 }}>{L('Xodim avval saytda hisob ochadi, so‘ng rolni tanlab, laqabini yozing. Metodist — darslar va testlar, hamkor — referal kabineti, o‘qituvchi — guruhlar.')}</p>
-      <div className="row"><select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} aria-label={L('Rol')}>{(['methodologist', 'creator', 'teacher'] as const).map((r) => <option key={r} value={r}>{ROLE_UZ[r]}</option>)}</select><input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={L('Laqab')} aria-label={L('Laqab')} style={inputStyle} /><button className="btn sm primary" disabled={nick.trim().length < 2} onClick={() => void setRole(nick.trim(), true)}>{L('Rol berish')}</button></div>
+      <p className="muted" style={{ fontSize: 13 }}>{L('Xodim avval saytda hisob ochadi, so‘ng rolni tanlab, laqabini yozing. Metodist — darslar, hamkor — referal, o‘qituvchi — guruhlar, operator — lidlar.')}</p>
+      <div className="row"><select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} aria-label={L('Rol')}>{(['methodologist', 'creator', 'teacher', 'sales'] as const).map((r) => <option key={r} value={r}>{ROLE_UZ[r]}</option>)}</select><input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={L('Laqab')} aria-label={L('Laqab')} style={inputStyle} /><button className="btn sm primary" disabled={nick.trim().length < 2} onClick={() => void setRole(nick.trim(), true)}>{L('Rol berish')}</button></div>
       <ul>{list.map((x) => <li key={x.nickname}>{x.nickname} — {ROLE_UZ[x.role] ?? x.role} {x.role !== 'admin' && <button className="btn sm" onClick={() => void setRole(x.nickname, false)}>{L('Olib tashlash')}</button>}</li>)}</ul>
       {msg && <p className="notice">{msg}</p>}
+    </section>
+  );
+}
+
+interface Lead { playerId: number; nickname: string; phone: string; source: string; goal: string | null; level: string | null; minutes: number | null; status: string; note: string | null; handledBy: string | null; signedUpAt: number; lastActiveAt: number; xp: number; subscribedUntil: number | null; paidCount: number; createdAt: number }
+const LEAD_UZ: Record<string, string> = { new: L('yangi'), called: L('qo‘ng‘iroq qilindi'), no_answer: L('javob bermadi'), interested: L('qiziqdi'), paid: L('obuna oldi'), declined: L('rad etdi') };
+const GOAL_UZ: Record<string, string> = { general: L('Umumiy ingliz tili'), ielts: 'IELTS', cefr: 'CEFR', sat: 'SAT', speaking: L('Gapirish'), work: L('Ish'), travel: L('Sayohat'), school: L('Maktab') };
+
+/** Lidlar (operator / admin): rozilik bilan qoldirilgan raqamlar, maqsad va daraja, obuna holati; holat va izoh; CSV. */
+export function LeadsPanel() {
+  const [list, setList] = useState<Lead[] | null>(null);
+  const [filter, setFilter] = useState('');
+  const [msg, setMsg] = useState('');
+  const load = async () => { try { setList((await call<{ leads: Lead[] }>(`/api/staff/leads${filter ? `?status=${filter}` : ''}`)).leads); } catch (e) { setMsg((e as Error).message); } };
+  useEffect(() => { void load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const set = async (l: Lead, patch: { status?: string; note?: string }) => { try { await call('/api/staff/leads', { method: 'POST', body: JSON.stringify({ playerId: l.playerId, ...patch }) }); await load(); } catch (e) { setMsg((e as Error).message); } };
+  const csv = () => {
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const head = ['nickname', 'phone', 'goal', 'level', 'minutes', 'status', 'note', 'signed_up', 'last_active', 'xp', 'subscribed_until', 'payments'];
+    const rows = (list ?? []).map((l) => [l.nickname, l.phone, l.goal, l.level, l.minutes, l.status, l.note, new Date(l.signedUpAt).toISOString(), new Date(l.lastActiveAt).toISOString(), l.xp, l.subscribedUntil ? new Date(l.subscribedUntil).toISOString() : '', l.paidCount].map(esc).join(','));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([[head.join(','), ...rows].join('\n')], { type: 'text/csv' })); a.download = `sellzen-leads-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  };
+  const now = Date.now();
+  return (
+    <section className="card">
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <h3 style={{ margin: 0 }}>{L('Lidlar')} {list && <span className="pill">{list.length}</span>}</h3>
+        <div className="row">
+          <select value={filter} onChange={(e) => setFilter(e.target.value)} aria-label={L('Holat')}><option value="">{L('Hammasi')}</option>{Object.entries(LEAD_UZ).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+          <button className="btn sm" onClick={csv} disabled={!list?.length}>{L('CSV')}</button>
+        </div>
+      </div>
+      {msg && <p className="notice">{msg}</p>}
+      {list && (list.length === 0 ? <p className="muted">{L('Hali lid yo‘q.')}</p> : (
+        <div className="table-scroll"><table className="data wrap"><thead><tr><th>{L('O‘quvchi')}</th><th>{L('Telefon')}</th><th>{L('Maqsad')}</th><th>{L('Holat')}</th><th>{L('Izoh')}</th></tr></thead>
+          <tbody>{list.map((l) => (
+            <tr key={l.playerId}>
+              <td><b>{l.nickname}</b><br /><small className="muted">{fmtDate(l.signedUpAt)} · {l.xp} {L('XP')}{l.subscribedUntil && l.subscribedUntil > now ? ` · ${L('obuna')} ${fmtDate(l.subscribedUntil)}` : ''}</small></td>
+              <td><a href={`tel:${l.phone}`}>{l.phone}</a>{l.source === 'telegram' && <><br /><small className="muted">{L('Telegram ✓')}</small></>}</td>
+              <td>{l.goal ? GOAL_UZ[l.goal] ?? l.goal : '—'}{l.level && ` · ${l.level}`}{l.minutes && <><br /><small className="muted">{L('{0} daq/kun', [l.minutes])}</small></>}</td>
+              <td><select value={l.status} onChange={(e) => void set(l, { status: e.target.value })} aria-label={L('Holat')}>{Object.entries(LEAD_UZ).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>{l.handledBy && <><br /><small className="muted">{l.handledBy}</small></>}</td>
+              <td><input defaultValue={l.note ?? ''} placeholder={L('Izoh')} onBlur={(e) => { if (e.target.value !== (l.note ?? '')) void set(l, { note: e.target.value }); }} style={{ ...inputStyle, width: '100%' }} /></td>
+            </tr>
+          ))}</tbody></table></div>
+      ))}
     </section>
   );
 }

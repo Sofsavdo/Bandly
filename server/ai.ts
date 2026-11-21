@@ -2,6 +2,7 @@
 // Kalit faqat server muhitida (.env / hosting o'zgaruvchilari) turadi, mijozga hech qachon yuborilmaydi.
 
 import { FORBIDDEN, type Reaction } from '../src/content/roasts';
+import { parseUsage, reportUsage } from './aiUsage';
 
 export type Provider = 'anthropic' | 'openai' | 'gemini' | 'none';
 export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string; fallbackModels?: string[]; backup?: AiConfig }
@@ -123,6 +124,7 @@ async function completeOnce(cfg: AiConfig, system: string, user: string, opts: C
     }
     const j = (await res.json()) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     const text = cfg.provider === 'anthropic' ? j.content?.[0]?.text : cfg.provider === 'openai' ? j.choices?.[0]?.message?.content : (j.candidates?.[0]?.content?.parts ?? []).filter((p: { thought?: boolean; text?: string }) => !p.thought && typeof p.text === 'string').map((p: { text: string }) => p.text).join('');
+    reportUsage(cfg.provider, cfg.model, parseUsage(cfg.provider, j)); // haqiqiy token soni bo'yicha xarajat (kontekst bo'lsa)
     if (typeof text !== 'string' || !text.trim()) throw new AiError(502, 'AI bo‘sh javob berdi');
     return text.trim();
   } catch (e) {

@@ -9,6 +9,7 @@ import { buildPlan, isExam, loadAnswers, saveAnswers, targetBand, type Answers, 
 import { MINUTES, savePrefs, type Goal } from '../lib/planPrefs';
 import { getProfile, setPersona, setTarget, useProfile } from '../lib/store';
 import { L } from '../i18n';
+import { LeadCard } from '../components/LeadCard';
 
 type StepId = 'goal' | 'why' | 'when' | 'target' | 'level' | 'hard' | 'minutes' | 'tutor';
 const GOAL_OPTS: { id: Goal; label: string }[] = [{ id: 'ielts', label: 'IELTS' }, { id: 'cefr', label: L('CEFR (Multilevel)') }, { id: 'sat', label: 'SAT' }, { id: 'general', label: L('Umumiy ingliz tili') }];
@@ -156,7 +157,7 @@ function Result({ a, acc, onJoined, onRedo }: { a: Answers; acc: Account | null;
             {better ? <button className="btn sm" onClick={() => raise(better)}>{L('{0} daqiqa qilish', [better])}</button> : <span>{L('Sanani surish yoki maqsadni pasaytirish kerak.')}</span>}
           </p>
         )}
-        <p className="muted onboard-note">{L('Taxminiy hisob. Daraja testi aniqroq qiladi.')}</p>
+        <p className="muted onboard-note">{L('Daraja testidan keyin aniqlashadi.')}</p>
       </section>
 
       <section className="card">
@@ -166,6 +167,7 @@ function Result({ a, acc, onJoined, onRedo }: { a: Answers; acc: Account | null;
         </div>
       </section>
 
+      {acc && <LeadCard goal={a.goal} level={a.level} minutes={min} />}
       {acc
         ? <div className="row"><a className="btn primary lg" href="#/placement"><Rocket size={18} />  {L('Boshlash')}</a><button className="btn lg" onClick={onRedo}>{L('Javoblarni o‘zgartirish')}</button></div>
         : <>

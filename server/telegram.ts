@@ -166,6 +166,10 @@ export function handleUpdate(update: unknown, publicUrl: string, trFor: (lang?: 
   if (/^\/mock\b/.test(text)) {
     return { method: 'sendMessage', body: { chat_id: msg.chat.id, text: tr('Bepul mock testlar: Listening va Reading, imtihon taymeri va avtomatik baho bilan.'), reply_markup: { inline_keyboard: [[{ text: `⏱ ${tr('Mock testni ochish')}`, web_app: { url: appUrl(publicUrl, '/mocks') } }]] } } };
   }
+  // t.me/bot?start=phone — o'quvchi raqamini ulashadi (Telegram tasdiqlagan raqam; tugma faqat o'z kontaktini yuboradi)
+  if (/^\/start\s+phone\b/.test(text)) {
+    return { method: 'sendMessage', body: { chat_id: msg.chat.id, text: tr('Mutaxassisimiz rejangizni tushuntirib berishi uchun raqamingizni ulashing (ixtiyoriy).'), reply_markup: { keyboard: [[{ text: `📱 ${tr('Raqamni ulashish')}`, request_contact: true }]], resize_keyboard: true, one_time_keyboard: true } } };
+  }
   const ref = text.match(/^\/start\s+ref_([a-z2-9]{6,10})\b/)?.[1]; // t.me/bot?start=ref_KOD
   return { method: 'sendMessage', body: startReply(msg.chat.id, publicUrl, msg.from?.first_name, tr, ref) };
 }

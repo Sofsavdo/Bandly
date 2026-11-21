@@ -65,7 +65,7 @@ export function DiscoverDeck({ lesson, onDone, onAddWords, wordsMsg }: { lesson:
         ))}
         {card.kind === 'examples' && (<>
           <h3><Lightbulb size={18} /> {L('Avval misollarga qarang')}</h3>
-          <p className="muted">{L('Eshiting va o‘ylang: bu gaplarda qanday qonuniyat bor? Qoidani keyingi kartada tekshiramiz.')}</p>
+          <p className="muted">{L('Eshiting: qanday qonuniyat bor?')}</p>
           <ul className="ex-list">{lesson.examples.map((e) => (
             <li key={e.en}><button type="button" className="icon-btn" aria-label={L('Eshitish: {0}', [e.en])} onClick={() => playEn(e.en, e.audio)}><Volume2 size={16} /></button><span><b>{e.en}</b><small className="muted">{e.uz}</small></span></li>
           ))}</ul>
@@ -153,13 +153,14 @@ export function ListenGame({ items, onDone }: { items: ListenItem[]; onDone: () 
 }
 
 /** Javobdan keyingi panel: rang, Sellzen reaksiyasi, to'g'ri javob va izoh, "Davom etish". */
-export function FeedbackSheet({ ok, n, answer, explain, onNext, xp }: { ok: boolean; n: number; answer: string; explain: string; onNext: () => void; xp?: number }) {
+export function FeedbackSheet({ ok, n, answer, explain, onNext, xp, sentence }: { ok: boolean; n: number; answer: string; explain: string; onNext: () => void; xp?: number; sentence?: string | null }) {
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => { btn.current?.focus({ preventScroll: true }); btn.current?.scrollIntoView({ block: 'nearest' }); }, []);
   return (
     <div className={`fb-sheet ${ok ? 'ok' : 'bad'}`} role="status">
       <div className="fb-head">{ok ? <CheckCircle2 size={22} /> : <XCircle size={22} />}<b>{reaction(ok, n)}</b>{ok && xp ? <span className="xp-pop">+{xp}  {L('XP')}</span> : null}</div>
-      {!ok && <p className="fb-answer">{L('To‘g‘ri javob:')} <b>{answer}</b></p>}
+      {!ok && !sentence && <p className="fb-answer">{L('To‘g‘ri javob:')} <b>{answer}</b></p>}
+      {sentence && <p className="fb-answer fb-sentence"><button type="button" className="icon-btn sm" aria-label={L('Eshitish: {0}', [sentence])} onClick={() => playEn(sentence)}><Volume2 size={15} /></button><b>{sentence}</b></p>}
       <p className="fb-explain">{explain}</p>
       <button ref={btn} className={`btn block ${ok ? 'primary' : 'danger'}`} onClick={onNext}>{L('Davom etish')} <ArrowRight size={14} /></button>
     </div>

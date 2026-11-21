@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpen, Mic, Puzzle, Swords, Zap } from 'lucide-react';
 import { vocabForLevel } from '../../content/vocab';
 import { isDue, isMastered } from '../../lib/srs';
-import { freeGamesLeft, hasAnyPlan, useProfile } from '../../lib/store';
+import { useProfile } from '../../lib/store';
 import { Illo } from '../../components/Illo';
 import { L } from '../../i18n';
 
@@ -21,12 +21,11 @@ export default function GamesHub() {
   const due = vocab.filter((w) => p.srs[w.id] && isDue(p.srs[w.id], now)).length;
   const fresh = vocab.filter((w) => !p.srs[w.id]).length;
   const topics = [...new Set(vocab.map((w) => w.topic))];
-  const left = freeGamesLeft(p);
   return (
     <div>
       <div className="card page-head with-illo t-pink">
         <h2>{L('So‘z o‘yinlari')}</h2><Illo kind="star" size={124} />
-        <p>{hasAnyPlan(p) ? L('Obunangiz bilan cheksiz.') : L('Bugun bepul: {0} ta o‘yin', [left])}</p>
+        <p>{L('Bepul va cheksiz.')}</p>
         <div className="row pills-row">
           <span className="pill">{L('Yangi')} {fresh}</span>
           <span className="pill">{L('Takrorlash')} {due}</span>

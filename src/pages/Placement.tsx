@@ -60,7 +60,7 @@ export default function Placement() {
             {L('20 tagacha qisqa savol, A1 dan C1 gacha. Natijaga qarab sizga alohida dastur tuziladi.')}
           </p>
           <div className="row" style={{ justifyContent: 'center' }}>
-            <span className="pill">{L('~3 daqiqa')}</span><span className="pill">{L('Taxminiy natija')}</span><span className="pill">{L('Istalgan payt qayta topshirish')}</span>
+            <span className="pill">{L('~3 daqiqa')}</span><span className="pill">{L('Istalgan payt qayta topshirish')}</span>
           </div>
           <button className="btn primary lg" onClick={() => { setStarted(true); track('placement_start'); }}>{L('Testni boshlash')} <ArrowRight size={18} /></button>
           {p.level && <a className="evidence" href="#/">{L('Hozirgi daraja:')} {p.level}{L('. Bekor qilish')}</a>}

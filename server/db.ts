@@ -243,8 +243,8 @@ export const byToken = (db: DatabaseSync, token: string): Player => {
   if (!p) throw new ApiError(401, 'Noma’lum token');
   return p;
 };
-export type Role = 'admin' | 'methodologist' | 'creator' | 'teacher';
-export const ROLES: Role[] = ['admin', 'methodologist', 'creator', 'teacher'];
+export type Role = 'admin' | 'methodologist' | 'creator' | 'teacher' | 'sales';
+export const ROLES: Role[] = ['admin', 'methodologist', 'creator', 'teacher', 'sales']; // sales — operator: faqat lidlar ro'yxati
 /** Egasi Railway'da ADMIN_NICKNAMES (vergul bilan) kiritgan laqablar avtomatik admin bo'ladi. */
 const adminNicks = (env: NodeJS.ProcessEnv = process.env): string[] => (env.ADMIN_NICKNAMES ?? '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
 export function roleOf(db: DatabaseSync, playerId: number, env: NodeJS.ProcessEnv = process.env): Role | null {

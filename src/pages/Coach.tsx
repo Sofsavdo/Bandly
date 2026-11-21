@@ -248,7 +248,7 @@ export default function Coach() {
       <section className="tutor-call voice idle-call">
         {orb}
         <h2>{L('Sellzen')}</h2>
-        <p>{L('Sellzen — shaxsiy ingliz tili ustozingiz. Gapiring: tinglaydi, kuladi, kesatadi va xatoingizni aytadi.')}</p>
+        <p>{L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>
         {minutes?.subscribed && <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span>}
         {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         {status && !status.coach && <p className="notice">{L('AI ustoz tez orada ochiladi.')}</p>}
