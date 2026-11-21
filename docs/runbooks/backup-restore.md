@@ -25,3 +25,21 @@ Checks checksum, `PRAGMA integrity_check`, `PRAGMA foreign_key_check`, prints pe
 
 ## Scheduling [U]
 Whether a Railway cron/second service can run `npm run backup` against the same volume is **unverified** (a volume attaches to one service). Until verified, run manually and record the date. Do not change Railway settings without owner approval.
+
+## Off-site copy (protects against losing the volume)
+The server already takes a daily snapshot to `/data/backups` (`server/autoBackup.ts`). Those copies live on the **same
+volume**. When `BACKUP_S3_*` is set, every new snapshot is also gzip-compressed and uploaded to an S3-compatible bucket
+(`server/offsite.ts`, AWS SigV4 verified against botocore). Failures are logged as `backup offsite failed: …` and never
+break the local backup.
+
+Setup (owner action — a bucket is a paid resource):
+1. Railway → project Sellzen → **+ New → Bucket** (pick an EU region if possible). Open its **Credentials** tab.
+2. On service `bandly` add variables (reference the bucket's variables instead of pasting values where possible):
+   `BACKUP_S3_ENDPOINT` (e.g. `https://t3.storageapi.dev`), `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY_ID`,
+   `BACKUP_S3_SECRET_ACCESS_KEY`; optional `BACKUP_S3_REGION` (default `auto`), `BACKUP_S3_PREFIX` (default
+   `sellzen-backups/`), `BACKUP_S3_URL_STYLE=path` for providers without virtual-hosted URLs.
+3. Next daily snapshot → log line `backup offsite: sellzen-backups/bandly-<UTC>.sqlite.gz (<bytes> B)`.
+4. Set a lifecycle rule on the bucket (e.g. delete after 30–60 days); the server never deletes remote objects.
+
+Restore from off-site: download the object (S3 client or the bucket UI), `gunzip bandly-<UTC>.sqlite.gz`, run
+`npm run restore:check -- ./bandly-<UTC>.sqlite`, then follow "Restore" above.

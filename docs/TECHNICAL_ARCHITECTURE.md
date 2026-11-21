@@ -1,4 +1,4 @@
-# BANDLY — Technical Architecture
+# Sellzen — Technical Architecture
 
 Part 1 describes the system as it is at commit `b51f705`. Part 2 proposes the target. Decisions marked **(needs approval)** are recommendations, not commitments.
 
@@ -100,7 +100,7 @@ Business logic stays in `domain/` and on the server; components only render and 
 
 ### Design system
 
-Keep the existing tokens (`--brand`, radii, shadows, Unbounded + Inter) and the Bandi mascot. Extract the repeated patterns that already exist in `styles.css` into primitives: `Button`, `Card`, `Pill`, `Field`, `Tabs`, `Dialog`, `Progress`, `Stat`, `EmptyState`, `ErrorState`, `Skeleton`. Add focus management, a 44 px minimum tap target and a documented spacing scale. No visual redesign is proposed.
+Keep the existing tokens (`--brand`, radii, shadows, Unbounded + Inter) and the legacy mascot (formerly “Bandi”). Extract the repeated patterns that already exist in `styles.css` into primitives: `Button`, `Card`, `Pill`, `Field`, `Tabs`, `Dialog`, `Progress`, `Stat`, `EmptyState`, `ErrorState`, `Skeleton`. Add focus management, a 44 px minimum tap target and a documented spacing scale. No visual redesign is proposed.
 
 ### Security architecture
 

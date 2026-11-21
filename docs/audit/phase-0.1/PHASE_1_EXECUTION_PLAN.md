@@ -1,4 +1,4 @@
-# BANDLY — Phase 1 Execution Plan (M1–M8)
+# Sellzen — Phase 1 Execution Plan (M1–M8)
 
 Phase 1 of `IMPLEMENTATION_ROADMAP.md` is replaced by eight independently releasable and testable milestones. **Nothing here is approved or started.** File lists are *likely* touch points from inspecting the repository at commit `b51f705`, not commitments.
 

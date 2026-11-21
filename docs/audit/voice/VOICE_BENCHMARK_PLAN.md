@@ -9,7 +9,7 @@ Pick a primary and fallback provider for each function — Uzbek STT, English le
 | Set | Size | Content | Who |
 |---|---|---|---|
 | **U** Uzbek speech | **≥ 50 utterances**, 5–20 s, ≥ 20 speakers | matrix in `UZBEK_SPEECH_SUPPORT.md` §2 (accents, speed, fillers, noise, devices, terms) | adult volunteers, written consent |
-| **L** English learner speech | **≥ 50 utterances** from ≥ 20 learners, A2–C1 | 25 **read** (reference text known → scripted assessment) + 25 **spontaneous** answers to Bandly speaking prompts | same; CEFR level from Bandly placement |
+| **L** English learner speech | **≥ 50 utterances** from ≥ 20 learners, A2–C1 | 25 **read** (reference text known → scripted assessment) + 25 **spontaneous** answers to Sellzen speaking prompts | same; CEFR level from Sellzen placement |
 | **T** English TTS sentences | **≥ 30 sentences** (Appendix A) | stress, connected speech, questions, numbers, names, long sentences | synthesised by each candidate voice, US and UK |
 | **M** Mixed-language sentences | **≥ 20 sentences** (Appendix B) | Uzbek + English terms; read by ≥ 5 speakers → ≥ 100 recordings | volunteers |
 | **R** Realtime conversations | 10 scripted scenarios × 3 min per provider | interruptions, long pauses, background noise, level change, mixed language | 3 testers |

@@ -75,7 +75,7 @@ Effort is in developer-days (d) for one full-stack developer and **excludes cont
   - placement in lessons, speaking practice, dashboard;
   - neutral examiner only in the Speaking mock.
 - **Acceptance criteria:** AI_TEACHER §8 (assets ≤ 250 KB per character, reduced motion, never on exam screens).
-- **Rollback:** a flag; the Bandi mascot remains as a fallback until PXD-08 is decided.
+- **Rollback:** a flag; the legacy mascot (formerly “Bandi”) remains as a fallback until PXD-08 is decided.
 
 ## T2 — Live AI Teacher
 - Realtime provider chosen by the voice benchmark (OD-21, OD-23).
@@ -93,7 +93,7 @@ Effort is in developer-days (d) for one full-stack developer and **excludes cont
 | AI Teacher vs Voice Engine? | Compatible. Turn-based feedback already uses `/api/tts` with emotion tags and cost logging; realtime is pending OD-21. |
 | AI costs vs plan limits? | The teacher animation has no AI cost. Voiced feedback is capped at 5 new answers a day plus the global character ceiling. Live minutes follow the OD-25 limits. All of this sits within `AI_COST_CONTROL_SPEC.md`. |
 | Free / premium boundaries? | One conflict: full objective mock gated today vs DR-19 "objective mocks free" (PXD-09). |
-| Conflicts with Phase-0 docs? | `TECHNICAL_ARCHITECTURE.md` "keep Bandi, no redesign", now superseded by the owner's brief (PXD-08). `UI_UX_SPECIFICATION.md` mascot states are replaced by the teacher states. |
+| Conflicts with Phase-0 docs? | `TECHNICAL_ARCHITECTURE.md` "keep the mascot (then called Bandi), no redesign", now superseded by the owner's brief (PXD-08). `UI_UX_SPECIFICATION.md` mascot states are replaced by the teacher states. |
 
 ## First implementation step (recommendation)
 **E1 Exam shell on the existing mini-tests**, behind a flag:

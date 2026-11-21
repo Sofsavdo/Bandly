@@ -1,0 +1,12 @@
+{
+  "name": "sellzen-product-engineering",
+  "version": "1.0.0",
+  "description": "Multidisciplinary product engineering team for Sellzen (sellzen.uz, formerly Bandly): 12 skills grounded in the real Sellzen codebase — product, frontend, backend, AI voice, adaptive learning, methodology, exams, monetization, growth, localization/SEO, QA/security and DevOps cost control — plus audit and release workflows.",
+  "author": {
+    "name": "Sofsavdo"
+  },
+  "homepage": "https://sellzen.uz",
+  "repository": "https://github.com/Sofsavdo/Bandly",
+  "license": "UNLICENSED",
+  "keywords": ["sellzen", "edtech", "ielts", "cefr", "sat", "uzbekistan", "central-asia", "adaptive-learning", "gemini-live", "railway"]
+}

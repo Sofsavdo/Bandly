@@ -12,7 +12,7 @@ Status: **research + test design**. Official support was checked on 2026-11-14 (
 | Script | Latin (`uz-UZ`) | "Uzbek (Latin, Uzbekistan)" | ISO `uzb`, script not stated → check output script (Latin vs Cyrillic) in the test | — |
 
 Implications:
-- Bandly's Uzbek explanation voice today can only be Azure (already integrated, off) or ElevenLabs (untested). Azure cannot be told how to pronounce English words embedded in Uzbek text (no phoneme/lexicon) → test sentences like *"Bu **present perfect** zamoni"* explicitly; if mispronounced, the UI writes the English term on screen and the English voice says it separately.
+- Sellzen's Uzbek explanation voice today can only be Azure (already integrated, off) or ElevenLabs (untested). Azure cannot be told how to pronounce English words embedded in Uzbek text (no phoneme/lexicon) → test sentences like *"Bu **present perfect** zamoni"* explicitly; if mispronounced, the UI writes the English term on screen and the English voice says it separately.
 - "Emotional" Uzbek voice (angry/funny/sarcastic personalities) is **R&D, not a promised feature** (owner decision in `VOICE_ENGINE_SPEC.md`). Azure Uzbek voices list no styles; only rate/pitch prosody (as `src/lib/tts.ts` already does) is available.
 
 ## 2. Uzbek STT test matrix

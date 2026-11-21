@@ -1,4 +1,4 @@
-# BANDLY — Implementation Roadmap
+# Sellzen — Implementation Roadmap
 
 Based on the findings in `PRODUCT_AUDIT.md`. Sizes are relative (S, M, L, XL), not dates. Nothing here starts until Phase 0 is approved.
 
@@ -114,4 +114,4 @@ Phase 1 ──┬─▶ Phase 2 ──▶ Phase 4 ──▶ Phase 5
 
 Implemented items, files changed, database changes, tests run and their results, remaining issues, deployment risks and the AI operating-cost effect — as required by the specification.
 
-> **Product experience (2026-11-15):** design system, gamified learning, real exam experience, AI teacher characters, screen wireframes, roadmap and owner decisions — see `docs/BANDLY_DESIGN_SYSTEM.md`, `GAMIFIED_LEARNING_SPEC.md`, `REAL_EXAM_EXPERIENCE_SPEC.md`, `AI_TEACHER_CHARACTER_SPEC.md`, `BANDLY_SCREEN_WIREFRAMES.md`, `PRODUCT_EXPERIENCE_IMPLEMENTATION_ROADMAP.md`, `PRODUCT_EXPERIENCE_OWNER_DECISIONS.md`.
+> **Product experience (2026-11-15):** design system, gamified learning, real exam experience, AI teacher characters, screen wireframes, roadmap and owner decisions — see `docs/SELLZEN_DESIGN_SYSTEM.md`, `GAMIFIED_LEARNING_SPEC.md`, `REAL_EXAM_EXPERIENCE_SPEC.md`, `AI_TEACHER_CHARACTER_SPEC.md`, `SELLZEN_SCREEN_WIREFRAMES.md`, `PRODUCT_EXPERIENCE_IMPLEMENTATION_ROADMAP.md`, `PRODUCT_EXPERIENCE_OWNER_DECISIONS.md`.

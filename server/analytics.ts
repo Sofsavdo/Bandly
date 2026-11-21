@@ -2,19 +2,22 @@
 // "Faol" = o'sha kuni XP olgan (xp_events, accepted > 0). Kunlar Toshkent vaqti bo'yicha.
 import type { DatabaseSync } from 'node:sqlite';
 import { TZ_OFFSET_MS, tzDay, tzDayStart } from './day';
+import { ensureEventsTable, eventTotals, type EventName } from './events';
 
 const DAY = 86_400_000;
 const dayIdx = (ts: number) => Math.floor((ts + TZ_OFFSET_MS) / DAY);
 
 export interface Analytics {
   generatedAt: number;
-  totals: { players: number; telegram: number; payingNow: number; dau: number; wau: number; mau: number };
+  totals: { players: number; telegram: number; payingNow: number; subscribedNow: number; dau: number; wau: number; mau: number };
   days: { day: string; signups: number; active: number; paid: number; revenue: number; aiUsd: number }[];
   retention: { cohort: number; d1: number | null; d7: number | null; d30: number | null };
   funnel: { step: string; n: number }[];
   bySource: { source: string; events: number; xp: number }[];
   aiByFeature: { feature: string; usd: number }[];
   revenue30: number; paid30: number;
+  /** O'sish voronkasi (tanlangan davr): anonim hodisalar + ro'yxat/referal; nisbatlar foizda (ma'lumot bo'lmasa null). */
+  growth: { events: Record<EventName, number>; signups: number; referredSignups: number; referredActivated: number; placementToSignupPct: number | null; referredSharePct: number | null };
 }
 
 const one = <T>(db: DatabaseSync, sql: string, ...a: (number | string)[]): T => db.prepare(sql).get(...a) as T;
@@ -26,7 +29,9 @@ export function analytics(db: DatabaseSync, now = Date.now(), span = 30): Analyt
   const totals = {
     players: one<{ n: number }>(db, 'SELECT COUNT(*) AS n FROM players').n,
     telegram: one<{ n: number }>(db, 'SELECT COUNT(*) AS n FROM players WHERE tg_id IS NOT NULL').n,
-    payingNow: one<{ n: number }>(db, 'SELECT COUNT(DISTINCT player_id) AS n FROM subscriptions WHERE until > ?', now).n,
+    // To'lovchi = faol obunasi bor VA kamida bir marta haqiqiy to'lov qilgan (referal/admin sovg'a kunlari to'lov emas)
+    payingNow: one<{ n: number }>(db, "SELECT COUNT(DISTINCT s.player_id) AS n FROM subscriptions s WHERE s.until > ? AND EXISTS (SELECT 1 FROM payments p WHERE p.player_id = s.player_id AND p.status = 'success')", now).n,
+    subscribedNow: one<{ n: number }>(db, 'SELECT COUNT(DISTINCT player_id) AS n FROM subscriptions WHERE until > ?', now).n,
     dau: distinctSince(tzDayStart(now)), wau: distinctSince(tzDayStart(now) - 6 * DAY), mau: distinctSince(tzDayStart(now) - 29 * DAY),
   };
 
@@ -66,5 +71,11 @@ export function analytics(db: DatabaseSync, now = Date.now(), span = 30): Analyt
   const bySource = (db.prepare('SELECT source, COUNT(*) AS events, COALESCE(SUM(accepted), 0) AS xp FROM xp_events WHERE ts >= ? GROUP BY source ORDER BY xp DESC').all(from) as { source: string; events: number; xp: number }[]);
   const aiByFeature = (db.prepare('SELECT feature, ROUND(SUM(cost_usd), 2) AS usd FROM ai_cost_events WHERE ts >= ? GROUP BY feature ORDER BY usd DESC').all(from) as { feature: string; usd: number }[]);
   const revenue30 = days.reduce((s, d) => s + d.revenue, 0), paid30 = days.reduce((s, d) => s + d.paid, 0);
-  return { generatedAt: now, totals, days, retention, funnel, bySource, aiByFeature, revenue30, paid30 };
+  ensureEventsTable(db);
+  const events = eventTotals(db, tzDay(from + DAY / 2), tzDay(now));
+  const signups = days.reduce((x, d) => x + d.signups, 0);
+  const ref = one<{ n: number; a: number }>(db, 'SELECT COUNT(*) AS n, COALESCE(SUM(ref_rewarded), 0) AS a FROM players WHERE referred_by IS NOT NULL AND created_at >= ? AND created_at <= ?', from, now);
+  const pct = (a: number, b: number): number | null => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
+  const growth = { events, signups, referredSignups: ref.n, referredActivated: ref.a, placementToSignupPct: pct(signups, events.placement_done), referredSharePct: pct(ref.n, signups) };
+  return { generatedAt: now, totals, days, retention, funnel, bySource, aiByFeature, revenue30, paid30, growth };
 }

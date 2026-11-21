@@ -1,4 +1,4 @@
-# BANDLY — AI Credit and Cost Control Specification
+# Sellzen — AI Credit and Cost Control Specification
 
 Design only; no AI provider has ever been called in production (**[F]** startup log: `AI: none, TTS: none`). This replaces the credit, limit and metering parts of `AI_COST_ARCHITECTURE.md` §5–6. **[F]** verified fact, **[R]** recommendation, **[U]** unresolved.
 

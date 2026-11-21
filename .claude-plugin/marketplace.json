@@ -1,0 +1,18 @@
+{
+  "name": "sellzen",
+  "owner": {
+    "name": "Sofsavdo"
+  },
+  "metadata": {
+    "description": "Internal Claude Code plugins for the Sellzen product."
+  },
+  "plugins": [
+    {
+      "name": "sellzen-product-engineering",
+      "source": "./plugins/sellzen-product-engineering",
+      "description": "Sellzen-specific product engineering team: 12 skills, 2 review agents, audit/preflight/feature-planning/cost commands.",
+      "version": "1.0.0",
+      "category": "development"
+    }
+  ]
+}

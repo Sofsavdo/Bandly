@@ -2,16 +2,19 @@ import { RankBadge } from '../components/RankBadge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { vocabById } from '../content/vocab';
 import { JoinForm } from '../components/JoinForm';
-import { createDuel, duelUrl, fetchDuel, getAccount, submitDuel, type DuelInfo } from '../lib/account';
+import { createDuel, duelUrl, fetchDuel, getAccount, myRefCode, submitDuel, type DuelInfo } from '../lib/account';
 import { addXp, recordReview } from '../lib/store';
 import { buildOptions } from '../lib/vocabGame';
 import { recordWordItem } from '../lib/adaptive/record';
 import { L } from '../i18n';
+import { track } from '../lib/track';
 
 const SECONDS = 12;
 
 function ShareBox({ code }: { code: string }) {
-  const url = duelUrl(code);
+  const [ref, setRef] = useState<string | null>(null);
+  useEffect(() => { void myRefCode().then(setRef); }, []);
+  const url = duelUrl(code, ref);
   const [copied, setCopied] = useState(false);
   const text = L('Sellzen duelida meni yutib ko‘ring!');
   return (
@@ -19,9 +22,9 @@ function ShareBox({ code }: { code: string }) {
       <h3>{L('Do‘stingizni chaqiring')}</h3>
       <p className="bubble" style={{ wordBreak: 'break-all' }}>{url}</p>
       <div className="row">
-        <button className="btn" onClick={() => { void navigator.clipboard?.writeText(url).then(() => setCopied(true)); }}>{copied ? L('Nusxalandi') : L('Havolani nusxalash')}</button>
-        <a className="btn" target="_blank" rel="noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}>{L('Telegramda ulashish')}</a>
-        {typeof navigator.share === 'function' && <button className="btn" onClick={() => void navigator.share({ title: 'Sellzen duel', text, url })}>{L('Ulashish')}</button>}
+        <button className="btn" onClick={() => { track('duel_share'); void navigator.clipboard?.writeText(url).then(() => setCopied(true)); }}>{copied ? L('Nusxalandi') : L('Havolani nusxalash')}</button>
+        <a className="btn" target="_blank" rel="noreferrer" onClick={() => track('duel_share')} href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}>{L('Telegramda ulashish')}</a>
+        {typeof navigator.share === 'function' && <button className="btn" onClick={() => { track('duel_share'); void navigator.share({ title: 'Sellzen duel', text, url }); }}>{L('Ulashish')}</button>}
       </div>
     </div>
   );
@@ -111,7 +114,7 @@ function Results({ info }: { info: DuelInfo }) {
             <tr key={p.nickname} style={p.me ? { background: 'rgba(255,77,61,.12)', fontWeight: 700 } : undefined}>
               <td><RankBadge n={p.rank} /></td>
               <td>{p.nickname}{p.me ? L(' (siz)') : ''}</td>
-              <td>{p.score ?? 'kutilmoqda'}</td><td>{p.correct ?? '—'}</td><td>{p.ms ? `${Math.round(p.ms / 1000)} s` : '—'}</td>
+              <td>{p.score ?? L('kutilmoqda')}</td><td>{p.correct ?? '—'}</td><td>{p.ms ? `${Math.round(p.ms / 1000)} s` : '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -129,10 +132,27 @@ export function DuelRoom({ code }: { code: string }) {
 
   const load = useCallback(async () => { try { setInfo(await fetchDuel(code)); setErr(''); } catch (e) { setErr((e as Error).message); } }, [code]);
   useEffect(() => { void load(); const t = setInterval(() => { if (!playing) void load(); }, 4000); return () => clearInterval(t); }, [load, playing]);
+  useEffect(() => { if (!getAccount()) track('duel_guest_view'); }, [code]);
 
   if (err && !info) return <div className="card"><p className="notice">{err}</p><a className="btn" href="#/duel">{L('Duellar')}</a></div>;
   if (!info) return <div className="card">{L('Yuklanmoqda…')}</div>;
-  if (!acc) return <JoinForm onJoined={setAcc} text={L('Duelda qatnashish uchun hisobingizga kiring.')} />;
+  // Mehmon (taklif havolasidan kelgan): avval kim chaqirgani va natijalar, keyin kirish — "ko'r → qiziq → kir → o'yna"
+  if (!acc) {
+    const host = info.players.find((p) => p.score !== null) ?? info.players[0];
+    return (
+      <div>
+        <div className="card hero">
+          <div>
+            <h2 style={{ margin: 0 }}>{host ? L('{0} sizni duelga chaqirdi!', [host.nickname]) : `${L('Duel')} ${info.code}`}</h2>
+            <p style={{ margin: '4px 0' }}>{L('10 ta so‘z, har biriga')} {SECONDS}  {L('soniya. Tez va to‘g‘ri javob ko‘proq ball beradi.')}</p>
+            {info.expired && <span className="badge">{L('Muddati tugagan')}</span>}
+          </div>
+        </div>
+        <Results info={info} />
+        {!info.expired && <JoinForm onJoined={setAcc} text={L('Duelda qatnashish uchun hisobingizga kiring.')} />}
+      </div>
+    );
+  }
   if (playing) return <Play info={info} onDone={(i) => { setInfo(i); setPlaying(false); }} />;
 
   return (

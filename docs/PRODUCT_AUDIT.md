@@ -1,4 +1,4 @@
-# BANDLY — Product Audit (Phase 0)
+# Sellzen — Product Audit (Phase 0)
 
 - **Audited commit:** `b51f705` on `main` (deployed to Railway on 2026-11-14, deployment `eb3e9d61`, status SUCCESS)
 - **Audit date:** 2026-11-14
@@ -22,7 +22,7 @@
 
 ## 2. Executive summary
 
-BANDLY today is a working **single-language (Uzbek) IELTS-practice web app** with real gamification, a levelled content bank and a well-tested rule-based core. It is **not yet a platform**: it has no server-side learner data, no enforceable subscriptions, no real accounts, no curriculum model and no live AI.
+Sellzen today is a working **single-language (Uzbek) IELTS-practice web app** with real gamification, a levelled content bank and a well-tested rule-based core. It is **not yet a platform**: it has no server-side learner data, no enforceable subscriptions, no real accounts, no curriculum model and no live AI.
 
 | Area of the target vision | Status | Short reason |
 |---|---|---|

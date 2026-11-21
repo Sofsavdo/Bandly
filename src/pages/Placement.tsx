@@ -1,5 +1,5 @@
 import { ArrowRight, CalendarDays, CheckCircle2, Rocket, Target } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Illo } from '../components/Illo';
 import { placement } from '../content/placement';
 import { CEFR, LEVEL_INFO, suggestedTarget, type Cefr } from '../lib/levels';
@@ -8,6 +8,9 @@ import { LEVEL_BAND } from '../lib/progress';
 import { addXp, setLevel, useProfile } from '../lib/store';
 import { confetti, sfx } from '../lib/fx';
 import { L } from '../i18n';
+import { getAccount, myRefCode } from '../lib/account';
+import { renderStory, resultLink, shareCard } from '../lib/shareCard';
+import { track } from '../lib/track';
 
 const TARGETS = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
 
@@ -28,11 +31,14 @@ export default function Placement() {
   const [target, setTargetState] = useState<number | null>(null);
   const [date, setDate] = useState('');
   const [saved, setSaved] = useState(false);
+  const [ref, setRef] = useState<string | null>(null);
+  useEffect(() => { void myRefCode().then(setRef); }, []);
 
   const q = useMemo(() => nextQuestion(answers), [answers]);
   const result = useMemo(() => evaluate(answers), [answers]);
   const done = started && q === null;
   const answeredN = Object.keys(answers).length;
+  useEffect(() => { if (done) track('placement_done'); }, [done]);
   const lvlName = (l: Cefr) => `${l} · ${LEVEL_INFO[l].name}`;
 
   const finish = () => {
@@ -56,7 +62,7 @@ export default function Placement() {
           <div className="row" style={{ justifyContent: 'center' }}>
             <span className="pill">{L('~3 daqiqa')}</span><span className="pill">{L('Taxminiy natija')}</span><span className="pill">{L('Istalgan payt qayta topshirish')}</span>
           </div>
-          <button className="btn primary lg" onClick={() => setStarted(true)}>{L('Testni boshlash')} <ArrowRight size={18} /></button>
+          <button className="btn primary lg" onClick={() => { setStarted(true); track('placement_start'); }}>{L('Testni boshlash')} <ArrowRight size={18} /></button>
           {p.level && <a className="evidence" href="#/">{L('Hozirgi daraja:')} {p.level}{L('. Bekor qilish')}</a>}
         </div>
       </div>
@@ -89,6 +95,15 @@ export default function Placement() {
   const lvl = result.level;
   const info = LEVEL_INFO[lvl];
   const t = target ?? suggestedTarget(lvl);
+  const link = resultLink('/placement', ref);
+  const shareStory = async () => {
+    const blob = await renderStory({
+      eyebrow: L('Mening ingliz tili darajam'), big: lvl, title: info.name, sub: info.band,
+      steps: { labels: [...CEFR], active: CEFR.indexOf(lvl) },
+      cta: L('Sen ham 3 daqiqada bepul tekshir!'), link: 'sellzen.uz',
+    });
+    if (blob) await shareCard(blob, `sellzen-${lvl}`, `${L('Mening ingliz tili darajam:')} ${lvl}. ${L('Sen ham 3 daqiqada bepul tekshir!')} ${link}`);
+  };
   return (
     <div>
       <div className="stage placement result">
@@ -130,7 +145,12 @@ export default function Placement() {
           ))}
         </div>
         <div className="row" style={{ marginTop: 16 }}>
-          {!saved ? <button className="btn primary lg" onClick={finish}><Rocket size={18} />  {L('Dasturni saqlash')}</button> : <><a className="btn primary lg" href="#/">{L('Boshlash')} <ArrowRight size={18} /></a> <a className="btn lg" href="#/skills">{L('Reading va Listening’ni ham tekshirish')}</a></>}
+          {!saved ? <button className="btn primary lg" onClick={finish}><Rocket size={18} />  {L('Dasturni saqlash')}</button>
+            : !getAccount() ? <a className="btn primary lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')} <ArrowRight size={18} /></a>
+            : <><a className="btn primary lg" href="#/">{L('Boshlash')} <ArrowRight size={18} /></a> <a className="btn lg" href="#/skills">{L('Reading va Listening’ni ham tekshirish')}</a></>}
+          {/* Virallik: natijani do'stga yuborish — "sen ham tekshir" (Telegram O'zbekistonda asosiy kanal); kirgan bo'lsa taklif kodi bilan */}
+          <a className="btn lg" target="_blank" rel="noreferrer" onClick={() => track('share_placement_tg')} href={`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(`${L('Mening ingliz tili darajam:')} ${lvl}. ${L('Sen ham 3 daqiqada bepul tekshir!')}`)}`}>{L('Telegramda ulashish')}</a>
+          <button className="btn lg" onClick={() => { track('share_placement_img'); void shareStory(); }}>{L('Rasm bilan ulashish')}</button>
           <button className="btn lg" onClick={() => { setAnswers({}); setSaved(false); }}>{L('Qayta topshirish')}</button>
         </div>
       </div>

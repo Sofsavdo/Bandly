@@ -8,7 +8,7 @@ Labels: **[EXISTS]** · **[PARTIAL]** · **[NEW]** · **[OD]** (see `PRODUCT_EXP
 1. **Learning first.** Every reward is tied to evidence of learning (a correct first attempt, a fixed mistake, a passed check), never to clicks or time on screen.
 2. **XP ≠ mastery.** XP is motivation. Mastery is measured by the deterministic engine in `src/lib/adaptive/mastery.ts`: `m' = m + k(c−m)(0.6+0.4d)`, decay τ = 14/45/120 days, "mastered" needs ≥ 5 attempts, ≥ 3 days and the last 3 correct. XP never changes mastery, and an LLM never sets mastery.
 3. **No punishment loops.** Losing hearts sends the learner to targeted re-learning, never to a paywall or a waiting timer.
-4. **Original design.** No copying of other apps' names, art, map shapes or mascots. The mechanics are generic. Bandly's own identity comes from:
+4. **Original design.** No copying of other apps' names, art, map shapes or mascots. The mechanics are generic. Sellzen's own identity comes from:
    - level landscapes,
    - the AI Teachers,
    - Uzbek humour,
@@ -92,7 +92,7 @@ Each mechanic uses the same layout: goal · flow · UI · rule · edge cases · 
   | Daily quest completed | +20 | max 3 per day |
   | Combo bonus | +1 per item while combo ≥ 3, +2 while ≥ 10 | capped at +50 % of base XP |
 
-- **Player level** keeps the existing curve (`50·(L−1)²`). The UI always shows the player level and the **CEFR level** separately: "Bandly darajasi 7 · Ingliz tili: B1".
+- **Player level** keeps the existing curve (`50·(L−1)²`). The UI always shows the player level and the **CEFR level** separately: "Sellzen darajasi 7 · Ingliz tili: B1".
 - **Low-quality answers:**
   - A multiple-choice answer given in < 600 ms on 3 or more items in a row, or an identical option chosen on ≥ 5 items in a row, earns 0 XP for those items. The learner sees "Shoshilmang — o‘ylab javob bering".
   - Mastery still records the attempt honestly, because those answers are evidence.
@@ -195,7 +195,7 @@ Each mechanic uses the same layout: goal · flow · UI · rule · edge cases · 
 - **Proposal:**
   - **Cohorts of 30** learners grouped by weekly activity band, with tiers Bronze → Silver → Gold → Sapphire → Diamond.
   - The top 7 are promoted and the bottom 5 relegated, each Monday 00:00 Asia/Tashkent.
-  - The tier names are generic; the art is Bandly's own.
+  - The tier names are generic; the art is Sellzen's own.
 - **League XP integrity (a requirement before launch):**
   - Only **server-computed XP** counts. The server must recompute XP from submitted lesson and check attempts, or accept only signed events, instead of trusting the client total.
   - This needs the M3/M5 attempt storage.
@@ -372,7 +372,7 @@ The owner judged the first map too plain compared with `design-references/`. The
 
 **Panels and overlays.**
 - **Level banner.** A glass card on each world shows the level badge, world name, subtitle and a progress ring.
-- **HUD card.** Shows the Bandly XP level bar, streak and daily XP.
+- **HUD card.** Shows the Sellzen XP level bar, streak and daily XP.
 - **"Davom ettirish" button.** Floats above the tab bar.
 - **Lesson sheet.** Opens from a node and shows a coin, the breadcrumb and 4 stat tiles.
 

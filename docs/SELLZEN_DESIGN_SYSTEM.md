@@ -1,4 +1,4 @@
-# Bandly Design System
+# Sellzen Design System
 
 Status: **proposal for owner review. Nothing here is implemented yet.** It builds on the tokens that already ship in `src/styles.css` and `src/brand.ts`. Changes are proposed in small steps; no rewrite.
 
@@ -8,14 +8,14 @@ Status: **proposal for owner review. Nothing here is implemented yet.** It build
 - **[NEW]**: proposed.
 - **[OD]**: needs an owner decision (`PRODUCT_EXPERIENCE_OWNER_DECISIONS.md`).
 
-**Visual references.** The owner supplied eight reference images on 2026-11-15. They are in `design-references/`, with per-image notes on what to take and what to avoid. They show the approved direction: a mobile map-based path, big touch targets, visible XP / hearts / streak / missions / league, celebratory results, and a human tutor (reference 02). Several are other products' screens, so Bandly takes **patterns only**, never art, mascots, names or one-to-one layouts (PXD-01).
+**Visual references.** The owner supplied eight reference images on 2026-11-15. They are in `design-references/`, with per-image notes on what to take and what to avoid. They show the approved direction: a mobile map-based path, big touch targets, visible XP / hearts / streak / missions / league, celebratory results, and a human tutor (reference 02). Several are other products' screens, so Sellzen takes **patterns only**, never art, mascots, names or one-to-one layouts (PXD-01).
 
 ---
 
 ## 1. Brand identity
 
 ### 1.1 Personality
-Bandly is a smart, demanding and funny coach.
+Sellzen is a smart, demanding and funny coach.
 - **Serious about results.** Exam screens are calm and precise.
 - **Playful about practice.** General English feels like a game, but an adult game, not a children's app.
 - **Honest.** It never shows fake numbers. Pilot content is labelled. AI failure is shown plainly.
@@ -33,7 +33,7 @@ Bandly is a smart, demanding and funny coach.
 | **Play mode** | General English (map, lessons, games, quests, league) | Bold brand colour, level colours, illustrated path, big rounded controls, celebratory micro-animation |
 | **Focus mode** | Exam Preparation and Mock Arena exam screens | Neutral greys, a single accent, dense but quiet layout, no game elements, no banners, no mascot or teacher on screen |
 
-The modes share the same typography, spacing, radii and components. Only colour intensity and decoration change. This is how Bandly stays "one product" (DR-01) while keeping exam mode free of distractions (UI_UX_SPECIFICATION §1).
+The modes share the same typography, spacing, radii and components. Only colour intensity and decoration change. This is how Sellzen stays "one product" (DR-01) while keeping exam mode free of distractions (UI_UX_SPECIFICATION §1).
 
 ### 1.3 Colour tokens
 | Token | Value (light) | Dark | Use |
@@ -72,7 +72,7 @@ The coral brand is kept by default. A full re-brand (for example navy and violet
 - Icons: **lucide-react** **[EXISTS]**, 1.75 px stroke, 18–22 px in UI and 24 px in the tab bar.
 - Illustration (Play mode): flat vector with soft gradients, level-coloured landscapes for the Learning Map, rounded geometry, no clip-art.
 - AI Teachers: semi-realistic 2D (`AI_TEACHER_CHARACTER_SPEC.md`).
-- The **Bandi** mascot (`src/components/Mascot.tsx`) is no longer the AI Teacher image. Whether to keep it in games or onboarding is PXD-08.
+- The legacy mascot (formerly “Bandi”) (`src/components/Mascot.tsx`) is no longer the AI Teacher image. Whether to keep it in games or onboarding is PXD-08.
 
 ### 1.6 Spacing, radii, elevation
 - Spacing scale **[NEW]**: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 56 px.
@@ -197,4 +197,4 @@ Each entry gives its purpose, variants, and rules. States are defined once in §
 3. Add a `data-mode="focus"` attribute on `<body>` for exam screens. It hides the Header and TabBar and switches tokens.
 4. Keep i18n: all new UI strings go to the catalogue (`src/i18n`), not hard-coded.
 
-**Conflict to note:** `TECHNICAL_ARCHITECTURE.md` (Phase 0) says "keep the Bandi mascot, no visual redesign". The owner's 2026-11-15 brief supersedes this for the AI Teacher image. It is recorded as PXD-08.
+**Conflict to note:** `TECHNICAL_ARCHITECTURE.md` (Phase 0) says "keep the legacy mascot (formerly “Bandi”), no visual redesign". The owner's 2026-11-15 brief supersedes this for the AI Teacher image. It is recorded as PXD-08.

@@ -9,11 +9,12 @@ import { L } from '../i18n';
 interface Day { day: string; signups: number; active: number; paid: number; revenue: number; aiUsd: number }
 interface Data {
   generatedAt: number;
-  totals: { players: number; telegram: number; payingNow: number; dau: number; wau: number; mau: number };
+  totals: { players: number; telegram: number; payingNow: number; subscribedNow?: number; dau: number; wau: number; mau: number };
   days: Day[]; retention: { cohort: number; d1: number | null; d7: number | null; d30: number | null };
   funnel: { step: string; n: number }[]; bySource: { source: string; events: number; xp: number }[];
   aiByFeature: { feature: string; usd: number }[]; revenue30: number; paid30: number;
   walls?: { walled: number; converted: number; rate: number | null; today: number };
+  growth?: { events: Record<string, number>; signups: number; referredSignups: number; referredActivated: number; placementToSignupPct: number | null; referredSharePct: number | null };
   bands?: { learners: number; withBaseline: number; measured: number; avgGain: number | null; medianGain: number | null; shareHalf: number | null; shareOne: number | null; avgDays: number | null; officials: number; officialVsBaseline: number | null };
 }
 
@@ -66,7 +67,7 @@ export default function Admin() {
       <div className="kpis">
         <div className="kpi2"><span>{L('O‘quvchilar')}</span><b>{t.players}</b><small>{L('Telegram orqali: {0}', [t.telegram])}</small></div>
         <div className="kpi2"><span>{L('Bugun faol')}</span><b>{t.dau}</b><small>{L('7 kun: {0} · 30 kun: {1}', [t.wau, t.mau])}</small></div>
-        <div className="kpi2"><span>{L('Faol obunachilar')}</span><b>{t.payingNow}</b><small>{t.players ? `${Math.round((t.payingNow / t.players) * 1000) / 10}%` : '—'}</small></div>
+        <div className="kpi2"><span>{L('To‘lovchi obunachilar')}</span><b>{t.payingNow}</b><small>{t.players ? `${Math.round((t.payingNow / t.players) * 1000) / 10}%` : '—'}{t.subscribedNow !== undefined && t.subscribedNow !== t.payingNow ? ` · ${L('sovg‘a bilan: {0}', [t.subscribedNow])}` : ''}</small></div>
         <div className="kpi2"><span>{L('Tushum ({0} kun)', [span])}</span><b>{fmtSum(data.revenue30)}</b><small>{L('{0} ta to‘lov', [data.paid30])}</small></div>
       </div>
 
@@ -118,6 +119,17 @@ export default function Admin() {
             <div className="kpi2"><span>D30</span><b>{pct(data.retention.d30)}</b></div>
           </div>
         </section>
+        {data.growth && (
+          <section className="card">
+            <h3>{L('O‘sish voronkasi ({0} kun)', [span])}</h3>
+            <div className="kpis">
+              <div className="kpi2"><span>{L('Daraja testi → ro‘yxat')}</span><b>{pct(data.growth.placementToSignupPct)}</b><small>{L('Maqsad: 35%')} · {data.growth.events.placement_done} → {data.growth.signups}</small></div>
+              <div className="kpi2"><span>{L('Taklif orqali kelganlar')}</span><b>{pct(data.growth.referredSharePct)}</b><small>{L('{0} ta, faollashgan: {1}', [data.growth.referredSignups, data.growth.referredActivated])}</small></div>
+              <div className="kpi2"><span>{L('Ulashishlar')}</span><b>{(data.growth.events.share_placement_tg ?? 0) + (data.growth.events.share_placement_img ?? 0) + (data.growth.events.duel_share ?? 0) + (data.growth.events.share_mock ?? 0)}</b><small>{L('Duel taklifini ochgan mehmonlar: {0}', [data.growth.events.duel_guest_view ?? 0])}</small></div>
+              <div className="kpi2"><span>{L('Daraja testini boshlagan')}</span><b>{data.growth.events.placement_start ?? 0}</b><small>{L('SEO sahifadan: {0}', [data.growth.events.seo_cta ?? 0])}</small></div>
+            </div>
+          </section>
+        )}
         <section className="card">
           <h3>{L('Voronka')}</h3>
           <div className="funnel">

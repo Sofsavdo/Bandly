@@ -1,7 +1,23 @@
-# Bandly: IELTS / SAT / CEFR tayyorgarlik platformasi (MVP 0.2)
+# Sellzen: IELTS / SAT / CEFR tayyorgarlik platformasi (MVP 0.2)
 
-Vaqtinchalik brend nomi: **Bandly** (`src/brand.ts`). "IELTS" so'zi brend nomida ishlatilmaydi (savdo belgisi);
+Brend nomi: **Sellzen** (`src/brand.ts`, sayt: sellzen.uz). "IELTS" so'zi brend nomida ishlatilmaydi (savdo belgisi);
 rasmiy emasligi haqidagi ogohlantirish `BRAND.disclaimer` da.
+
+### Brend: Sellzen (avvalgi nomi Bandly) — qaysi ichki nomlar ataylab saqlangan
+
+Foydalanuvchiga ko'rinadigan hamma joy — Sellzen (`scripts/build/brand.test.ts` kod, SEO sahifalar va hujjatlarni tekshiradi).
+Quyidagilar **ataylab** eski nom bilan qoldi, chunki ularni o'zgartirish mavjud foydalanuvchilar ma'lumotini yoki production'ni buzadi:
+
+| Nom | Nega o'zgartirilmaydi |
+|---|---|
+| `bandly.*` localStorage kalitlari (`bandly.profile.v1`, `bandly.mastery.v1` …) | Qurilmadagi va serverdagi progress shu kalitlarda; server faqat `bandly.*` kalitlarni qabul qiladi |
+| `/data/bandly.sqlite`, zaxiralar `bandly-<UTC>.sqlite` | Production baza fayli va mavjud zaxiralar shu nomda |
+| persona id `'bandi'` (ko'rinadigan nomi "Sellzen AI") | O'quvchilarning saqlangan ustoz tanlovi shu id bilan |
+| `bandly-webhook` (Telegram webhook sirining tuzi) | O'zgarsa webhook sirini qayta o'rnatish kerak |
+| Telegram username `@Bandly_robot` | BotFather'da username o'zgarmaydi; ko'rinadigan nom va tavsif server ishga tushganda avtomatik "Sellzen" qilinadi (`syncBotProfile`). To'liq almashtirish — yangi bot (egasi) |
+| Railway servis `bandly`, domen `bandly-production.up.railway.app`, GitHub `Sofsavdo/Bandly` | Infratuzilma nomlari; o'zgartirish egasi tomonidan (volume, domen va ulanishlar shu nomga bog'langan) |
+
+O'zbekcha matnlardagi "bandi" (masalan "Mock bandi", "Task Response bandi") — brend emas, "band" so'zining egalik shakli.
 
 ## Ishga tushirish
 
@@ -33,10 +49,10 @@ faqat shu qurilmada ochiladi. Narxlar (`src/config.ts`) **namunaviy**, oldindan 
 - **Takrorlash tizimi (Leitner)** (`src/lib/srs.ts`): xato javob so'zni 0-qutiga qaytaradi, to'g'ri javob intervalni 1/3/7/14/30 kunga oshiradi.
   O'yinlar har sessiyada muddati kelgan so'zlarni birinchi navbatda beradi, kamida 30% yangi so'z bilan.
 - **3 ta so'z o'yini** (152 ta IELTS so'zi, 14 mavzu): So'z poygasi (60 soniya, 3 jon, kombo), Juftlik, Imlo sinovi (eshitish tugmasi bilan).
-- **Mascot "Bandi"** (original SVG, 6 kayfiyat, jumladan kulgi).
+- **Maskot** (`src/components/Mascot.tsx`, original SVG, 6 kayfiyat, jumladan kulgi; o‘yin va onboarding uchun).
 - Mock test, Grammar, Writing, Speaking tugaganda ham XP beriladi.
 - **Duel** (`#/duel`): havola/kod orqali do'st bilan bir xil 10 ta so'zda raqobat (har savolga 12 soniya, tezlik ball beradi, ball teng bo'lsa tezroq tugatgan yutadi). Server natijani tekshiradi (ball va vaqt chegaralari), duel 48 soat amal qiladi, 8 tagacha o'yinchi.
-- **Speaking: jonli ovozli suhbat** (`#/exam/speaking`): ustoz Bandi IELTS tartibida (tanishuv, Part 1, Part 2 tayyorgarlik+monolog, Part 3) gapiradi, siz ovoz bilan javob berasiz.
+- **Speaking: jonli ovozli suhbat** (`#/exam/speaking`): Sellzen AI ustoz IELTS tartibida (tanishuv, Part 1, Part 2 tayyorgarlik+monolog, Part 3) gapiradi, siz ovoz bilan javob berasiz.
   Ovoz **yozib olinmaydi va yuborilmaydi**: brauzer nutqni tanish (SpeechRecognition) va ovoz sintezi (speechSynthesis) ishlatiladi
   (Chrome/Edge/Safari; nutqni tanishni brauzer xizmati bajaradi). Nutqni tanish yo'q brauzerlarda yozma rejim.
   Ustozning "miyasi" hozircha qoidaviy (`src/lib/examiner.ts`); AI ulanganda shu interfeys almashtiriladi. Hisobot faqat tezlik, to'xtashlar va so'z xilma-xilligi bo'yicha taxminiy.

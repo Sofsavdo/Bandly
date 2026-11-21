@@ -1,6 +1,6 @@
 # Voice Acceptance Criteria
 
-Status: **proposed thresholds, pending owner approval (OD-23)**. A voice feature can be switched on for users only when every gate in its row passes on the benchmark in `VOICE_BENCHMARK_PLAN.md`, run on real Bandly-like audio. Thresholds are deliberately not "100 %": no provider can guarantee perfect recognition or a perfectly accent-free voice. They are measurable targets that are re-checked after each provider or model change.
+Status: **proposed thresholds, pending owner approval (OD-23)**. A voice feature can be switched on for users only when every gate in its row passes on the benchmark in `VOICE_BENCHMARK_PLAN.md`, run on real Sellzen-like audio. Thresholds are deliberately not "100 %": no provider can guarantee perfect recognition or a perfectly accent-free voice. They are measurable targets that are re-checked after each provider or model change.
 
 ## 1. Speech recognition
 | Gate | Uzbek STT | English learner STT |
@@ -18,7 +18,7 @@ Status: **proposed thresholds, pending owner approval (OD-23)**. A voice feature
 | Gate | Threshold |
 |---|---|
 | Word mispronunciation flags vs. two trained raters | F1 ≥ 0.70; precision ≥ 0.75, so few false "wrong" flags |
-| Utterance accuracy vs. mean human rating | Pearson r ≥ 0.6. Microsoft reports > 0.5 on its own data; Bandly asks for more on its target users. |
+| Utterance accuracy vs. mean human rating | Pearson r ≥ 0.6. Microsoft reports > 0.5 on its own data; Sellzen asks for more on its target users. |
 | Fluency vs. human rating | r ≥ 0.5 |
 | Prosody (en-US only) vs. human rating | r ≥ 0.5. If not met, the prosody score is hidden and only qualitative tips are shown. |
 | Accent fairness | Utterances rated *intelligible* by both raters must score ≥ 70 accuracy in ≥ 90 % of cases. Accent alone must not cause a "wrong" verdict. |

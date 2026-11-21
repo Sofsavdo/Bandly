@@ -3,7 +3,7 @@
 Status: **proposed for owner review**. Sections marked *[approved]* restate what the owner stated in chat; everything else is a recommendation. The three ChatGPT conversations and `Loyiha tahlili.txt` were **not accessible**, so nothing here claims to reflect them.
 
 ## 1. Statement *[approved by owner message]*
-Bandly is an AI-powered English learning ecosystem that takes people from A1 to C2, prepares them for IELTS, CEFR and SAT, lets them practise speaking with distinctive AI personalities, and follows a plan that adapts to measured performance.
+Sellzen is an AI-powered English learning ecosystem that takes people from A1 to C2, prepares them for IELTS, CEFR and SAT, lets them practise speaking with distinctive AI personalities, and follows a plan that adapts to measured performance.
 
 Promise: *Learn English. Speak with confidence. Prepare intelligently. See measurable progress.*
 
@@ -46,7 +46,7 @@ Locales planned: en, uz, ru, kk, ky, tg; tk later. Speech recognition/synthesis 
 ## 7. Differentiators
 Mock Arena as free funnel · personality + voice engine · adaptive engine with explainable recommendations · Central Asian language support · creator-driven distribution.
 
-## 8. What Bandly is not
+## 8. What Sellzen is not
 Only an IELTS site, only grammar, only a chatbot, only a vocabulary game, only a mock-test site.
 
 ## 9. Success measures (to be instrumented in M-phase analytics, not yet measurable)

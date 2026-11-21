@@ -4,9 +4,9 @@ Status: **concept briefs for owner review. No final character is chosen; nothing
 Direction (owner, 2026-11-15):
 - Two original **semi-realistic 2D** teachers, one man and one woman.
 - They are not a sticker mascot and not a photoreal video avatar.
-- The current Bandi mascot (`src/components/Mascot.tsx`) is no longer the AI Teacher image (PXD-08).
+- The legacy mascot (formerly “Bandi”) (`src/components/Mascot.tsx`) is no longer the AI Teacher image (PXD-08).
 
-**Originality rule.** The characters must not resemble a real person, a celebrity, a voice owner, or any other product's character, including competitors' tutors. Every reference below is a *type*, not a person. All artwork is commissioned or created with written IP assignment to the Bandly owner (PXD-13).
+**Originality rule.** The characters must not resemble a real person, a celebrity, a voice owner, or any other product's character, including competitors' tutors. Every reference below is a *type*, not a person. All artwork is commissioned or created with written IP assignment to the Sellzen owner (PXD-13).
 
 ## 1. Where the teacher appears
 | Place | Teacher | States allowed |
@@ -35,7 +35,7 @@ Direction (owner, 2026-11-15):
   - Default: energetic and direct.
   - Savage mode: theatrical anger and roasting about mistakes only.
   - Examiner mode: calm and formal.
-- **Professional identity:** a small Bandly lanyard or pin in brand coral. No school logos.
+- **Professional identity:** a small Sellzen lanyard or pin in brand coral. No school logos.
 - **Voice:** owner-approved **Mirzaev – Uzbek** (ElevenLabs `RaNVfTYq3HYeFPLng6XN`) on `eleven_v4_turbo`, already wired behind `/api/tts` (off by default).
   - English model lines: the same voice speaks English fluently. If raters find his English accent weak, model words are spoken by **Max (US)** or **Alistair (UK)** (owner-chosen pre-made voices).
 - **English style:** short sentences, clear stress, models the correct phrase twice when correcting.
@@ -69,7 +69,7 @@ Direction (owner, 2026-11-15):
   - brand coral #ff4b3a only for accents (pin, rim light);
   - backgrounds neutral (`--surface-2`) or a soft level colour on the Learning Map.
 - **Line:** thin warm-dark outline (#2a1f1a), no thick sticker outlines.
-- **Background:** transparent. Bandly places the teacher on its own surface.
+- **Background:** transparent. Sellzen places the teacher on its own surface.
 
 ## 3. Expression sheet: 8 emotions + neutral
 These map to the emotions already produced by the coach (`COACH_EMOTIONS` in `src/content/personas.ts`: neutral, happy, laugh, angry, disappointed, impressed, serious, sarcastic). They also map to the voice tags in `server/tts.ts` (`EL_TAG`). Thinking and Listening are **UI states**, set by the app, not by the LLM.

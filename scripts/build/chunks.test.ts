@@ -14,6 +14,12 @@ for (const f of boot) {
   const bad = [...src.matchAll(/from\s*["']\.\/(app-[\w-]+\.js)["']|import\s*["']\.\/(app-[\w-]+\.js)["']/g)].map((m) => m[1] ?? m[2]);
   assert.deepEqual(bad, [], `${f} app bo‘lagini statik import qilmasligi kerak (circular → oq ekran)`);
 }
+// Lazy bo'laklar (xodimlar paneli, sertifikat): app ularni statik import qilsa — bo'lish befoyda (har doim yuklanadi)
+for (const f of files.filter((x) => /^app-.*\.js$/.test(x))) {
+  const src = readFileSync(`${dir}/${f}`, 'utf8');
+  const eager = [...src.matchAll(/(?:from|import)\s*["']\.\/((?:staff|cert)-[\w-]+\.js)["']/g)].map((m) => m[1]);
+  assert.deepEqual(eager, [], `${f} lazy bo'laklarni statik import qilmasligi kerak`);
+}
 // Javob kalitlari (src/content/readingTests.ts, listeningTests.ts) faqat serverda: brauzer fayllarida "evidence"/"answers" bo'lmasligi kerak
 const { readingTests } = await import('../../src/content/readingTests');
 const { listeningTests } = await import('../../src/content/listeningTests');

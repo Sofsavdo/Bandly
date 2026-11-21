@@ -8,7 +8,9 @@ import type { Cefr } from '../lib/levels';
 import { BAND_CAP, capBand } from '../lib/progress';
 import { saveResult } from '../lib/storage';
 import { addXp, getProfile } from '../lib/store';
-import { getAccount } from '../lib/account';
+import { getAccount, myRefCode } from '../lib/account';
+import { renderStory, resultLink, shareCard } from '../lib/shareCard';
+import { track } from '../lib/track';
 import { recordTestAnswers } from '../lib/adaptive/record';
 import { clearAttempt, createAttempt, isExpired, loadAttempt, remainingSeconds, saveAttempt, setAnswer, submitAttempt, toggleFlag, unanswered, type ExamAttempt } from '../lib/examAttempt';
 import { fmt } from './hooks';
@@ -38,7 +40,7 @@ interface Props {
   intro: ReactNode;
 }
 
-/** Imtihon rejimi (Focus mode): global menyu yashiriladi, faqat test qoladi (BANDLY_DESIGN_SYSTEM.md §1.2). */
+/** Imtihon rejimi (Focus mode): global menyu yashiriladi, faqat test qoladi (docs/SELLZEN_DESIGN_SYSTEM.md §1.2). */
 function useFocusMode(on: boolean): void {
   useEffect(() => {
     if (!on) return;
@@ -219,6 +221,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
             {L('Band:')} <b>{band.toFixed(1)}</b>
             {level && rawBand > band && <p className="evidence">{L('Bu test')} {level}  {L('darajali, shuning uchun band')} {BAND_CAP[level].toFixed(1)}  {L('dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.')}</p>}
           </div>}
+          {correct > 0 && <p><button className="btn sm" onClick={() => void shareMock({ kind, correct, total: questions.length, band: scoring === 'raw' ? null : band })}>{L('Natijani ulashish')}</button></p>}
           {cert && <CertNotice issued={cert.issued} missing={cert.missing} />}
           <TestReport kind={kind} title={title} questions={questions} graded={graded} answers={attempt.answers} startedAt={attempt.startedAt} submittedAt={attempt.submittedAt} minutes={minutes} stats={attempt.stats} /></>}
         </div>
@@ -290,4 +293,19 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
       )}
     </div>
   );
+}
+
+/** Mock natijasini story rasmi (1080×1920) qilib ulashish; band doim "taxminiy" deb yoziladi (rasmiy IELTS balli emas). */
+async function shareMock(r: { kind: 'reading' | 'listening'; correct: number; total: number; band: number | null }): Promise<void> {
+  track('share_mock');
+  const skill = r.kind === 'reading' ? 'Reading' : 'Listening';
+  const link = resultLink('/mocks', await myRefCode());
+  const big = r.band !== null ? r.band.toFixed(1) : `${Math.round((r.correct / r.total) * 100)}%`;
+  const blob = await renderStory({
+    eyebrow: L('Mening {0} mock natijam', [skill]), big,
+    title: L('{0} / {1} to‘g‘ri', [r.correct, r.total]),
+    sub: r.band !== null ? L('Taxminiy band · rasmiy IELTS emas') : undefined,
+    cta: L('Sen ham bepul mock test topshir!'), link: 'sellzen.uz',
+  });
+  if (blob) await shareCard(blob, `sellzen-${r.kind}-mock`, `${L('Mening {0} mock natijam', [skill])}: ${big}. ${L('Sen ham bepul mock test topshir!')} ${link}`);
 }

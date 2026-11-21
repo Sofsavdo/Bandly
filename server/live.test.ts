@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
-import { attachLive, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, tokenFromProtocols, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
@@ -99,6 +99,28 @@ const port = (http.address() as { port: number }).port;
   const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?token=good`);
   const msg = await new Promise<string>((r) => ws.on('message', (d) => r(d.toString())));
   assert.equal(JSON.parse(msg).type, 'limit');
+}
+// Token subprotocol sarlavhasida (URL'da emas): server protokolni tanlaydi va tokenni o'qiydi
+{
+  const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?lang=uz`, ['sellzen.v1', 'tk.good']);
+  const msg = await new Promise<string>((r) => ws.on('message', (d) => r(d.toString())));
+  assert.equal(ws.protocol, 'sellzen.v1', 'server sellzen.v1 protokolini tanladi');
+  assert.equal(JSON.parse(msg).type, 'limit', 'token sarlavhadan o‘qildi (401 emas, kunlik limit)');
+  const bad = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live`, ['sellzen.v1', 'tk.bad']);
+  assert.equal(JSON.parse(await new Promise<string>((r) => bad.on('message', (d) => r(d.toString())))).code, 401);
+}
+assert.equal(tokenFromProtocols('sellzen.v1, tk.abc123'), 'abc123');
+assert.equal(tokenFromProtocols(undefined), null);
+// Buzuq manzilli upgrade so'rovi jarayonni yiqitmaydi (avval: new URL() istisnosi event handler ichida → crash)
+{
+  const { connect } = await import('node:net');
+  const sock = connect(port, '127.0.0.1');
+  await new Promise<void>((r) => sock.on('connect', () => r()));
+  sock.write('GET //%2e%2e%2f%2eenv HTTP/1.1\r\nHost: x\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n');
+  await new Promise<void>((r) => sock.on('close', () => r()));
+  // server hali tirik: oddiy ulanish ishlaydi
+  const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?token=bad`);
+  assert.equal(JSON.parse(await new Promise<string>((r) => ws.on('message', (d) => r(d.toString())))).code, 401, 'buzuq so‘rovdan keyin server ishlayapti');
 }
 http.close(); upstream.close();
 // Bepul foydalanuvchilar uchun platformaning kunlik umumiy chegarasi (xarajat nazorati)

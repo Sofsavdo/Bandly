@@ -1,4 +1,4 @@
-# BANDLY — AI and Cost Architecture
+# Sellzen — AI and Cost Architecture
 
 ## 1. Where things stand
 

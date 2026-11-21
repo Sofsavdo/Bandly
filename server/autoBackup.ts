@@ -1,9 +1,10 @@
 // Kunlik avtomatik zaxira nusxa: server ishlab turganda bazaning izchil nusxasi (VACUUM INTO, asosiy faylga yozmaydi)
 // shu disk ichidagi backups/ papkasiga olinadi, tekshiriladi va 14 kundan eskilari o'chiriladi (eng yangi yaroqli nusxa doim qoladi).
-// Disk butunlay yo'qolishidan himoya qilmaydi — buning uchun nusxani tashqi joyga ham ko'chirish kerak (egasining qarori).
+// Disk butunlay yo'qolishidan himoya: BACKUP_S3_* sozlangan bo'lsa, har yangi nusxa tashqi S3-mos omborga ham yuboriladi (server/offsite.ts).
 import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { checkSnapshot, prune, snapshot } from '../scripts/backup/lib';
+import { offsiteConfigFromEnv, uploadBackup, type OffsiteConfig } from './offsite';
 
 const TS = /^bandly-(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z\.sqlite$/;
 export const BACKUP_EVERY_MS = 24 * 3_600_000;
@@ -28,7 +29,14 @@ export function startAutoBackup(dbFile: string, env: NodeJS.ProcessEnv = process
   if (dbFile === ':memory:' || env.BACKUP_DISABLED === '1') return;
   const dir = env.BACKUP_DIR ?? join(dirname(dbFile), 'backups');
   const keep = Number(env.BACKUP_KEEP_DAYS ?? 14) || 14;
-  const tick = () => { try { const f = backupIfDue(dbFile, dir, keep); if (f) console.log(`backup: ${f}`); } catch (e) { console.error('backup failed:', (e as Error).message); } };
+  let offsite: OffsiteConfig | null = null;
+  try { offsite = offsiteConfigFromEnv(env); } catch (e) { console.error('backup offsite config:', (e as Error).message); }
+  const tick = () => {
+    let f: string | null = null;
+    try { f = backupIfDue(dbFile, dir, keep); if (f) console.log(`backup: ${f}`); } catch (e) { console.error('backup failed:', (e as Error).message); }
+    // Tashqi nusxa: mahalliy nusxa muvaffaqiyatli bo'lsa; xato mahalliy zaxirani buzmaydi, keyingi kunda yana urinadi
+    if (f && offsite) void uploadBackup(offsite, f).then((r) => console.log(`backup offsite: ${r.key} (${r.bytes} B)`)).catch((e) => console.error('backup offsite failed:', (e as Error).message));
+  };
   setTimeout(tick, 60_000).unref(); // ishga tushgandan 1 daqiqa keyin
   setInterval(tick, 3_600_000).unref(); // har soat tekshiradi, kuniga bir marta oladi
 }

@@ -3,8 +3,12 @@
 // kunlik 5 ta javob chegarasiga bog'lanmaydi; tugagach (yoki obuna bo'lmasa) — umumiy kunlik chegara amal qiladi.
 import type { DatabaseSync } from 'node:sqlite';
 import { tzDay } from './day';
+import { SALE_PLANS } from '../src/config';
 
-export const CALL_MONTH_SECONDS = Math.max(0, Number(process.env.COACH_CALL_MONTH_MINUTES ?? 60)) * 60;
+/** Tariflarda e'lon qilingan oylik daqiqa (SALE_PLANS.voiceMin — barcha tariflarda bir xil; farq qilsa eng kichigi). Sotilgan va berilgan bitta manbadan. */
+export const PLAN_VOICE_MINUTES = Math.min(...SALE_PLANS.map((p) => p.voiceMin));
+/** COACH_CALL_MONTH_MINUTES — faqat vaqtinchalik qo'lda o'zgartirish uchun (masalan xarajat nazorati); standart — tarifdagi qiymat. */
+export const CALL_MONTH_SECONDS = Math.max(0, Number(process.env.COACH_CALL_MONTH_MINUTES ?? PLAN_VOICE_MINUTES)) * 60;
 export const CHARS_PER_SECOND = 15;
 export const ttsSeconds = (chars: number): number => Math.max(1, chars / CHARS_PER_SECOND);
 const month = (now: number): string => tzDay(now).slice(0, 7);

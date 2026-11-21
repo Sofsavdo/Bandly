@@ -1,4 +1,4 @@
-# BANDLY — Database Design
+# Sellzen — Database Design
 
 ## 1. Current schema (SQLite, `server/db.ts`)
 

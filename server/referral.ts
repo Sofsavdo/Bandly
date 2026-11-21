@@ -1,17 +1,27 @@
 // Referal dasturi: har o'quvchining taklif kodi; yangi hisob kod bilan ochilsa — taklif qilgan kishiga bog'lanadi.
 // Mukofot (o'yin ichidagi, pul emas): taklif qilingan o'quvchi birinchi dars yoki daraja testini bajarganda IKKALASIGA REF_XP.
-// Obuna kunlari kabi pulga teng mukofot — egasi qarori; hozircha yo'q.
+// Ixtiyoriy pulga teng mukofot (egasi qarori): REF_PLAN_DAYS > 0 bo'lsa — ikkalasiga shuncha kun All Access.
+// Taklif qilgan uchun 30 kunlik cheklov (REF_PLAN_MONTHLY_CAP, standart 3) — ko'p soxta hisob ochib kun yig'ishning oldini oladi.
 import { randomBytes } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 import { awardXp } from './xp';
+import { extend } from './payments';
+import { tracksOf } from './pricing';
 
 export const REF_XP = Math.max(0, Math.min(150, Number(process.env.REF_XP ?? 100)));
+const DAY = 86_400_000;
+/** Ikkala tomonga beriladigan All Access kunlari (0 — o'chiq, eng ko'pi 30). */
+export const refPlanDays = (env: NodeJS.ProcessEnv = process.env): number => Math.max(0, Math.min(30, Math.floor(Number(env.REF_PLAN_DAYS ?? 0) || 0)));
+/** Taklif qilgan kishi 30 kun ichida necha marta kun oladi (taklif qilingan esa har doim oladi). */
+export const refPlanCap = (env: NodeJS.ProcessEnv = process.env): number => Math.max(0, Math.floor(Number(env.REF_PLAN_MONTHLY_CAP ?? 3) || 0));
 
 export function ensureReferralColumns(db: DatabaseSync): void {
   const cols = (db.prepare('PRAGMA table_info(players)').all() as { name: string }[]).map((c) => c.name);
   if (!cols.includes('ref_code')) db.exec('ALTER TABLE players ADD COLUMN ref_code TEXT');
   if (!cols.includes('referred_by')) db.exec('ALTER TABLE players ADD COLUMN referred_by INTEGER');
   if (!cols.includes('ref_rewarded')) db.exec('ALTER TABLE players ADD COLUMN ref_rewarded INTEGER NOT NULL DEFAULT 0');
+  if (!cols.includes('ref_rewarded_at')) db.exec('ALTER TABLE players ADD COLUMN ref_rewarded_at INTEGER');
+  if (!cols.includes('ref_host_days')) db.exec('ALTER TABLE players ADD COLUMN ref_host_days INTEGER NOT NULL DEFAULT 0'); // shu taklif uchun taklif qilganga berilgan kunlar
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_ref_code ON players (ref_code) WHERE ref_code IS NOT NULL');
 }
 
@@ -38,18 +48,27 @@ export function attachReferral(db: DatabaseSync, newPlayerId: number, code: unkn
 }
 
 /** Taklif qilingan o'quvchi haqiqiy mashg'ulot (dars yoki daraja testi) bajargach — bir marta, ikkala tomonga XP. */
-export function maybeRewardReferral(db: DatabaseSync, playerId: number, now = Date.now()): boolean {
+export function maybeRewardReferral(db: DatabaseSync, playerId: number, now = Date.now(), env: NodeJS.ProcessEnv = process.env): boolean {
   const p = db.prepare('SELECT referred_by, ref_rewarded FROM players WHERE id = ?').get(playerId) as { referred_by: number | null; ref_rewarded: number } | undefined;
   if (!p?.referred_by || p.ref_rewarded) return false;
   const did = db.prepare("SELECT 1 FROM xp_events WHERE player_id = ? AND source IN ('lesson', 'placement') AND accepted > 0 LIMIT 1").get(playerId);
   if (!did) return false;
-  if (Number(db.prepare('UPDATE players SET ref_rewarded = 1 WHERE id = ? AND ref_rewarded = 0').run(playerId).changes) === 0) return false;
+  if (Number(db.prepare('UPDATE players SET ref_rewarded = 1, ref_rewarded_at = ? WHERE id = ? AND ref_rewarded = 0').run(now, playerId).changes) === 0) return false;
   if (REF_XP > 0) { awardXp(db, playerId, `ref:new:${playerId}`, 'referral', REF_XP, now); awardXp(db, p.referred_by, `ref:by:${playerId}`, 'referral', REF_XP, now); }
+  const days = refPlanDays(env);
+  if (days > 0) {
+    for (const t of tracksOf('all')) extend(db, playerId, t, days, now); // taklif qilingan — har doim (bir marta: ref_rewarded)
+    const recent = (db.prepare('SELECT COUNT(*) AS n FROM players WHERE referred_by = ? AND ref_host_days > 0 AND ref_rewarded_at > ?').get(p.referred_by, now - 30 * DAY) as { n: number }).n;
+    if (recent < refPlanCap(env)) {
+      for (const t of tracksOf('all')) extend(db, p.referred_by, t, days, now);
+      db.prepare('UPDATE players SET ref_host_days = ? WHERE id = ?').run(days, playerId);
+    }
+  }
   return true;
 }
 
-export interface RefStats { code: string; invited: number; activated: number; xpEach: number }
+export interface RefStats { code: string; invited: number; activated: number; xpEach: number; planDays: number }
 export function refStats(db: DatabaseSync, playerId: number): RefStats {
   const r = db.prepare('SELECT COUNT(*) AS invited, COALESCE(SUM(ref_rewarded), 0) AS activated FROM players WHERE referred_by = ?').get(playerId) as { invited: number; activated: number };
-  return { code: refCodeOf(db, playerId), invited: r.invited, activated: r.activated, xpEach: REF_XP };
+  return { code: refCodeOf(db, playerId), invited: r.invited, activated: r.activated, xpEach: REF_XP, planDays: refPlanDays() };
 }

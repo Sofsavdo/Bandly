@@ -1,4 +1,4 @@
-# BANDLY — Phase 0.1 Architecture Review
+# Sellzen — Phase 0.1 Architecture Review
 
 Scope: cross-review of the five Phase 0 documents in `docs/` (written at commit `b51f705`). The Phase 0 documents are **not modified**; this file records what was corrected, what was found inconsistent, and what is still unknown.
 
@@ -51,7 +51,7 @@ This section separates what was actually executed from what was only reasoned ab
 |---|---|---|
 | Service `bandly`, branch `main`, 1 replica, region `sfo` | **[F]** | `describe-environment` |
 | Volume `bandly-data` (5 000 MB) mounted at `/data` | **[F]** | `describe-environment` |
-| Latest deployment SUCCESS; startup log: `Bandly: http://0.0.0.0:8080 (AI: none, TTS: none, To'lov: yo'q (demo))` | **[F]** | deploy logs |
+| Latest deployment SUCCESS; startup log: `Sellzen: http://0.0.0.0:8080 (AI: none, TTS: none, To'lov: yo'q (demo))` | **[F]** | deploy logs |
 | 24 h traffic: 71 requests, 62×2xx, 9×4xx, 0×5xx; the 4xx are `/favicon.ico` and `/robots.txt` (a crawler) | **[F]** | `http-requests`, HTTP log filter |
 | Memory ≈ 0.09 GB current, 0.19 GB max; CPU negligible; disk metric 0.084 GB | **[F]** | `get-service-metrics` |
 

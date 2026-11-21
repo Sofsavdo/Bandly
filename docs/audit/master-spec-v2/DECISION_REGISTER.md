@@ -39,7 +39,7 @@ Stable IDs: **OD-01…OD-11** are owner questions (authoritative detail in `docs
 | ID | Topic | Original (source) | Current implementation | New requirement / conflict | Recommended | Approval | Dependencies | Impact |
 |---|---|---|---|---|---|---|---|---|
 | DR-23 | Source material | v3 cited `Loyiha tahlili.txt` | file not supplied; the three conversations were pasted | — | consolidated in `SOURCE_CONSOLIDATION.md`; txt still unread | **partially imported** | owner | register complete except the txt |
-| DR-25 | B2B Bandly for Schools | C2 §9, §12: teacher dashboard, group analytics, centre packages | none | not in earlier specs | add `REQ-020`; plan after M3/M5; OD-20 | pending | M3, M5 | roles, groups, reports |
+| DR-25 | B2B Sellzen for Schools | C2 §9, §12: teacher dashboard, group analytics, centre packages | none | not in earlier specs | add `REQ-020`; plan after M3/M5; OD-20 | pending | M3, M5 | roles, groups, reports |
 | DR-26 | 7-day AI Speaking Challenge | C2 §3.3 growth product | none | needs voice + ledger | design after M7 | hypothesis | voice engine, ledger | marketing feature |
 | DR-27 | Pricing scenario | C1 USD vs C2 UZS (incl. Grammar tier) | UZS demo tracks | conflict (Grammar sold alone) | USD scenario working; UZS table = benchmark only | pending (OD-09/16) | owner | plans/prices data |
 | DR-28 | First paid product | C1: General English first; C2: IELTS AI first | IELTS-centric code | conflict | owner decides OD-16; default: follow C1 (general English path) but Mock Arena earlier | pending | owner | sequencing |

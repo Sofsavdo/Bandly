@@ -1,4 +1,4 @@
-# BANDLY — SQLite → PostgreSQL Migration Safety Plan
+# Sellzen — SQLite → PostgreSQL Migration Safety Plan
 
 Goal: move production data to PostgreSQL such that **no step can silently lose or corrupt user data**, every step is verifiable, and every step has a defined way back. Nothing in this document has been executed; no schema was changed.
 
@@ -83,7 +83,7 @@ For **every** legacy player: `SHA-256(legacy token)` computed on the SQLite side
 
 | Row type | Strategy | Reason |
 |---|---|---|
-| Migrated rows | **UUIDv5** (name-based) with a fixed BANDLY namespace UUID and the name `"<entity>:<legacy_integer_id>"` | Deterministic ⇒ idempotent re-runs; no mapping table needed to re-derive keys |
+| Migrated rows | **UUIDv5** (name-based) with a fixed Sellzen namespace UUID and the name `"<entity>:<legacy_integer_id>"` | Deterministic ⇒ idempotent re-runs; no mapping table needed to re-derive keys |
 | New rows created by the application | **UUIDv7** (time-ordered) generated in application code | Index-friendly insert order; works on any PostgreSQL version |
 | Fallback / simple tables | `gen_random_uuid()` (built in from PostgreSQL 13) | — |
 
