@@ -10,16 +10,18 @@ Owner decision OD-05 (2026-11-15) makes Telegram the way to sign in and sign out
    - BotFather replies with a **token**.
    - **Never paste the token in chat, code or GitHub.**
 2. **Allow the site domain for the login button.**
-   - In @BotFather, send `/setdomain`, choose the bot, and send `sellzen.uz` (the production custom domain; `bandly-production.up.railway.app` is the Railway fallback).
+   - In @BotFather, send `/setdomain`, choose the bot, and send `www.sellzen.uz` (the production custom domain; `bandly-production.up.railway.app` is the Railway fallback).
    - Without this, the "Log in with Telegram" button on the site shows "Bot domain invalid".
 3. **Add the Railway variables.** In the Sellzen service, open Variables and add:
    - `TELEGRAM_BOT_TOKEN` — the token from step 1 (secret; only Railway holds it).
    - `TELEGRAM_BOT_USERNAME` — the username without `@`. This is optional, because the server reads it from Telegram on start, but it is a useful fallback.
    - `PUBLIC_URL` is optional. By default the server uses Railway's `RAILWAY_PUBLIC_DOMAIN`. Set it, e.g. `https://sellzen.uz`, only for a custom domain.
 4. **Redeploy.** The log should show `Telegram bot: @<username> (webhook: yoqildi)`.
-5. **Check in Telegram.**
-   - Open the bot and press **Start**.
-   - The reply has three buttons: Open Sellzen, Free mock test, Find my level.
+5. **Make the bot an admin of the channel** `@Sellzen_AI` (needed for the subscription check, `getChatMember`). Override the channel with `TG_REQUIRED_CHANNEL` if needed. If the bot cannot check membership, the server logs `[bot] kanal a’zoligini tekshirib bo‘lmadi` and lets the user through.
+6. **Check in Telegram** (current bot: `@Sellzenbot`).
+   - Press **Start** → "subscribe to the channel" with a ✅ Check button (if not subscribed) → "share your number" (Telegram contact button; only the user's own contact is accepted) → welcome photo with buttons: Open Sellzen, Find my level, Mock test, AI tutor, Games, Channel, Help.
+   - Commands: /start, /app, /level, /mock, /coach, /help, /remind, /stop. Name, descriptions, commands and the avatar (`public/brand/bot-avatar.jpg`, uploaded once per bot/image via `setMyProfilePhoto`) are set on startup.
+   - Phone numbers shared in the bot go to Admin → Lidlar (immediately if the account exists, otherwise on the first Telegram login).
    - The menu button (bottom left) also opens Sellzen.
 
 ## How it works

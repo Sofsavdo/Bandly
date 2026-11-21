@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt, liveKickoff } from './coach';
 import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt } from './coachMemory';
 import { tzDay } from './day';
@@ -9,7 +9,7 @@ import { serveStatic } from './static';
 import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { findUsers } from './adminUsers';
-import { ensureLeadsTable, hasLead, listLeads, saveLead, saveTelegramContact, updateLead } from './leads';
+import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { PERIODS, PLAN_IDS, priceFor } from './pricing';
@@ -23,7 +23,7 @@ import { startAutoBackup } from './autoBackup';
 import { PHOTO_MAX, auditLog, audit, claimAll, composeFull, issueFor, myCertificates, profileOf, publicCertificate, recordResult, revokeCertificate, rules as certRules, savePhoto, searchCertificates, setFullName, setRule, setSettings as setCertSettings, settings as certSettings } from './certificates';
 import { gradeRequest } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { voiceLesson } from './content';
 import { elevenLabsFromEnv, synthesize as elSynthesize } from './elevenlabs';
 import { writeFileSync as writeFile, mkdirSync as mkdir } from 'node:fs';
@@ -31,7 +31,8 @@ import { archive, knownContent, contentVersion, createLesson, createUnit, histor
 import { awardXp, submitXp } from './xp';
 import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
-import { TgAuthError, appUrl, botFromEnv, handleUpdate, nickFrom, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
+import { TgAuthError, appUrl, botFromEnv, nickFrom, setBotPhoto, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
+import { checkMember, CHANNEL, handleBot } from './botFlow';
 import { runReminders, setRemind } from './reminders';
 import { runLeagueNotices } from './leagueNotify';
 import { MAX_AUDIO, NATIVE_STT_CODE, recordStt, sttAllowed, sttConfigFromEnv, transcribeLearner } from './stt';
@@ -73,7 +74,21 @@ const ADMIN_TOKEN = (process.env.ADMIN_TOKEN ?? '').trim();
 // Telegram bot (ixtiyoriy): TELEGRAM_BOT_TOKEN bo'lsa — Telegram orqali kirish, webhook va Mini App tugmasi yoqiladi
 const bot = botFromEnv();
 let botUsername: string | null = bot?.username ?? null;
-if (bot) setupBot(bot, fetch, { onUsername: (u) => { botUsername = u; } }).then((u) => console.log('Telegram bot: @%s (sozlash tugadi%s)', u, bot.publicUrl ? '' : ', PUBLIC_URL yo‘q')).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
+if (bot) setupBot(bot, fetch, { onUsername: (u) => { botUsername = u; } }).then(async (u) => {
+  console.log('Telegram bot: @%s (sozlash tugadi%s)', u, bot.publicUrl ? '' : ', PUBLIC_URL yo‘q');
+  // Bot rasmi (public/brand/bot-avatar.jpg): rasm yoki bot o'zgargandagina yuklanadi (Telegram rasmni qayta ishlatishga yo'l qo'ymaydi)
+  try {
+    const file = new URL('../public/brand/bot-avatar.jpg', import.meta.url).pathname;
+    if (!existsSync(file)) return;
+    const bytes = readFileSync(file);
+    const key = `bot-photo:${bot.token.split(':')[0]}`, hash = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
+    db.exec('CREATE TABLE IF NOT EXISTS bot_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+    if ((db.prepare('SELECT value FROM bot_meta WHERE key = ?').get(key) as { value: string } | undefined)?.value === hash) return;
+    await setBotPhoto(bot.token, { bytes, name: 'avatar.jpg', type: 'image/jpeg' });
+    db.prepare('INSERT INTO bot_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(key, hash);
+    console.log('Telegram bot rasmi yangilandi');
+  } catch (e) { console.error('Telegram bot rasmi:', (e as Error).message); }
+}).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
 const tts = ttsConfigFromEnv(process.env.TTS_CACHE_DIR ?? `${dirname(DB_FILE)}/tts-cache`);
 
 // Oddiy so'rov tezligi cheklovi (IP bo'yicha, daqiqada 120 ta)
@@ -161,7 +176,9 @@ const httpServer = createServer(async (req, res) => {
       try { u = url.pathname.endsWith('/webapp') ? verifyInitData(String(b.initData ?? ''), bot.token) : verifyWidget((b.user ?? {}) as Record<string, unknown>, bot.token); }
       catch (e) { if (e instanceof TgAuthError) throw new ApiError(401, e.message); throw e; }
       const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
-      if (r.created) attachReferral(db, byToken(db, r.token).id, b.ref); // taklif havolasi orqali kelgan bo'lsa
+      const pid = byToken(db, r.token).id;
+      if (r.created) attachReferral(db, pid, b.ref ?? getBotRef(db, u.id)); // taklif havolasi orqali kelgan bo'lsa (botda /start ref_ ham)
+      claimBotPhone(db, u.id, pid); // botda ulashilgan raqam lidga o'tadi
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
@@ -171,23 +188,18 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/telegram/webhook') {
       if (!bot?.publicUrl || String(req.headers['x-telegram-bot-api-secret-token'] ?? '') !== webhookSecret(bot.token)) return send(res, 403, { error: 'Taqiqlangan' });
       const upd = await readJson(req, 65_536);
-      const m = (upd as { message?: { chat?: { id?: number; type?: string }; from?: { id?: number }; text?: string } }).message;
-      const cmd = (m?.text ?? '').trim();
-      if (m?.chat?.type === 'private' && m.from?.id && /^\/(stop|remind)\b/.test(cmd)) {
-        const on = cmd.startsWith('/remind');
-        const ok = setRemind(db, m.from.id, on);
-        const lc = ((m.from as { language_code?: string }).language_code ?? '').split('-')[0];
-        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, !ok ? 'Avval Sellzen’ni bot orqali oching — hisobingiz ulangach eslatmalar ishlaydi.' : on ? 'Seriya eslatmalari yoqildi. O‘chirish: /stop' : 'Eslatmalar o‘chirildi. Qayta yoqish: /remind') });
-      }
-      // O'quvchi "Raqamni ulashish" tugmasini bosdi: faqat o'z kontakti va ulangan hisob bo'lsa saqlanadi
-      const contact = (m as { contact?: { phone_number?: string; user_id?: number } } | undefined)?.contact;
-      if (m?.chat?.type === 'private' && m.from?.id && contact) {
-        const ok = saveTelegramContact(db, m.from.id, contact);
-        const lc = ((m.from as { language_code?: string }).language_code ?? '').split('-')[0];
-        return send(res, 200, { method: 'sendMessage', chat_id: m.chat.id, text: trServer(db, lc, ok ? 'Rahmat! Mutaxassisimiz tez orada siz bilan bog‘lanadi.' : 'Avval Sellzen’ni bot orqali oching — hisobingiz ulangach raqamni ulashing.'), reply_markup: { remove_keyboard: true } });
-      }
-      const reply = handleUpdate(upd, bot.publicUrl, (lc) => (t: string) => trServer(db, (lc ?? '').split('-')[0], t));
-      return send(res, 200, reply ? { method: reply.method, ...reply.body } : {}); // javob webhook javobining o'zida yuboriladi
+      // Bot oqimi: majburiy obuna (@Sellzen_AI) → Telegram kontakti → xush kelibsiz xabari. Javoblar API orqali (bir nechta xabar).
+      const api = (method: string, body: Record<string, unknown>) => tgApi(bot.token, method, body);
+      void handleBot(upd, {
+        api, publicUrl: bot.publicUrl,
+        tr: (lc) => (t: string) => trServer(db, lc, t),
+        isMember: (id) => checkMember(api, CHANNEL, id),
+        hasPhone: (id) => hasBotPhone(db, id) || (() => { const p = db.prepare('SELECT id FROM players WHERE tg_id = ?').get(id) as { id: number } | undefined; return !!p && hasLead(db, p.id); })(),
+        savePhone: (id, phone) => saveBotPhone(db, id, phone),
+        setRef: (id, ref) => setBotRef(db, id, ref), getRef: (id) => getBotRef(db, id),
+        setRemind: (id, on) => setRemind(db, id, on),
+      }).catch((e) => console.error('[bot]', (e as Error).message));
+      return send(res, 200, {});
     }
     if (req.method === 'POST' && url.pathname === '/api/join') {
       // Telegram ulangach yangi hisob faqat Telegram orqali ochiladi (OD-05); mavjud hisoblar ishlashda davom etadi

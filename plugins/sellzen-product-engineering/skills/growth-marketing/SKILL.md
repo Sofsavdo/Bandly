@@ -45,7 +45,7 @@ Design and implement growth mechanics that move **paid conversion and retention*
 - Creator commission is computed only when `CREATOR_COMMISSION_PCT` is set; there are no payouts — never promise creators automatic payments until a payout ledger exists (OD-14).
 - Guest access is limited to `#/`, `#/welcome`, `#/placement`, `#/pricing`, `#/duel/<code>` (invite preview; playing needs sign-in); any new guest route must keep AI/voice behind sign-in and quotas.
 - Share links must point to `https://sellzen.uz/…` (not the railway.app domain; `brand.test.ts` checks SEO files) and carry `?ref=<code>` for signed-in sharers.
-- Telegram bot username is still `@Bandly_robot`; user-visible copy must say Sellzen.
+- Telegram bot: `@Sellzenbot`; /start requires a subscription to the channel @Sellzen_AI (growth lever: channel audience) and asks for the Telegram contact (feeds Admin → Lidlar).
 
 ## Workflow
 1. Define the loop as a diagram: trigger → action → share → recipient landing → activation → reward.

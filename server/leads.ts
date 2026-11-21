@@ -15,7 +15,26 @@ export function ensureLeadsTable(db: DatabaseSync): void {
     goal TEXT, level TEXT, minutes INTEGER,
     status TEXT NOT NULL DEFAULT 'new', note TEXT, handled_by TEXT,
     created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)`);
+  // Botda ulashilgan raqam (ilova hali ochilmagan bo'lishi mumkin) va taklif kodi — hisob ochilganda lidga o'tkaziladi
+  db.exec('CREATE TABLE IF NOT EXISTS tg_phones (tg_id INTEGER PRIMARY KEY, phone TEXT NOT NULL, at INTEGER NOT NULL)');
+  db.exec('CREATE TABLE IF NOT EXISTS tg_refs (tg_id INTEGER PRIMARY KEY, ref TEXT NOT NULL, at INTEGER NOT NULL)');
 }
+
+/** Botdagi "Raqamni ulashish": har doim saqlanadi; hisob bo'lsa — darhol lidga ham. */
+export function saveBotPhone(db: DatabaseSync, tgId: number, phone: string, now = Date.now()): void {
+  const p = normalizePhone(phone); if (!p) return;
+  db.prepare('INSERT INTO tg_phones (tg_id, phone, at) VALUES (?, ?, ?) ON CONFLICT(tg_id) DO UPDATE SET phone = excluded.phone, at = excluded.at').run(tgId, p, now);
+  const pl = db.prepare('SELECT id FROM players WHERE tg_id = ?').get(tgId) as { id: number } | undefined;
+  if (pl) saveLead(db, pl.id, { phone: p, consent: true, source: 'telegram' }, now);
+}
+export const hasBotPhone = (db: DatabaseSync, tgId: number): boolean => !!db.prepare('SELECT 1 FROM tg_phones WHERE tg_id = ?').get(tgId);
+/** Telegram orqali kirganda: botda ulashilgan raqam lidga o'tadi (agar hali yo'q bo'lsa). */
+export function claimBotPhone(db: DatabaseSync, tgId: number, playerId: number, now = Date.now()): void {
+  const r = db.prepare('SELECT phone FROM tg_phones WHERE tg_id = ?').get(tgId) as { phone: string } | undefined;
+  if (r && !hasLead(db, playerId)) saveLead(db, playerId, { phone: r.phone, consent: true, source: 'telegram' }, now);
+}
+export const setBotRef = (db: DatabaseSync, tgId: number, ref: string, now = Date.now()): void => { db.prepare('INSERT INTO tg_refs (tg_id, ref, at) VALUES (?, ?, ?) ON CONFLICT(tg_id) DO UPDATE SET ref = excluded.ref, at = excluded.at').run(tgId, ref.slice(0, 16), now); };
+export const getBotRef = (db: DatabaseSync, tgId: number): string | undefined => (db.prepare('SELECT ref FROM tg_refs WHERE tg_id = ?').get(tgId) as { ref: string } | undefined)?.ref;
 
 /** Telefon raqamini +998XXXXXXXXX ko'rinishiga keltiradi (O'zbekiston) yoki xalqaro +<9–15 raqam>. Noto'g'ri bo'lsa — null. */
 export function normalizePhone(raw: unknown): string | null {

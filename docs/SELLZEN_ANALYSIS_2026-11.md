@@ -31,7 +31,7 @@ lokal production build (mobil emulyatsiya), raqobatchilar bo'yicha ochiq manbala
 | B | **Har deployda 15 soniyagacha uzilish** | HTTP logda `connection dial timeout` 502'lar; 18-noyabrda 10+ deploy | Volume bor servisda Railway eski va yangi nusxani bir vaqtda ishlatmaydi. Healthcheck (`/api/health`) allaqachon sozlangan (2026-11-21 tekshirildi) — uzilish volume qayta ulanishidan. Yechim: deployni kechasi qiling, o'zgarishlarni bitta deployga yig'ing |
 | C | **JS bundle 1,74 MB (gzip 569 KB)** | `vite build` | 3G/4G'da birinchi ochilish sekin. Sahifalarni `React.lazy` bilan bo'lish (i18n "boot" tartibini saqlagan holda) — keyingi ish |
 | D | **Hash-routing (`#/...`)** | Google `#/` sahifalarni alohida indekslamaydi | SEO trafik faqat `public/vositalar/*.html` statik sahifalardan keladi. Ko'proq statik SEO sahifa yarating (pastga qarang) |
-| E | **Telegram bot hali `@Bandly_robot`** | Railway log | Rebrend tugashi uchun `@SellzenBot` kabi yangi nom (BotFather'da username o'zgartirib bo'lmaydi — yangi bot + eski botda yo'naltirish xabari) |
+| E | ~~Telegram bot hali `@Bandly_robot`~~ | — | **Bajarildi (2026-11-21):** yangi bot `@Sellzenbot`, majburiy obuna @Sellzen_AI, Telegram kontakti |
 | F | **Duel havolasi mehmonga yopiq** | `authRoute` | Do'st havolani ochganda avval login ko'radi. Duel sahifasida mehmonga "X sizni chaqirdi, ball: 870" ko'rsatib, keyin Telegram login so'rash — virallik uchun eng muhim o'zgarish |
 | G | **To'lov faqat kartaga o'tkazma** | Logda bitta bekor qilingan to'lov (129 000) | Payme/Click (yoki Uzum) qo'shish — konversiyani sezilarli oshiradi |
 

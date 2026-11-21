@@ -8,7 +8,6 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 export interface TgUser { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string }
 export type Tr = (s: string) => string;
-const same: Tr = (s) => s;
 export const WIDGET_MAX_AGE_S = 300; // spec: 5 daqiqa
 export const WEBAPP_MAX_AGE_S = 3600; // Mini App ochilgandan keyin 1 soat (ilova fonda turib qayta yuklanishi mumkin)
 
@@ -93,19 +92,6 @@ export async function tgApi<T = unknown>(token: string, method: string, body: un
 /** Mini App havolasi: ?tg=1 Telegram rejimini yoqadi, r= — ochiladigan sahifa. */
 export const appUrl = (publicUrl: string, route = '/', ref?: string): string => `${publicUrl}/?tg=1&r=${encodeURIComponent(route)}${ref ? `&ref=${encodeURIComponent(ref)}` : ''}`;
 
-/** /start va boshqa xabarlarga javob: Mini App tugmalari. */
-export function startReply(chatId: number, publicUrl: string, firstName?: string, tr: Tr = same, ref?: string): Record<string, unknown> {
-  const hi = firstName ? tr('Salom, {0}!').replace('{0}', firstName.slice(0, 32)) : tr('Salom!');
-  return {
-    chat_id: chatId,
-    text: `${hi} ${tr('Sellzen — ingliz tili darslari, IELTS / CEFR / SAT tayyorgarligi va bepul mock testlar.')}\n\n${tr('Quyidagi tugma bilan ilovani shu yerning o‘zida oching. Hisobingiz Telegram orqali avtomatik ulanadi.')}`,
-    reply_markup: { inline_keyboard: [
-      [{ text: `📚 ${tr('Sellzen’ni ochish')}`, web_app: { url: appUrl(publicUrl, '/', ref) } }],
-      [{ text: `⏱ ${tr('Bepul mock test')}`, web_app: { url: appUrl(publicUrl, '/mocks', ref) } }, { text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: { url: appUrl(publicUrl, '/placement', ref) } }],
-    ] },
-  };
-}
-
 /** Ishga tushganda: bot username'ini oladi (saytda Telegram orqali kirish shunga bog'liq), keyin webhook, menyu va profilni
  *  o'rnatadi. Webhook/menyu xatosi username'ni yo'qotmaydi: 2026-11-21 da Telegram tomonida bir martalik DNS xatosi
  *  ("bad webhook: Failed to resolve host") butun setupBot'ni yiqitib, saytda kirishni o'chirib qo'ygan edi.
@@ -117,7 +103,7 @@ export async function setupBot(cfg: BotConfig, f: Fetch = fetch, opts: { onUsern
     const retries = opts.retries ?? 5, delay = opts.delayMs ?? 60_000;
     for (let i = 0; ; i++) {
       try {
-        await tgApi(cfg.token, 'setWebhook', { url: `${cfg.publicUrl}/api/telegram/webhook`, secret_token: webhookSecret(cfg.token), allowed_updates: ['message'], drop_pending_updates: true }, f);
+        await tgApi(cfg.token, 'setWebhook', { url: `${cfg.publicUrl}/api/telegram/webhook`, secret_token: webhookSecret(cfg.token), allowed_updates: ['message', 'callback_query'], drop_pending_updates: true }, f);
         break;
       } catch (e) {
         if (i >= retries) { console.error('Telegram webhook o‘rnatilmadi (oldingi webhook amal qilishda davom etishi mumkin):', (e as Error).message); break; }
@@ -127,20 +113,39 @@ export async function setupBot(cfg: BotConfig, f: Fetch = fetch, opts: { onUsern
     }
     try {
       await tgApi(cfg.token, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Sellzen', web_app: { url: appUrl(cfg.publicUrl, '/') } } }, f);
-      await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Sellzen ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }, { command: 'stop', description: 'Seriya eslatmalarini o‘chirish' }, { command: 'remind', description: 'Seriya eslatmalarini yoqish' }] }, f);
+      await tgApi(cfg.token, 'setMyCommands', { commands: BOT_COMMANDS }, f);
     } catch (e) { console.error('Telegram menyu/buyruqlar:', (e as Error).message); }
   }
   await syncBotProfile(cfg.token, f);
   return me.username;
 }
 
-/** Botning foydalanuvchiga ko'rinadigan nomi va tavsifi (rebrend: username @Bandly_robot BotFather'da o'zgarmaydi, lekin
- *  ko'rinadigan nom "Sellzen" bo'ladi). Faqat farq qilsa yoziladi — setMyName/setMyDescription Telegram'da qattiq cheklangan. */
+/** Bot (@Sellzenbot) nomi va tavsiflari. Faqat farq qilsa yoziladi — setMyName/setMyDescription Telegram'da qattiq cheklangan. */
 export const BOT_PROFILE = {
-  name: 'Sellzen — ingliz tili va IELTS',
-  short: 'Ingliz tili, IELTS, CEFR va SAT — AI ustoz bilan. Bepul daraja testi va mock testlar.',
-  description: 'Sellzen — o‘zbek tilida tushuntiradigan AI ustoz bilan ingliz tilini A1 dan C2 gacha o‘rganing, IELTS, CEFR (Multilevel) va SAT’ga tayyorlaning. Bepul daraja testi, mock testlar va duellar. Boshlash uchun /start bosing.',
+  name: 'Sellzen — ingliz tili AI ustoz',
+  short: 'Ingliz tili A1–C2, IELTS, CEFR va SAT — o‘zbek tilida tushuntiradigan AI ustoz. Bepul mock testlar.',
+  description: 'Sellzen bilan ingliz tilini o‘rganing:\n\n📚 A1–C2 darslar va grammatika\n🎙 AI ustoz bilan ovozli suhbat — xatolaringizni o‘zbekcha tushuntiradi\n⏱ Bepul IELTS mock testlar (Listening, Reading)\n✍️ Writing va Speaking AI bahosi\n🎮 So‘z o‘yinlari, duellar va reyting\n\nBoshlash uchun «Start» tugmasini bosing.',
 } as const;
+export const BOT_COMMANDS = [
+  { command: 'start', description: 'Boshlash' },
+  { command: 'app', description: 'Ilovani ochish' },
+  { command: 'level', description: 'Darajamni aniqlash' },
+  { command: 'mock', description: 'Bepul mock test' },
+  { command: 'coach', description: 'AI ustoz bilan suhbat' },
+  { command: 'help', description: 'Yordam' },
+  { command: 'remind', description: 'Kunlik eslatmani yoqish' },
+  { command: 'stop', description: 'Eslatmani o‘chirish' },
+];
+
+/** Bot rasmi (Bot API setMyProfilePhoto): fayl multipart bilan yuklanadi. Bir xil rasm qayta yuklanmasligi uchun chaqiruvchi tekshiradi. */
+export async function setBotPhoto(token: string, file: { bytes: Uint8Array; name: string; type: string }, f: Fetch = fetch): Promise<void> {
+  const fd = new FormData();
+  fd.append('photo', JSON.stringify({ type: 'static', photo: 'attach://avatar' }));
+  fd.append('avatar', new Blob([file.bytes], { type: file.type }), file.name);
+  const r = await f(`https://api.telegram.org/bot${token}/setMyProfilePhoto`, { method: 'POST', body: fd });
+  const j = (await r.json().catch(() => ({}))) as { ok?: boolean; description?: string };
+  if (!j.ok) throw new Error(`setMyProfilePhoto: ${j.description ?? r.status}`);
+}
 export async function syncBotProfile(token: string, f: Fetch = fetch): Promise<string[]> {
   const done: string[] = [];
   const steps: [get: string, field: string, set: string, value: string, key: string][] = [
@@ -157,19 +162,3 @@ export async function syncBotProfile(token: string, f: Fetch = fetch): Promise<s
   return done;
 }
 
-/** Webhook yangilanishi → yuboriladigan javob (yoki null). Faqat shaxsiy chatlarga javob beriladi. */
-export function handleUpdate(update: unknown, publicUrl: string, trFor: (lang?: string) => Tr = () => same): { method: string; body: Record<string, unknown> } | null {
-  const msg = (update as { message?: { chat?: { id?: number; type?: string }; from?: TgUser; text?: string } })?.message;
-  if (!msg?.chat?.id || msg.chat.type !== 'private') return null;
-  const text = (msg.text ?? '').trim();
-  const tr = trFor(msg.from?.language_code);
-  if (/^\/mock\b/.test(text)) {
-    return { method: 'sendMessage', body: { chat_id: msg.chat.id, text: tr('Bepul mock testlar: Listening va Reading, imtihon taymeri va avtomatik baho bilan.'), reply_markup: { inline_keyboard: [[{ text: `⏱ ${tr('Mock testni ochish')}`, web_app: { url: appUrl(publicUrl, '/mocks') } }]] } } };
-  }
-  // t.me/bot?start=phone — o'quvchi raqamini ulashadi (Telegram tasdiqlagan raqam; tugma faqat o'z kontaktini yuboradi)
-  if (/^\/start\s+phone\b/.test(text)) {
-    return { method: 'sendMessage', body: { chat_id: msg.chat.id, text: tr('Mutaxassisimiz rejangizni tushuntirib berishi uchun raqamingizni ulashing (ixtiyoriy).'), reply_markup: { keyboard: [[{ text: `📱 ${tr('Raqamni ulashish')}`, request_contact: true }]], resize_keyboard: true, one_time_keyboard: true } } };
-  }
-  const ref = text.match(/^\/start\s+ref_([a-z2-9]{6,10})\b/)?.[1]; // t.me/bot?start=ref_KOD
-  return { method: 'sendMessage', body: startReply(msg.chat.id, publicUrl, msg.from?.first_name, tr, ref) };
-}
