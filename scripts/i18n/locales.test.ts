@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { englishOnly } from './english';
+import { looksUz } from './detect';
 
 const ROOT = join(dirname(new URL(import.meta.url).pathname), '../..');
 const LANGS = ['en', 'ru', 'kk', 'ky', 'tg'] as const;
@@ -29,7 +30,7 @@ for (const l of LANGS) {
     if (!catalog.has(src)) { errs.push(`eskirgan kalit (katalogda yo'q): ${src.slice(0, 60)}`); continue; }
     if (typeof tr !== 'string' || !tr.trim()) { errs.push(`bo'sh: ${src.slice(0, 60)}`); continue; }
     if (ph(tr) !== ph(src)) errs.push(`o'rinbosar: ${src.slice(0, 50)} → ${tr.slice(0, 50)}`);
-    if (l !== 'en' && /[A-Za-z]{3}/.test(src) && !CYR.test(tr) && !englishOnly(tr)) errs.push(`kirill yo'q: ${tr.slice(0, 60)}`);
+    if (l !== 'en' && /[A-Za-z]{3}/.test(src) && looksUz(src) && !CYR.test(tr) && !englishOnly(tr)) errs.push(`kirill yo'q: ${tr.slice(0, 60)}`);
     if (tr === src && /[‘’'ʻ]/.test(src)) errs.push(`tarjima qilinmagan (manba bilan bir xil): ${src.slice(0, 60)}`);
     for (const q of quotedEnglish(src)) if (!tr.includes(q)) errs.push(`inglizcha o'quv iborasi o'zgargan «${q}»: ${tr.slice(0, 70)}`);
   }
