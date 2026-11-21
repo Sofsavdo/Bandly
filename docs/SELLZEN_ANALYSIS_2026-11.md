@@ -22,13 +22,13 @@ lokal production build (mobil emulyatsiya), raqobatchilar bo'yicha ochiq manbala
 2. **AI bitta provayderga bog'liq.** 19-noyabr loglarida Gemini'ning uchala modeli ham 503/timeout bergan — AI ustoz ishlamay qolgan. `AI_BACKUP_PROVIDER/API_KEY/MODEL` qo'shildi: Gemini band bo'lsa yoki kalit/mablag' tugasa avtomatik boshqa provayderga (masalan Claude Haiku) o'tadi. Testlar bilan.
 3. **Mehmon faqat bosh sahifani ko'rardi.** Bosh sahifada "3 daqiqalik daraja testi" va'da qilingan, lekin uni ochish uchun ro'yxatdan o'tish shart edi; narxlarni ham ko'rib bo'lmasdi. Endi `#/placement` va `#/pricing` mehmonga ochiq; bosh sahifadagi asosiy tugma — "Darajamni aniqlash".
 4. **Daraja testi natijasida ulashish yo'q edi.** "Telegramda ulashish" ("Mening darajam B1. Sen ham 3 daqiqada tekshir!") va mehmon uchun "Bepul ro'yxatdan o'tish" tugmasi qo'shildi.
-5. **Log shovqini.** Har ishga tushishda `ExperimentalWarning: SQLite` "error" sifatida yozilardi — o'chirildi (Dockerfile).
+5. **Log shovqini.** Har ishga tushishda `ExperimentalWarning: SQLite` "error" sifatida yozilardi — o'chirildi. Production Dockerfile emas, **Railpack** bilan quriladi (`npm start`), shuning uchun flag `package.json` start skriptiga ham qo'shildi.
 
 ### Hali qolgan (egasining qarori yoki kattaroq ish kerak)
 | # | Muammo | Dalil | Tavsiya |
 |---|---|---|---|
 | A | **Server regioni sfo** | Volume `region: sfo`; foydalanuvchilar Uzbektelecom IP'laridan | Railway'da regionni **Europe West (Amsterdam)** ga ko'chirish: kechikish ~250ms → ~80ms. Volume ko'chadi, oldin zaxira oling |
-| B | **Har deployda 15 soniyagacha uzilish** | HTTP logda `connection dial timeout` 502'lar; 18-noyabrda 10+ deploy | Volume bor servisda Railway eski va yangi nusxani bir vaqtda ishlatmaydi. Deployni kechasi qiling, bir kunda bir nechta o'zgarishni bitta deployga yig'ing; healthcheck yo'li (`/api/auth/config`) qo'shing |
+| B | **Har deployda 15 soniyagacha uzilish** | HTTP logda `connection dial timeout` 502'lar; 18-noyabrda 10+ deploy | Volume bor servisda Railway eski va yangi nusxani bir vaqtda ishlatmaydi. Healthcheck (`/api/health`) allaqachon sozlangan (2026-11-21 tekshirildi) — uzilish volume qayta ulanishidan. Yechim: deployni kechasi qiling, o'zgarishlarni bitta deployga yig'ing |
 | C | **JS bundle 1,74 MB (gzip 569 KB)** | `vite build` | 3G/4G'da birinchi ochilish sekin. Sahifalarni `React.lazy` bilan bo'lish (i18n "boot" tartibini saqlagan holda) — keyingi ish |
 | D | **Hash-routing (`#/...`)** | Google `#/` sahifalarni alohida indekslamaydi | SEO trafik faqat `public/vositalar/*.html` statik sahifalardan keladi. Ko'proq statik SEO sahifa yarating (pastga qarang) |
 | E | **Telegram bot hali `@Bandly_robot`** | Railway log | Rebrend tugashi uchun `@SellzenBot` kabi yangi nom (BotFather'da username o'zgartirib bo'lmaydi — yangi bot + eski botda yo'naltirish xabari) |
