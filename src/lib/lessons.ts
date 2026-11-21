@@ -24,6 +24,21 @@ export function correctAnswerText(item: Item): string {
   return item.kind === 'choice' ? item.options[item.answer]! : item.kind === 'gap' ? item.accept[0]! : item.answer;
 }
 
+/** Javob qo'yilgan to'liq inglizcha gap (fikr-mulohazada ko'rsatish va eshittirish uchun): bo'shliq to'ldiriladi, qavsdagi
+ *  yordamchi so'z olib tashlanadi. Bo'shliqsiz savollarda (masalan "Choose the correct sentence") — tanlangan variantning o'zi. */
+export function fullSentence(item: Item): string | null {
+  const ans = correctAnswerText(item);
+  if (item.kind === 'order') return ans;
+  const p = item.prompt;
+  if (!p.includes('___')) return item.kind === 'choice' && /[a-z].*\s.*[a-z]/i.test(ans) && /[.?!]$/.test(ans.trim()) ? ans : null;
+  if (/[=:]\s*___/.test(p) || /^choose|^pick|^which/i.test(p)) return null; // "Short form: I am = ___" kabi — gap emas
+  const zero = /^[—–-]$|^\(?(no article|nothing|ø)\)?$/i.test(ans.trim()); // artiklsiz javob: bo'shliq shunchaki olib tashlanadi
+  const filled = p.replace(/___\s*(\([^)]*\))?/, zero ? '' : ans + ' ')
+    .replace(/\s*\([^)]*\)/g, '') // qavsdagi ishoralar: "(inkor)", "(juda)", "(100%)"
+    .replace(/\s+([’'](ll|s|re|ve|d|m|t)\b)/g, '$1').replace(/\s+([,.?!])/g, '$1').replace(/\s{2,}/g, ' ').trim();
+  return /___/.test(filled) ? null : filled;
+}
+
 export interface CheckResult { correct: number; total: number; rate: number; passed: boolean }
 export function scoreCheck(items: Item[], answers: ItemAnswer[]): CheckResult {
   const correct = items.filter((it, i) => checkItem(it, answers[i])).length;

@@ -43,7 +43,7 @@ export default function Homework() {
               <small className="hw-kind">{t.title}</small>
               <h3>{t.sub}</h3>
               {t.done ? (
-                <p className="ok"><CheckCircle2 size={16} style={{ verticalAlign: -3 }} /> {t.result!.kind === 'speaking' ? L('Bajarildi') : `${t.result!.correct}/${t.result!.total}`}{typeof t.result!.band === 'number' ? ` · taxminiy band ${t.result!.band.toFixed(1)}` : ''}</p>
+                <p className="ok"><CheckCircle2 size={16} style={{ verticalAlign: -3 }} /> {t.result!.kind === 'speaking' ? L('Bajarildi') : `${t.result!.correct}/${t.result!.total}`}{typeof t.result!.band === 'number' ? ` · band ${t.result!.band.toFixed(1)}` : ''}</p>
               ) : (
                 <p className="evidence"><Clock size={14} style={{ verticalAlign: -2 }} />  {L('Bugun 23:59 gacha ·')} {timeLeft(t.deadline)}</p>
               )}

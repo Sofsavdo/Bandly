@@ -14,7 +14,7 @@ Quyidagilar **ataylab** eski nom bilan qoldi, chunki ularni o'zgartirish mavjud 
 | `/data/bandly.sqlite`, zaxiralar `bandly-<UTC>.sqlite` | Production baza fayli va mavjud zaxiralar shu nomda |
 | persona id `'bandi'` (ko'rinadigan nomi "Sellzen AI") | O'quvchilarning saqlangan ustoz tanlovi shu id bilan |
 | `bandly-webhook` (Telegram webhook sirining tuzi) | O'zgarsa webhook sirini qayta o'rnatish kerak |
-| Telegram username `@Bandly_robot` | BotFather'da username o'zgarmaydi; ko'rinadigan nom va tavsif server ishga tushganda avtomatik "Sellzen" qilinadi (`syncBotProfile`). To'liq almashtirish — yangi bot (egasi) |
+| Telegram bot `@Sellzenbot` (2026-11-21 dan; avvalgi `@Bandly_robot` ishlatilmaydi) | Token Railway'da `TELEGRAM_BOT_TOKEN`. Nom, tavsif, buyruqlar va rasm server ishga tushganda avtomatik o'rnatiladi; /start'da @Sellzen_AI kanaliga majburiy obuna va Telegram kontakti so'raladi (`server/botFlow.ts`) |
 | Railway servis `bandly`, domen `bandly-production.up.railway.app`, GitHub `Sofsavdo/Bandly` | Infratuzilma nomlari; o'zgartirish egasi tomonidan (volume, domen va ulanishlar shu nomga bog'langan) |
 
 O'zbekcha matnlardagi "bandi" (masalan "Mock bandi", "Task Response bandi") — brend emas, "band" so'zining egalik shakli.

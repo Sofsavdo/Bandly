@@ -44,9 +44,9 @@ export default function Certificates() {
     <div>
       <section className="card page-head">
         <h2 style={{ margin: 0 }}><Award size={22} />  {L('Sertifikatlarim')}</h2>
-        <p style={{ margin: '6px 0 0' }}>{L('Sertifikat to‘liq imtihon uchun beriladi: Listening, Reading, Writing va Speaking bo‘yicha ballar hamda Overall ko‘rsatiladi. 1 yil amal qiladi.')} <a href="#/mocks/full">{L('To‘liq imtihonni boshlash')}</a></p>
+        <p style={{ margin: '6px 0 0' }}>{L('To‘liq imtihon (L, R, W, S) uchun beriladi.')} <a href="#/mocks/full">{L('To‘liq imtihonni boshlash')}</a></p>
       </section>
-      {profile && !ready && <p className="notice">{L('Sertifikat olish uchun to‘liq ismingiz va o‘zingizning haqiqiy rasmingizni (yuzingiz aniq ko‘rinadigan) profilga yuklang. Sertifikatga shu rasm qo‘yiladi.')}</p>}
+      {profile && !ready && <p className="notice">{L('Sertifikat uchun profilga to‘liq ism va rasm qo‘shing.')}</p>}
       {profile && (!ready || list?.length === 0) && <CertProfileCard onChange={(p) => void onProfile(p)} />}
       {err && <p className="notice" role="alert">{err}</p>}
       {list === null && !err && <p className="muted">{L('Yuklanmoqda…')}</p>}

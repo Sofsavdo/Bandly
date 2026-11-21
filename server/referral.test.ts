@@ -3,7 +3,7 @@ import { byToken, createDb, join, loginTelegram } from './db';
 import { REF_XP, attachReferral, isRefCode, maybeRewardReferral, refCodeOf, refPlanCap, refPlanDays, refStats } from './referral';
 import { planOf } from './entitle';
 import { awardXp } from './xp';
-import { handleUpdate } from './telegram';
+import { welcomeMsg } from './botFlow';
 
 const db = createDb();
 const T = Date.UTC(2026, 10, 17, 8);
@@ -31,7 +31,7 @@ assert.equal(xp(host.id) - h0, REF_XP);
 assert.equal(refStats(db, host.id).activated, 1);
 
 // Telegram: /start ref_KOD — ilova tugmalari havolasida kod bor
-const rep = handleUpdate({ message: { chat: { id: 7, type: 'private' }, from: { id: 7 }, text: `/start ref_${code}` } }, 'https://app.example');
+const rep = welcomeMsg(7, 'https://app.example', (t) => t, 'Ali', code);
 assert.match(JSON.stringify(rep), new RegExp(`ref=${code}`));
 // Obuna kunlari mukofoti (REF_PLAN_DAYS): standart o'chiq; yoqilganda ikkalasiga All Access, taklif qilganga 30 kunda cheklov
 assert.equal(refPlanDays({}), 0, 'standart: o‘chiq (egasi qarori)');

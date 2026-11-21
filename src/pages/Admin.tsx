@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
 import { CertAdmin } from '../components/CertAdmin';
-import { PaymentsPanel, StaffPanel, UsersPanel } from '../components/AdminOps';
+import { LeadsPanel, PaymentsPanel, StaffPanel, UsersPanel } from '../components/AdminOps';
 import { L } from '../i18n';
 
 interface Day { day: string; signups: number; active: number; paid: number; revenue: number; aiUsd: number }
@@ -38,7 +38,7 @@ export default function Admin() {
   const [data, setData] = useState<Data | null>(null);
   const [err, setErr] = useState('');
   const [span, setSpan] = useState(30);
-  const [tab, setTab] = useState<'stats' | 'users' | 'payments' | 'staff' | 'certs'>('stats');
+  const [tab, setTab] = useState<'stats' | 'leads' | 'users' | 'payments' | 'staff' | 'certs'>('stats');
   const load = async () => {
     setErr('');
     try {
@@ -54,10 +54,10 @@ export default function Admin() {
   if (!data) return <div className="card"><h2>{L('Admin kabineti')}</h2><p className="muted">{L('Yuklanmoqda…')}</p></div>;
   const tabs = (
     <div className="seg" role="tablist" aria-label={L('Admin kabineti')} style={{ marginBottom: 14 }}>
-      {([['stats', L('Analitika')], ['users', L('Foydalanuvchilar')], ['payments', L('To‘lovlar')], ['staff', L('Xodimlar')], ['certs', L('Sertifikatlar')]] as const).map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>)}
+      {([['stats', L('Analitika')], ['leads', L('Lidlar')], ['users', L('Foydalanuvchilar')], ['payments', L('To‘lovlar')], ['staff', L('Xodimlar')], ['certs', L('Sertifikatlar')]] as const).map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>)}
     </div>
   );
-  if (tab !== 'stats') return <div>{tabs}{tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <PaymentsPanel /> : tab === 'staff' ? <StaffPanel /> : <CertAdmin />}</div>;
+  if (tab !== 'stats') return <div>{tabs}{tab === 'leads' ? <LeadsPanel /> : tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <PaymentsPanel /> : tab === 'staff' ? <StaffPanel /> : <CertAdmin />}</div>;
   const t = data.totals, top = Math.max(1, data.funnel[0]?.n ?? 1);
   const pct = (v: number | null) => (v === null ? '—' : `${v}%`);
   return (

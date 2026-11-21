@@ -48,7 +48,6 @@ export function CefrPrep() {
 
       <div className="card">
         <h3>{L('Tayyorgarlik')}</h3>
-        <p className="muted" style={{ fontSize: 13 }}>{L('Rasmiy hajm va vaqt. Natija — to‘g‘ri javoblar soni (Multilevel balli emas).')}</p>
         <div className="stack">
           <a className="path-step" href="#/mocks/reading/cefr-reading-1"><b><BookOpen size={16} />  {L('O‘qish — mashq testi 1')}</b><span>{L('35 savol · 60 daqiqa · B1→C1 matnlar · bepul')}</span></a>
           <a className="path-step" href="#/mocks/listening/cefr-listening-1"><b><Headphones size={16} />  {L('Tinglab tushunish — mashq testi 1')}</b><span>{L('35 savol · 45 daqiqa · 5 qism, turli talaffuzlar · bepul')}</span></a>

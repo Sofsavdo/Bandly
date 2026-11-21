@@ -4,7 +4,7 @@ import { getAccount } from './account';
 import { loadAnswers } from './onboarding';
 import { getProfile } from './store';
 
-const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|groups|welcome|login|certificates|duel\/)/;
+const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|leads|groups|welcome|login|certificates|duel\/)/;
 
 /** Mehmon (kirmagan) faqat landing sahifasini ko'radi (bosh sahifa / #/welcome: imkoniyatlar, narxlar, savollar).
  *  Daraja testi, narxlar sahifasi, duel taklifi va qolgan hamma narsa — ro'yxatdan o'tgandan keyin (qaytish manzili saqlanadi):

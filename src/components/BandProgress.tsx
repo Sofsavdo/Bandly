@@ -56,7 +56,7 @@ export function BandProgress({ compact = false }: { compact?: boolean }) {
       <h3 style={{ marginTop: 0 }}><TrendingUp size={18} />  {L('Band o‘sishi')}</h3>
       {!baseline ? (
         <>
-          <p>{L('O‘sishni o‘lchash uchun avval boshlang‘ich bandingizni aniqlaymiz: to‘liq imtihon (Listening, Reading, Writing, Speaking). Keyin har 2 haftada qayta o‘lchaymiz.')}</p>
+          <p>{L('Boshlang‘ich bandingizni o‘lchang — o‘sish shundan hisoblanadi.')}</p>
           <a className="btn primary" href="#/mocks/full"><ClipboardCheck size={16} />  {L('Boshlang‘ich imtihonni topshirish')}</a>
         </>
       ) : (
@@ -78,8 +78,7 @@ export function BandProgress({ compact = false }: { compact?: boolean }) {
           </p>
         </>
       )}
-      <p className="muted" style={{ fontSize: 13 }}>{L('Mock bandi — taxminiy natija, rasmiy IELTS emas.')}</p>
-      {acct ? <OfficialForm data={data} onData={setData} onErr={setErr} official={official} /> : <p className="muted">{L('Natijalaringiz saqlanishi va rasmiy IELTS natijasini kiritish uchun hisobga kiring.')}</p>}
+      {acct ? <OfficialForm data={data} onData={setData} onErr={setErr} official={official} /> : <p className="muted">{L('Natijalarni saqlash uchun hisobga kiring.')}</p>}
       {err && <p className="bad">{err}</p>}
     </div>
   );
@@ -104,7 +103,7 @@ function OfficialForm({ data, onData, onErr, official }: { data: BandData; onDat
       )}
       {!open ? <button className="btn sm" onClick={() => setOpen(true)}>{L('Natijani kiritish')}</button> : (
         <div className="official-form">
-          <p className="muted" style={{ marginTop: 0 }}>{L('Imtihon topshirgan bo‘lsangiz, natijangizni kiriting — bu Sellzen samaradorligini halol o‘lchashga yordam beradi.')}</p>
+          <p className="muted" style={{ marginTop: 0 }}>{L('Imtihon natijangizni kiriting.')}</p>
           <div className="row">
             {SK.map(([k, n]) => (
               <label key={k} className="field-sm">{n}

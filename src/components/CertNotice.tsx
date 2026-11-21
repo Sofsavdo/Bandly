@@ -8,7 +8,7 @@ export function CertNotice({ issued, missing }: { issued: { id: string; type: st
       <a className="btn sm primary" href="#/certificates">{L('Sertifikatlarim')}</a></p>
   );
   if (missing.length) return (
-    <p className="notice cert-notice"><Award size={16} />  {L('Sertifikat olish uchun profilingizga to‘liq ism va rasm qo‘shing — shu natija uchun sertifikat keyin ham beriladi.')}{' '}
+    <p className="notice cert-notice"><Award size={16} />  {L('Sertifikat uchun profilga to‘liq ism va rasm qo‘shing.')}{' '}
       <a className="btn sm" href="#/certificates">{L('Ma’lumotni kiritish')}</a></p>
   );
   return null;

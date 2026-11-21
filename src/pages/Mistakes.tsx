@@ -88,7 +88,7 @@ export default function Mistakes() {
     <div>
       <section className="card page-head with-illo t-coral">
         <h2>{L('Xatolar ustida ishlash')}</h2><Illo kind="target" size={124} />
-        <p>{L('Barcha bo‘limlardagi xatolaringiz shu yerga yig‘iladi va 1, 3, 7 kundan keyin qaytadi.')}</p>
+        <p>{L('Xatolaringiz shu yerda 1, 3, 7 kundan keyin qaytadi.')}</p>
         <p className="row"><span className="pill">{L('Bugun:')} {queue.length}</span><span className="pill">{L('Ochiq xatolar:')} {open.length}</span>{(stats.ok + stats.bad) > 0 && <span className="pill">{L('Bu safar:')} {stats.ok} ✓ · {stats.bad} ✗</span>}</p>
       </section>
       {cur ? (
@@ -99,7 +99,7 @@ export default function Mistakes() {
         </section>
       ) : (
         <section className="card">
-          <p>{queue.length ? L('Bugungi takrorlash tugadi. Zo‘r!') : open.length ? L('Hozircha takrorlash vaqti kelgan xato yo‘q — keyingi takrorlash vaqti kelganda shu yerda paydo bo‘ladi.') : L('Hali saqlangan xato yo‘q. Dars, Grammar yoki AI ustoz bilan mashq qiling.')}</p>
+          <p>{queue.length ? L('Bugungi takrorlash tugadi. Zo‘r!') : open.length ? L('Hozircha takrorlanadigan xato yo‘q.') : L('Hali saqlangan xato yo‘q. Dars, Grammar yoki AI ustoz bilan mashq qiling.')}</p>
           <div className="row"><button className="btn" onClick={() => { setRound((r) => r + 1); setIdx(0); setAnswered(false); }}><RotateCcw size={14} />  {L('Yangilash')}</button><a className="btn" href="#/">{L('Bosh sahifa')}</a></div>
         </section>
       )}

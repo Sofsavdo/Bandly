@@ -131,8 +131,9 @@ export function hasAnyPlan(p: Profile = state): boolean {
   return hasAnyTrack(p);
 }
 
+/** So'z o'yinlari hamma uchun bepul va cheksiz (2026-11-21 egasi qarori): o'yinlar pullik API ishlatmaydi — xarajati yo'q. */
 export function freeGamesLeft(p: Profile = state): number {
-  if (hasAnyPlan(p)) return Infinity;
+  if (hasAnyPlan(p) || !Number.isFinite(FREE_GAMES_PER_DAY)) return Infinity;
   const today = dayKey();
   return p.freeGames.day === today ? Math.max(0, FREE_GAMES_PER_DAY - p.freeGames.n) : FREE_GAMES_PER_DAY;
 }

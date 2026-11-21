@@ -20,7 +20,7 @@ export default function TestList({ track, kind }: { track: 'exam' | 'mocks'; kin
   const groups: { title: string; note?: string; tests: T[] }[] = [
     { title: L('Sizning pog‘onangiz ({0})', [ladder.working]), tests: all.filter((t) => t.exam !== 'cefr' && !isFull(t) && t.level === ladder.working) },
     { title: L('Keyingi pog‘ona — qiyinroq'), tests: all.filter((t) => t.exam !== 'cefr' && !isFull(t) && levelIndex(t.level) === wi + 1) },
-    { title: L('To‘liq imtihon — haqiqiy sharoit'), note: ladder.fullReady ? undefined : L('Haqiqiy IELTS qiyinligi (C1). Avval o‘z pog‘onangizni bajarish tavsiya etiladi — lekin sinab ko‘rish mumkin.'), tests: all.filter(isFull) },
+    { title: L('To‘liq imtihon — haqiqiy sharoit'), note: ladder.fullReady ? undefined : L('IELTS qiyinligi (C1). Avval o‘z pog‘onangizni bajaring.'), tests: all.filter(isFull) },
     { title: L('Takrorlash va boshqa testlar'), tests: all.filter((t) => t.exam === 'cefr' || (!isFull(t) && (levelIndex(t.level) < wi || levelIndex(t.level) > wi + 1))) },
   ].filter((g) => g.tests.length);
   const Icon = kind === 'reading' ? BookOpen : Headphones;

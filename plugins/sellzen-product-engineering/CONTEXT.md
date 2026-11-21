@@ -9,7 +9,7 @@
 AI-powered English learning and exam preparation SaaS for Uzbekistan first, then Kazakhstan, Kyrgyzstan, Tajikistan,
 Turkmenistan. Domain `sellzen.uz` (Railway custom domain, also `www.`). Rebranded from **Bandly** on 2026-11-18:
 visible text says Sellzen / "Sellzen AI"; internal identifiers keep the old name on purpose
-(`bandly.*` localStorage keys, `/data/bandly.sqlite`, persona id `'bandi'`, Railway service `bandly`, bot username `@Bandly_robot` — its visible name/description are synced to Sellzen by `syncBotProfile` — and backup file names). The npm package, CSS classes, audio worklet, Telegram widget callback and pay event were renamed to Sellzen on 2026-11-21; README "Brend" table lists what stays and why.
+(`bandly.*` localStorage keys, `/data/bandly.sqlite`, persona id `'bandi'`, Railway service `bandly`, and backup file names). Telegram bot is `@Sellzenbot` (since 2026-11-21; old `@Bandly_robot` retired): /start enforces a subscription to @Sellzen_AI and asks for the Telegram contact (`server/botFlow.ts`); name, description, commands and avatar are set on startup. The npm package, CSS classes, audio worklet, Telegram widget callback and pay event were renamed to Sellzen on 2026-11-21; README "Brend" table lists what stays and why.
 **Never rename internal `bandly.*` keys** — synced progress, server validation (`/^bandly\./` in `putProgress`) and
 existing users depend on them. `scripts/build/brand.test.ts` fails if "Bandly"/"Bandi" reappears in visible text.
 

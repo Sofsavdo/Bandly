@@ -187,7 +187,7 @@ export default function DuelHub() {
       <div className="card hero">
         <div>
           <h2 style={{ margin: 0 }}>{L('Duel')}</h2>
-          <p style={{ margin: '4px 0' }}>{L('Do‘stlaringiz bilan bir xil 10 ta so‘zda raqobatlashing. Havolani yuboring, kim yutadi?')}</p>
+          <p style={{ margin: '4px 0' }}>{L('Do‘stingizni 10 so‘zlik bellashuvga chaqiring.')}</p>
           <button className="btn primary" disabled={busy} onClick={() => void create()}>{L('Yangi duel yaratish')}</button>
         </div>
       </div>

@@ -22,6 +22,7 @@ import { JoinGroupCard } from '../components/JoinGroupCard';
 import { ResultList } from '../components/ResultList';
 import { CertProfileCard } from '../components/CertProfileCard';
 import { L } from '../i18n';
+import { LeadCard } from '../components/LeadCard';
 
 export default function Profile() {
   const p = useProfile();
@@ -54,6 +55,7 @@ export default function Profile() {
       <InviteCard />
       <JoinGroupCard />
       <section className="card"><h3 style={{ margin: 0 }}>{L('Bu hafta')}</h3><WeekBars activity={p.activity} /></section>
+      <LeadCard level={p.level ?? undefined} />
 
       <ProgressCard />
 

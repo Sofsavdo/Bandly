@@ -63,6 +63,7 @@ assert.equal(emotionOf('Perfect! Barakalla.'), 'happy');
 assert.equal(emotionOf('Oh no, not again.'), 'disappointed');
 assert.equal(emotionOf('Tell me about your weekend.'), 'neutral');
 assert.ok(buildLivePrompt({ adult: false, native: 'English' }).includes('Speak ONLY English'));
+assert.ok(first.includes('UZBEK QUALITY') && first.includes('adabiy') && !buildLivePrompt({ adult: false, native: 'Russian' }).includes('UZBEK QUALITY'), 'o‘zbekcha — adabiy til, shevasiz');
 assert.match(liveKickoff({ firstCall: true, hasMemory: false }), /Introduce yourself once/);
 assert.match(liveKickoff({ firstCall: false, hasMemory: true }), /Do NOT introduce yourself.*MEMORY/);
 assert.match(liveKickoff({ firstCall: false, hasMemory: false }), /Do NOT introduce yourself or say your name/);

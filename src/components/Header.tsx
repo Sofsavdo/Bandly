@@ -1,5 +1,5 @@
 import { Logo } from './Logo';
-import { BarChart3, Megaphone, Users, Flame, LogIn, LogOut, Menu, Pencil, Star, Target, User, X } from 'lucide-react';
+import { BarChart3, Megaphone, Users, Flame, LogIn, LogOut, Menu, Pencil, Phone, Star, Target, User, X } from 'lucide-react';
 import { getAccount, onAccountChange } from '../lib/account';
 import { SignOutDialog } from './SignOutDialog';
 import { LangPicker } from './LangPicker';
@@ -43,6 +43,7 @@ export function Header({ hash }: { hash: string }) {
     ...(staff ? [{ href: '#/studio', icon: Pencil, label: L('Metodist kabineti') }] : []),
     ...(role === 'admin' ? [{ href: '#/admin', icon: BarChart3, label: L('Admin kabineti') }] : []),
     ...(role === 'admin' || role === 'creator' ? [{ href: '#/creator', icon: Megaphone, label: L('Hamkor kabineti') }] : []),
+    ...(role === 'sales' ? [{ href: '#/leads', icon: Phone, label: L('Lidlar') }] : []),
     ...(role === 'admin' || role === 'teacher' ? [{ href: '#/groups', icon: Users, label: L('Guruhlarim') }] : []),
   ];
   const here = sectionOf(hash)?.section.id ?? null;

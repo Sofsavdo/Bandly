@@ -53,6 +53,7 @@ import { L } from './i18n';
 const Studio = lazy(() => import('./pages/Studio'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Creator = lazy(() => import('./pages/Creator'));
+const Leads = lazy(() => import('./pages/Leads'));
 const IeltsCourse = lazy(() => import('./pages/IeltsCourse'));
 const Certificates = lazy(() => import('./pages/Certificates'));
 const CertificateVerify = lazy(() => import('./pages/CertificateVerify'));
@@ -64,6 +65,7 @@ const routes: Record<string, () => ReactNode> = {
   '#/studio': () => <Studio />,
   '#/admin': () => <Admin />,
   '#/creator': () => <Creator />,
+  '#/leads': () => <Leads />,
   '#/groups': () => <Groups />,
   '#/learn': () => <Learn />,
   '#/skills': () => <SkillCheck />,

@@ -32,7 +32,7 @@ export function ExamPath({ exam }: { exam: Exam }) {
   return (
     <div className="card">
       <h3 style={{ marginTop: 0 }}>{L('O‘rganish yo‘li')}</h3>
-      <p className="muted" style={{ fontSize: 13 }}>{exam === 'cefr' ? L('Sellzen’da o‘rganing va shu yerning o‘zida sinang: qadamlar ketma-ketligi — darajadan to‘liq testgacha.') : L('Sellzen’da o‘rganing va sinang: so‘z boyligi va grammatika — keyin SAT formatidagi savollar.')}</p>
+      <p className="muted" style={{ fontSize: 13 }}>{exam === 'cefr' ? L('Darajadan to‘liq testgacha — qadam-baqadam.') : L('So‘z boyligi va grammatika, keyin SAT savollari.')}</p>
       <ol className="exam-path">
         {steps.map((s) => <li key={s.title} className={s.done ? 'done' : ''}><a href={s.href}><s.icon size={18} /><span><b>{s.title}</b><small>{s.text}</small></span></a></li>)}
       </ol>

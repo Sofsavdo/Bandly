@@ -21,7 +21,7 @@ function Overall() {
         ))}
       </div>
       <p className="big">{L('Overall:')} {o.toFixed(1)}</p>
-      <p className="evidence">{L('IELTS qoidasi: 4 ball o‘rtachasi 0.5 ga yaxlitlanadi (.25 yuqoriga .5 ga, .75 yuqoriga keyingi butunga).')}</p>
+      <p className="evidence">{L('4 ball o‘rtachasi 0.5 ga yaxlitlanadi.')}</p>
     </div>
   );
 }

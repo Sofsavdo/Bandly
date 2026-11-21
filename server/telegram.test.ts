@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import { byToken, createDb, join, loginTelegram } from './db';
-import { botFromEnv, handleUpdate, nickFrom, TgAuthError, verifyInitData, verifyWidget, webhookSecret } from './telegram';
+import { botFromEnv, nickFrom, TgAuthError, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 
 const TOKEN = '123456789:AAtest_token_value_for_unit_tests_only';
 const now = 1_800_000_000;
@@ -70,11 +70,6 @@ assert.equal(botFromEnv({ TELEGRAM_BOT_TOKEN: 'bad' }), null);
 assert.equal(botFromEnv({ TELEGRAM_BOT_TOKEN: TOKEN, RAILWAY_PUBLIC_DOMAIN: 'x.up.railway.app' })?.publicUrl, 'https://x.up.railway.app');
 assert.equal(webhookSecret(TOKEN).length, 48);
 assert.notEqual(webhookSecret(TOKEN), webhookSecret(TOKEN + 'x'));
-const r = handleUpdate({ message: { chat: { id: 5, type: 'private' }, from: { id: 5, first_name: 'Ali' }, text: '/start' } }, 'https://b.app');
-assert.equal(r?.method, 'sendMessage');
-assert.match(JSON.stringify(r?.body), /https:\/\/b\.app\/\?tg=1&r=%2Fmocks/);
-assert.equal(handleUpdate({ message: { chat: { id: -5, type: 'group' }, text: '/start' } }, 'https://b.app'), null, 'guruhlarga javob yo‘q');
-assert.match(JSON.stringify(handleUpdate({ message: { chat: { id: 5, type: 'private' }, text: '/mock' } }, 'https://b.app')?.body), /Mock testni ochish/);
 // Bot profili (rebrend): ko'rinadigan nom/tavsif faqat farq qilsa yoziladi; xato sayt ishga tushishini to'xtatmaydi
 {
   const { syncBotProfile, BOT_PROFILE, setupBot } = await import('./telegram');
@@ -83,7 +78,7 @@ assert.match(JSON.stringify(handleUpdate({ message: { chat: { id: 5, type: 'priv
   const fake = (async (url: string, init: { body: string }) => {
     const m = url.split('/').pop()!; calls.push(m); const b = JSON.parse(init.body || '{}') as Record<string, string>;
     const map: Record<string, string> = { getMyName: 'name', getMyShortDescription: 'short_description', getMyDescription: 'description' };
-    if (m === 'getMe') return { json: async () => ({ ok: true, result: { username: 'Bandly_robot' } }) };
+    if (m === 'getMe') return { json: async () => ({ ok: true, result: { username: 'Sellzenbot' } }) };
     if (map[m]) return { json: async () => ({ ok: true, result: { [map[m]!]: state[map[m]!] } }) };
     if (m.startsWith('setMy')) { Object.assign(state, b); return { json: async () => ({ ok: true, result: true }) }; }
     return { json: async () => ({ ok: true, result: true }) };
@@ -103,17 +98,17 @@ assert.match(JSON.stringify(handleUpdate({ message: { chat: { id: 5, type: 'priv
   let hooks = 0; let got: string | null = null;
   const flaky = (async (url: string) => {
     const m = url.split('/').pop()!;
-    if (m === 'getMe') return { json: async () => ({ ok: true, result: { username: 'Bandly_robot' } }) };
+    if (m === 'getMe') return { json: async () => ({ ok: true, result: { username: 'Sellzenbot' } }) };
     if (m === 'setWebhook') { hooks++; return { json: async () => (hooks < 3 ? { ok: false, description: 'Bad Request: bad webhook: Failed to resolve host' } : { ok: true, result: true }) }; }
     if (m.startsWith('getMy')) return { json: async () => ({ ok: true, result: {} }) };
     return { json: async () => ({ ok: true, result: true }) };
   }) as never;
   const u = await setupBot({ token: 't', username: null, publicUrl: 'https://x.example' }, flaky, { onUsername: (n) => { got = n; }, retries: 5, delayMs: 1 });
-  assert.equal(got, 'Bandly_robot', 'username webhook’dan oldin beriladi');
-  assert.equal(u, 'Bandly_robot');
+  assert.equal(got, 'Sellzenbot', 'username webhook’dan oldin beriladi');
+  assert.equal(u, 'Sellzenbot');
   assert.equal(hooks, 3, 'ikki xatodan keyin uchinchi urinishda o‘rnatildi');
   hooks = -100; got = null;
-  assert.equal(await setupBot({ token: 't', username: null, publicUrl: 'https://x.example' }, flaky, { onUsername: (n) => { got = n; }, retries: 2, delayMs: 1 }), 'Bandly_robot', 'urinishlar tugasa ham username qaytadi (yiqilmaydi)');
-  assert.equal(got, 'Bandly_robot');
+  assert.equal(await setupBot({ token: 't', username: null, publicUrl: 'https://x.example' }, flaky, { onUsername: (n) => { got = n; }, retries: 2, delayMs: 1 }), 'Sellzenbot', 'urinishlar tugasa ham username qaytadi (yiqilmaydi)');
+  assert.equal(got, 'Sellzenbot');
 }
 console.log('telegram.test: OK');

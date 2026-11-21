@@ -36,7 +36,7 @@ export function ExamHero() {
           : <a className="eh-set" href="#/start"><CalendarDays size={16} /> {days !== null ? L('Imtihon sanasi o‘tdi — yangisini belgilang') : L('Imtihon sanasini belgilang')}</a>}
         <a className="btn sm eh-btn" href="#/mocks">{L('Mock test — ballni aniqlash')}</a>
       </div>
-      <PRing value={exam === 'sat' || cur === null ? 0 : cur} max={exam === 'sat' ? 1 : p.target} size={104} stroke={9} color="var(--peach)" label={L('Hozirgi taxminiy natija: {0}', [curLabel])}>
+      <PRing value={exam === 'sat' || cur === null ? 0 : cur} max={exam === 'sat' ? 1 : p.target} size={104} stroke={9} color="var(--peach)" label={L('Hozirgi natija: {0}', [curLabel])}>
         <div className="eh-ring"><b>{curLabel}</b><small>{L('hozir')}</small></div>
       </PRing>
     </section>

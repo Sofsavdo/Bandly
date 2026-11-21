@@ -93,4 +93,20 @@ assert.equal(nextInCourse(rt.start.lessons.at(-1)!.id)!.lesson.id, rt.core.lesso
 assert.equal(nextInCourse('a1-u1-l1')!.lesson.id, ALL_LESSONS[1]!.lesson.id, 'GE darsidan keyin GE darsi');
 assert.ok(!isIeltsLesson(nextInCourse(ALL_LESSONS.at(-1)!.lesson.id)?.lesson.id ?? ''), 'GE oxiridan IELTS ga sakramaydi');
 console.log(`lessons.test: IELTS ${IELTS_UNITS.length} units, ${IELTS_LESSONS.length} lessons`);
+// To'liq gap (fikr-mulohaza): bo'shliq to'ldiriladi, ishoralar olib tashlanadi, qisqartmalar yopishadi
+{
+  const { fullSentence } = await import('../../lib/lessons');
+  const g = (prompt: string, ans: string) => fullSentence({ kind: 'gap', prompt, accept: [ans], explainUz: '' } as never);
+  assert.equal(g('I always ___ (have) breakfast.', 'have'), 'I always have breakfast.');
+  assert.equal(g('They ___ at school today. (inkor)', 'aren’t'), 'They aren’t at school today.');
+  assert.equal(g('The door bell! — I ___ open it.', '’ll'), 'The door bell! — I’ll open it.');
+  assert.equal(g('I live in ___ Tashkent.', '—'), 'I live in Tashkent.');
+  assert.equal(g('1st = ___', 'first'), null, 'tenglik savoli — gap emas');
+  assert.equal(fullSentence({ kind: 'order', words: ['up', 'I'], answer: 'I get up', explainUz: '' } as never), 'I get up');
+  assert.equal(fullSentence({ kind: 'choice', prompt: 'Choose the correct sentence.', options: ['She have.', 'She has two sisters.'], answer: 1, explainUz: '' } as never), 'She has two sisters.');
+  const all = UNITS.flatMap((u) => u.lessons.flatMap((l) => [...l.practice, ...l.check]));
+  const bad = all.map((it) => fullSentence(it)).filter((f): f is string => !!f && /___|\(|\)|\s{2}/.test(f));
+  assert.deepEqual(bad, [], 'barcha to‘liq gaplar toza');
+  assert.ok(all.filter((it) => fullSentence(it)).length > all.length * 0.9, 'mashqlarning 90%+ i to‘liq gap bilan izohlanadi');
+}
 console.log(`lessons.test: OK (${UNITS.length} units, ${ALL_LESSONS.length} lessons, ${ALL_LESSONS.reduce((s, x) => s + x.lesson.practice.length + x.lesson.check.length, 0)} items)`);

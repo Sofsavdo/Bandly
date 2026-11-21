@@ -22,7 +22,7 @@ export function AiAvatar({ phase, emotion = 'neutral', level = 0, size = 200 }: 
 
 /** Hissiyot effektlari (faqat CSS): jahl — olov tillari, kulgi — "ha-ha", quvonch — uchqunlar, hafsala — tomchilar. */
 function EmotionFx({ emotion }: { emotion: CoachEmotion }) {
-  if (emotion === 'angry') return <span className="emo-fx" aria-hidden="true">{[0, 1, 2, 3, 4, 5, 6].map((i) => <i key={i} className="fx-flame" style={{ ['--i' as string]: String(i) } as CSSProperties} />)}</span>;
+  // Jahl: olovsiz — faqat qizil nur va qizarish (CSS .emo-angry)
   if (emotion === 'laugh') return <span className="emo-fx" aria-hidden="true">{['ha', 'ha-ha', 'ha!'].map((t, i) => <i key={i} className="fx-laugh" style={{ ['--i' as string]: String(i) } as CSSProperties}>{t}</i>)}</span>;
   if (emotion === 'happy' || emotion === 'impressed') return <span className="emo-fx" aria-hidden="true">{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} className="fx-spark" style={{ ['--i' as string]: String(i) } as CSSProperties}>✦</i>)}</span>;
   if (emotion === 'disappointed') return <span className="emo-fx" aria-hidden="true">{[0, 1, 2].map((i) => <i key={i} className="fx-drop" style={{ ['--i' as string]: String(i) } as CSSProperties} />)}</span>;
