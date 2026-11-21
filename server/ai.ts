@@ -4,7 +4,7 @@
 import { FORBIDDEN, type Reaction } from '../src/content/roasts';
 
 export type Provider = 'anthropic' | 'openai' | 'gemini' | 'none';
-export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string; fallbackModels?: string[] }
+export interface AiConfig { provider: Provider; key: string; model: string; baseUrl: string; fallbackModels?: string[]; backup?: AiConfig }
 
 /** Provayder nomi: bo'sh joy va katta-kichik harfga, keng tarqalgan nomlarga chidamli; nom noto'g'ri bo'lsa — kalit turidan aniqlanadi. */
 export function detectProvider(name: string, key: string): Provider {
@@ -34,7 +34,14 @@ export function configFromEnv(env: Record<string, string | undefined> = process.
   const enabled = provider !== 'none' && !!key && !!model;
   // Zaxira modellar (vergul bilan): asosiy model band yoki javobsiz bo'lsa — navbat bilan. Gemini uchun: tez Flash-Lite, keyin oldingi avlod Flash
   const fbs = ((env.AI_FALLBACK_MODEL ?? '').trim() || (provider === 'gemini' ? 'gemini-3.5-flash-lite,gemini-3.6-flash' : '')).split(',').map((x) => x.trim()).filter((x) => x && x !== model);
-  return { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, ''), ...(fbs.length ? { fallbackModels: fbs } : {}) };
+  const main: AiConfig = { provider: enabled ? provider : 'none', key, model, baseUrl: ((env.AI_BASE_URL ?? '').trim() || d.base).replace(/\/$/, ''), ...(fbs.length ? { fallbackModels: fbs } : {}) };
+  // Boshqa provayderdagi zaxira (ixtiyoriy): asosiy provayder butunlay band/ishlamay qolsa (masalan Gemini 503) — AI_BACKUP_* bilan.
+  // AI_BACKUP_FALLBACK_MODEL ataylab o'qilmaydi: zaxiraning o'z ichki zanjiri faqat AI_BACKUP_MODEL'dan iborat (tez javob).
+  if (main.provider !== 'none' && (env.AI_BACKUP_API_KEY ?? '').trim()) {
+    const b = configFromEnv({ AI_PROVIDER: env.AI_BACKUP_PROVIDER, AI_API_KEY: env.AI_BACKUP_API_KEY, AI_MODEL: env.AI_BACKUP_MODEL, AI_BASE_URL: env.AI_BACKUP_BASE_URL, AI_FALLBACK_MODEL: ' ' });
+    if (b.provider !== 'none') main.backup = { ...b, fallbackModels: undefined };
+  }
+  return main;
 }
 
 /** Ovozli suhbat uchun model tartibi: tezlik muhim (o'quvchi javobni kutib turadi). Gemini'da — avval Flash-Lite (o'ylamaydi, tez),
@@ -68,13 +75,15 @@ export interface CompleteOpts { maxTokens?: number; timeoutMs?: number; fetchImp
  *  Zaxira bo'lsa, har urinish ko'pi bilan 9 soniya — o'quvchi 20–30 soniya "qotib" kutmasin. */
 const TRANSIENT = new Set([429, 500, 503, 504, 529]);
 export async function complete(cfg: AiConfig, system: string, user: string, opts: CompleteOpts = {}): Promise<string> {
-  const plan: AiConfig[] = [cfg, ...(cfg.fallbackModels ?? []).map((m) => ({ ...cfg, model: m }))];
+  const plan: AiConfig[] = [cfg, ...(cfg.fallbackModels ?? []).map((m) => ({ ...cfg, model: m })), ...(cfg.backup ? [cfg.backup] : [])];
   const perTry = plan.length > 1 ? Math.min(opts.timeoutMs ?? 20_000, opts.attemptTimeoutMs ?? 9_000) : opts.timeoutMs;
   let last: unknown;
   for (let i = 0; i < plan.length; i++) {
     try { return await completeOnce(plan[i]!, system, user, { ...opts, timeoutMs: perTry }); } catch (e) {
       last = e;
-      if (!(e instanceof AiError) || !e.upstream || !TRANSIENT.has(e.upstream)) throw e;
+      const toBackup = !!cfg.backup && i < plan.length - 1 && plan[plan.length - 1] === cfg.backup && e instanceof AiError && !!e.upstream;
+      if (!toBackup && (!(e instanceof AiError) || !e.upstream || !TRANSIENT.has(e.upstream))) throw e;
+      if (toBackup && !TRANSIENT.has((e as AiError).upstream!)) i = plan.length - 2; // asosiy provayderda kalit/mablag' xatosi — qolgan modellarini o'tkazib, zaxiraga
     }
   }
   const e = last as AiError;

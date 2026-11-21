@@ -193,3 +193,22 @@ assert.equal((await import('./ai')).configFromEnv({ AI_API_KEY: 'AQ.Ab12' }).pro
   assert.equal(coachConfig(g, { AI_COACH_MODEL: 'gemini-3.8-flash' }).model, 'gemini-3.8-flash');
   assert.equal(coachConfig(cfe({ AI_PROVIDER: 'anthropic', AI_API_KEY: 'sk-ant-1' }), {}).model, 'claude-haiku-5-5', 'boshqa provayderda o‘zgarmaydi');
 }
+
+// Boshqa provayderdagi zaxira (AI_BACKUP_*): asosiy provayder band (503) yoki kalit/mablag' xatosi bo'lsa — zaxira javob beradi
+{
+  const { configFromEnv: cfe, complete: comp, coachConfig: cc } = await import('./ai');
+  const env = { AI_PROVIDER: 'gemini', AI_API_KEY: 'AIza1', AI_BACKUP_PROVIDER: 'anthropic', AI_BACKUP_API_KEY: 'sk-ant-x', AI_BACKUP_MODEL: 'claude-haiku-5-5' };
+  const g = cfe(env);
+  assert.equal(g.backup?.provider, 'anthropic', 'zaxira provayder o‘qildi');
+  assert.equal(g.backup?.fallbackModels, undefined);
+  assert.equal(cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AIza1' }).backup, undefined, 'zaxirasiz — o‘zgarishsiz');
+  assert.equal(cc(g, {}).backup?.provider, 'anthropic', 'ovozli ustoz konfiguratsiyasi zaxirani saqlaydi');
+  const calls: string[] = [];
+  const fake = (status: number) => (async (u: string) => { calls.push(u); if (u.includes('anthropic')) return { ok: true, status: 200, json: async () => ({ content: [{ text: 'backup ok' }] }) }; return { ok: false, status, json: async () => ({}) }; }) as never;
+  assert.equal(await comp(g, 's', 'u', { fetchImpl: fake(503) }), 'backup ok', 'Gemini 503 → zaxira');
+  assert.equal(calls.filter((c) => c.includes('googleapis')).length, 3, 'avval Gemini zaxira modellari, keyin boshqa provayder');
+  calls.length = 0;
+  assert.equal(await comp(g, 's', 'u', { fetchImpl: fake(401) }), 'backup ok', 'kalit xatosi → to‘g‘ridan-to‘g‘ri zaxira');
+  assert.equal(calls.filter((c) => c.includes('googleapis')).length, 1, 'kalit xatosida qolgan Gemini modellari o‘tkazib yuboriladi');
+  console.log('ai backup: OK');
+}

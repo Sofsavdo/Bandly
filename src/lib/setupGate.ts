@@ -6,8 +6,9 @@ import { getProfile } from './store';
 
 const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|groups|welcome|login|certificates|duel\/)/;
 
-/** Mehmon (kirmagan) faqat bosh sahifani ko'radi. Qolgan barcha ichki sahifalar — hisob bilan (bepul tarif ham). */
-const PUBLIC = /^#\/(welcome)?$/;
+/** Mehmon (kirmagan) ko'radigan sahifalar: bosh sahifa, daraja testi (ro'yxatsiz qiymat — asosiy kirish nuqtasi) va narxlar.
+ *  Qolgan barcha ichki sahifalar — hisob bilan (bepul tarif ham). Narx sahifasida "sotib olish" hisob so'raydi (PaySheet). */
+const PUBLIC = /^#\/(welcome|placement|pricing)?$/;
 const LOGIN = /^#\/login(\?|$)/;
 const path = (hash: string): string => hash.split('?')[0] || '#/';
 export const needsLogin = (hash: string, account: boolean): boolean => !account && !PUBLIC.test(path(hash)) && !LOGIN.test(hash);

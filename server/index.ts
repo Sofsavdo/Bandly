@@ -137,7 +137,9 @@ const httpServer = createServer(async (req, res) => {
     const ip = fwd || (req.socket.remoteAddress ?? 'x');
     // Chegara faqat API uchun: sahifa, skript va shrift fayllari sanalmaydi (aks holda bir necha marta yangilash sahifani to'sib qo'yadi)
     if ((req.url ?? '').startsWith('/api/') && limited(ip)) return send(res, 429, { error: trServer(db, reqLang(req), 'Juda ko‘p so‘rov') });
-    const url = new URL(req.url ?? '/', 'http://x');
+    // Buzuq manzil (skanerlar: "//%2e%2e%2f.env" kabi) — 500 emas, 400
+    let url: URL;
+    try { url = new URL(req.url ?? '/', 'http://x'); } catch { return send(res, 400, { error: 'Bad request' }); }
     if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
     if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
       if (!bot) throw new ApiError(503, 'Telegram orqali kirish hali sozlanmagan');
@@ -598,7 +600,7 @@ if (live) attachLive(httpServer, {
     recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 60) * live.pricePerMin, estimated: true });
   },
 });
-httpServer.listen(PORT, HOST, () => console.log(`Sellzen: http://${HOST}:${PORT} (AI: ${ai.provider}${aiOffReason() ? ` — ${aiOffReason()}` : ''}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'}, Live: ${live ? `${live.model}/${live.voice}` : 'yo‘q'})`));
+httpServer.listen(PORT, HOST, () => console.log(`Sellzen: http://${HOST}:${PORT} (AI: ${ai.provider}${ai.backup ? ` + zaxira ${ai.backup.provider}` : ''}${aiOffReason() ? ` — ${aiOffReason()}` : ''}, TTS: ${tts.provider}, Telegram: ${bot ? 'bor' : 'yo‘q'}, To‘lov: ${hapi ? 'Hamyon' : 'yo‘q (demo)'}, Live: ${live ? `${live.model}/${live.voice}` : 'yo‘q'})`));
 
 // Yo'qolgan callbacklar uchun xavfsizlik to'ri: har 90 soniyada ochiq to'lovlar Hamyondan tekshiriladi
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)

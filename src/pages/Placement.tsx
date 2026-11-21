@@ -8,6 +8,7 @@ import { LEVEL_BAND } from '../lib/progress';
 import { addXp, setLevel, useProfile } from '../lib/store';
 import { confetti, sfx } from '../lib/fx';
 import { L } from '../i18n';
+import { getAccount } from '../lib/account';
 
 const TARGETS = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
 
@@ -130,7 +131,11 @@ export default function Placement() {
           ))}
         </div>
         <div className="row" style={{ marginTop: 16 }}>
-          {!saved ? <button className="btn primary lg" onClick={finish}><Rocket size={18} />  {L('Dasturni saqlash')}</button> : <><a className="btn primary lg" href="#/">{L('Boshlash')} <ArrowRight size={18} /></a> <a className="btn lg" href="#/skills">{L('Reading va Listening’ni ham tekshirish')}</a></>}
+          {!saved ? <button className="btn primary lg" onClick={finish}><Rocket size={18} />  {L('Dasturni saqlash')}</button>
+            : !getAccount() ? <a className="btn primary lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')} <ArrowRight size={18} /></a>
+            : <><a className="btn primary lg" href="#/">{L('Boshlash')} <ArrowRight size={18} /></a> <a className="btn lg" href="#/skills">{L('Reading va Listening’ni ham tekshirish')}</a></>}
+          {/* Virallik: natijani do'stga yuborish — "sen ham tekshir" (Telegram O'zbekistonda asosiy kanal) */}
+          <a className="btn lg" target="_blank" rel="noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent('https://sellzen.uz/#/placement')}&text=${encodeURIComponent(`${L('Mening ingliz tili darajam:')} ${lvl}. ${L('Sen ham 3 daqiqada bepul tekshir!')}`)}`}>{L('Telegramda ulashish')}</a>
           <button className="btn lg" onClick={() => { setAnswers({}); setSaved(false); }}>{L('Qayta topshirish')}</button>
         </div>
       </div>

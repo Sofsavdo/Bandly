@@ -47,7 +47,9 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
           <div className="cta">
             {!acc ? <>
-              <a className="btn primary lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')} <ArrowRight size={18} /></a>
+              {/* Mehmon uchun birinchi qadam — ro'yxatdan o'tmasdan qiymat: 3 daqiqalik daraja testi (natijani saqlash uchun keyin kiradi) */}
+              <a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a>
+              <a className="btn lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')}</a>
               <a className="btn lg" href="#/login">{L('Kirish')}</a>
             </> : onboarded
               ? <><a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a><a className="btn lg" href="#/start">{L('Mening rejam')}</a></>
