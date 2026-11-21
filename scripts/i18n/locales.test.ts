@@ -12,14 +12,14 @@ import { looksUz } from './detect';
 const ROOT = join(dirname(new URL(import.meta.url).pathname), '../..');
 const LANGS = ['en', 'ru', 'kk', 'ky', 'tg'] as const;
 /** Interfeysi to'liq tarjima qilingan tillar (bu yerdagi til uchun bitta yetishmagan interfeys matni ham testni yiqitadi). */
-export const COMPLETE: readonly string[] = [];
+export const COMPLETE: readonly string[] = ['en', 'ru', 'kk', 'ky', 'tg'];
 
 const read = <T>(f: string): T => JSON.parse(readFileSync(join(ROOT, f), 'utf8')) as T;
 const catalog = new Set(read<string[]>('src/i18n/catalog.json'));
 const ui = read<string[]>('src/i18n/catalog-ui.json');
 const ph = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
 // Qo'shtirnoq ichidagi inglizcha o'quv iboralari: «...», “...”, "...", '...'
-const quotedEnglish = (s: string): string[] => [...s.matchAll(/«([^»]{2,80})»|“([^”]{2,80})”|"([^"]{2,80})"|'([^']{2,60})'/g)].map((m) => (m[1] ?? m[2] ?? m[3] ?? m[4])!.trim()).filter((q) => /[a-z]/i.test(q) && englishOnly(q) && q.split(' ').length >= 1 && !/^[A-Z]{2,6}$/.test(q));
+const quotedEnglish = (s: string): string[] => [...s.matchAll(/«([^»]{2,80})»|“([^”]{2,80})”|"([^"]{2,80})"|(?<![A-Za-z])'([^']{2,60})'(?![A-Za-z])/g)].map((m) => (m[1] ?? m[2] ?? m[3] ?? m[4])!.trim()).filter((q) => /[a-z]/i.test(q) && englishOnly(q) && q.split(' ').length >= 1 && !/^[A-Z]{2,6}$/.test(q));
 const CYR = /[А-Яа-яЁёӘәҒғҚқҢңӨөҰұҮүҺһІіЈјӢӣӮӯҶҷ]/;
 
 const report: string[] = [];

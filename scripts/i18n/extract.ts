@@ -17,7 +17,7 @@ let section: 'ui' | 'content' | 'server' = 'ui';
 // Faqat inglizcha (yoki brend) matn tarjima qilinmaydi: Grammar, Mock Arena, Reading, Beginner — barcha tillarda o'zgarmaydi
 // Inglizcha o'quv materiali (o'zbekcha so'z aralashgani uchun avtomatik aniqlanmaydi) — hech qachon tarjima qilinmaydi
 const KEEP_EN = new Set(JSON.parse(readFileSync(join(ROOT, 'src/i18n/keep-english.json'), 'utf8')) as string[]);
-const add = (s: string) => { const t = s.replace(/\s+/g, ' ').trim(); if (t.length >= 2 && !englishOnly(t) && !KEEP_EN.has(t)) { set.add(t); if (section !== 'content') uiSet.add(t); } };
+const add = (s: string) => { const t = s.replace(/\s+/g, ' ').trim(); if (t.length >= 2 && !/^[A-Z]\.[a-z_]+$/.test(t) && !englishOnly(t) && !KEEP_EN.has(t)) { set.add(t); if (section !== 'content') uiSet.add(t); } };
 
 const walk = (d: string, out: string[], skip: (p: string) => boolean) => { for (const f of readdirSync(d)) { const p = join(d, f); if (skip(p)) continue; if (statSync(p).isDirectory()) walk(p, out, skip); else if (/\.tsx?$/.test(f) && !/\.(test|d)\.tsx?$/.test(f)) out.push(p); } };
 
@@ -52,9 +52,9 @@ for (const f of srv) {
   const sf = ts.createSourceFile(f, readFileSync(f, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const v = (n: ts.Node): void => {
     // Texnik qatorlar (yo'llar, alifbolar) va AI ko'rsatmalari (inglizcha, modelga) foydalanuvchiga ko'rinmaydi — tarjima qilinmaydi
-    const technical = (t: string) => /^(CREATE|INSERT|SELECT|UPDATE|DELETE|ALTER) /.test(t) || /%s/.test(t) || /^\.{0,2}\//.test(t) || /^[0-9A-Z]{16,}$/.test(t) || /\b(learner|Never|introduce yourself|speak|tutor|transcript)\b/.test(t) || /^,\s*PUBLIC_URL/.test(t);
+    const technical = (t: string) => /^(CREATE|INSERT|SELECT|UPDATE|DELETE|ALTER) /.test(t) || /%[sd]/.test(t) || /^Sellzen: http/.test(t) || /^\.{0,2}\//.test(t) || /^[0-9A-Z]{16,}$/.test(t) || /\b(learner|Never|introduce yourself|speak|tutor|transcript)\b/.test(t) || /^,\s*PUBLIC_URL/.test(t) || /^\[(ai|bot|live|stt)\] /.test(t) || /^tests\/\{0\}/.test(t) || /^[A-Za-z0-9]{20}$/.test(t);
     if ((ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) && isUzText(n.text) && !technical(n.text) && !/^(You|Text|Reply|Output|Keep|Level|Unit|The |This |- )/.test(n.text)) add(n.text);
-    else if (ts.isTemplateExpression(n)) { let s = n.head.text; n.templateSpans.forEach((sp, i) => { s += `{${i}}` + sp.literal.text; }); if (isUzText(s) && !/[<>]|\b(You|learner|JSON|Mistakes they made)\b/.test(s) && !/^- /.test(s)) add(s); return; }
+    else if (ts.isTemplateExpression(n)) { let s = n.head.text; n.templateSpans.forEach((sp, i) => { s += `{${i}}` + sp.literal.text; }); if (isUzText(s) && !technical(s) && !/[<>]|\b(You|learner|JSON|Mistakes they made)\b/.test(s) && !/^- /.test(s)) add(s); return; }
     ts.forEachChild(n, v);
   };
   v(sf);
