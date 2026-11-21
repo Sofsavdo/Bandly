@@ -105,7 +105,7 @@ ${ld.map((x) => `<script type="application/ld+json">${json(x)}</script>`).join('
 <header><a class="logo" href="/">Sell<b>zen</b></a><nav aria-label="${ui.nav}">${pages.map((p) => `<a href="${pathOf(lang, p.slug)}"${p.slug === o.slug ? ' class="on" aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}${pair && o.slug ? `<a href="${pathOf(lang === 'uz' ? 'ru' : 'uz', lang === 'uz' ? pair.ru : pair.uz)}" hreflang="${lang === 'uz' ? 'ru' : 'uz'}">${lang === 'uz' ? 'RU' : 'UZ'}</a>` : ''}</nav></header>
 <main>
 ${o.body}
-<section class="card cta"><h2 style="margin-top:0">${ui.ctaH}</h2><p>${ui.ctaP}</p><a class="btn" href="/#/placement">${ui.ctaB}</a></section>
+<section class="card cta"><h2 style="margin-top:0">${ui.ctaH}</h2><p>${ui.ctaP}</p><a class="btn" href="/#/placement" onclick="try{navigator.sendBeacon('/api/event',new Blob(['{&quot;name&quot;:&quot;seo_cta&quot;}'],{type:'application/json'}))}catch(e){}">${ui.ctaB}</a></section>
 </main>
 <footer>${ui.foot}</footer>
 ${o.script ? `<script>${o.script}</script>` : ''}

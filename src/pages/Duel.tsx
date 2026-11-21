@@ -7,6 +7,7 @@ import { addXp, recordReview } from '../lib/store';
 import { buildOptions } from '../lib/vocabGame';
 import { recordWordItem } from '../lib/adaptive/record';
 import { L } from '../i18n';
+import { track } from '../lib/track';
 
 const SECONDS = 12;
 
@@ -21,9 +22,9 @@ function ShareBox({ code }: { code: string }) {
       <h3>{L('Do‘stingizni chaqiring')}</h3>
       <p className="bubble" style={{ wordBreak: 'break-all' }}>{url}</p>
       <div className="row">
-        <button className="btn" onClick={() => { void navigator.clipboard?.writeText(url).then(() => setCopied(true)); }}>{copied ? L('Nusxalandi') : L('Havolani nusxalash')}</button>
-        <a className="btn" target="_blank" rel="noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}>{L('Telegramda ulashish')}</a>
-        {typeof navigator.share === 'function' && <button className="btn" onClick={() => void navigator.share({ title: 'Sellzen duel', text, url })}>{L('Ulashish')}</button>}
+        <button className="btn" onClick={() => { track('duel_share'); void navigator.clipboard?.writeText(url).then(() => setCopied(true)); }}>{copied ? L('Nusxalandi') : L('Havolani nusxalash')}</button>
+        <a className="btn" target="_blank" rel="noreferrer" onClick={() => track('duel_share')} href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}>{L('Telegramda ulashish')}</a>
+        {typeof navigator.share === 'function' && <button className="btn" onClick={() => { track('duel_share'); void navigator.share({ title: 'Sellzen duel', text, url }); }}>{L('Ulashish')}</button>}
       </div>
     </div>
   );
@@ -131,6 +132,7 @@ export function DuelRoom({ code }: { code: string }) {
 
   const load = useCallback(async () => { try { setInfo(await fetchDuel(code)); setErr(''); } catch (e) { setErr((e as Error).message); } }, [code]);
   useEffect(() => { void load(); const t = setInterval(() => { if (!playing) void load(); }, 4000); return () => clearInterval(t); }, [load, playing]);
+  useEffect(() => { if (!getAccount()) track('duel_guest_view'); }, [code]);
 
   if (err && !info) return <div className="card"><p className="notice">{err}</p><a className="btn" href="#/duel">{L('Duellar')}</a></div>;
   if (!info) return <div className="card">{L('Yuklanmoqda…')}</div>;

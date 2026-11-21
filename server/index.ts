@@ -32,6 +32,7 @@ import { runReminders, setRemind } from './reminders';
 import { runLeagueNotices } from './leagueNotify';
 import { MAX_AUDIO, NATIVE_STT_CODE, recordStt, sttAllowed, sttConfigFromEnv, transcribeLearner } from './stt';
 import { analytics } from './analytics';
+import { ensureEventsTable, recordEvent } from './events';
 import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
@@ -55,6 +56,7 @@ const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url)
 const db = createDb(DB_FILE);
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
 expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
+ensureEventsTable(db);
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
@@ -140,6 +142,11 @@ const httpServer = createServer(async (req, res) => {
     // Buzuq manzil (skanerlar: "//%2e%2e%2f.env" kabi) — 500 emas, 400
     let url: URL;
     try { url = new URL(req.url ?? '/', 'http://x'); } catch { return send(res, 400, { error: 'Bad request' }); }
+    if (req.method === 'POST' && url.pathname === '/api/event') {
+      const b = await readJson(req, 256);
+      recordEvent(db, b.name, ip); // anonim: faqat kunlik son; ip faqat xotirada takrorni ajratish uchun
+      res.writeHead(204); return void res.end();
+    }
     if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
     if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
       if (!bot) throw new ApiError(503, 'Telegram orqali kirish hali sozlanmagan');

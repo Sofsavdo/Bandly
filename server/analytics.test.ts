@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { byToken, createDb, join } from './db';
 import { awardXp } from './xp';
 import { analytics } from './analytics';
+import { recordEvent, ensureEventsTable, eventTotals } from './events';
 
 const DAY = 86_400_000;
 const NOW = Date.UTC(2026, 10, 17, 10, 0); // 15:00 Toshkent
@@ -36,4 +37,23 @@ assert.equal(r.retention.d1, 66.7);
 assert.equal(r.retention.d7, 33.3);
 assert.equal(r.retention.d30, null);
 assert.deepEqual(r.funnel.map((f) => f.n), [4, 3, 1, 3, 0, 1]);
+// Sovg'a qilingan obuna (referal/admin) to'lovchi hisoblanmaydi; faol obunachilar alohida
+db.prepare("INSERT INTO subscriptions (player_id, track, until) VALUES (?, 'exam', ?)").run(b.id, NOW + 5 * DAY);
+const r2 = analytics(db, NOW);
+assert.equal(r2.totals.payingNow, 1, 'b sovg‘a kunlari bilan — to‘lovchi emas');
+assert.equal(r2.totals.subscribedNow, 2);
+
+// Anonim hodisalar: noma'lum nom rad etiladi, bir manbadan kuniga bir marta, keyingi kunda yana sanaladi
+ensureEventsTable(db);
+assert.equal(recordEvent(db, 'hack', '1.1.1.1', NOW), false);
+assert.equal(recordEvent(db, 'placement_done', '1.1.1.1', NOW), true);
+assert.equal(recordEvent(db, 'placement_done', '1.1.1.1', NOW + 1000), false, 'takror bosish shishirmaydi');
+for (const ip of ['2.2.2.2', '3.3.3.3', '4.4.4.4', '5.5.5.5', '6.6.6.6', '7.7.7.7', '8.8.8.8']) recordEvent(db, 'placement_done', ip, NOW);
+assert.equal(recordEvent(db, 'placement_done', '1.1.1.1', NOW + DAY), true, 'ertasi kuni yana');
+assert.equal(eventTotals(db, '2026-11-17').placement_done, 9);
+const g = analytics(db, NOW).growth;
+assert.equal(g.events.placement_done, 8, 'davr bugun bilan tugaydi');
+assert.equal(g.signups, 4);
+assert.equal(g.placementToSignupPct, 50, '4 ro‘yxat / 8 daraja testi');
+assert.equal(g.referredSignups, 0); assert.equal(g.referredSharePct, 0);
 console.log('analytics: OK');

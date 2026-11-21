@@ -10,6 +10,7 @@ import { confetti, sfx } from '../lib/fx';
 import { L } from '../i18n';
 import { getAccount, myRefCode } from '../lib/account';
 import { renderStory, resultLink, shareCard } from '../lib/shareCard';
+import { track } from '../lib/track';
 
 const TARGETS = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
 
@@ -37,6 +38,7 @@ export default function Placement() {
   const result = useMemo(() => evaluate(answers), [answers]);
   const done = started && q === null;
   const answeredN = Object.keys(answers).length;
+  useEffect(() => { if (done) track('placement_done'); }, [done]);
   const lvlName = (l: Cefr) => `${l} · ${LEVEL_INFO[l].name}`;
 
   const finish = () => {
@@ -60,7 +62,7 @@ export default function Placement() {
           <div className="row" style={{ justifyContent: 'center' }}>
             <span className="pill">{L('~3 daqiqa')}</span><span className="pill">{L('Taxminiy natija')}</span><span className="pill">{L('Istalgan payt qayta topshirish')}</span>
           </div>
-          <button className="btn primary lg" onClick={() => setStarted(true)}>{L('Testni boshlash')} <ArrowRight size={18} /></button>
+          <button className="btn primary lg" onClick={() => { setStarted(true); track('placement_start'); }}>{L('Testni boshlash')} <ArrowRight size={18} /></button>
           {p.level && <a className="evidence" href="#/">{L('Hozirgi daraja:')} {p.level}{L('. Bekor qilish')}</a>}
         </div>
       </div>
@@ -147,8 +149,8 @@ export default function Placement() {
             : !getAccount() ? <a className="btn primary lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')} <ArrowRight size={18} /></a>
             : <><a className="btn primary lg" href="#/">{L('Boshlash')} <ArrowRight size={18} /></a> <a className="btn lg" href="#/skills">{L('Reading va Listening’ni ham tekshirish')}</a></>}
           {/* Virallik: natijani do'stga yuborish — "sen ham tekshir" (Telegram O'zbekistonda asosiy kanal); kirgan bo'lsa taklif kodi bilan */}
-          <a className="btn lg" target="_blank" rel="noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(`${L('Mening ingliz tili darajam:')} ${lvl}. ${L('Sen ham 3 daqiqada bepul tekshir!')}`)}`}>{L('Telegramda ulashish')}</a>
-          <button className="btn lg" onClick={() => void shareStory()}>{L('Rasm bilan ulashish')}</button>
+          <a className="btn lg" target="_blank" rel="noreferrer" onClick={() => track('share_placement_tg')} href={`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(`${L('Mening ingliz tili darajam:')} ${lvl}. ${L('Sen ham 3 daqiqada bepul tekshir!')}`)}`}>{L('Telegramda ulashish')}</a>
+          <button className="btn lg" onClick={() => { track('share_placement_img'); void shareStory(); }}>{L('Rasm bilan ulashish')}</button>
           <button className="btn lg" onClick={() => { setAnswers({}); setSaved(false); }}>{L('Qayta topshirish')}</button>
         </div>
       </div>
