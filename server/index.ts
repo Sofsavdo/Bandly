@@ -9,6 +9,9 @@ import { serveStatic } from './static';
 import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { findUsers } from './adminUsers';
+import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
+import { listeningTests } from '../src/content/listeningTests';
+import { readingTests } from '../src/content/readingTests';
 import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
@@ -31,7 +34,7 @@ import { archive, knownContent, contentVersion, createLesson, createUnit, histor
 import { awardXp, submitXp } from './xp';
 import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
-import { TgAuthError, appUrl, botFromEnv, nickFrom, setBotPhoto, setupBot, tgApi, verifyInitData, verifyWidget, webhookSecret } from './telegram';
+import { TgAuthError, appUrl, botFromEnv, nickFrom, setBotPhoto, setupBot, tgApi, tgUpload, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { checkMember, CHANNEL, handleBot } from './botFlow';
 import { runReminders, setRemind } from './reminders';
 import { runLeagueNotices } from './leagueNotify';
@@ -198,6 +201,7 @@ const httpServer = createServer(async (req, res) => {
         savePhone: (id, phone) => saveBotPhone(db, id, phone),
         setRef: (id, ref) => setBotRef(db, id, ref), getRef: (id) => getBotRef(db, id),
         setRemind: (id, on) => setRemind(db, id, on),
+        stats: BOT_STATS, sendPhoto: (msg) => sendWelcomePhoto(bot.token, msg),
       }).catch((e) => console.error('[bot]', (e as Error).message));
       return send(res, 200, {});
     }
@@ -642,6 +646,22 @@ const httpServer = createServer(async (req, res) => {
 });
 // Matn AI xarajati: har javobdagi haqiqiy token soni × narx (AI_PRICE_IN_PER_M / AI_PRICE_OUT_PER_M)
 setUsageSink((ctx, provider, model, u) => { const p = textPrice(); recordAiCost(db, { playerId: ctx.playerId, feature: ctx.feature, provider, model, units: u.inTok + u.outTok, unitKind: 'tokens', costUsd: textCost(u, p), estimated: p.estimated }); });
+// Bot xush kelibsiz rasmi: birinchi marta fayl sifatida yuklanadi (URL orqali Telegram yuklay olmagan edi), keyin file_id qayta ishlatiladi
+const BOT_STATS = { lessons: STATIC_UNITS.reduce((s, u) => s + u.lessons.length, 0), ielts: IELTS_UNITS.reduce((s, u) => s + u.lessons.length, 0), mocks: listeningTests.length + readingTests.length };
+async function sendWelcomePhoto(token: string, msg: Record<string, unknown>): Promise<unknown> {
+  db.exec('CREATE TABLE IF NOT EXISTS bot_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  const file = new URL('../public/brand/bot-welcome.jpg', import.meta.url).pathname;
+  const bytes = readFileSync(file);
+  const key = `bot-welcome:${token.split(':')[0]}:${createHash('sha256').update(bytes).digest('hex').slice(0, 12)}`;
+  const cached = (db.prepare('SELECT value FROM bot_meta WHERE key = ?').get(key) as { value: string } | undefined)?.value;
+  if (cached) return tgApi(token, 'sendPhoto', { ...msg, photo: cached });
+  const { photo: _url, ...fields } = msg; void _url; // fayl "photo" maydonining o'ziga yuklanadi (multipart)
+  const r = await tgUpload<{ photo?: { file_id: string }[] }>(token, 'sendPhoto', fields, { field: 'photo', bytes, name: 'welcome.jpg', type: 'image/jpeg' });
+  const id = r.photo?.[r.photo.length - 1]?.file_id;
+  if (id) db.prepare('INSERT INTO bot_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(key, id);
+  return r;
+}
+
 if (live) attachLive(httpServer, {
   db, cfg: live,
   auth: (token) => {

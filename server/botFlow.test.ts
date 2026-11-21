@@ -9,7 +9,7 @@ function harness(o: { member?: boolean; phone?: boolean } = {}) {
     api: async (m, b) => { calls.push({ m, b }); return true; },
     publicUrl: 'https://www.sellzen.uz', tr: () => (t) => t,
     isMember: async () => st.member, hasPhone: (id) => st.phones.has(id), savePhone: (id, p) => { st.phones.set(id, p); },
-    setRef: (id, r) => { st.refs.set(id, r); }, getRef: (id) => st.refs.get(id), setRemind: () => true, channel: '@Sellzen_AI',
+    setRef: (id, r) => { st.refs.set(id, r); }, getRef: (id) => st.refs.get(id), setRemind: () => true, channel: '@Sellzen_AI', stats: { lessons: 144, ielts: 36, mocks: 41 },
   };
   return { d, calls, st };
 }
@@ -41,17 +41,28 @@ const msg = (text: string, extra: Record<string, unknown> = {}) => ({ message: {
   h.calls.length = 0;
   await handleBot(msg('', { contact: { phone_number: '998935554433', user_id: 5 } }), h.d);
   assert.equal(h.st.phones.get(5), '+998935554433');
-  assert.deepEqual(h.calls.map((c) => c.m), ['sendMessage', 'sendPhoto']);
+  // rasm funksiyasi berilmagan — xush kelibsiz xabari matn sifatida (jim qolmaydi)
+  assert.deepEqual(h.calls.map((c) => c.m), ['sendMessage', 'sendMessage']);
   assert.deepEqual(h.calls[0]!.b.reply_markup, { remove_keyboard: true });
   const w = h.calls[1]!.b;
-  assert.equal(w.photo, 'https://www.sellzen.uz/brand/og-image.png');
-  assert.match(JSON.stringify(w.reply_markup), /tg=1&r=%2F&ref=abc234/);
-  assert.match(JSON.stringify(w.reply_markup), /r=%2Fplacement/);
+  assert.match(w.text, /Tabriklaymiz, Ali!/); assert.match(w.text, /144 dars/); assert.match(w.text, /36 dars/);
+  const kb = JSON.stringify(w.reply_markup);
+  for (const r of ['%2Fplacement', '%2Fmocks', '%2Flearn', '%2Fielts', '%2Fcoach', '%2Fgames']) assert.match(kb, new RegExp(`r=${r}&ref=abc234`), r);
+  assert.match(kb, /Bepul mock test/); assert.match(kb, /General English/); assert.match(kb, /IELTS darslari/);
 }
 // 3) Hammasi bor: /start → darhol xush kelibsiz; /mock → ochish tugmasi; /help; guruh — javob yo'q
 {
   const h = harness({ member: true, phone: true });
-  await handleBot(msg('/start'), h.d); assert.equal(h.calls[0]!.m, 'sendPhoto');
+  const photos: Record<string, unknown>[] = [];
+  h.d.sendPhoto = async (m) => { photos.push(m); };
+  await handleBot(msg('/start'), h.d); assert.equal(photos.length, 1); assert.equal(h.calls.length, 0, 'rasm bilan yuborildi');
+  // rasm yuborilmasa (Telegram xatosi) — matn bilan qayta
+  h.d.sendPhoto = async () => { throw new Error('failed to get HTTP URL content'); };
+  const err0 = console.error; console.error = () => undefined;
+  await handleBot(msg('/start'), h.d); console.error = err0;
+  assert.equal(h.calls[0]!.m, 'sendMessage'); assert.match(h.calls[0]!.b.text, /Sellzen’dasiz/);
+  h.calls.length = 0; delete h.d.sendPhoto;
+  await handleBot(msg('/start'), h.d); assert.equal(h.calls[0]!.m, 'sendMessage');
   await handleBot(msg('/mock'), h.d); assert.match(JSON.stringify(h.calls[1]!.b), /r=%2Fmocks/);
   await handleBot(msg('/help'), h.d); assert.match(h.calls[2]!.b.text, /\/level/);
   await handleBot({ message: { chat: { id: -1, type: 'group' }, from: { id: 5 }, text: '/start' } }, h.d); assert.equal(h.calls.length, 3);

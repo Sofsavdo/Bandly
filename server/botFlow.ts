@@ -18,6 +18,9 @@ export interface BotDeps {
   getRef: (tgId: number) => string | undefined;
   setRemind: (tgId: number, on: boolean) => boolean;
   channel?: string;
+  stats?: BotStats;
+  /** Rasm bilan yuborish (fayl yuklash / file_id keshi). Berilmasa yoki xato bo'lsa — matn sifatida yuboriladi. */
+  sendPhoto?: (msg: Record<string, unknown>) => Promise<unknown>;
 }
 
 interface TgFrom { id: number; first_name?: string; language_code?: string }
@@ -54,27 +57,34 @@ export function phoneMsg(chatId: number, tr: Tr): Record<string, unknown> {
   };
 }
 
-export function welcomeMsg(chatId: number, publicUrl: string, tr: Tr, name?: string, ref?: string, channel = CHANNEL): Record<string, unknown> {
-  const hi = name ? tr('Salom, {0}!').replace('{0}', name.slice(0, 32)) : tr('Salom!');
+export interface BotStats { lessons: number; ielts: number; mocks: number }
+
+/** Raqamdan keyingi asosiy xabar: bot nima beradi va ichkariga kirishga undovchi tugmalar (har biri ilovaning kerakli joyini ochadi). */
+export function welcomeMsg(chatId: number, publicUrl: string, tr: Tr, name?: string, ref?: string, channel = CHANNEL, stats?: BotStats): Record<string, unknown> {
+  const hi = name ? tr('Tabriklaymiz, {0}!').replace('{0}', name.slice(0, 32)) : tr('Tabriklaymiz!');
   const app = (route: string) => ({ url: appUrl(publicUrl, route, ref) });
+  const n = (v: number | undefined, text: string) => (v ? text.replace('{0}', String(v)) : text.replace('{0} ', ''));
   return {
     chat_id: chatId,
-    photo: `${publicUrl}/brand/og-image.png`,
     caption: [
-      `👋 ${hi}`,
-      tr('Sellzen — ingliz tilini o‘zbek tilida tushuntiradigan AI ustoz bilan o‘rganing.'),
+      `🎉 ${hi} ${tr('Siz Sellzen’dasiz.')}`,
       '',
-      `📚 ${tr('A1–C2 darslar va grammatika')}`,
-      `🎙 ${tr('AI ustoz bilan ovozli suhbat')}`,
-      `⏱ ${tr('Bepul IELTS mock testlar')}`,
-      `🎮 ${tr('So‘z o‘yinlari va duellar')}`,
+      tr('Sellzen — ingliz tilini o‘zbek tilida tushuntiradigan AI ustoz. Shu yerda o‘qiysiz, mashq qilasiz va natijangizni ko‘rasiz:'),
       '',
-      tr('Pastdagi tugmani bosing — ilova shu yerning o‘zida ochiladi.'),
+      `🎯 ${tr('3 daqiqada darajangizni bilib oling — bepul')}`,
+      `⏱ ${n(stats?.mocks, tr('{0} ta mock test (IELTS, CEFR) — bepul, taymer va natija bilan'))}`,
+      `📚 ${n(stats?.lessons, tr('General English: A1 dan C2 gacha {0} dars'))}`,
+      `🎓 ${n(stats?.ielts, tr('IELTS kursi: {0} dars — Reading, Listening, Writing, Speaking'))}`,
+      `🎙 ${tr('AI ustoz bilan gaplashing — xatolaringizni o‘zbekcha tushuntiradi')}`,
+      `🎮 ${tr('So‘z o‘yinlari va do‘stlar bilan duel — bepul')}`,
+      '',
+      `👇 ${tr('Boshlash uchun tugmani bosing — ilova shu yerning o‘zida ochiladi, hisobingiz avtomatik yaratiladi.')}`,
     ].join('\n'),
     reply_markup: { inline_keyboard: [
-      [{ text: `🚀 ${tr('Sellzen’ni ochish')}`, web_app: app('/') }],
-      [{ text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: app('/placement') }, { text: `⏱ ${tr('Mock test')}`, web_app: app('/mocks') }],
-      [{ text: `🎙 ${tr('AI ustoz')}`, web_app: app('/coach') }, { text: `🎮 ${tr('O‘yinlar')}`, web_app: app('/games') }],
+      [{ text: `🎯 ${tr('Darajamni bepul aniqlash')}`, web_app: app('/placement') }],
+      [{ text: `⏱ ${tr('Bepul mock test')}`, web_app: app('/mocks') }, { text: `📚 ${tr('General English')}`, web_app: app('/learn') }],
+      [{ text: `🎓 ${tr('IELTS darslari')}`, web_app: app('/ielts') }, { text: `🎙 ${tr('AI ustoz')}`, web_app: app('/coach') }],
+      [{ text: `🎮 ${tr('O‘yinlar va duel')}`, web_app: app('/games') }, { text: `🚀 ${tr('Ilovani ochish')}`, web_app: app('/') }],
       [{ text: `📢 ${tr('Kanal')}`, url: channelUrl(channel) }, { text: `💬 ${tr('Yordam')}`, callback_data: 'help' }],
     ] },
   };
@@ -101,7 +111,14 @@ async function gate(d: BotDeps, chatId: number, from: TgFrom, tr: Tr): Promise<b
   if (!d.hasPhone(from.id)) { await d.api('sendMessage', phoneMsg(chatId, tr)); return false; }
   return true;
 }
-const welcome = (d: BotDeps, chatId: number, from: TgFrom, tr: Tr) => d.api('sendPhoto', welcomeMsg(chatId, d.publicUrl, tr, from.first_name, d.getRef(from.id), d.channel ?? CHANNEL));
+/** Xush kelibsiz xabari hech qachon yo'qolmasin: rasm yuborilmasa — xuddi shu matn va tugmalar oddiy xabar bo'lib ketadi. */
+async function welcome(d: BotDeps, chatId: number, from: TgFrom, tr: Tr): Promise<void> {
+  const msg = welcomeMsg(chatId, d.publicUrl, tr, from.first_name, d.getRef(from.id), d.channel ?? CHANNEL, d.stats);
+  if (d.sendPhoto) {
+    try { await d.sendPhoto(msg); return; } catch (e) { console.error('[bot] rasm yuborilmadi, matn yuboriladi:', (e as Error).message); }
+  }
+  await d.api('sendMessage', { chat_id: msg.chat_id, text: msg.caption, reply_markup: msg.reply_markup, link_preview_options: { is_disabled: true } });
+}
 
 /** Bitta webhook yangilanishini qayta ishlaydi (javoblar API orqali yuboriladi). */
 export async function handleBot(update: unknown, d: BotDeps): Promise<void> {

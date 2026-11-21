@@ -111,4 +111,15 @@ assert.notEqual(webhookSecret(TOKEN), webhookSecret(TOKEN + 'x'));
   assert.equal(await setupBot({ token: 't', username: null, publicUrl: 'https://x.example' }, flaky, { onUsername: (n) => { got = n; }, retries: 2, delayMs: 1 }), 'Sellzenbot', 'urinishlar tugasa ham username qaytadi (yiqilmaydi)');
   assert.equal(got, 'Sellzenbot');
 }
+// Fayl yuklash (sendPhoto multipart): fayl "photo" maydonida, ob'ektlar JSON satr bo'lib boradi
+{
+  const { tgUpload } = await import('./telegram');
+  let seen: FormData | null = null;
+  const f = (async (_u: string, init: { body: FormData }) => { seen = init.body; return { json: async () => ({ ok: true, result: { photo: [{ file_id: 'a' }, { file_id: 'big' }] } }) }; }) as never;
+  const r = await tgUpload<{ photo: { file_id: string }[] }>('t', 'sendPhoto', { chat_id: 5, caption: 'hi', reply_markup: { inline_keyboard: [[{ text: 'x', url: 'https://a' }]] } }, { field: 'photo', bytes: new Uint8Array([1, 2]), name: 'w.jpg', type: 'image/jpeg' }, f);
+  const fd = seen as unknown as FormData;
+  assert.equal(fd.get('chat_id'), '5'); assert.equal(fd.get('caption'), 'hi');
+  assert.deepEqual(JSON.parse(String(fd.get('reply_markup'))), { inline_keyboard: [[{ text: 'x', url: 'https://a' }]] });
+  assert.equal((fd.get('photo') as File).name, 'w.jpg'); assert.equal(r.photo[1]!.file_id, 'big');
+}
 console.log('telegram.test: OK');

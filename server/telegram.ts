@@ -137,6 +137,17 @@ export const BOT_COMMANDS = [
   { command: 'stop', description: 'Eslatmani o‘chirish' },
 ];
 
+/** Fayl bilan so'rov (multipart): masalan sendPhoto rasm faylini to'g'ridan-to'g'ri yuklaydi (URL orqali Telegram yuklab ololmasligi mumkin). */
+export async function tgUpload<T = unknown>(token: string, method: string, fields: Record<string, unknown>, file: { field: string; bytes: Uint8Array; name: string; type: string }, f: Fetch = fetch): Promise<T> {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) if (v !== undefined) fd.append(k, typeof v === 'string' ? v : JSON.stringify(v));
+  fd.append(file.field, new Blob([file.bytes], { type: file.type }), file.name);
+  const r = await f(`https://api.telegram.org/bot${token}/${method}`, { method: 'POST', body: fd });
+  const j = (await r.json().catch(() => ({}))) as { ok?: boolean; result?: T; description?: string };
+  if (!j.ok) throw new Error(`Telegram ${method}: ${j.description ?? r.status}`);
+  return j.result as T;
+}
+
 /** Bot rasmi (Bot API setMyProfilePhoto): fayl multipart bilan yuklanadi. Bir xil rasm qayta yuklanmasligi uchun chaqiruvchi tekshiradi. */
 export async function setBotPhoto(token: string, file: { bytes: Uint8Array; name: string; type: string }, f: Fetch = fetch): Promise<void> {
   const fd = new FormData();
