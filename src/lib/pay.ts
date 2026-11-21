@@ -1,4 +1,5 @@
 import { getAccount } from './account';
+import { track as trackEvent } from './track';
 import { applyServerPlans, getProfile } from './store';
 import type { TrackId } from './types';
 import type { PlanId } from '../config';
@@ -49,6 +50,7 @@ export const openPaymentId = (): string | null => { try { return localStorage.ge
 
 /** Sotib olish oynasini ochadi (hisob bo'lmasa, avval laqab so'raydi). */
 export function startPurchase(track: PlanId, days = 30): void {
+  trackEvent('checkout_start');
   window.dispatchEvent(new CustomEvent(PAY_EVENT, { detail: { track, days } }));
 }
 

@@ -9,7 +9,7 @@ import { offsiteConfigFromEnv, signPut, uploadBackup, type OffsiteConfig } from 
 
 // Sozlanmagan — o'chiq; noto'g'ri endpoint — aniq xato
 assert.equal(offsiteConfigFromEnv({}), null);
-assert.equal(offsiteConfigFromEnv({ BACKUP_S3_ENDPOINT: 'https://x', BACKUP_S3_BUCKET: 'b' }), null, 'kalitsiz — o‘chiq');
+assert.throws(() => offsiteConfigFromEnv({ BACKUP_S3_ENDPOINT: 'https://x', BACKUP_S3_BUCKET: 'b' }), /BACKUP_S3_ACCESS_KEY_ID, BACKUP_S3_SECRET_ACCESS_KEY/, 'yarim sozlangan — jim o‘chiq emas, xato');
 assert.throws(() => offsiteConfigFromEnv({ BACKUP_S3_ENDPOINT: 'x.com/path', BACKUP_S3_BUCKET: 'b', BACKUP_S3_ACCESS_KEY_ID: 'a', BACKUP_S3_SECRET_ACCESS_KEY: 's' }));
 const env = { BACKUP_S3_ENDPOINT: 'https://t3.storageapi.dev/', BACKUP_S3_BUCKET: 'sellzen-bk', BACKUP_S3_ACCESS_KEY_ID: 'AKIDEXAMPLE', BACKUP_S3_SECRET_ACCESS_KEY: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY' };
 const cfg = offsiteConfigFromEnv(env)!;

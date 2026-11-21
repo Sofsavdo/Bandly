@@ -12,7 +12,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return j as T;
 }
 const TRACK_UZ: Record<string, string> = { exam: L('Imtihon'), grammar: 'General English', mocks: L('Mock'), general: 'General English', all: 'All Access' };
-const STATUS_UZ: Record<string, string> = { paid: L('to‘langan'), pending: L('kutilmoqda'), prepared: L('kutilmoqda'), cancel: L('bekor'), cancelled: L('bekor'), expired: L('muddati o‘tgan'), error: L('xato') };
+const STATUS_UZ: Record<string, string> = { success: L('to‘langan'), pending: L('kutilmoqda'), prepared: L('kutilmoqda'), cancel: L('bekor'), cancelled: L('bekor'), expired: L('muddati o‘tgan'), error: L('xato') };
 const inputStyle = { padding: 8, borderRadius: 10, border: '1.5px solid var(--line)', minWidth: 0 } as const;
 
 interface User { id: number; nickname: string; xp: number; streak: number; role: string | null; createdAt: number; updatedAt: number; subs: { track: string; until: number }[]; paidCount: number; paidSum: number; lastPaidAt: number | null }
@@ -71,7 +71,7 @@ export function PaymentsPanel() {
   const [list, setList] = useState<Payment[] | null>(null);
   const [msg, setMsg] = useState('');
   useEffect(() => { void call<{ payments: Payment[] }>('/api/staff/payments').then((j) => setList(j.payments)).catch((e: Error) => setMsg(e.message)); }, []);
-  const paid = (list ?? []).filter((p) => p.status === 'paid');
+  const paid = (list ?? []).filter((p) => p.status === 'success');
   return (
     <section className="card">
       <h3 style={{ marginTop: 0 }}>{L('To‘lovlar (so‘nggi 100)')}</h3>
@@ -79,7 +79,7 @@ export function PaymentsPanel() {
       {list && <p className="muted">{L('To‘langan: {0} ta · {1} so‘m', [paid.length, fmtSum(paid.reduce((s, p) => s + (p.hamyon_amount ?? p.amount), 0))])}</p>}
       {list && (list.length === 0 ? <p className="muted">{L('Hali to‘lov yo‘q.')}</p> : (
         <div className="table-scroll"><table className="data"><thead><tr><th>{L('Sana')}</th><th>{L('Laqab')}</th><th>{L('Tarif')}</th><th>{L('Summa')}</th><th>{L('Holat')}</th></tr></thead>
-          <tbody>{list.map((p) => <tr key={p.id}><td><small>{fmtDate(p.created_at)}</small></td><td>{p.nickname}</td><td>{TRACK_UZ[p.track] ?? p.track} · {p.days} {L('kun')}</td><td>{fmtSum(p.hamyon_amount ?? p.amount)}</td><td><span className={`badge${p.status === 'paid' ? ' on' : ''}`}>{STATUS_UZ[p.status] ?? p.status}</span>{p.error && <><br /><small className="muted">{p.error}</small></>}</td></tr>)}</tbody></table></div>
+          <tbody>{list.map((p) => <tr key={p.id}><td><small>{fmtDate(p.created_at)}</small></td><td>{p.nickname}</td><td>{TRACK_UZ[p.track] ?? p.track} · {p.days} {L('kun')}</td><td>{fmtSum(p.hamyon_amount ?? p.amount)}</td><td><span className={`badge${p.status === 'success' ? ' on' : ''}`}>{STATUS_UZ[p.status] ?? p.status}</span>{p.error && <><br /><small className="muted">{p.error}</small></>}</td></tr>)}</tbody></table></div>
       ))}
     </section>
   );

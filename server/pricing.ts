@@ -28,3 +28,12 @@ export function tracksOf(planOrTrack: string): TrackId[] {
   return (TRACKS as string[]).includes(planOrTrack) ? [planOrTrack as TrackId] : [];
 }
 export const isPlan = (x: string): x is PlanId => (PLAN_IDS as string[]).includes(x);
+
+/** To'lov demo rejimi (tugma faqat shu qurilmada bo'limni ochadi, pul yo'q). Ishlab chiqarishda (NODE_ENV=production) faqat
+ *  PAY_DEMO=1 aniq yozilganda yoqiladi — to'lov kalitlari tasodifan o'chib qolsa ham pullik bo'limlar "Demo" tugmasi bilan ochilmaydi.
+ *  To'lov ulangan bo'lsa demo hech qachon yoqilmaydi. */
+export function demoMode(env: Record<string, string | undefined>, paymentConfigured: boolean): boolean {
+  if (paymentConfigured) return false;
+  if (env.PAY_DEMO !== undefined) return env.PAY_DEMO === '1';
+  return env.NODE_ENV !== 'production';
+}

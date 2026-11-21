@@ -21,7 +21,10 @@ export function offsiteConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Offs
   const v = (k: string) => (env[k] ?? '').trim();
   const endpoint = v('BACKUP_S3_ENDPOINT').replace(/\/$/, ''), bucket = v('BACKUP_S3_BUCKET');
   const accessKeyId = v('BACKUP_S3_ACCESS_KEY_ID'), secretAccessKey = v('BACKUP_S3_SECRET_ACCESS_KEY');
-  if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) return null;
+  if (!endpoint && !bucket && !accessKeyId && !secretAccessKey) return null; // umuman sozlanmagan — o'chiq
+  // Yarim sozlangan: jim o'chiq qolsa "tashqi zaxira bor" degan yolg'on taassurot beradi — xato sifatida ko'rsatiladi (qiymatlar emas, nomlar)
+  const missing = [['BACKUP_S3_ENDPOINT', endpoint], ['BACKUP_S3_BUCKET', bucket], ['BACKUP_S3_ACCESS_KEY_ID', accessKeyId], ['BACKUP_S3_SECRET_ACCESS_KEY', secretAccessKey]].filter(([, x]) => !x).map(([k]) => k);
+  if (missing.length) throw new Error(`Tashqi zaxira to‘liq sozlanmagan, yetishmaydi: ${missing.join(', ')}`);
   if (!/^https?:\/\/[^/\s]+$/.test(endpoint)) throw new Error('BACKUP_S3_ENDPOINT: https://host ko‘rinishida bo‘lishi kerak');
   const prefix = v('BACKUP_S3_PREFIX') || 'sellzen-backups/';
   return { endpoint, bucket, region: v('BACKUP_S3_REGION') || 'auto', accessKeyId, secretAccessKey, prefix: prefix.endsWith('/') ? prefix : `${prefix}/`, urlStyle: v('BACKUP_S3_URL_STYLE') === 'path' ? 'path' : 'virtual' };

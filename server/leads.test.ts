@@ -36,4 +36,8 @@ rows = listLeads(db, null, 200, T + 40);
 assert.equal(rows[0]!.nickname, 'Bek', 'eng yangisi birinchi');
 assert.equal(rows[0]!.phone, '+998935554433'); assert.equal(rows[0]!.source, 'telegram'); assert.ok(rows[0]!.subscribedUntil! > T);
 assert.equal(listLeads(db, 'interested').length, 1);
+// To'langan to'lov holati bazada 'success' (payments.applyResult) — ro'yxat shuni sanaydi
+db.prepare("INSERT INTO payments (id, player_id, track, days, amount, status, created_at, paid_at) VALUES ('pay1', ?, 'all', 30, 129000, 'success', ?, ?)").run(id('Bek'), T, T);
+db.prepare("INSERT INTO payments (id, player_id, track, days, amount, status, created_at) VALUES ('pay2', ?, 'all', 30, 129000, 'cancelled', ?)").run(id('Bek'), T);
+assert.equal(listLeads(db, null, 200, T + 40).find((r) => r.nickname === 'Bek')!.paidCount, 1, 'faqat muvaffaqiyatli to‘lov');
 console.log('leads: OK');

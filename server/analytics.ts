@@ -2,7 +2,7 @@
 // "Faol" = o'sha kuni XP olgan (xp_events, accepted > 0). Kunlar Toshkent vaqti bo'yicha.
 import type { DatabaseSync } from 'node:sqlite';
 import { TZ_OFFSET_MS, tzDay, tzDayStart } from './day';
-import { ensureEventsTable, eventTotals, type EventName } from './events';
+import { ensureEventsTable, eventStats, type EventName, type EventStat } from './events';
 
 const DAY = 86_400_000;
 const dayIdx = (ts: number) => Math.floor((ts + TZ_OFFSET_MS) / DAY);
@@ -16,11 +16,34 @@ export interface Analytics {
   bySource: { source: string; events: number; xp: number }[];
   aiByFeature: { feature: string; usd: number }[];
   revenue30: number; paid30: number;
-  /** O'sish voronkasi (tanlangan davr): anonim hodisalar + ro'yxat/referal; nisbatlar foizda (ma'lumot bo'lmasa null). */
-  growth: { events: Record<EventName, number>; signups: number; referredSignups: number; referredActivated: number; placementToSignupPct: number | null; referredSharePct: number | null };
+  /** O'sish (tanlangan davr va undan oldingi teng davr). Ikki xil o'lchov aralashtirilmaydi:
+   *  - visitors: anonim brauzerlar (mehmon bosqichlari; noyob = davr ichida bir brauzer bir marta);
+   *  - cohort: shu davrda ro'yxatdan o'tgan o'quvchilar va ularning KEYINGI qadamlari (bir odam bir marta). Foizlar — kohortaga nisbatan. */
+  growth: Growth;
 }
 
 const one = <T>(db: DatabaseSync, sql: string, ...a: (number | string)[]): T => db.prepare(sql).get(...a) as T;
+const pct = (a: number, b: number): number | null => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
+
+export interface Cohort { signups: number; placement: number; lesson: number; mock: number; paid: number; renewed: number }
+export interface Growth {
+  from: number; to: number;
+  events: Record<EventName, EventStat>;
+  visitors: { landing: number; signupStart: number; pricing: number; checkout: number; landingToSignupStartPct: number | null };
+  cohort: Cohort & { placementPct: number | null; lessonPct: number | null; mockPct: number | null; paidPct: number | null };
+  previous: Cohort;
+  referredSignups: number; referredActivated: number; referredSharePct: number | null;
+}
+
+/** [from, to) oralig'ida ro'yxatdan o'tganlar va ularning keyingi qadamlari (to'lov va faollik — istalgan vaqtda, lekin ro'yxatdan keyin). */
+export function cohortFunnel(db: DatabaseSync, from: number, to: number): Cohort {
+  const step = (src: string) => one<{ n: number }>(db, 'SELECT COUNT(DISTINCT x.player_id) AS n FROM xp_events x JOIN players p ON p.id = x.player_id WHERE p.created_at >= ? AND p.created_at < ? AND x.source = ? AND x.accepted > 0', from, to, src).n;
+  const paidBy = (min: number) => one<{ n: number }>(db, `SELECT COUNT(*) AS n FROM (SELECT y.player_id FROM payments y JOIN players p ON p.id = y.player_id WHERE p.created_at >= ? AND p.created_at < ? AND y.status = 'success' GROUP BY y.player_id HAVING COUNT(*) >= ${min})`, from, to).n;
+  return {
+    signups: one<{ n: number }>(db, 'SELECT COUNT(*) AS n FROM players WHERE created_at >= ? AND created_at < ?', from, to).n,
+    placement: step('placement'), lesson: step('lesson'), mock: step('mock'), paid: paidBy(1), renewed: paidBy(2),
+  };
+}
 
 export function analytics(db: DatabaseSync, now = Date.now(), span = 30): Analytics {
   const today = dayIdx(now), from = tzDayStart(now) - (span - 1) * DAY;
@@ -72,10 +95,15 @@ export function analytics(db: DatabaseSync, now = Date.now(), span = 30): Analyt
   const aiByFeature = (db.prepare('SELECT feature, ROUND(SUM(cost_usd), 2) AS usd FROM ai_cost_events WHERE ts >= ? GROUP BY feature ORDER BY usd DESC').all(from) as { feature: string; usd: number }[]);
   const revenue30 = days.reduce((s, d) => s + d.revenue, 0), paid30 = days.reduce((s, d) => s + d.paid, 0);
   ensureEventsTable(db);
-  const events = eventTotals(db, tzDay(from + DAY / 2), tzDay(now));
-  const signups = days.reduce((x, d) => x + d.signups, 0);
+  const events = eventStats(db, tzDay(from + DAY / 2), tzDay(now));
+  const c = cohortFunnel(db, from, now + 1), prev = cohortFunnel(db, from - span * DAY, from);
   const ref = one<{ n: number; a: number }>(db, 'SELECT COUNT(*) AS n, COALESCE(SUM(ref_rewarded), 0) AS a FROM players WHERE referred_by IS NOT NULL AND created_at >= ? AND created_at <= ?', from, now);
-  const pct = (a: number, b: number): number | null => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
-  const growth = { events, signups, referredSignups: ref.n, referredActivated: ref.a, placementToSignupPct: pct(signups, events.placement_done), referredSharePct: pct(ref.n, signups) };
+  const growth: Growth = {
+    from, to: now, events,
+    visitors: { landing: events.landing_view.unique, signupStart: events.signup_start.unique, pricing: events.pricing_view.unique, checkout: events.checkout_start.unique, landingToSignupStartPct: pct(events.signup_start.unique, events.landing_view.unique) },
+    cohort: { ...c, placementPct: pct(c.placement, c.signups), lessonPct: pct(c.lesson, c.signups), mockPct: pct(c.mock, c.signups), paidPct: pct(c.paid, c.signups) },
+    previous: prev,
+    referredSignups: ref.n, referredActivated: ref.a, referredSharePct: pct(ref.n, c.signups),
+  };
   return { generatedAt: now, totals, days, retention, funnel, bySource, aiByFeature, revenue30, paid30, growth };
 }

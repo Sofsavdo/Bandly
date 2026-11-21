@@ -15,7 +15,8 @@ interface Data {
   funnel: { step: string; n: number }[]; bySource: { source: string; events: number; xp: number }[];
   aiByFeature: { feature: string; usd: number }[]; revenue30: number; paid30: number;
   walls?: { walled: number; converted: number; rate: number | null; today: number };
-  growth?: { events: Record<string, number>; signups: number; referredSignups: number; referredActivated: number; placementToSignupPct: number | null; referredSharePct: number | null };
+  backup?: { enabled: boolean; keepDays: number; newestLocalAt: number | null; localCount: number; lastError: string | null; offsite: 'not_configured' | 'misconfigured' | 'configured'; lastOffsiteAt: number | null; lastOffsiteError: string | null; stale: boolean };
+  growth?: { events: Record<string, { total: number; unique: number }>; visitors: { landing: number; signupStart: number; pricing: number; checkout: number; landingToSignupStartPct: number | null }; cohort: { signups: number; placement: number; lesson: number; mock: number; paid: number; renewed: number; placementPct: number | null; lessonPct: number | null; mockPct: number | null; paidPct: number | null }; previous: { signups: number; placement: number; lesson: number; mock: number; paid: number; renewed: number }; referredSignups: number; referredActivated: number; referredSharePct: number | null };
   bands?: { learners: number; withBaseline: number; measured: number; avgGain: number | null; medianGain: number | null; shareHalf: number | null; shareOne: number | null; avgDays: number | null; officials: number; officialVsBaseline: number | null };
 }
 
@@ -128,17 +129,40 @@ export default function Admin() {
             <div className="kpi2"><span>D30</span><b>{pct(data.retention.d30)}</b></div>
           </div>
         </section>
-        {data.growth && (
+        {data.backup && (
           <section className="card">
-            <h3>{L('O‘sish voronkasi ({0} kun)', [span])}</h3>
+            <h3>{L('Zaxira nusxa')}</h3>
             <div className="kpis">
-              <div className="kpi2"><span>{L('Daraja testi → ro‘yxat')}</span><b>{pct(data.growth.placementToSignupPct)}</b><small>{L('Maqsad: 35%')} · {data.growth.events.placement_done} → {data.growth.signups}</small></div>
-              <div className="kpi2"><span>{L('Taklif orqali kelganlar')}</span><b>{pct(data.growth.referredSharePct)}</b><small>{L('{0} ta, faollashgan: {1}', [data.growth.referredSignups, data.growth.referredActivated])}</small></div>
-              <div className="kpi2"><span>{L('Ulashishlar')}</span><b>{(data.growth.events.share_placement_tg ?? 0) + (data.growth.events.share_placement_img ?? 0) + (data.growth.events.duel_share ?? 0) + (data.growth.events.share_mock ?? 0)}</b><small>{L('Duel taklifini ochgan mehmonlar: {0}', [data.growth.events.duel_guest_view ?? 0])}</small></div>
-              <div className="kpi2"><span>{L('Daraja testini boshlagan')}</span><b>{data.growth.events.placement_start ?? 0}</b><small>{L('SEO sahifadan: {0}', [data.growth.events.seo_cta ?? 0])}</small></div>
+              <div className="kpi2"><span>{L('Oxirgi mahalliy nusxa')}</span><b>{data.backup.newestLocalAt ? new Date(data.backup.newestLocalAt).toLocaleString() : '—'}</b><small>{L('{0} ta nusxa, {1} kun saqlanadi', [data.backup.localCount, data.backup.keepDays])}</small></div>
+              <div className="kpi2"><span>{L('Tashqi ombor')}</span><b>{data.backup.offsite === 'configured' ? L('ulangan') : data.backup.offsite === 'misconfigured' ? L('noto‘g‘ri sozlangan') : L('ulanmagan')}</b><small>{data.backup.lastOffsiteAt ? new Date(data.backup.lastOffsiteAt).toLocaleString() : L('hali yuborilmagan')}</small></div>
             </div>
+            {!data.backup.enabled && <p className="notice">{L('Avtomatik zaxira o‘chiq.')}</p>}
+            {data.backup.stale && <p className="notice">{L('Oxirgi 27 soatda yangi nusxa olinmagan.')}</p>}
+            {data.backup.lastError && <p className="notice">{L('Mahalliy nusxa xatosi: {0}', [data.backup.lastError])}</p>}
+            {data.backup.lastOffsiteError && <p className="notice">{L('Tashqi nusxa xatosi: {0}', [data.backup.lastOffsiteError])}</p>}
+            {data.backup.offsite !== 'configured' && <p className="muted" style={{ fontSize: 13 }}>{L('Nusxalar server diski ichida: disk yo‘qolsa, ular ham yo‘qoladi. BACKUP_S3_* sozlang.')}</p>}
           </section>
         )}
+        {data.growth && (() => {
+          const g = data.growth; const ev = (k: string) => g.events[k] ?? { total: 0, unique: 0 };
+          const delta = (cur: number, prev: number) => (prev ? `${cur >= prev ? '+' : ''}${Math.round(((cur - prev) / prev) * 100)}%` : '—');
+          return (
+            <section className="card">
+              <h3>{L('O‘sish voronkasi ({0} kun)', [span])}</h3>
+              <p className="muted" style={{ fontSize: 13 }}>{L('Mehmon bosqichlari — noyob brauzerlar; ro‘yxatdan keyingi bosqichlar — shu davrda ro‘yxatdan o‘tganlar (bir odam bir marta). Qavsda — oldingi teng davrga nisbatan.')}</p>
+              <div className="kpis">
+                <div className="kpi2"><span>{L('Landing → «Bepul boshlash»')}</span><b>{pct(g.visitors.landingToSignupStartPct)}</b><small>{g.visitors.landing} → {g.visitors.signupStart}</small></div>
+                <div className="kpi2"><span>{L('Ro‘yxatdan o‘tdi')}</span><b>{g.cohort.signups}</b><small>({delta(g.cohort.signups, g.previous.signups)})</small></div>
+                <div className="kpi2"><span>{L('Daraja testi')}</span><b>{pct(g.cohort.placementPct)}</b><small>{g.cohort.placement} ({delta(g.cohort.placement, g.previous.placement)})</small></div>
+                <div className="kpi2"><span>{L('Birinchi dars')}</span><b>{pct(g.cohort.lessonPct)}</b><small>{g.cohort.lesson} ({delta(g.cohort.lesson, g.previous.lesson)})</small></div>
+                <div className="kpi2"><span>{L('Narxlarni ko‘rdi / to‘lovni boshladi')}</span><b>{g.visitors.pricing} / {g.visitors.checkout}</b><small>{L('noyob brauzerlar')}</small></div>
+                <div className="kpi2"><span>{L('To‘lov qildi')}</span><b>{pct(g.cohort.paidPct)}</b><small>{g.cohort.paid} · {L('qayta to‘lov: {0}', [g.cohort.renewed])}</small></div>
+                <div className="kpi2"><span>{L('Taklif orqali kelganlar')}</span><b>{pct(g.referredSharePct)}</b><small>{L('{0} ta, faollashgan: {1}', [g.referredSignups, g.referredActivated])}</small></div>
+                <div className="kpi2"><span>{L('Ulashishlar')}</span><b>{ev('share_placement_tg').total + ev('share_placement_img').total + ev('duel_share').total + ev('share_mock').total}</b><small>{L('jami bosishlar')}</small></div>
+              </div>
+            </section>
+          );
+        })()}
         <section className="card">
           <h3>{L('Voronka')}</h3>
           <div className="funnel">
