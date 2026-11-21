@@ -116,7 +116,7 @@ unverified end-to-end · **Partial** · **Planned** (spec only). Update this tab
 | R1 | ~~WS upgrade `new URL()` crash~~ **Fixed 2026-11-21**: malformed upgrade now closes the socket; regression test in `server/live.test.ts` | `server/live.ts` | Closed |
 | R2 | **Fixed 2026-11-21**: client sends the token as WS subprotocol `['sellzen.v1', 'tk.<token>']`; server still accepts `?token=` temporarily for cached old clients — remove that fallback after ~30 days | `server/live.ts` `tokenFromProtocols`, `src/lib/liveCall.ts` | Low (cleanup) |
 | R3 | `GET /api/content` is unauthenticated and the lesson bundle ships all lessons → paid lessons are client-gated only | `server/index.ts`, `src/content/lessons` | Medium (business) |
-| R4 | Backups live on the same volume as the DB | `server/autoBackup.ts` | High (data loss) |
+| R4 | Backups live on the same volume as the DB. **Code ready 2026-11-21**: `server/offsite.ts` uploads each snapshot to an S3-compatible bucket when `BACKUP_S3_*` is set — stays open until the owner creates the bucket and sets the variables | `server/autoBackup.ts`, `server/offsite.ts` | High until configured |
 | R5 | Railway region `sfo` ≈ 250 ms RTT from Tashkent; volume-attached service has downtime on every deploy (502 "connection dial timeout" seen) | Railway | Medium |
 | R6 | Single AI vendor in prod; Gemini 503 bursts observed; `AI_BACKUP_*` exists on branch but not configured | `server/ai.ts` | Medium |
 | R7 | Gemini Live has no session resumption / reconnect | `server/live.ts` | Medium (UX) |
