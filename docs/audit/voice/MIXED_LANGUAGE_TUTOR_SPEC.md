@@ -71,7 +71,7 @@ Recommendation: build correction turns on **A or B**, chosen by the Uzbek raters
 | `P.schwa` | banana "ba-na-na", comfortable "kom-for-ta-bl" | kuchsiz unli /ə/ |
 
 ## 6. Personality and scolding rules
-- **Content comes from Bandly's reviewed line bank**, not freely from the LLM.
+- **Content comes from Sellzen's reviewed line bank**, not freely from the LLM.
   - `src/content/roasts.ts` already has levels 0–3; levels 2–3 include "tentak", "eshak", "ahmoq" with `{wrong}` and `{right}` slots.
   - The LLM picks the error and slot values, and the server picks the line by persona and level.
   - This keeps the tone consistent and works even if a provider refuses to generate insults. Whether TTS providers accept profanity in input is **UNVERIFIED**, so it gets a benchmark item.
@@ -110,5 +110,5 @@ Recommendation: build correction turns on **A or B**, chosen by the Uzbek raters
 - Demo: 12 lines from `scripts/voice-demo/lines.ts` (friendly, comedy, sarcasm, Savage, examiner, mixed uz+en explanation, IPA, dialect tag), generated with ElevenLabs for two library voices × two models.
 - **Chosen tutor voice: "Mirzaev – Uzbek" (`RaNVfTYq3HYeFPLng6XN`) on `eleven_v4_turbo`** — owner: good quality, and Turbo is cheaper (0.5 credit per character vs 1.0 for `eleven_v4`; API list price $0.04 vs $0.08 per 1K chars). "JaysonKhan – Natural Uzbek" was rejected on voice quality; Turbo itself was rated good on both voices.
 - Recorded in `server/elevenlabs.ts` as `TUTOR_VOICE` (not wired to any route yet).
-- **Risks to manage:** the Mirzaev library voice has a **30-day notice period** (its owner can withdraw it with 30 days' notice; most Uzbek library voices have 730 days) → keep a tested fallback voice (candidates with 730-day notice: Davronbek, Abror, Sodiqjon, Shohjahon; female: Javohir), or create Bandly's own Professional Voice Clone later (Creator plan or higher). Live moderation applies to library voices; Savage lines generated without errors in the demo, but moderation behaviour at scale is UNVERIFIED. ElevenLabs account is on **Starter** (commercial licence, 40 000 credits/month at the time of the test).
+- **Risks to manage:** the Mirzaev library voice has a **30-day notice period** (its owner can withdraw it with 30 days' notice; most Uzbek library voices have 730 days) → keep a tested fallback voice (candidates with 730-day notice: Davronbek, Abror, Sodiqjon, Shohjahon; female: Javohir), or create Sellzen's own Professional Voice Clone later (Creator plan or higher). Live moderation applies to library voices; Savage lines generated without errors in the demo, but moderation behaviour at scale is UNVERIFIED. ElevenLabs account is on **Starter** (commercial licence, 40 000 credits/month at the time of the test).
 - Still to verify with users/raters (benchmark set X): whether `[...]` tags are ever read aloud, the English-word accent inside Uzbek sentences, and the dialect tag (owner did not report a dialect effect).

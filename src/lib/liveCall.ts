@@ -17,7 +17,7 @@ export interface LiveCall { end(): void }
 
 export const liveSupported = (): boolean => typeof window !== 'undefined' && typeof WebSocket !== 'undefined' && typeof AudioWorkletNode !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
 
-const WORKLET = `class BandlyMic extends AudioWorkletProcessor { process(inputs) { const ch = inputs[0] && inputs[0][0]; if (ch) this.port.postMessage(ch.slice(0)); return true; } } registerProcessor('bandly-mic', BandlyMic);`;
+const WORKLET = `class SellzenMic extends AudioWorkletProcessor { process(inputs) { const ch = inputs[0] && inputs[0][0]; if (ch) this.port.postMessage(ch.slice(0)); return true; } } registerProcessor('sellzen-mic', SellzenMic);`;
 const loaded = new WeakSet<AudioContext>();
 
 /** Float32 (kontekst chastotasi) → Int16 16 kHz (o'rtacha bilan siqish). */
@@ -43,7 +43,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   if (ctx.state === 'suspended') await ctx.resume().catch(() => undefined);
   if (!loaded.has(ctx)) { await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET], { type: 'application/javascript' }))); loaded.add(ctx); }
   const src = ctx.createMediaStreamSource(stream);
-  const node = new AudioWorkletNode(ctx, 'bandly-mic');
+  const node = new AudioWorkletNode(ctx, 'sellzen-mic');
   const mute = ctx.createGain(); mute.gain.value = 0;
   src.connect(node); node.connect(mute); mute.connect(ctx.destination);
   const out = ctx.createGain(); out.connect(ctx.destination);

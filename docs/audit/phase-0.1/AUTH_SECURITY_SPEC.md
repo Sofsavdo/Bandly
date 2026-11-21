@@ -1,4 +1,4 @@
-# BANDLY — Authentication, Account and Privacy Specification
+# Sellzen — Authentication, Account and Privacy Specification
 
 Design only. Nothing here is implemented. **[F]** verified fact, **[R]** recommendation, **[U]** unresolved. This specification refines `TECHNICAL_ARCHITECTURE.md` A4 and the security section of `PRODUCT_AUDIT.md` (finding C3).
 
@@ -64,7 +64,7 @@ Two surfaces, both validated server-side:
 | Lifetime | Sliding idle expiry **30 days**; absolute expiry **90 days**; `last_seen_at` updated at most once per hour to limit writes |
 | Revocation | Per session; "sign out everywhere"; automatic revoke-all on email change, on identity unlink, and on account deletion. Revocation takes effect on the next request because every request looks the session up (no stateless JWTs) |
 | Rotation | New token issued after login, after linking an identity, and after privilege-sensitive actions |
-| CSRF | Cookie auth ⇒ state-changing requests require a custom header (`X-Bandly-CSRF`, value bound to the session) **and** an `Origin`/`Sec-Fetch-Site` check; `GET` never mutates |
+| CSRF | Cookie auth ⇒ state-changing requests require a custom header (`X-Sellzen-CSRF`, value bound to the session) **and** an `Origin`/`Sec-Fetch-Site` check; `GET` never mutates |
 | CORS | Same-origin only; no wildcard |
 | Device binding | Not enforced (would break legitimate mobile network changes); anomalies logged |
 | Bearer transport | A `Authorization: Bearer` path exists for future native apps and for the **legacy transition** (§6); tokens must never appear in URLs |

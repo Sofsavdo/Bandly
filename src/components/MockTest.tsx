@@ -40,7 +40,7 @@ interface Props {
   intro: ReactNode;
 }
 
-/** Imtihon rejimi (Focus mode): global menyu yashiriladi, faqat test qoladi (BANDLY_DESIGN_SYSTEM.md §1.2). */
+/** Imtihon rejimi (Focus mode): global menyu yashiriladi, faqat test qoladi (docs/SELLZEN_DESIGN_SYSTEM.md §1.2). */
 function useFocusMode(on: boolean): void {
   useEffect(() => {
     if (!on) return;

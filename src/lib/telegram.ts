@@ -8,7 +8,7 @@ interface TgWebApp {
   BackButton: { show(): void; hide(): void; onClick(cb: () => void): void };
   setHeaderColor?(c: string): void; setBackgroundColor?(c: string): void;
 }
-declare global { interface Window { Telegram?: { WebApp?: TgWebApp }; bandlyTgAuth?: (u: unknown) => void } }
+declare global { interface Window { Telegram?: { WebApp?: TgWebApp }; sellzenTgAuth?: (u: unknown) => void } }
 
 const loadScript = (src: string, ms = 4000): Promise<void> => new Promise((resolve) => {
   const s = document.createElement('script'); s.src = src; s.async = true;
@@ -47,7 +47,7 @@ export async function retryWebAppLogin(): Promise<void> { const wa = webApp(); i
 
 /** Saytdagi "Telegram orqali kirish" tugmasini (rasmiy widget) berilgan elementga joylaydi. */
 export function mountLoginWidget(el: HTMLElement, bot: string, onDone: (err: string | null) => void): void {
-  window.bandlyTgAuth = (u: unknown) => { loginTelegram('widget', u).then(() => onDone(null), (e: Error) => onDone(e.message)); };
+  window.sellzenTgAuth = (u: unknown) => { loginTelegram('widget', u).then(() => onDone(null), (e: Error) => onDone(e.message)); };
   el.innerHTML = '';
   const s = document.createElement('script');
   s.async = true; s.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -57,7 +57,7 @@ export function mountLoginWidget(el: HTMLElement, bot: string, onDone: (err: str
   s.setAttribute('data-userpic', 'false');
   s.setAttribute('data-lang', 'uz');
   s.setAttribute('data-request-access', 'write');
-  s.setAttribute('data-onauth', 'bandlyTgAuth(user)');
+  s.setAttribute('data-onauth', 'sellzenTgAuth(user)');
   el.appendChild(s);
 }
 

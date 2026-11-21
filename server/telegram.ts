@@ -114,7 +114,31 @@ export async function setupBot(cfg: BotConfig, f: Fetch = fetch): Promise<string
     await tgApi(cfg.token, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Sellzen', web_app: { url: appUrl(cfg.publicUrl, '/') } } }, f);
     await tgApi(cfg.token, 'setMyCommands', { commands: [{ command: 'start', description: 'Sellzen ilovasini ochish' }, { command: 'mock', description: 'Bepul mock test' }, { command: 'stop', description: 'Seriya eslatmalarini o‘chirish' }, { command: 'remind', description: 'Seriya eslatmalarini yoqish' }] }, f);
   }
+  await syncBotProfile(cfg.token, f);
   return me.username;
+}
+
+/** Botning foydalanuvchiga ko'rinadigan nomi va tavsifi (rebrend: username @Bandly_robot BotFather'da o'zgarmaydi, lekin
+ *  ko'rinadigan nom "Sellzen" bo'ladi). Faqat farq qilsa yoziladi — setMyName/setMyDescription Telegram'da qattiq cheklangan. */
+export const BOT_PROFILE = {
+  name: 'Sellzen — ingliz tili va IELTS',
+  short: 'Ingliz tili, IELTS, CEFR va SAT — AI ustoz bilan. Bepul daraja testi va mock testlar.',
+  description: 'Sellzen — o‘zbek tilida tushuntiradigan AI ustoz bilan ingliz tilini A1 dan C2 gacha o‘rganing, IELTS, CEFR (Multilevel) va SAT’ga tayyorlaning. Bepul daraja testi, mock testlar va duellar. Boshlash uchun /start bosing.',
+} as const;
+export async function syncBotProfile(token: string, f: Fetch = fetch): Promise<string[]> {
+  const done: string[] = [];
+  const steps: [get: string, field: string, set: string, value: string, key: string][] = [
+    ['getMyName', 'name', 'setMyName', BOT_PROFILE.name, 'name'],
+    ['getMyShortDescription', 'short_description', 'setMyShortDescription', BOT_PROFILE.short, 'short_description'],
+    ['getMyDescription', 'description', 'setMyDescription', BOT_PROFILE.description, 'description'],
+  ];
+  for (const [get, field, set, value, key] of steps) {
+    try {
+      const cur = await tgApi<Record<string, string>>(token, get, {}, f);
+      if ((cur?.[field] ?? '') !== value) { await tgApi(token, set, { [key]: value }, f); done.push(set); }
+    } catch (e) { console.error('Telegram bot profili:', (e as Error).message); } // sayt ishlashiga ta'sir qilmaydi
+  }
+  return done;
 }
 
 /** Webhook yangilanishi → yuboriladigan javob (yoki null). Faqat shaxsiy chatlarga javob beriladi. */

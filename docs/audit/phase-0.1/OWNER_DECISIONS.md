@@ -1,4 +1,4 @@
-# BANDLY — Decisions Requiring Business-Owner Approval
+# Sellzen — Decisions Requiring Business-Owner Approval
 
 Only decisions that cannot be made on technical grounds are listed. Technical choices (UUID scheme, index design, test strategy, framework, hashing algorithms) are made by engineering and documented in the specifications.
 
@@ -62,7 +62,7 @@ Engineering cannot create accounts that need the owner's identity, payment metho
 | Error-tracking service | M1 | Hosted vendor vs self-hosted vs logs only | Hosted vendor with PII scrubbing | Free tier likely sufficient early; paid at scale (verify) |
 | Transactional email provider and **sending domain** | M3 | Any provider with SPF/DKIM support | Choose after #1 (processor location) | Per-message cost, small at launch; requires the owner to control DNS for the domain |
 | Google OAuth project (consent screen, verified domain) | M3 | — | Create under the owner's organisation | No direct cost; verification can take time |
-| Telegram bot | M3 | — | Dedicated bot for Bandly | No direct cost |
+| Telegram bot | M3 | — | Dedicated bot for Sellzen | No direct cost |
 | **If postponed** | | M1's backup copy stays on the same volume only (**not acceptable for paid launch**); M3 cannot start. The Google verification lead-time is outside engineering control, so ordering early avoids a schedule slip |
 
 ## 5. Sign-in methods and legacy-account sunset

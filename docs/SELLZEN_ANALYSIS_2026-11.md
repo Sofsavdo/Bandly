@@ -100,9 +100,12 @@ O'zbekistonda o'sish kanallari: **Telegram** (kanallar, guruhlar, Mini App), **I
 | AI zaxira provayderi | Kod tayyor (`AI_BACKUP_*`); kalitni Railway'ga qo'shish — egasi |
 | Duel mehmonga ochiq | Bajarildi (+ duel havolasida referal kodi) |
 | Natija kartochkasi PNG | Bajarildi: daraja testi natijasi 1080×1920 story, referal havolasi bilan |
-| 5 ta SEO sahifa | Bajarildi: 5 uz + 3 ru sahifa, hreflang/canonical, FAQ; eski "Bandly" logotipi tuzatildi |
+| 5 ta SEO sahifa | Bajarildi: 5 uz + 3 ru sahifa, hreflang/canonical, FAQ; eski "Sellzen" logotipi tuzatildi |
 | Referal: ikkala tomonga kunlar | Kod tayyor, standart o'chiq (`REF_PLAN_DAYS`, `REF_PLAN_MONTHLY_CAP`) — yoqish egasi qarori |
 | Voronka o'lchovi | Bajarildi: anonim hodisalar, admin'da "daraja testi → ro'yxat" va referal ulushi; sovg'a obunalar to'lovchiga qo'shilmaydi |
 | Bundle bo'lish | Qisman: xodim/sertifikat sahifalari alohida (app −87 KB); asosiy hajm — darslar kontenti, keyingi bosqich |
 | Region (Amsterdam), bot nomi, narx testi, Payme/Click | Egasi qarori / shartnoma kerak |
 | Xavfsizlik: WS crash (R1), token URL'da (R2) | Tuzatildi, regression testlar bilan |
+| Tashqi zaxira (R4) | Kod tayyor: har kunlik nusxa S3-mos omborga (Railway Bucket) — bucket yaratish va `BACKUP_S3_*` — egasi |
+| Mock natijasini ulashish | Bajarildi: story rasm, "taxminiy band" belgisi, referal havola |
+| Bandly → Sellzen qoldiqlari | Tozalandi: ichki nomlar (CSS, audio worklet, Telegram callback, to'lov hodisasi, npm paket), hujjatlar (32+ fayl), bot ko'rinadigan nomi/tavsifi avtomatik. Ataylab qoldirilganlar va sabablari — README "Brend" jadvali |

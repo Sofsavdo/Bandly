@@ -7,7 +7,7 @@ import { L } from '../i18n';
 export interface PayConfig { enabled: boolean; demo: boolean; periods: { days: number; label: string; note?: string | null; prices: Record<PlanId, number> }[] }
 export interface PayView { id: string; status: 'pending' | 'prepared' | 'success' | 'cancelled' | 'failed' | 'expired'; track: string; days: number; amount: number; pay_amount: number | null; card: string | null; expire_at: number; expires_in: number }
 
-export const PAY_EVENT = 'bandly:pay';
+export const PAY_EVENT = 'sellzen:pay';
 const OPEN_KEY = 'bandly.pay.open';
 
 let cfg: Promise<PayConfig> | null = null;

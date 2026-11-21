@@ -1,6 +1,6 @@
 # Joylashtirish (deploy)
 
-Bandly bitta Node jarayoni: `npm start` frontend (`dist/`) va API'ni birga xizmat qiladi. Node **22.12+** kerak (`node:sqlite`).
+Sellzen bitta Node jarayoni: `npm start` frontend (`dist/`) va API'ni birga xizmat qiladi. Node **22.12+** kerak (`node:sqlite`).
 
 ## Railway (yoki shunga o'xshash xizmat)
 
@@ -10,7 +10,7 @@ Bandly bitta Node jarayoni: `npm start` frontend (`dist/`) va API'ni birga xizma
 4. AI uchun (ixtiyoriy): `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL` (`.env.example` ga qarang). Kalitni faqat xizmatning maxfiy o'zgaruvchilariga yozing.
 5. Mikrofon (Speaking) faqat **HTTPS** da ishlaydi; xizmat HTTPS beradi.
 
-Docker: `docker build -t bandly . && docker run -p 3101:3101 -v bandly-data:/data bandly`.
+Docker: `docker build -t sellzen . && docker run -p 3101:3101 -v sellzen-data:/data sellzen` (baza fayli nomi `/data/bandly.sqlite` — moslik uchun shunday qoldi, README "Brend" jadvaliga qarang).
 
 ## Muhim cheklovlar
 

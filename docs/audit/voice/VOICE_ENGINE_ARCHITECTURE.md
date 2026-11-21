@@ -5,7 +5,7 @@ Status: **design only — nothing here is implemented.** It supersedes the inter
 ## 0. What exists today (must keep working)
 | Piece | File | Behaviour | Production state (2026-11-14) |
 |---|---|---|---|
-| Browser STT | `src/lib/speech.ts` (`SpeechRecognition` / `webkitSpeechRecognition`) | turn-based listening with silence/max timers, interim text; audio goes to the browser vendor, not to Bandly | **on** — Lesson speaking step, Skill check, Challenge ("Jim qolma!"), Coach page |
+| Browser STT | `src/lib/speech.ts` (`SpeechRecognition` / `webkitSpeechRecognition`) | turn-based listening with silence/max timers, interim text; audio goes to the browser vendor, not to Sellzen | **on** — Lesson speaking step, Skill check, Challenge ("Jim qolma!"), Coach page |
 | Browser TTS | `src/lib/speech.ts` `say()` / `bestVoice()` | picks the best installed en-GB/en-US voice | **on** |
 | Server Uzbek TTS | `server/tts.ts`, `src/lib/tts.ts`, `POST /api/tts` | Azure `uz-UZ-MadinaNeural` via REST, SSML prosody, disk cache, per-user daily limit; **since 2026-11-15 also ElevenLabs** (Mirzaev, `eleven_v4_turbo`, emotion → audio tags, 5 new voiced answers/day, global char ceiling, cost ledger `ai_cost_events`) — `docs/runbooks/voice-elevenlabs.md` | **off** (no key / ceiling in Railway; log "TTS: none") |
 | AI coach (text) | `server/coach.ts`, `server/ai.ts` | provider-agnostic LLM, fail-closed without `AI_GLOBAL_DAILY_CALLS` | **off** (no key) |
@@ -56,7 +56,7 @@ interface PronunciationAssessmentProvider {
   assess(audio: AudioInput, req: { lang: 'en-US' | 'en-GB'; referenceText?: string; granularity: 'phoneme' | 'word' }, ctx: CallCtx): Promise<PronunciationResult>;
 }
 interface AudioStorageProvider {           // default: NO learner audio stored
-  putReference(key: string, clip: AudioClip): Promise<string>;   // Bandly-generated reference audio only
+  putReference(key: string, clip: AudioClip): Promise<string>;   // Sellzen-generated reference audio only
   putLearner?(key: string, clip: AudioClip, consent: ConsentRecord, ttlDays: number): Promise<string>; // only with explicit opt-in (OD-22)
   delete(key: string): Promise<void>;
 }
@@ -84,7 +84,7 @@ Startup validates every value against an allow-list (model ids and voice names f
 
 ## 5. Sessions, transport and timing
 - **Audio session id** (`aud_<uuid>`) created by the server for every Speaking/Reading/Teacher session; every provider call, usage record and telemetry event carries it. One credit reservation per session (§6).
-- **Transport:** realtime → WebRTC from the browser with an ephemeral client secret (OpenAI documents `/v1/realtime/client_secrets`); STT streaming and assessment → browser sends 16 kHz mono PCM to Bandly's server over WebSocket, server relays to the provider (so the key stays server-side and usage is metered exactly). Reference TTS → pre-generated MP3/Opus served from storage/CDN.
+- **Transport:** realtime → WebRTC from the browser with an ephemeral client secret (OpenAI documents `/v1/realtime/client_secrets`); STT streaming and assessment → browser sends 16 kHz mono PCM to Sellzen's server over WebSocket, server relays to the provider (so the key stays server-side and usage is metered exactly). Reference TTS → pre-generated MP3/Opus served from storage/CDN.
 - **Timeouts:** connect 5 s; first partial transcript 3 s; first TTS audio 2.5 s; assessment 10 s for ≤30 s audio; session hard cap `VOICE_SESSION_MAX_MINUTES`; idle (no speech) 60 s → close session to stop billing (OpenAI notes active time is billed even when silent for `gpt-live-1`).
 - **Retry policy:** idempotent calls (cached TTS, file STT before bytes sent) → 2 retries with 250 ms / 1 s backoff + jitter; streaming/realtime after audio was sent → **no silent retry** (`retrySafety='unsafe_after_send'`): close, settle actual usage, offer "qayta urinish"; fallback only to a provider marked equivalent for that language and allowed by data residency (OD-01).
 - **Rate limits:** per user (minutes/day, sessions/hour), per IP for session creation, global daily minutes ceiling; provider limits documented in the comparison (e.g. Azure default 100 concurrent STT, OpenAI Build tier 400 RPM).
@@ -102,7 +102,7 @@ Startup validates every value against an allow-list (model ids and voice names f
 - Dashboards: p50/p95 latency per provider and language, error rate, cost per active minute, fallback rate. Alerts on p95 turn latency > 1.5 s or error rate > 2 % over 15 min.
 
 ## 8. Data handling
-- Default: **no learner audio stored**; transcripts kept only per OD-07 retention and deletable by the user; reference audio (Bandly-generated) may be cached.
+- Default: **no learner audio stored**; transcripts kept only per OD-07 retention and deletable by the user; reference audio (Sellzen-generated) may be cached.
 - Voice is potentially biometric/personal data (Azure explicitly assigns notice/consent/deletion duty to the customer). Before any cloud voice feature: consent text, provider list and processing countries shown to the user; under-18 rules per OD-06/OD-06b.
 - Provider settings to request: OpenAI Zero Data Retention (approval-based), ElevenLabs Zero Retention Mode (Enterprise), Google data logging **off** (default), Azure real-time (no storage at rest).
 

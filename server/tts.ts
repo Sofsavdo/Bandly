@@ -102,7 +102,7 @@ export async function synthesize(cfg: TtsConfig, text: string, opts: SynthOpts =
   try {
     r = await f(`https://${cfg.region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: 'POST',
-      headers: { 'ocp-apim-subscription-key': cfg.key, 'content-type': 'application/ssml+xml', 'x-microsoft-outputformat': 'audio-24khz-48kbitrate-mono-mp3', 'user-agent': 'bandly-tts' },
+      headers: { 'ocp-apim-subscription-key': cfg.key, 'content-type': 'application/ssml+xml', 'x-microsoft-outputformat': 'audio-24khz-48kbitrate-mono-mp3', 'user-agent': 'sellzen-tts' },
       body: ssml(cfg.voice, text, rate, pitch),
       signal: AbortSignal.timeout(15_000),
     });

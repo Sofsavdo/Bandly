@@ -1,26 +1,26 @@
 # Telegram: sign-in, bot and Mini App — runbook
 
-Owner decision OD-05 (2026-11-15) makes Telegram the way to sign in and sign out. Bandly also runs as a Telegram Mini App ("Web App") inside the bot.
+Owner decision OD-05 (2026-11-15) makes Telegram the way to sign in and sign out. Sellzen also runs as a Telegram Mini App ("Web App") inside the bot.
 
 ## What the owner does (once, about 5 minutes)
 
 1. **Create the bot.**
    - In Telegram, open **@BotFather** and send `/newbot`.
-   - Choose a name, e.g. "Bandly", and a username ending in `bot`, e.g. `bandly_uz_bot`.
+   - Choose a name, e.g. "Sellzen", and a username ending in `bot`, e.g. `sellzen_uz_bot`.
    - BotFather replies with a **token**.
    - **Never paste the token in chat, code or GitHub.**
 2. **Allow the site domain for the login button.**
-   - In @BotFather, send `/setdomain`, choose the bot, and send `bandly-production.up.railway.app` (or the custom domain).
+   - In @BotFather, send `/setdomain`, choose the bot, and send `sellzen.uz` (the production custom domain; `bandly-production.up.railway.app` is the Railway fallback).
    - Without this, the "Log in with Telegram" button on the site shows "Bot domain invalid".
-3. **Add the Railway variables.** In the Bandly service, open Variables and add:
+3. **Add the Railway variables.** In the Sellzen service, open Variables and add:
    - `TELEGRAM_BOT_TOKEN` — the token from step 1 (secret; only Railway holds it).
    - `TELEGRAM_BOT_USERNAME` — the username without `@`. This is optional, because the server reads it from Telegram on start, but it is a useful fallback.
-   - `PUBLIC_URL` is optional. By default the server uses Railway's `RAILWAY_PUBLIC_DOMAIN`. Set it, e.g. `https://bandly.uz`, only for a custom domain.
+   - `PUBLIC_URL` is optional. By default the server uses Railway's `RAILWAY_PUBLIC_DOMAIN`. Set it, e.g. `https://sellzen.uz`, only for a custom domain.
 4. **Redeploy.** The log should show `Telegram bot: @<username> (webhook: yoqildi)`.
 5. **Check in Telegram.**
    - Open the bot and press **Start**.
-   - The reply has three buttons: Open Bandly, Free mock test, Find my level.
-   - The menu button (bottom left) also opens Bandly.
+   - The reply has three buttons: Open Sellzen, Free mock test, Find my level.
+   - The menu button (bottom left) also opens Sellzen.
 
 ## How it works
 

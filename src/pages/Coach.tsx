@@ -239,7 +239,7 @@ export default function Coach() {
     void listen();
   };
 
-  const orb = <div className={`bandi-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 220 : 170} /></div>;
+  const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 220 : 170} /></div>;
 
   if (!live) return (
     <div className="tutor">

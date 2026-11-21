@@ -1,5 +1,5 @@
 // Rebrend tekshiruvi: foydalanuvchiga ko'rinadigan matnlarda eski "Bandly"/"Bandi" nomi qolmagan; logo, favicon, PWA fayllari joyida.
-// Ichki texnik kalitlar (bandly.* localStorage, persona id 'bandi', BandlyMic worklet) ataylab o'zgartirilmagan — eski ma'lumot buzilmasin.
+// Ichki texnik kalitlar (bandly.* localStorage, persona id 'bandi', /data/bandly.sqlite, bandly-<UTC>.sqlite zaxiralar) ataylab o'zgartirilmagan — eski ma'lumot buzilmasin.
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,11 +10,27 @@ const bad: string[] = [];
 for (const f of files) {
   readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
     // HTML teglar olib tashlanadi: "Band<b>ly</b>" ham ekranda "Bandly" bo'lib ko'rinadi
-    const visible = line.replace(/<\/?[a-z][^>]*>/gi, '').replace(/class BandlyMic|BandlyMic\)|'bandi'|bandly[.\-\w]*/g, '');
+    const visible = line.replace(/<\/?[a-z][^>]*>/gi, '').replace(/'bandi'|bandly[.\-\w]*/g, '');
     if (/\bBandly\b|\bBandi\b/.test(visible)) bad.push(`${f}:${i + 1}: ${line.trim().slice(0, 100)}`);
   });
 }
 assert.deepEqual(bad, [], `eski brend nomi qolgan:\n${bad.join('\n')}`);
+
+// Hujjatlar (README, DEPLOY, docs/**): mahsulot nomi "Sellzen". Faqat tashqi identifikatorlar ruxsat: GitHub repo Sofsavdo/Bandly,
+// Telegram bot @Bandly_robot (BotFather'da nom o'zgarmaydi). "Bandi" — eski maskot nomi faqat tarixiy audit hujjatlarida yoki "formerly/then called" bilan.
+const { execFileSync } = await import('node:child_process');
+const mds = execFileSync('git', ['ls-files', '*.md']).toString().split('\n').filter((f) => f && !f.startsWith('plugins/'));
+const badDocs: string[] = [];
+for (const f of mds) readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+  const t = line.replace(/Sofsavdo\/Bandly|Bandly_robot|\/home\/user\/Bandly|avvalgi nomi Bandly|formerly Bandly/g, '');
+  if (/\bBandly\b|\bBANDLY\b/.test(t)) badDocs.push(`${f}:${i + 1}: Bandly`);
+  if (!f.startsWith('docs/audit/') && /\bBandi\b/.test(t.replace(/formerly “Bandi”|then called Bandi/g, ''))) badDocs.push(`${f}:${i + 1}: Bandi`);
+});
+assert.deepEqual(badDocs, [], `hujjatlarda eski brend:\n${badDocs.join('\n')}`);
+
+// Rebrenddan keyin o'zgartirilgan ichki nomlar qaytmasin (CSS, worklet, Telegram callback, to'lov hodisasi, TTS user-agent)
+const code = files.map((f) => readFileSync(f, 'utf8')).join('\n');
+for (const old of ['bandlyTgAuth', 'bandly-mic', 'BandlyMic', 'bandly:pay', 'bandly-tts', '.bandi-wrap', 'bandi-wrap']) assert.ok(!code.includes(old), `eski ichki nom qaytdi: ${old}`);
 for (const f of ['public/favicon.svg', 'public/favicon-16.png', 'public/favicon-32.png', 'public/apple-touch-icon.png', 'public/manifest.webmanifest', 'public/brand/icon-192.png', 'public/brand/icon-512.png', 'public/brand/icon-maskable-512.png', 'public/brand/og-image.png', 'public/brand/sellzen-logo-light.svg', 'public/brand/sellzen-logo-dark.svg'])
   assert.ok(existsSync(f), `brend fayli yo‘q: ${f}`);
 const m = JSON.parse(readFileSync('public/manifest.webmanifest', 'utf8')) as { name: string; short_name: string; start_url: string; icons: { sizes: string }[] };

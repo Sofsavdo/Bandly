@@ -4,7 +4,7 @@ Status: **research only**. No integration was built and no paid API request was 
 
 **Legend**
 - **[F]**: stated on an official provider page (source in §7).
-- **[V]**: a number the provider reports about its own product (benchmark, latency, accuracy). It is not independently verified and may not hold for Bandly's audio.
+- **[V]**: a number the provider reports about its own product (benchmark, latency, accuracy). It is not independently verified and may not hold for Sellzen's audio.
 - **UNVERIFIED**: not found in official documentation, or the documentation is ambiguous. It must not be relied on or advertised until it is tested.
 - **n/a**: does not apply.
 
@@ -41,7 +41,7 @@ Official language support **does not prove real-world accuracy**. Only the bench
 | Latency | provider medians: v4 Turbo ~100 ms; v3 Conversational ~165 ms on the models page but ~280 ms on the price page; Flash ~100 ms vs ~75 ms [V]. The two pages disagree, so these numbers must be measured. | not published → measure | not published → measure | not published as TTS latency → measure |
 | Price (list) | v4 **$0.08 / 1K chars**; v4 Turbo, v3 Conversational and Flash **$0.04 / 1K** [F] | **$30 / 1M chars**, first 1M chars/month free [F] | Neural HD **$22 / 1M chars**; neural $15 / 1M; free 0.5M chars/month [F] | `gpt-4o-mini-tts` $12 / 1M audio-out tokens, $0.60 / 1M text-in; `tts-1` $15 / 1M chars; `tts-1-hd` $30 / 1M chars [F] |
 | Regions | US default; EU / India / Singapore Enterprise only [F] | global, us, eu, asia-southeast1, europe-west2, asia-northeast1 [F] | HD voices available in westeurope, swedencentral, centralindia, eastus (among others); **not** in germanywestcentral or uaenorth [F] | US / EU residency for audio endpoints [F] |
-| Disclosure | n/a found | n/a found | n/a found | OpenAI's TTS guide requires a clear disclosure that the voice is **AI-generated** [F]. Bandly will do this for every provider. |
+| Disclosure | n/a found | n/a found | n/a found | OpenAI's TTS guide requires a clear disclosure that the voice is **AI-generated** [F]. Sellzen will do this for every provider. |
 
 ## 3. Uzbek text-to-speech
 
@@ -49,13 +49,13 @@ Official language support **does not prove real-world accuracy**. Only the bench
 |---|---|---|---|---|
 | Voices | `uz-UZ-MadinaNeural` (female), `uz-UZ-SardorNeural` (male), type **Standard** [F] | **none**: `uz-UZ` does not appear in the TTS voice list [F] | `uz` is listed for `eleven_v4`, `eleven_v4_turbo`, `eleven_v3` and `eleven_v3_conversational` [F]. Not available on `multilingual_v2` or `flash_v2_5` [F]. | Uzbek not in the TTS language list [F] |
 | Controls | Footnote 3: **phonemes, custom lexicon and visemes aren't supported** for these voices [F]. So there is no way to force how an English term is pronounced inside Uzbek speech. No styles or roles listed [F]. | n/a | audio tags (laughing, sarcasm, shouting, sighs; see §2) and IPA in `/…/` on `eleven_v4` [F]; how well tags work **in Uzbek** is **UNVERIFIED** | n/a |
-| Already in Bandly | `server/tts.ts` calls Azure with `uz-UZ-MadinaNeural` when `TTS_KEY` and `TTS_REGION` are set. In production it is **off** (startup log "TTS: none"). | — | — | — |
+| Already in Sellzen | `server/tts.ts` calls Azure with `uz-UZ-MadinaNeural` when `TTS_KEY` and `TTS_REGION` are set. In production it is **off** (startup log "TTS: none"). | — | — | — |
 
 ## 4. Pronunciation assessment
 
 | | **Azure Pronunciation Assessment** | Others |
 |---|---|---|
-| Locales | **33 locales**, including `en-US` and `en-GB`. **`uz-UZ` is not supported**, which does not matter for Bandly because only English speech is assessed [F]. | No other candidate documents a pronunciation-assessment product. Standalone providers (for example the Speechace or Speechsuper APIs) are **UNVERIFIED**: their official docs have not been read yet, and their hosts are not on the allowed list. |
+| Locales | **33 locales**, including `en-US` and `en-GB`. **`uz-UZ` is not supported**, which does not matter for Sellzen because only English speech is assessed [F]. | No other candidate documents a pronunciation-assessment product. Standalone providers (for example the Speechace or Speechsuper APIs) are **UNVERIFIED**: their official docs have not been read yet, and their hosts are not on the allowed list. |
 | Modes | **scripted** (reference text → reading) and **unscripted** (no reference → speaking) [F] | |
 | Granularity | full text, word, **syllable (en-US only)**, **phoneme**. Phoneme names in IPA: en-US only; SAPI: en-US, zh-CN [F]. | |
 | Scores | AccuracyScore, FluencyScore, CompletenessScore (scripted only), **ProsodyScore**, PronScore. Word ErrorType: Mispronunciation, Omission, Insertion, UnexpectedBreak, MissingBreak, Monotone [F]. | |
@@ -82,7 +82,7 @@ Official language support **does not prove real-world accuracy**. Only the bench
 
 ## 6. Recommendation (primary / fallback), to be confirmed by the benchmark
 
-Every choice below is a hypothesis until `VOICE_BENCHMARK_PLAN.md` has been run and the acceptance criteria are met. Bandly ships whatever the benchmark shows, not this table.
+Every choice below is a hypothesis until `VOICE_BENCHMARK_PLAN.md` has been run and the acceptance criteria are met. Sellzen ships whatever the benchmark shows, not this table.
 
 | Function | Primary (test first) | Fallback | Why |
 |---|---|---|---|

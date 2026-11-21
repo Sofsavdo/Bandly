@@ -1,8 +1,8 @@
-# Bandly Screen Wireframes
+# Sellzen Screen Wireframes
 
 Status: **low-fidelity wireframes for owner review.** Not final visual design.
 The owner-approved reference images are in `design-references/` (see its README for what is taken and what is avoided).
-Visual rules come from `BANDLY_DESIGN_SYSTEM.md`, mechanics from `GAMIFIED_LEARNING_SPEC.md`, exam rules from `REAL_EXAM_EXPERIENCE_SPEC.md`, and teachers from `AI_TEACHER_CHARACTER_SPEC.md`.
+Visual rules come from `SELLZEN_DESIGN_SYSTEM.md`, mechanics from `GAMIFIED_LEARNING_SPEC.md`, exam rules from `REAL_EXAM_EXPERIENCE_SPEC.md`, and teachers from `AI_TEACHER_CHARACTER_SPEC.md`.
 
 **How to read a screen card:**
 - **Purpose.** What the screen is for.
@@ -60,7 +60,7 @@ Mobile TabBar (5 tabs, already shipped): **Bosh sahifa · Darslar (Map) · AI Us
 ```
 Desktop                                                   Mobile
 ┌───────────────┬──────────────────────────┬───────────┐  ┌────────────────────────┐
-│ Sidebar       │ Salom, Aziz! 🔥 12  ⭐ L7  │ League    │  │ Bandly    🔥12  ⭐L7  ☰  │
+│ Sidebar       │ Salom, Aziz! 🔥 12  ⭐ L7  │ League    │  │ Sellzen    🔥12  ⭐L7  ☰  │
 │ Map           │ ┌──────────────────────┐ │ Gold #4   │  │ ┌────────────────────┐ │
 │ Teacher       │ │ Bugungi reja 25 daq  │ │───────────│  │ │ Ustoz: "Bugun 3 ta │ │
 │ Exam          │ │ ▸ Dars: Past simple  │ │ Quests 1/3│  │ │ vazifa. Ketdik!"   │ │

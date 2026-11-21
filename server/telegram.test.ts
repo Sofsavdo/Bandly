@@ -75,4 +75,26 @@ assert.equal(r?.method, 'sendMessage');
 assert.match(JSON.stringify(r?.body), /https:\/\/b\.app\/\?tg=1&r=%2Fmocks/);
 assert.equal(handleUpdate({ message: { chat: { id: -5, type: 'group' }, text: '/start' } }, 'https://b.app'), null, 'guruhlarga javob yo‘q');
 assert.match(JSON.stringify(handleUpdate({ message: { chat: { id: 5, type: 'private' }, text: '/mock' } }, 'https://b.app')?.body), /Mock testni ochish/);
+// Bot profili (rebrend): ko'rinadigan nom/tavsif faqat farq qilsa yoziladi; xato sayt ishga tushishini to'xtatmaydi
+{
+  const { syncBotProfile, BOT_PROFILE, setupBot } = await import('./telegram');
+  const state: Record<string, string> = { name: 'Bandly', short_description: '', description: BOT_PROFILE.description };
+  const calls: string[] = [];
+  const fake = (async (url: string, init: { body: string }) => {
+    const m = url.split('/').pop()!; calls.push(m); const b = JSON.parse(init.body || '{}') as Record<string, string>;
+    const map: Record<string, string> = { getMyName: 'name', getMyShortDescription: 'short_description', getMyDescription: 'description' };
+    if (m === 'getMe') return { json: async () => ({ ok: true, result: { username: 'Bandly_robot' } }) };
+    if (map[m]) return { json: async () => ({ ok: true, result: { [map[m]!]: state[map[m]!] } }) };
+    if (m.startsWith('setMy')) { Object.assign(state, b); return { json: async () => ({ ok: true, result: true }) }; }
+    return { json: async () => ({ ok: true, result: true }) };
+  }) as never;
+  assert.deepEqual(await syncBotProfile('t', fake), ['setMyName', 'setMyShortDescription'], 'faqat farq qilganlar yoziladi');
+  assert.equal(state.name, BOT_PROFILE.name);
+  assert.ok(!/Bandly/.test(BOT_PROFILE.name + BOT_PROFILE.short + BOT_PROFILE.description), 'profil matnlarida eski brend yo‘q');
+  assert.ok(BOT_PROFILE.name.length <= 64 && BOT_PROFILE.short.length <= 120 && BOT_PROFILE.description.length <= 512, 'Telegram chegaralari');
+  calls.length = 0;
+  assert.deepEqual(await syncBotProfile('t', fake), [], 'ikkinchi ishga tushishda hech narsa yozilmaydi');
+  const broken = (async (url: string) => ({ json: async () => (url.endsWith('getMe') ? { ok: true, result: { username: 'x' } } : { ok: false, description: 'Too Many Requests' }) })) as never;
+  assert.equal(await setupBot({ token: 't', publicUrl: null } as never, broken), 'x', 'profil xatosi setupBot’ni yiqitmaydi');
+}
 console.log('telegram.test: OK');

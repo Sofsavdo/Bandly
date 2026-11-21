@@ -8,7 +8,7 @@ Labels used throughout:
 - **[S]**: confirmed from official-site search results on 2026-11-15; the page itself must be re-read before content production.
 - **[U]**: not verified; owner or content decision needed.
 
-**Rule:** exam screens use **Focus mode** (`BANDLY_DESIGN_SYSTEM.md` §1.2). They have no XP pop-ups, hearts, combo, mascot or teacher animation, banners, or global nav.
+**Rule:** exam screens use **Focus mode** (`SELLZEN_DESIGN_SYSTEM.md` §1.2). They have no XP pop-ups, hearts, combo, mascot or teacher animation, banners, or global nav.
 
 ## 1. What exists today (honest baseline)
 | Item | Status | Where / gap |
@@ -35,7 +35,7 @@ Labels used throughout:
 | Speaking | **11–14 min**, 3 parts, face to face. Part 2: a task card, **1 min preparation, up to 2 min talk**, 3–4 min in total, pencil and paper for notes. May be on the same day or up to 7 days from the other sections. | [S] ielts.org Speaking format; Part 1 and Part 3 lengths [U] |
 | Order and total | Listening, Reading, Writing in one sitting without breaks. Total **2 h 45 min**. | [S] |
 | Computer-delivered tools | Highlight in Reading and Listening (not Writing); flag a question and return to it. Notes: sources conflict (digital notepad vs paper). | [S] IDP pages; notes [U] |
-| Scoring | Band scores. Raw-to-band conversion is **not** official in Bandly; the existing tables stay labelled "taxminiy" (estimate). | [U] official conversion not published as a fixed table |
+| Scoring | Band scores. Raw-to-band conversion is **not** official in Sellzen; the existing tables stay labelled "taxminiy" (estimate). | [U] official conversion not published as a fixed table |
 
 Sources:
 - https://ielts.org/take-a-test/test-types/ielts-academic-test
@@ -72,7 +72,7 @@ Sources:
 | Scores | 400–1600; each section 200–800 |
 
 - **[U]:** built-in calculator and reference sheet details, the annotation tool, and "mark for review" behaviour must be read from College Board / Bluebook pages before building.
-- **Honesty rule:** Bandly's SAT is "adaptive-style" practice. The score is an **estimate**: we have no calibrated item parameters, so no "official-like" score is claimed (PXD-10).
+- **Honesty rule:** Sellzen's SAT is "adaptive-style" practice. The score is an **estimate**: we have no calibrated item parameters, so no "official-like" score is claimed (PXD-10).
 
 ## 3. Exam flow
 ```mermaid
@@ -97,7 +97,7 @@ flowchart TD
 | Step | Content | Edge cases |
 |---|---|---|
 | Exam Home | the exams the learner can take; last attempt; resume banner | an unfinished attempt is offered as "Davom ettirish" |
-| Information | duration, sections, "free / premium" boundary (§8), honest note "Bandly mustaqil mashq, rasmiy test emas" | — |
+| Information | duration, sections, "free / premium" boundary (§8), honest note "Sellzen mustaqil mashq, rasmiy test emas" | — |
 | Instructions | per section, the **official-style rules in plain Uzbek + English**; e.g. "Audio faqat bir marta" | the learner can re-open instructions from the help icon |
 | Device check | play a test tone; mic level for Speaking; network ping; recommends desktop or tablet for a full mock (PXD-11) | no mic → Speaking is offered as text-only practice (not as a mock) |
 | Start | creates the attempt and fixes the deadline (§6) | double-tap start creates one attempt |

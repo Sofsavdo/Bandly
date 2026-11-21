@@ -16,7 +16,7 @@ Status: **design only**. Provider facts are from Azure documentation retrieved 2
 | Returned | Accuracy, Fluency, **Completeness**, Prosody (en-US only), PronScore; per word ErrorType (Mispronunciation, Omission, Insertion, UnexpectedBreak, MissingBreak, Monotone); per syllable (en-US only) and phoneme accuracy; NBest phonemes; offsets/durations | Accuracy, Fluency, Prosody (en-US only), PronScore; per word ErrorType (Mispronunciation, UnexpectedBreak, MissingBreak, Monotone) |
 | Not returned | grammar, vocabulary, relevance | grammar, vocabulary, relevance, completeness |
 
-**Choice for Bandly:** Speaking uses *STT → scripted assessment on the transcript* by default (Microsoft notes unscripted uses a different, less accurate STT model); unscripted is tested in the benchmark as the alternative.
+**Choice for Sellzen:** Speaking uses *STT → scripted assessment on the transcript* by default (Microsoft notes unscripted uses a different, less accurate STT model); unscripted is tested in the benchmark as the alternative.
 
 ## 3. Score model shown to the learner
 | Dimension | Source | Shown as | Limitation text (shown in UI help) |
@@ -40,14 +40,14 @@ Azure's composite PronScore is stored but **not** shown as a headline (its weigh
 
 ## 5. Known limitations (must appear in help/FAQ)
 1. Prosody only for **en-US**; syllable groups and IPA phoneme names only for **en-US**.
-2. Audio > 30 s requires continuous mode, where miscue (omission/insertion) detection is not provided → Bandly limits a Reading item to ≤ 30 s or computes omissions itself by aligning the recognised words with the reference.
+2. Audio > 30 s requires continuous mode, where miscue (omission/insertion) detection is not provided → Sellzen limits a Reading item to ≤ 30 s or computes omissions itself by aligning the recognised words with the reference.
 3. No mixed-language assessment: an Uzbek word inside an English answer will be scored as an English mispronunciation → Speaking mode strips detected non-English spans before assessment (needs language-tagged STT; UNVERIFIED quality).
 4. Single speaker only; background voices lower confidence.
-5. Correlation with human judges is a vendor figure (Pearson > 0.5, Microsoft's evaluation); Bandly measures its own on learner data (`VOICE_BENCHMARK_PLAN.md` §5).
-6. Content assessment (grammar/vocabulary/topic) was retired from Speech SDK 1.46.0+; Bandly uses its own LLM layer instead.
+5. Correlation with human judges is a vendor figure (Pearson > 0.5, Microsoft's evaluation); Sellzen measures its own on learner data (`VOICE_BENCHMARK_PLAN.md` §5).
+6. Content assessment (grammar/vocabulary/topic) was retired from Speech SDK 1.46.0+; Sellzen uses its own LLM layer instead.
 
 ## 6. Data and storage
-- Audio is streamed to the provider for the assessment and **not stored** by Bandly by default. The JSON result (scores, word/phoneme errors, no audio) is stored with the attempt so mistakes can feed the mistake-repetition loop (`src/lib/mistakes.ts`) and mastery (`src/lib/adaptive/record.ts`).
+- Audio is streamed to the provider for the assessment and **not stored** by Sellzen by default. The JSON result (scores, word/phoneme errors, no audio) is stored with the attempt so mistakes can feed the mistake-repetition loop (`src/lib/mistakes.ts`) and mastery (`src/lib/adaptive/record.ts`).
 - Storing learner recordings for replay requires an explicit opt-in and TTL (OD-22).
 
 ## 7. Independent second assessor (optional)

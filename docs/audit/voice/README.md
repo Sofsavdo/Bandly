@@ -1,6 +1,6 @@
 # Voice research set (2026-11-14)
 
-Research, architecture and test plan for Bandly's speech and voice engine. **Nothing here is implemented**; no provider integration was added, no paid API request was sent, and production code, database and deployment are unchanged.
+Research, architecture and test plan for Sellzen's speech and voice engine. **Nothing here is implemented**; no provider integration was added, no paid API request was sent, and production code, database and deployment are unchanged.
 
 | Document | Purpose |
 |---|---|

@@ -26,7 +26,7 @@ Input: the owner pasted the text of the three ChatGPT conversations (links could
 ## 3. New requirements not yet in the specs (now added)
 | # | Item (source) | Handling |
 |---|---|---|
-| N1 | **Bandly for Schools / B2B**: teacher dashboard, group analytics, per-student tracking, bulk packages for learning centres (C2 §9, §12) | new `REQ-020`, new decision DR-25, roadmap slot after M3+M5 |
+| N1 | **Sellzen for Schools / B2B**: teacher dashboard, group analytics, per-student tracking, bulk packages for learning centres (C2 §9, §12) | new `REQ-020`, new decision DR-25, roadmap slot after M3+M5 |
 | N2 | **"AI Speaking Challenge" 7-day growth product** with shareable Speaking Report (C2 §3.3) | recorded as growth hypothesis DR-26; needs voice engine + ledger first |
 | N3 | **Boss Exam, Vocabulary Arena, Grammar Battle, Listening Challenge, Weekly League, Personal Quest** (C3 §7) | added to gamification backlog (not yet inventoried) |
 | N4 | **Speaking modes**: Practice, Real Exam, Strict Examiner, Savage, Pronunciation, Fluency (C3 §2) | mapped to `AI_PERSONALITY_ENGINE_SPEC` + `VOICE_ENGINE_SPEC` |
@@ -77,6 +77,6 @@ Registered as OD-16 (launch order and first paid product), OD-17 (first-stage bu
 1. **Strategy is stable:** three products + one intelligence layer, Central Asia, personality-driven AI, free objective Mock Arena, creator-led growth, credit-metered AI. No source contradicts this after precedence is applied.
 2. **The main differentiator is the learning system, not AI chat or roasting** (C1, C2): per-user error memory, mastery-driven plans, explanations in the learner's chosen language. Local competitors already offer AI speaking/writing, free mocks and Uzbek feedback **[S]**, so "AI + IELTS + games" alone is not an advantage.
 3. **Unit economics look viable only with strict AI limits and measured retention** [S + F arithmetic]; real numbers need real usage logs and verified provider prices.
-4. **New scope to plan:** B2B "Bandly for Schools", the 7-day Speaking Challenge growth product, richer gamification, per-skill modes. None changes the foundation order (M1 → M2 → M3 …).
+4. **New scope to plan:** B2B "Sellzen for Schools", the 7-day Speaking Challenge growth product, richer gamification, per-skill modes. None changes the foundation order (M1 → M2 → M3 …).
 5. **Still blocked:** residency/legal (OD-01), age/Savage standard (OD-06/06b), provider verification (voice, pricing), content licensing and specialist review, owner choices OD-16…OD-18.
 6. **Not carried over:** Grammar-only product, five separate subscriptions, score guarantee, UZS prices as final.
