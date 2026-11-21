@@ -49,8 +49,9 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   const out = ctx.createGain(); out.connect(ctx.destination);
 
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const q = new URLSearchParams({ token: o.token, adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang });
-  const ws = new WebSocket(`${proto}://${location.host}/api/ai/live?${q}`);
+  // Token URL'da emas (proksi loglariga tushmasin) — subprotocol sarlavhasida (server/live.ts tokenFromProtocols)
+  const q = new URLSearchParams({ adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang });
+  const ws = new WebSocket(`${proto}://${location.host}/api/ai/live?${q}`, ['sellzen.v1', `tk.${o.token}`]);
   ws.binaryType = 'arraybuffer';
 
   let ready = false, ended = false, speaking = false, nextAt = 0, floor = 0.01;

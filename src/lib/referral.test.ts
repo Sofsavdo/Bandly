@@ -8,4 +8,5 @@ assert.equal(captureRef('https://b.uz/#/welcome?ref=zz99zzq'), 'zz99zzq');
 assert.equal(captureRef('https://b.uz/?tg=1#tgWebAppStartParam=ref_qwe234r&x=1'), 'qwe234r');
 assert.equal(captureRef('https://b.uz/?ref=BAD'), null);
 assert.equal(getRef(Date.now() + 31 * 86_400_000), undefined, '30 kundan keyin eskiradi');
+assert.equal(captureRef('https://sellzen.uz/?ref=duel7k2m#/duel/ABCD'), 'duel7k2m', 'duel taklif havolasi (duelUrl ref bilan) kodni beradi');
 console.log('referral (client): OK');

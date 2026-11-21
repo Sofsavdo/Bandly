@@ -32,7 +32,7 @@ React 18 + TS 5.6 + Vite 5 SPA served by the Node server. Hash routing, no route
 ## Project-specific rules
 - Never break existing routes or deep links (shared duel links `#/duel/CODE`, lesson links `#/learn/<id>`, `#/login?next=` round-trip, `/certificate/<ID>` path route).
 - Brand: visible "Sellzen"/"Sellzen AI" only; `brand.test.ts` scans `src`, `server`, `index.html`, `public/vositalar`.
-- Keep pages working for guests where `PUBLIC` allows them (currently `#/`, `#/welcome`, `#/placement`, `#/pricing`): no crash when `getAccount()` is null.
+- Keep pages working for guests where `PUBLIC` allows them (currently `#/`, `#/welcome`, `#/placement`, `#/pricing`, `#/duel/<code>`): no crash when `getAccount()` is null.
 - Telegram Mini App: test inside `?tgWebAppStartParam=` flows (`src/lib/telegram.ts`), avoid `window.open` popups — use `<a target="_blank">` or Telegram WebApp APIs.
 
 ## Workflow

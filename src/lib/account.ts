@@ -124,7 +124,17 @@ export const fetchDuel = (code: string): Promise<DuelInfo> => call(`/api/duel/${
 export const submitDuel = (code: string, score: number, correct: number, ms: number): Promise<DuelInfo> =>
   call(`/api/duel/${encodeURIComponent(code)}/submit`, json({ token: getAccount()?.token ?? '', score, correct, ms }));
 
-export const duelUrl = (code: string): string => `${window.location.origin}${window.location.pathname}#/duel/${code}`;
+/** Duel havolasi; ref berilsa — taklif kodi bilan (do'st shu havoladan ro'yxatdan o'tsa taklif qilganga yoziladi, lib/referral.ts captureRef). */
+export const duelUrl = (code: string, ref?: string | null): string => `${window.location.origin}${window.location.pathname}${ref ? `?ref=${encodeURIComponent(ref)}` : ''}#/duel/${code}`;
+
+let refCode: Promise<string | null> | null = null;
+/** O'z taklif kodim (/api/referral), sahifa davomida bir marta so'raladi. Xato yoki mehmon — null. */
+export function myRefCode(): Promise<string | null> {
+  const a = getAccount();
+  if (!a) return Promise.resolve(null);
+  refCode ??= fetch('/api/referral', { headers: { 'x-token': a.token } }).then((r) => (r.ok ? r.json() : null)).then((j: { code?: string } | null) => j?.code ?? null).catch(() => { refCode = null; return null; });
+  return refCode;
+}
 
 /** Boshqa qurilmada kirish: hisob kodi (token) bilan. */
 export async function restoreAccount(code: string): Promise<Account> {

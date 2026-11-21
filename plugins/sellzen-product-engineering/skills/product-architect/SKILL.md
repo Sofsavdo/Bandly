@@ -28,7 +28,7 @@ Read `../../CONTEXT.md` (relative to this file) before anything else, and `../..
 - Mock Arena mocks are free for signed-in users and bundled in every plan. If the owner wants Mock Arena sold separately, that is an OD-08 decision — surface it, don't silently implement it.
 - One learner profile across products: level (`profile.level`), target band, exam date, mastery, mistakes, history. New features must read/write these, not create product-specific copies.
 - Exam Preparation consumes General English mastery (weak grammar/vocab feeds exam plans); Mock Arena results feed both (`recordTestAnswers` in `src/lib/adaptive/record.ts`, `exam_results` on the server).
-- Guests see home, placement and pricing only (`PUBLIC` in `setupGate.ts`). Opening more routes to guests is a growth/monetization trade-off — involve growth-marketing and monetization-engineer.
+- Guests see home, placement, pricing and duel invites only (`PUBLIC` in `setupGate.ts`). Opening more routes to guests is a growth/monetization trade-off — involve growth-marketing and monetization-engineer.
 - Telegram is the identity layer (OD-05). Do not design flows that require email/password.
 - Honesty constraints (CONTEXT §4.9–4.10) are product requirements, not legal footnotes.
 

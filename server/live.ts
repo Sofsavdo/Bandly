@@ -7,6 +7,7 @@ import type { Duplex } from 'node:stream';
 import type { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer, type RawData } from 'ws';
 import { tzDay } from './day';
+import { CALL_MONTH_SECONDS } from './callMinutes';
 
 export interface LiveConfig {
   key: string; model: string; fallbackModel: string | null; voice: string; url: string;
@@ -83,23 +84,36 @@ interface LiveDeps {
   log?: (msg: string) => void;
 }
 
+/** Mijoz tokenni URL'da emas, WebSocket subprotocol sarlavhasida yuboradi: ['sellzen.v1', 'tk.<token>'] —
+ *  URL proksi/kirish loglariga tushadi, sarlavha tushmaydi. */
+export const LIVE_PROTOCOL = 'sellzen.v1';
+export function tokenFromProtocols(header: string | string[] | undefined): string | null {
+  const list = (Array.isArray(header) ? header.join(',') : header ?? '').split(',').map((x) => x.trim());
+  const t = list.find((x) => x.startsWith('tk.'));
+  return t ? t.slice(3) : null;
+}
+
 /** HTTP serverga /api/ai/live WebSocket yo'lini ulaydi. */
 export function attachLive(server: Server, d: LiveDeps): void {
-  const wss = new WebSocketServer({ noServer: true, maxPayload: 256 * 1024 });
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 256 * 1024, handleProtocols: (p) => (p.has(LIVE_PROTOCOL) ? LIVE_PROTOCOL : false) });
   const log = d.log ?? ((m: string) => console.log(m));
   server.on('upgrade', (req: IncomingMessage, socket: Duplex, head: Buffer) => {
-    const url = new URL(req.url ?? '/', 'http://x');
+    // Buzuq manzil (skanerlar) — event handler ichida istisno butun jarayonni yiqitardi; endi ulanish shunchaki yopiladi
+    let url: URL;
+    try { url = new URL(req.url ?? '/', 'http://x'); } catch { socket.destroy(); return; }
     if (url.pathname !== '/api/ai/live') { socket.destroy(); return; }
-    wss.handleUpgrade(req, socket, head, (client) => handleClient(client, url, d, log));
+    // Eski (keshlangan) mijozlar uchun vaqtincha ?token= ham qabul qilinadi
+    const token = tokenFromProtocols(req.headers['sec-websocket-protocol']) ?? url.searchParams.get('token') ?? '';
+    wss.handleUpgrade(req, socket, head, (client) => handleClient(client, url, token, d, log));
   });
 }
 
-function handleClient(client: WebSocket, url: URL, d: LiveDeps, log: (m: string) => void): void {
+function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, log: (m: string) => void): void {
   const send = (o: Record<string, unknown>) => { if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify(o)); };
-  const who = d.auth(String(url.searchParams.get('token') ?? ''));
+  const who = d.auth(token);
   if (!who) { send({ type: 'error', code: 401, message: 'Hisobga kiring' }); client.close(); return; }
   const allowance = liveAllowance(d.cfg, { staff: who.staff, subscriberLeftSec: who.subscriberLeftSec, freeUsedTodaySec: liveUsedToday(d.db, who.id), platformUsedTodaySec: liveUsedTodayAll(d.db) });
-  if (allowance < 5) { send({ type: 'limit', message: 'Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga 60 daqiqa.' }); client.close(); return; }
+  if (allowance < 5) { send({ type: 'limit', message: `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(CALL_MONTH_SECONDS / 60)} daqiqa.` }); client.close(); return; }
 
   const lang = String(url.searchParams.get('lang') ?? 'uz').slice(0, 2);
   const systemText = d.prompt({ adult: url.searchParams.get('adult') === '1', native: d.native(lang), level: url.searchParams.get('level') });

@@ -26,7 +26,7 @@ Design and implement growth mechanics that move **paid conversion and retention*
 
 ## Original mechanics backlog (validate each with a metric before building big)
 1. **Shareable result cards** (placement level, mock band, streak, league finish) as 1080×1920 PNG via `shareCard.ts`, with `?ref=` code embedded.
-2. **Guest-viewable duel invite**: show challenger and score, require Telegram login only to play (needs a gate exception for `#/duel/<code>` — coordinate with product-architect/qa).
+2. **Guest-viewable duel invite** — *shipped 2026-11-21*: guest sees challenger + scores, signs in to play; duel share links carry `?ref=<code>`.
 3. **Speaking challenges**: weekly prompt, 60-second answer with AI feedback, opt-in public leaderboard by fluency metrics (no audio stored unless explicit consent and policy).
 4. **Two-sided referral reward in plan days** (e.g. +7 days All Access) instead of only XP — requires monetization-engineer sign-off on cost.
 5. **Creator program**: unique code → attribution (exists) → commission on *paid* revenue (exists as % calc) → payout ledger and fraud rules (missing; OD-14).
@@ -43,7 +43,7 @@ Design and implement growth mechanics that move **paid conversion and retention*
 ## Project-specific rules
 - Referral rewards today are XP (`REF_XP`, default 100, max 150) to both sides after the invitee's first lesson or placement; changing to plan days or AI minutes needs monetization-engineer sign-off.
 - Creator commission is computed only when `CREATOR_COMMISSION_PCT` is set; there are no payouts — never promise creators automatic payments until a payout ledger exists (OD-14).
-- Guest access is limited to `#/`, `#/welcome`, `#/placement`, `#/pricing`; any new guest route must keep AI/voice behind sign-in and quotas.
+- Guest access is limited to `#/`, `#/welcome`, `#/placement`, `#/pricing`, `#/duel/<code>` (invite preview; playing needs sign-in); any new guest route must keep AI/voice behind sign-in and quotas.
 - Share links must point to `https://sellzen.uz/…` (not the railway.app domain; `brand.test.ts` checks SEO files) and carry `?ref=<code>` for signed-in sharers.
 - Telegram bot username is still `@Bandly_robot`; user-visible copy must say Sellzen.
 
