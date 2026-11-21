@@ -44,7 +44,7 @@ export default function League() {
         {board && board.top.length === 0 && <p>{L('Hali hech kim yo‘q. Birinchi bo‘ling: o‘yin o‘ynab XP yig‘ing!')}</p>}
         {board && board.top.length >= 3 && <Podium rows={board.top.slice(0, 3).map((r) => ({ nickname: r.nickname, xp: r.xp, me: r.me }))} />}
         {board && board.top.length > 0 && (
-          <table className="data" style={{ width: '100%' }}>
+          <div className="table-scroll"><table className="data" style={{ width: '100%' }}>
             <thead><tr><th>#</th><th>{L('Laqab')}</th><th>{L('XP')}</th><th><Flame size={14} /></th></tr></thead>
             <tbody>
               {board.top.map((r) => (
@@ -54,7 +54,7 @@ export default function League() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
         {board?.me && board.me.rank > 20 && <p className="evidence">{L('Sizning o‘rningiz:')} {board.me.rank}{L('-o‘rin,')} {board.me.xp}  {L('XP')}</p>}
         {acc && <p className="evidence">{L('Siz reytingda')} <b>{acc.nickname}</b>  {L('nomi bilan qatnashyapsiz. Hisobdan chiqish — Profil sahifasida.')}</p>}

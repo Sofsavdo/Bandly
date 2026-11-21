@@ -221,7 +221,7 @@ export default function Speaking() {
         {aiEval && <EvalCard ev={aiEval} title={L('AI baho (suhbat matni bo‘yicha)')} />}
         {aiState === 'error' && <p className="notice">{L('AI baho berolmadi:')} {aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">{L('Tariflar')}</a></>}{L('. Quyidagi qoidaviy tahlil ishlaydi.')}</p>}
         <div className="card">
-          <table className="data">
+          <div className="table-scroll"><table className="data wrap">
             <tbody>
               <tr><td>{L('Javoblar soni')}</td><td>{summary.answers}</td></tr>
               <tr><td>{L('Jami so‘zlar / o‘rtacha javob')}</td><td>{summary.words} / {summary.avgWords.toFixed(1)}</td></tr>
@@ -230,7 +230,7 @@ export default function Speaking() {
               <tr><td>{L('Javobdan oldin o‘ylash')}</td><td>{summary.avgLatencySec !== null ? `${summary.avgLatencySec.toFixed(1)} s` : '—'}</td></tr>
               <tr><td>{L('So‘z xilma-xilligi')}</td><td>{(summary.lexicalRatio * 100).toFixed(0)}%</td></tr>
             </tbody>
-          </table>
+          </table></div>
           <h3>{L('Tavsiyalar')}</h3>
           <ul>{summary.notes.map((n) => <li key={n}>{n}</li>)}</ul>
         </div>

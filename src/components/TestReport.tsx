@@ -58,7 +58,7 @@ export function TestReport({ kind, title, questions, graded, answers, startedAt,
       {weak && <p className="notice"><GraduationCap size={16} />  {L('Eng ko‘p xato: {0} ({1}/{2}).', [TYPE_UZ[weak.type], weak.correct, weak.total])} {lesson && <a href={`#/learn/${lesson.id}`}>{L('IELTS kursidagi dars: {0}', [lesson.title])} →</a>}</p>}
       <p className="row">
         {used > 0 && <span className="pill"><Clock size={13} />  {L('Vaqt: {0} / {1}:00', [mmss(used), minutes])}</span>}
-        {blank > 0 && <span className="pill bad">{L('{0} ta savol javobsiz qoldi — imtihonda bo‘sh joy qoldirmang, taxmin qiling', [blank])}</span>}
+        {blank > 0 && <p className="notice tr-blank">{L('{0} ta savol javobsiz qoldi — imtihonda bo‘sh joy qoldirmang, taxmin qiling', [blank])}</p>}
       </p>
       <h3><History size={18} />  {L('Oldingi urinishlar')}</h3>
       {prior.length === 0 ? <p className="muted">{L('Bu testni birinchi marta yechdingiz.')}</p> : (

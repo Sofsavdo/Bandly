@@ -34,7 +34,7 @@ export default function Groups() {
       </section>
       {open.members.length === 0 ? <p className="card muted">{L('Hali o‘quvchi qo‘shilmagan.')}</p> : (
         <section className="card" style={{ overflowX: 'auto' }}>
-          <table className="data">
+          <div className="table-scroll"><table className="data">
             <thead><tr><th>{L('O‘quvchi')}</th><th>{L('Daraja')}</th><th>{L('Seriya')}</th><th>{L('XP (7 kun)')}</th><th>{L('Darslar')}</th><th>{L('Oxirgi mock')}</th><th>{L('Faollik')}</th><th /></tr></thead>
             <tbody>{open.members.map((m) => (
               <tr key={m.id} className={m.xp7 === 0 ? 'idle' : ''}>
@@ -45,7 +45,7 @@ export default function Groups() {
                 <td><button className="icon-btn sm" aria-label={L('Guruhdan chiqarish')} onClick={async () => { if (!confirm(L('{0} guruhdan chiqarilsinmi?', [m.nickname]))) return; await api('DELETE', `/${open.id}/members/${m.id}`).catch(() => undefined); await view(open.id); }}><UserMinus size={14} /></button></td>
               </tr>
             ))}</tbody>
-          </table>
+          </table></div>
           <p className="muted" style={{ marginBottom: 0 }}>{L('7 kun ichida faol bo‘lmaganlar xira ko‘rsatiladi.')}</p>
         </section>
       )}

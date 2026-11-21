@@ -121,10 +121,10 @@ export default function Writing() {
                 </div>
                 <div className="card">
                   <h3 style={{ marginTop: 0 }}>{L('Mavzu so‘zlari')}</h3>
-                  <table className="data">
+                  <div className="table-scroll"><table className="data wrap">
                     <thead><tr><th>{L('So‘z / ibora')}</th><th>{L('Ma’nosi')}</th><th>{L('Misol')}</th></tr></thead>
                     <tbody>{t.vocab.map((x) => <tr key={x.phrase}><td><b>{x.phrase}</b> <span className="evidence">{x.pos}</span></td><td>{x.uz}</td><td>{x.example}</td></tr>)}</tbody>
-                  </table>
+                  </table></div>
                   <p className="evidence">{L('Bu so‘zlar')} <a href="#/games/rush">{L('so‘z o‘yinlarida')}</a>  {L('ham uchraydi.')}</p>
                 </div>
               </>
@@ -146,10 +146,10 @@ export default function Writing() {
             </div>
             <p><b>{p.prompt}</b></p>
             {p.table && (
-              <table className="data">
+              <div className="table-scroll"><table className="data">
                 <thead><tr>{p.table.head.map((h) => <th key={h}>{h}</th>)}</tr></thead>
                 <tbody>{p.table.rows.map((r) => <tr key={r[0]}>{r.map((c, i) => <td key={i}>{c}</td>)}</tr>)}</tbody>
-              </table>
+              </table></div>
             )}
             <div className="row"><span className="pill">{L('Kamida')} {p.minWords}  {L('so‘z ·')} {p.minutes}  {L('daqiqa')}</span><TypeBadge id={p.type} /></div>
             {et && <details style={{ marginTop: 10 }}><summary>{L('Reja:')} {et.name.split(' (')[0]}</summary><ol className="pay-steps">{et.structure.map((s) => <li key={s}>{s}</li>)}</ol><p className="evidence">{et.tipUz}</p></details>}
