@@ -5,11 +5,12 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const walk = (d: string): string[] => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : [p]; });
-const files = [...walk('src'), ...walk('server'), 'index.html', ...walk('public/vositalar')].filter((f) => /\.(tsx?|html|css)$/.test(f) && !/\.test\.ts$/.test(f));
+const files = [...walk('src'), ...walk('server'), 'index.html', ...walk('public/vositalar'), ...walk('public/ru'), 'scripts/seo/gen.ts'].filter((f) => /\.(tsx?|html|css)$/.test(f) && !/\.test\.ts$/.test(f));
 const bad: string[] = [];
 for (const f of files) {
   readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
-    const visible = line.replace(/class BandlyMic|BandlyMic\)|'bandi'|bandly[.\-\w]*/g, '');
+    // HTML teglar olib tashlanadi: "Band<b>ly</b>" ham ekranda "Bandly" bo'lib ko'rinadi
+    const visible = line.replace(/<\/?[a-z][^>]*>/gi, '').replace(/class BandlyMic|BandlyMic\)|'bandi'|bandly[.\-\w]*/g, '');
     if (/\bBandly\b|\bBandi\b/.test(visible)) bad.push(`${f}:${i + 1}: ${line.trim().slice(0, 100)}`);
   });
 }
