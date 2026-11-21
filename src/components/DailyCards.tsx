@@ -26,8 +26,8 @@ export function DailyCards() {
   const listen = () => { void say(w.word, { cancelled: false }, 'en-GB'); };
   const share = async (kind: 'tip' | 'word') => {
     const blob = kind === 'tip'
-      ? await renderCard({ title: L('Kun maslahati'), body: tip.en, sub: tip.uz, foot: L('— Sellzen AI, IELTS ustozi') })
-      : await renderCard({ title: L('Kun so‘zi · {0}', [w.pos]), body: w.word, sub: `${w.uz}. ${w.example}`, foot: L('— Sellzen AI, IELTS ustozi') });
+      ? await renderCard({ title: L('Kun maslahati'), body: tip.en, sub: tip.uz, foot: L('— Sellzen, IELTS ustozi') })
+      : await renderCard({ title: L('Kun so‘zi · {0}', [w.pos]), body: w.word, sub: `${w.uz}. ${w.example}`, foot: L('— Sellzen, IELTS ustozi') });
     if (!blob) return;
     const r = await shareCard(blob, kind === 'tip' ? 'sellzen-maslahat' : 'sellzen-soz', kind === 'tip' ? `${tip.en} — ${location.origin}` : `${w.word}: ${w.def} — ${location.origin}`);
     setMsg(r === 'shared' ? L('Ulashildi') : L('Rasm yuklab olindi'));

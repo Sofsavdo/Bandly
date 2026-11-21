@@ -6,7 +6,7 @@ export const lines = {
   },
   wrong: {
     soft: ['Hechqisi yo‘q, davom eting.', 'Deyarli! Yana urinib ko‘ring.', 'Xato qilish o‘rganishning bir qismi.'],
-    hard: ['Bu so‘zni uchinchi marta ko‘rib turibsan-ku!', 'Lug‘at senga qarab yig‘layapti.', 'Sellzen AI bu xatoni eslab qoldi.', 'Xato! Yana shunday qilsang, daftarga yozib qo‘yaman.'],
+    hard: ['Bu so‘zni uchinchi marta ko‘rib turibsan-ku!', 'Lug‘at senga qarab yig‘layapti.', 'Sellzen bu xatoni eslab qoldi.', 'Xato! Yana shunday qilsang, daftarga yozib qo‘yaman.'],
   },
   combo: ['Seriya! Davom et!', 'To‘xtovsiz!', 'Olov bo‘ldi!'],
   end: {

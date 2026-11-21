@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt } from './coach';
+import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt, liveKickoff } from './coach';
+import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt } from './coachMemory';
 import { tzDay } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { ApiError, PROGRESS_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
@@ -37,7 +38,7 @@ import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
 import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
-import { AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
+import { complete, AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
@@ -57,6 +58,7 @@ const db = createDb(DB_FILE);
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
 expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
 ensureEventsTable(db);
+ensureMemoryTable(db);
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
@@ -602,6 +604,18 @@ if (live) attachLive(httpServer, {
   },
   prompt: (o) => buildLivePrompt(o),
   native: (lang) => nativeOf(lang),
+  // Birinchi qo'ng'iroq — server bo'yicha (boshqa qurilmada ham to'g'ri); xotira — o'tgan qo'ng'iroqlardagi xatolar
+  context: (pid) => ({ firstCall: !db.prepare('SELECT 1 FROM live_usage WHERE player_id = ? LIMIT 1').get(pid), memory: memoryForPrompt(getMemory(db, pid)) }),
+  kickoff: liveKickoff,
+  onTranscript: (pid, turns, lang) => {
+    if (ai.provider === 'none') return;
+    const q = summaryPrompt(turns, nativeOf(lang));
+    void complete(ai, q.system, q.user, { maxTokens: 400, timeoutMs: 20_000 }).then((raw) => {
+      const add = parseSummary(raw);
+      if (add.mistakes.length || add.topics.length) saveMemory(db, pid, mergeMemory(getMemory(db, pid), add));
+      recordAiCost(db, { playerId: pid, feature: 'live-memory', provider: ai.provider, model: ai.model, units: q.system.length + q.user.length + raw.length, unitKind: 'chars', costUsd: 0.0005, estimated: true });
+    }).catch((e) => console.warn('[live] xotira yozilmadi:', (e as Error).message));
+  },
   onEnd: (pid, secs, model) => {
     recordLive(db, pid, secs); addCall(db, pid, secs);
     recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 60) * live.pricePerMin, estimated: true });

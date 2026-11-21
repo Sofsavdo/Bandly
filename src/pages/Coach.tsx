@@ -1,4 +1,4 @@
-// AI ustoz — faqat ovozli suhbat (qo'ng'iroq kabi), bitta personaj: Sellzen AI. Ekranda matn yo'q: ustoz ham, o'quvchi ham faqat gapiradi.
+// AI ustoz — faqat ovozli suhbat (qo'ng'iroq kabi), bitta personaj: Sellzen. Ekranda matn yo'q: ustoz ham, o'quvchi ham faqat gapiradi.
 // Nutq serverda (ElevenLabs Scribe) aniq tanadi: tilni o'zi aniqlaydi, gap tugaganini sukutdan sezadi, ustoz gapirayotganda
 // o'quvchi gapirsa — ustoz to'xtaydi. Xatolar "Xatolarim"ga jimgina yoziladi. Server tanishi bo'lmasa — brauzer tanishi.
 import { Mic, PhoneOff, Square } from 'lucide-react';
@@ -20,17 +20,17 @@ import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
 import { L } from '../i18n';
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
-const PHASE_UZ: Record<Phase, string> = { idle: L('Gapiring — tinglayman'), listening: L('Tinglayapman…'), thinking: L('O‘ylayapman…'), speaking: L('Sellzen AI gapiryapti'), error: L('Qayta urinib ko‘ring') };
+const PHASE_UZ: Record<Phase, string> = { idle: L('Gapiring — tinglayman'), listening: L('Tinglayapman…'), thinking: L('O‘ylayapman…'), speaking: L('Sellzen gapiryapti'), error: L('Qayta urinib ko‘ring') };
 // Suhbat boshlanishi har safar boshqacha (bir xil gap bilan boshlamaslik uchun)
 const OPENERS = [
-  L('Salom! Men Sellzen AI — sizning shaxsiy ingliz tili ustozingizman. Inglizcha gaplashamiz, qiynalsangiz o‘zbekcha so‘rang. So, how was your day?'),
+  L('Salom! Inglizcha gaplashamiz, qiynalsangiz o‘zbekcha so‘rang. So, how was your day?'),
   L('Oh, look who’s here! Okay, English only... mostly. What did you do today?'),
   L('Salom, chempion! Quick question: tea or coffee, and why? Go!'),
-  L('Salom! Men Sellzen AI — sizning shaxsiy ingliz tili ustozingizman. Gapiring, tinglayman. What’s the most interesting thing you did this week?'),
+  L('Salom! Gapiring, tinglayman. What’s the most interesting thing you did this week?'),
   L('Hello there! Let’s see if your English is as good as you think. Tell me about yourself in three sentences.'),
   L('Salom! Bugun sen gapirasan, men kulaman. Tell me, what annoys you the most in your city?'),
 ];
-// AI javob bermasa (provayder band yoki aloqa yo'q) — Sellzen AI buni ovoz bilan aytadi, jim turib qolmaydi
+// AI javob bermasa (provayder band yoki aloqa yo'q) — Sellzen buni ovoz bilan aytadi, jim turib qolmaydi
 const SORRY = [
   L('Uff, aloqam biroz qotib qoldi. Yana bir marta ayting-chi?'),
   L('Kechirasiz, miyam bir soniya o‘chib qoldi. Qaytadan ayting!'),
@@ -40,7 +40,7 @@ const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(s % 60).padS
 
 interface Turn { role: 'learner' | 'coach'; text: string }
 
-/** Javobni gaplarga bo'ladi (birinchi bo'lak qisqa — Sellzen AI tezroq gapira boshlasin). */
+/** Javobni gaplarga bo'ladi (birinchi bo'lak qisqa — Sellzen tezroq gapira boshlasin). */
 export function chunkReply(text: string): string[] {
   const sents = text.split(/(?<=[.!?…])\s+/).map((x) => x.trim()).filter(Boolean);
   const out: string[] = [];
@@ -83,7 +83,7 @@ export default function Coach() {
   const [acc, setAcc] = useState<Account | null>(() => getAccount());
   const [live, setLive] = useState(false);
   const [phase, setPhaseState] = useState<Phase>('idle');
-  const [caption, setCaption] = useState(''); // ovoz ishlamaganda Sellzen AI javobining matni
+  const [caption, setCaption] = useState(''); // ovoz ishlamaganda Sellzen javobining matni
   const [typed, setTyped] = useState('');
   const [textMode, setTextMode] = useState(false); // mikrofon/tanish ishlamasa — yozib javob berish
   const phaseRef = useRef<Phase>('idle');
@@ -193,7 +193,7 @@ export default function Coach() {
       if (turns.current.length % 8 === 0) loadMinutes();
       if (liveRef.current) await tutorSays(line);
     } catch (e) {
-      // Sellzen AI jim qolmaydi: qisqa ovozli uzr aytadi va yana tinglaydi (o'quvchi gapini qayta aytadi)
+      // Sellzen jim qolmaydi: qisqa ovozli uzr aytadi va yana tinglaydi (o'quvchi gapini qayta aytadi)
       setErr((e as Error).message); pending.current = null;
       turns.current = turns.current.slice(0, -1);
       if (liveRef.current) { const line = SORRY[Math.floor(Math.random() * SORRY.length)]!; setEmotion('disappointed'); await tutorSays(line); } else setPhase('error');
@@ -245,10 +245,10 @@ export default function Coach() {
     <div className="tutor">
       <section className="tutor-call voice idle-call">
         {orb}
-        <h2>{L('Sellzen AI')}</h2>
-        <p>{L('Sellzen AI — shaxsiy ingliz tili ustozingiz. Gapiring: tinglaydi, kuladi, kesatadi va xatoingizni aytadi.')}</p>
+        <h2>{L('Sellzen')}</h2>
+        <p>{L('Sellzen — shaxsiy ingliz tili ustozingiz. Gapiring: tinglaydi, kuladi, kesatadi va xatoingizni aytadi.')}</p>
         {minutes?.subscribed && <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span>}
-        {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen AI ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
+        {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         {status && !status.coach && <p className="notice">{L('AI ustoz tez orada ochiladi.')}</p>}
         {!acc
           ? <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />
@@ -261,15 +261,15 @@ export default function Coach() {
     <div className="tutor">
       <section className="tutor-call voice">
         <div className="voice-top">
-          <b>{L('Sellzen AI')}</b>
+          <b>{L('Sellzen')}</b>
           <span className="muted">{mmss(secs)}{minutes?.subscribed ? ` · ${L('{0} daqiqa qoldi', [minutes.left])}` : ''}</span>
         </div>
         <div className="voice-stage">
           {orb}
           <p className="voice-status" aria-live="polite">{PHASE_UZ[phase]}</p>
-          {caption && <p className="tutor-caption" aria-live="polite"><b>{L('Sellzen AI')}:</b> {caption}</p>}
+          {caption && <p className="tutor-caption" aria-live="polite"><b>{L('Sellzen')}:</b> {caption}</p>}
           {err && <p className="tutor-err">{err}</p>}
-          {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen AI ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
+          {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         </div>
         <div className="tutor-ctrl">
           {canListen && !liveRefCall.current && (

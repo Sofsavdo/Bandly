@@ -57,9 +57,9 @@ export function advanceQueue(queue: readonly number[], correct: boolean, retried
 /** Boss joni foizda: har to'g'ri javob bitta "zarba". */
 export const bossHp = (total: number, hits: number): number => (total <= 0 ? 0 : Math.max(0, Math.round(100 * (1 - hits / total))));
 
-// Sellzen AI gaplari — bir xil gap ketma-ket takrorlanmasin
-const PRAISE = [L('Zo‘r!'), L('Aynan shunday!'), L('Ana endi gap boshqa!'), L('To‘ppa-to‘g‘ri!'), L('Sellzen AI hayron qoldi!'), L('Daxshat!'), L('Shunaqa davom eting!')];
-const OOPS = [L('Voy, bo‘lmadi'), L('Yaqin keldingiz, lekin yo‘q'), L('Sellzen AI kuldi — qayta ko‘ring'), L('Hmm, unaqa emas'), L('Xato, lekin bu ham dars')];
+// Sellzen gaplari — bir xil gap ketma-ket takrorlanmasin
+const PRAISE = [L('Zo‘r!'), L('Aynan shunday!'), L('Ana endi gap boshqa!'), L('To‘ppa-to‘g‘ri!'), L('Sellzen hayron qoldi!'), L('Daxshat!'), L('Shunaqa davom eting!')];
+const OOPS = [L('Voy, bo‘lmadi'), L('Yaqin keldingiz, lekin yo‘q'), L('Sellzen kuldi — qayta ko‘ring'), L('Hmm, unaqa emas'), L('Xato, lekin bu ham dars')];
 export function reaction(ok: boolean, n: number): string {
   const list = ok ? PRAISE : OOPS;
   return list[((n % list.length) + list.length) % list.length]!;

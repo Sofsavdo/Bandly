@@ -17,7 +17,7 @@ export function MissionIntro({ unit, lesson, steps, onStart }: { unit: Unit; les
       <div className="mission-top">
         <AiAvatar phase="idle" emotion="sarcastic" size={96} />
         <div className="bubble-say">
-          <small>{L('Sellzen AI')}</small>
+          <small>{L('Sellzen')}</small>
           <p>{L('Missiya: {0}', [unit.situationUz])}</p>
         </div>
       </div>
@@ -152,7 +152,7 @@ export function ListenGame({ items, onDone }: { items: ListenItem[]; onDone: () 
   );
 }
 
-/** Javobdan keyingi panel: rang, Sellzen AI reaksiyasi, to'g'ri javob va izoh, "Davom etish". */
+/** Javobdan keyingi panel: rang, Sellzen reaksiyasi, to'g'ri javob va izoh, "Davom etish". */
 export function FeedbackSheet({ ok, n, answer, explain, onNext, xp }: { ok: boolean; n: number; answer: string; explain: string; onNext: () => void; xp?: number }) {
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => { btn.current?.focus({ preventScroll: true }); btn.current?.scrollIntoView({ block: 'nearest' }); }, []);

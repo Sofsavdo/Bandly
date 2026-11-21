@@ -1,7 +1,7 @@
 // Gemini Live — ovozdan-ovozga (speech-to-speech) AI ustoz. Brauzer bizning serverga WebSocket bilan ulanadi, server esa
 // Gemini Live API'ga (BidiGenerateContent): API kalit brauzerga chiqmaydi, daqiqalar va limitlar serverda hisoblanadi.
 // Brauzer → server: ikkilik kadrlar = 16 kHz PCM16 mikrofon ovozi; JSON {type:'end'} — tugatish.
-// Server → brauzer: ikkilik kadrlar = 24 kHz PCM16 Sellzen AI ovozi; JSON {type:'ready'|'interrupted'|'turn'|'in'|'out'|'error'|'limit'}.
+// Server → brauzer: ikkilik kadrlar = 24 kHz PCM16 Sellzen ovozi; JSON {type:'ready'|'interrupted'|'turn'|'in'|'out'|'error'|'limit'}.
 import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
 import type { DatabaseSync } from 'node:sqlite';
@@ -12,6 +12,8 @@ import { CALL_MONTH_SECONDS } from './callMinutes';
 export interface LiveConfig {
   key: string; model: string; fallbackModel: string | null; voice: string; url: string;
   freeDailySeconds: number; maxSessionSec: number; pricePerMin: number;
+  /** Gap tugadi deb hisoblash uchun jimlik (ms): qanchalik kichik — shunchalik tez javob, lekin o'ylab gapirganda bo'lib yuborish xavfi. */
+  silenceMs: number;
   /** Bepul foydalanuvchilar uchun platforma bo'yicha kunlik umumiy chegara (soniya); 0 — chegarasiz. Xarajat nazorati. */
   freeGlobalDailySeconds: number;
 }
@@ -31,6 +33,7 @@ export function liveConfigFromEnv(geminiKey: string | null, env: NodeJS.ProcessE
     maxSessionSec: Math.max(60, Number(env.LIVE_MAX_SESSION_MINUTES ?? 10) * 60),
     pricePerMin: Number(env.PRICE_LIVE_PER_MIN ?? 0.03),
     freeGlobalDailySeconds: Math.max(0, Number(env.LIVE_FREE_GLOBAL_DAILY_MINUTES ?? 0) || 0) * 60,
+    silenceMs: Math.min(2000, Math.max(300, Number(env.LIVE_SILENCE_MS ?? 600) || 600)),
   };
 }
 
@@ -59,17 +62,33 @@ export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriber
   return Math.min(cfg.maxSessionSec, personal, global);
 }
 
-/** Gemini Live'ga birinchi xabar: model, ovoz, Sellzen AI ko'rsatmasi, ikkala tomon matn nusxasi. */
+/** Gemini Live'ga birinchi xabar: model, ovoz, Sellzen ko'rsatmasi, ikkala tomon matn nusxasi. */
 export function setupMessage(cfg: LiveConfig, model: string, systemText: string): Record<string, unknown> {
   return {
     setup: {
       model: `models/${model}`,
       generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: cfg.voice } } } },
       systemInstruction: { parts: [{ text: systemText }] },
+      // Tezroq navbat almashish: gap tugashini sezgirroq aniqlash va qisqaroq jimlik (standart ancha uzun — "javob kech keladi" shikoyati)
+      realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_HIGH', prefixPaddingMs: 120, silenceDurationMs: cfg.silenceMs } },
       inputAudioTranscription: {},
       outputAudioTranscription: {},
     },
   };
+}
+
+/** Ustoz javobi ruxsat etilmagan tilga o'tib ketdimi (matn nusxasi bo'yicha)? Ruxsat: ingliz + o'quvchi tili.
+ *  Boshqa yozuvlar (xitoy, koreys, arab…) darhol; lotin yozuvidagi ispan/portugal — kamida 2 ta xos so'z bo'lsa. */
+const FOREIGN_SCRIPT = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\u0600-\u06ff\u0590-\u05ff\u0e00-\u0e7f\u0900-\u097f\u10a0-\u10ff\u0530-\u058f]/;
+const CYRILLIC = /[\u0400-\u04ff]/;
+const ES_PT = new Set(['que', 'não', 'nao', 'você', 'voce', 'está', 'estás', 'obrigado', 'obrigada', 'hola', 'gracias', 'porque', 'también', 'também', 'tambem', 'muy', 'pero', 'estoy', 'eres', 'usted', 'bueno', 'entonces', 'então', 'isso', 'fala', 'falar', 'hablar', 'habla', 'puedes', 'pode', 'olá', 'claro', 'ahora', 'agora', 'cómo', 'como', 'qué', 'por', 'favor', 'mucho', 'muito', 'bien', 'bem', 'tienes', 'tem', 'del', 'los', 'las', 'uma', 'una', 'para', 'esto', 'este', 'esta', 'sim']);
+export function wrongLanguage(text: string, nativeCode: string): boolean {
+  if (FOREIGN_SCRIPT.test(text)) return true;
+  if (CYRILLIC.test(text) && !['ru', 'kk', 'ky', 'tg'].includes(nativeCode)) return true;
+  const words = new Set(text.toLowerCase().normalize('NFC').split(/[^\p{L}']+/u).filter(Boolean));
+  let hits = 0;
+  for (const w of words) if (ES_PT.has(w)) hits++;
+  return hits >= 3;
 }
 
 interface LiveDeps {
@@ -77,7 +96,13 @@ interface LiveDeps {
   cfg: LiveConfig;
   /** Token → o'quvchi; null — yaroqsiz */
   auth: (token: string) => { id: number; staff: boolean; subscriberLeftSec: number } | null;
-  prompt: (o: { adult: boolean; native: string; level: string | null }) => string;
+  prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string }) => string;
+  /** O'quvchi uchun: birinchi qo'ng'iroqmi va xotira matni (ko'rsatmaga qo'shiladi) */
+  context?: (playerId: number) => { firstCall: boolean; memory: string };
+  /** Qo'ng'iroq boshidagi ko'rsatma (o'quvchi hali gapirmagan) */
+  kickoff?: (o: { firstCall: boolean; hasMemory: boolean }) => string;
+  /** Qo'ng'iroq tugagach suhbat yozuvi (xotira uchun) */
+  onTranscript?: (playerId: number, turns: { who: 'learner' | 'coach'; text: string }[], nativeCode: string) => void;
   native: (lang: string) => string;
   /** Qo'ng'iroq tugadi: daqiqa va xarajat yoziladi */
   onEnd: (playerId: number, seconds: number, model: string) => void;
@@ -116,7 +141,12 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   if (allowance < 5) { send({ type: 'limit', message: `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(CALL_MONTH_SECONDS / 60)} daqiqa.` }); client.close(); return; }
 
   const lang = String(url.searchParams.get('lang') ?? 'uz').slice(0, 2);
-  const systemText = d.prompt({ adult: url.searchParams.get('adult') === '1', native: d.native(lang), level: url.searchParams.get('level') });
+  const ctx = d.context?.(who.id) ?? { firstCall: false, memory: '' };
+  const systemText = d.prompt({ adult: url.searchParams.get('adult') === '1', native: d.native(lang), level: url.searchParams.get('level'), firstCall: ctx.firstCall, memory: ctx.memory });
+  // Suhbat yozuvi (xotira uchun) va noto'g'ri til himoyasi
+  const turns: { who: 'learner' | 'coach'; text: string }[] = [];
+  const addText = (who: 'learner' | 'coach', t: string) => { const last = turns[turns.length - 1]; if (last && last.who === who) last.text = `${last.text}${t}`.slice(-600); else turns.push({ who, text: t.slice(0, 600) }); if (turns.length > 80) turns.shift(); };
+  let turnOut = '', muted = false, wrongCount = 0;
   const started = Date.now();
   let upstream: WebSocket | null = null;
   let ready = false, closed = false, model = d.cfg.model, triedFallback = false;
@@ -130,7 +160,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     try { client.close(); } catch { /* */ }
     const secs = ready ? (Date.now() - started) / 1000 : 0;
     if (secs > 0) d.onEnd(who.id, secs, model);
-    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why})`);
+    if (turns.filter((t) => t.who === 'learner').length >= 3) { try { d.onTranscript?.(who.id, turns, lang); } catch { /* xotira ixtiyoriy */ } }
+    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why})${wrongCount ? ` til-xato:${wrongCount}` : ''}`);
   };
   const cap = setTimeout(() => { send({ type: 'limit', message: 'Ovozli suhbat vaqti tugadi.' }); finish('limit'); }, allowance * 1000);
 
@@ -144,18 +175,29 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       if (m.setupComplete) {
         ready = true;
         send({ type: 'ready' });
-        // Sellzen AI suhbatni o'zi boshlaydi
-        ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: '(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)' }] }], turnComplete: true } }));
+        // Sellzen suhbatni o'zi boshlaydi
+        const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory }) ?? '(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)';
+        ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: kick }] }], turnComplete: true } }));
         for (const b of pending.splice(0)) forward(b);
         return;
       }
       const sc = m.serverContent;
       if (sc) {
-        for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
-        if (sc.inputTranscription?.text) send({ type: 'in', text: String(sc.inputTranscription.text) });
-        if (sc.outputTranscription?.text) send({ type: 'out', text: String(sc.outputTranscription.text) });
-        if (sc.interrupted) send({ type: 'interrupted' });
-        if (sc.turnComplete) send({ type: 'turn' });
+        if (sc.outputTranscription?.text) {
+          const t = String(sc.outputTranscription.text);
+          turnOut += t;
+          // Ustoz ruxsat etilmagan tilga o'tib ketdi (odatda o'quvchi ovozi noto'g'ri tanilgan): ovozni to'xtatamiz va qayta so'ratamiz
+          if (!muted && wrongLanguage(turnOut, lang)) {
+            muted = true; wrongCount++;
+            send({ type: 'interrupted' });
+            const nat = d.native(lang).replace(/\s*\(.*\)\s*$/, '');
+            ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: your last reply was in a forbidden language — the learner's audio was misheard. Speak ONLY English or ${nat}. Now say ONE short line in ${nat}, in your style, that you did not hear and they must speak louder and clearer.)` }] }], turnComplete: true } }));
+          } else if (!muted) { send({ type: 'out', text: t }); addText('coach', t); }
+        }
+        if (!muted) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
+        if (sc.inputTranscription?.text) { const t = String(sc.inputTranscription.text); send({ type: 'in', text: t }); addText('learner', t); }
+        if (sc.interrupted) { send({ type: 'interrupted' }); turnOut = ''; muted = false; }
+        if (sc.turnComplete) { send({ type: 'turn' }); turnOut = ''; muted = false; }
       }
       if (m.goAway) { send({ type: 'error', code: 503, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
     });
