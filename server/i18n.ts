@@ -38,27 +38,50 @@ export function sources(db: DatabaseSync): string[] {
   return [...set];
 }
 
+/** Repodagi tarjimalar (src/i18n/locales/<til>.json): kodda yozilgan, versiyalanadi, testlar bilan tekshiriladi. */
+const REPO = new Map<Target, Record<string, string>>();
+export function repoLocale(lang: Target): Record<string, string> {
+  let d = REPO.get(lang);
+  if (!d) { try { d = JSON.parse(readFileSync(join(HERE, `../src/i18n/locales/${lang}.json`), 'utf8')) as Record<string, string>; } catch { d = {}; } REPO.set(lang, d); }
+  return d;
+}
+export const __setRepoLocale = (lang: Target, d: Record<string, string>): void => { REPO.set(lang, d); cache.delete(lang); };
+let UI: string[] | null = null;
+/** Interfeys matnlari (ekranlar, server xabarlari, bot) — har bir yoqilgan tilda to'liq bo'lishi shart. */
+export const uiCatalog = (): string[] => (UI ??= (() => { try { return JSON.parse(readFileSync(join(HERE, '../src/i18n/catalog-ui.json'), 'utf8')) as string[]; } catch { return []; } })());
+export const __setUiCatalog = (c: string[]): void => { UI = c; };
+
 const cache = new Map<string, { v: string; dict: Record<string, string> }>();
+/** Lug'at: avvalgi AI tarjimalari (baza) < repodagi tarjimalar < metodist qo'lda tuzatgani (baza, by='human'). */
 export function dictFor(db: DatabaseSync, lang: Target): { v: string; dict: Record<string, string> } {
   const hit = cache.get(lang);
   if (hit) return hit;
-  const rows = db.prepare('SELECT src, text FROM i18n WHERE lang = ?').all(lang) as { src: string; text: string }[];
-  const dict = Object.fromEntries(rows.map((r) => [r.src, r.text]));
-  const v = createHash('sha1').update(rows.map((r) => r.src + '\u0000' + r.text).join('\u0001')).digest('hex').slice(0, 12);
+  const rows = db.prepare('SELECT src, text, by FROM i18n WHERE lang = ?').all(lang) as { src: string; text: string; by: string }[];
+  const dict: Record<string, string> = {};
+  for (const r of rows) if (r.by !== 'human') dict[r.src] = r.text;
+  for (const [k, t] of Object.entries(repoLocale(lang))) if (t) dict[k] = t;
+  for (const r of rows) if (r.by === 'human') dict[r.src] = r.text;
+  const keys = Object.keys(dict).sort();
+  const v = createHash('sha1').update(keys.map((k) => k + '\u0000' + dict[k]).join('\u0001')).digest('hex').slice(0, 12);
   const out = { v, dict };
   cache.set(lang, out);
   return out;
 }
 
-export function coverage(db: DatabaseSync): Record<Target, { done: number; total: number; human: number }> {
-  const src = new Set(sources(db));
-  const out = {} as Record<Target, { done: number; total: number; human: number }>;
+export interface Coverage { done: number; total: number; human: number; repo: number; uiDone: number; uiTotal: number }
+export function coverage(db: DatabaseSync): Record<Target, Coverage> {
+  const all = sources(db), ui = uiCatalog();
+  const out = {} as Record<Target, Coverage>;
   for (const l of TARGETS) {
-    const rows = db.prepare('SELECT src, by FROM i18n WHERE lang = ?').all(l) as { src: string; by: string }[];
-    out[l] = { done: rows.filter((r) => src.has(r.src)).length, total: src.size, human: rows.filter((r) => r.by === 'human').length };
+    const { dict } = dictFor(db, l);
+    const human = (db.prepare("SELECT COUNT(*) AS n FROM i18n WHERE lang = ? AND by = 'human'").get(l) as { n: number }).n;
+    const repo = repoLocale(l);
+    out[l] = { done: all.filter((s) => dict[s]).length, total: all.length, human, repo: all.filter((s) => repo[s]).length, uiDone: ui.filter((s) => dict[s]).length, uiTotal: ui.length };
   }
   return out;
 }
+/** Til tanlovda ko'rinadi: interfeys to'liq tarjima qilingan (yoki umumiy qamrov ≥ 98%). Dars izohlarining qamrovi alohida ko'rsatiladi. */
+export const langReady = (c: Coverage): boolean => (c.uiTotal > 0 && c.uiDone === c.uiTotal) || (c.total > 0 && c.done / c.total >= 0.98);
 
 export function setTranslation(db: DatabaseSync, lang: Target, src: string, text: string, by: 'ai' | 'human', now = Date.now()): void {
   if (by === 'ai') {

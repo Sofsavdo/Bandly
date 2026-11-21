@@ -176,4 +176,13 @@ assert.equal(extend(db, 1, 'exam', 1, T0) > T0, true);
   assert.equal(entitlements(d4, v.token, T0).plan, 'all', 'exam + general = hammasi');
   await assert.rejects(createPayment(d4, fake({}).api, u.token, 'grammar', 30, T0, {}), (er: ApiError) => er.status === 400, 'eski bo‘limni alohida sotib bo‘lmaydi');
 }
+// Demo rejim: to'lov ulangan bo'lsa — hech qachon; production'da faqat PAY_DEMO=1 bilan
+{
+  const { demoMode } = await import('./pricing');
+  assert.equal(demoMode({ NODE_ENV: 'production' }, false), false, 'kalitlar yo‘q bo‘lsa ham production’da demo yo‘q');
+  assert.equal(demoMode({ NODE_ENV: 'production', PAY_DEMO: '1' }, false), true);
+  assert.equal(demoMode({ PAY_DEMO: '1' }, true), false, 'to‘lov ulangan — demo yo‘q');
+  assert.equal(demoMode({}, false), true, 'lokal ishlab chiqish');
+  assert.equal(demoMode({ PAY_DEMO: '0' }, false), false);
+}
 console.log('payments.test: OK');

@@ -15,14 +15,14 @@ import { readingTests } from '../src/content/readingTests';
 import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
-import { PERIODS, PLAN_IDS, priceFor } from './pricing';
+import { demoMode, PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
 import { freeLimitsFromEnv, freeStatus, unlockLesson, wallStats } from './freeQuota';
 import { listStudioTests, publicStudioTests, publishedStudioTests, saveStudioTest, setStudioTestStatus } from './studioTests';
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
-import { startAutoBackup } from './autoBackup';
+import { backupStatus, startAutoBackup } from './autoBackup';
 import { PHOTO_MAX, auditLog, audit, claimAll, composeFull, issueFor, myCertificates, profileOf, publicCertificate, recordResult, revokeCertificate, rules as certRules, savePhoto, searchCertificates, setFullName, setRule, setSettings as setCertSettings, settings as certSettings } from './certificates';
 import { gradeRequest } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
@@ -44,7 +44,7 @@ import { ensureEventsTable, recordEvent } from './events';
 import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
-import { coverage, dictFor, isTarget, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
+import { coverage, dictFor, isTarget, langReady, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { complete, AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
@@ -72,7 +72,7 @@ if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi',
 const hcfg = hamyonConfigFromEnv();
 const hapi = hcfg ? hamyonApi(hcfg) : null;
 // Demo rejim (to'lovsiz yoqish) faqat to'lov ulanmaganda; PAY_DEMO=1 bilan majburan yoqish mumkin
-const DEMO = process.env.PAY_DEMO ? process.env.PAY_DEMO === '1' : !hapi;
+const DEMO = demoMode(process.env, !!hapi);
 const ADMIN_TOKEN = (process.env.ADMIN_TOKEN ?? '').trim();
 // Telegram bot (ixtiyoriy): TELEGRAM_BOT_TOKEN bo'lsa — Telegram orqali kirish, webhook va Mini App tugmasi yoqiladi
 const bot = botFromEnv();
@@ -168,7 +168,7 @@ const httpServer = createServer(async (req, res) => {
     try { url = new URL(req.url ?? '/', 'http://x'); } catch { return send(res, 400, { error: 'Bad request' }); }
     if (req.method === 'POST' && url.pathname === '/api/event') {
       const b = await readJson(req, 256);
-      recordEvent(db, b.name, ip); // anonim: faqat kunlik son; ip faqat xotirada takrorni ajratish uchun
+      recordEvent(db, b.name, ip, b.vid); // anonim identifikator xeshlanadi; IP faqat xotirada (suiiste'mol chegarasi)
       res.writeHead(204); return void res.end();
     }
     if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
@@ -223,7 +223,7 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/i18n') {
       if (!langsCache || Date.now() - langsCache.at > 300_000) {
         const cov = coverage(db);
-        langsCache = { at: Date.now(), langs: ['uz', ...Object.entries(cov).filter(([, c]) => c.total > 0 && c.done / c.total >= 0.98).map(([l]) => l)] };
+        langsCache = { at: Date.now(), langs: ['uz', ...Object.entries(cov).filter(([, c]) => langReady(c)).map(([l]) => l)] };
       }
       return send(res, 200, { langs: langsCache.langs });
     }
@@ -275,7 +275,7 @@ const httpServer = createServer(async (req, res) => {
     // ---- Admin analitikasi ----
     if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
       requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
-      return send(res, 200, { ...analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))), bands: bandStats(db), walls: wallStats(db) });
+      return send(res, 200, { ...analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))), bands: bandStats(db), walls: wallStats(db), backup: backupStatus() });
     }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {

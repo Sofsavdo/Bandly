@@ -143,7 +143,7 @@ export default function Coach() {
         onLevel: (v) => setLvl(v),
         onHeard: () => undefined,
         onSaid: (t) => { if (/\bha(ha)+\b|lol/i.test(t)) setEmotion('laugh'); else if (/damn|hell|shit|what the|ahmoq|tentak|eshak/i.test(t)) setEmotion('angry'); },
-        onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); end(); } },
+        onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); setLiveFailed(true); end(); } }, // keyingi urinish — oddiy ovozli rejim (STT + matn AI + ovoz)
         onLimit: () => { setLimitHit(true); end(); },
         onClosed: () => { if (settled && liveRef.current) end(); done(false); },
         onEmotion: (e) => setEmotion(e),
@@ -270,6 +270,7 @@ export default function Coach() {
           {orb}
           <p className="voice-status" aria-live="polite">{PHASE_UZ[phase]}</p>
           {caption && <p className="tutor-caption" aria-live="polite"><b>{L('Sellzen')}:</b> {caption}</p>}
+          {liveFailed && !!status?.live && <p className="notice" role="status">{L('Jonli ovozli suhbat hozir ishlamayapti — oddiy ovozli rejimda davom etamiz: siz gapirasiz, Sellzen matn va ovoz bilan javob beradi.')}</p>}
           {err && <p className="tutor-err">{err}</p>}
           {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
         </div>

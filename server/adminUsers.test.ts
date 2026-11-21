@@ -8,7 +8,7 @@ const T = Date.UTC(2026, 10, 1);
 join(db, 'Ali_100', T); join(db, 'Aliya', T + 1000); join(db, 'Vali', T + 2000); join(db, 'x_y', T + 3000);
 grant(db, 'Aliya', 'all', 30, T);
 const aliyaId = (db.prepare("SELECT id FROM players WHERE nickname = 'Aliya'").get() as { id: number }).id;
-db.prepare("INSERT INTO payments (id, player_id, track, days, amount, hamyon_amount, status, created_at, paid_at) VALUES ('p1', ?, 'all', 30, 129000, 129000, 'paid', ?, ?)").run(aliyaId, T, T + 5);
+db.prepare("INSERT INTO payments (id, player_id, track, days, amount, hamyon_amount, status, created_at, paid_at) VALUES ('p1', ?, 'all', 30, 129000, 129000, 'success', ?, ?)").run(aliyaId, T, T + 5);
 db.prepare("INSERT INTO payments (id, player_id, track, days, amount, status, created_at) VALUES ('p2', ?, 'all', 30, 129000, 'cancel', ?)").run(aliyaId, T);
 
 const r = findUsers(db, 'ali');

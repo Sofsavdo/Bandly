@@ -22,6 +22,7 @@ import { L } from '../i18n';
 import { SALE_PLANS } from '../config';
 import { fmtSum } from '../lib/pay';
 import { QuickLinks } from '../components/QuickLinks';
+import { track } from '../lib/track';
 
 /** Ro'yxatdan o'tish → shaxsiy reja (maqsad) → daraja testi: mehmon uchun yagona yo'l. */
 const SIGNUP = `#/login?next=${encodeURIComponent('#/start')}`;
@@ -42,6 +43,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   useEffect(() => { void authConfig().then((c) => setBot(c.telegram?.bot ?? null)); }, []);
   const tests = readingTests.length + listeningTests.length;
   const onboarded = !!loadAnswers();
+  useEffect(() => { if (isNew && !acc) track('landing_view'); }, [isNew, acc]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isNew) return (
     <div>
@@ -53,7 +55,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <div className="cta">
             {!acc ? <>
               {/* Mehmon faqat landingni ko'radi: ro'yxatdan o'tish → maqsad va reja → daraja testi (natija darhol hisobda) */}
-              <a className="btn primary lg" href={SIGNUP}>{L('Bepul boshlash')} <ArrowRight size={18} /></a>
+              <a className="btn primary lg" href={SIGNUP} onClick={() => track('signup_start')}>{L('Bepul boshlash')} <ArrowRight size={18} /></a>
               <a className="btn lg" href="#/login">{L('Kirish')}</a>
             </> : onboarded
               ? <><a className="btn primary lg" href="#/placement">{L('Darajamni aniqlash')} <ArrowRight size={18} /></a><a className="btn lg" href="#/start">{L('Mening rejam')}</a></>
@@ -100,7 +102,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
               <div key={pl.id} className={`card${pl.recommended ? ' best' : ''}`}><h3>{pl.title}</h3><p className="price">{fmtSum(pl.monthlyUzs)} {L('so‘m / oy')}</p><ul>{pl.features.slice(0, 3).map((f) => <li key={f}><Check size={15} />{f}</li>)}</ul></div>
             ))}
           </div>
-          <div className="row" style={{ justifyContent: 'center', margin: '6px 0 22px' }}><a className="btn primary lg" href={SIGNUP}>{L('Bepul boshlash')} <ArrowRight size={18} /></a></div>
+          <div className="row" style={{ justifyContent: 'center', margin: '6px 0 22px' }}><a className="btn primary lg" href={SIGNUP} onClick={() => track('signup_start')}>{L('Bepul boshlash')} <ArrowRight size={18} /></a></div>
         </>
       )}
 

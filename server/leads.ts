@@ -87,7 +87,7 @@ export function listLeads(db: DatabaseSync, status: string | null, limit = 200, 
   const st = status && (LEAD_STATUSES as readonly string[]).includes(status) ? status : null;
   const rows = db.prepare(`SELECT l.player_id, p.nickname, l.phone, l.source, l.goal, l.level, l.minutes, l.status, l.note, l.handled_by, p.created_at, p.updated_at, p.xp, l.created_at AS lc, l.updated_at AS lu,
       (SELECT MAX(until) FROM subscriptions s WHERE s.player_id = l.player_id AND s.until > ?) AS sub,
-      (SELECT COUNT(*) FROM payments y WHERE y.player_id = l.player_id AND y.status = 'paid') AS paid
+      (SELECT COUNT(*) FROM payments y WHERE y.player_id = l.player_id AND y.status = 'success') AS paid
     FROM leads l JOIN players p ON p.id = l.player_id ${st ? 'WHERE l.status = ?' : ''} ORDER BY l.created_at DESC LIMIT ?`)
     .all(...(st ? [now, st, limit] : [now, limit])) as Record<string, any>[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   return rows.map((r) => ({ playerId: r.player_id, nickname: r.nickname, phone: r.phone, source: r.source, goal: r.goal, level: r.level, minutes: r.minutes, status: r.status, note: r.note, handledBy: r.handled_by, signedUpAt: r.created_at, lastActiveAt: r.updated_at, xp: r.xp, subscribedUntil: r.sub ?? null, paidCount: r.paid, createdAt: r.lc, updatedAt: r.lu }));
