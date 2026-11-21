@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { Gate } from './components/Gate';
 import { useHash } from './components/hooks';
 import { Footer } from './components/Footer';
@@ -45,15 +45,18 @@ import Coach from './pages/Coach';
 import Mistakes from './pages/Mistakes';
 import Challenge from './pages/Challenge';
 import Boss from './pages/Boss';
-import Studio from './pages/Studio';
-import Admin from './pages/Admin';
-import Creator from './pages/Creator';
-import IeltsCourse from './pages/IeltsCourse';
 import Groups from './pages/Groups';
 import Login from './pages/Login';
-import Certificates from './pages/Certificates';
-import CertificateVerify from './pages/CertificateVerify';
 import { L } from './i18n';
+// Kam ishlatiladigan og'ir sahifalar alohida bo'laklarda (vite.config.ts manualChunks): xodimlar paneli, sertifikat
+// chizish + QR, IELTS kursi kontenti. Ular kerak bo'lganda yuklanadi — asosiy "app" bo'lagi kichrayadi.
+const Studio = lazy(() => import('./pages/Studio'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Creator = lazy(() => import('./pages/Creator'));
+const IeltsCourse = lazy(() => import('./pages/IeltsCourse'));
+const Certificates = lazy(() => import('./pages/Certificates'));
+const CertificateVerify = lazy(() => import('./pages/CertificateVerify'));
+const Loading = () => <div className="card">{L('Yuklanmoqda…')}</div>;
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,
@@ -112,7 +115,7 @@ function testRoute(hash: string): ReactNode | null {
 /** Ommaviy sertifikat tekshirish: /certificate/<ID> (QR-kod) — hash yo'llaridan oldin, hisobsiz. */
 export default function App() {
   const certId = typeof location !== 'undefined' ? location.pathname.match(/^\/certificate\/([A-Za-z0-9-]{6,40})\/?$/)?.[1] : undefined;
-  return certId ? <CertificateVerify id={certId.toUpperCase()} /> : <MainApp />;
+  return certId ? <Suspense fallback={<Loading />}><CertificateVerify id={certId.toUpperCase()} /></Suspense> : <MainApp />;
 }
 
 function MainApp() {
@@ -147,7 +150,7 @@ function MainApp() {
   return (
     <>
       <Header hash={hash} />
-      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.some((c) => c.href === hash) && <SubNav items={where.section.children} hash={hash} />}{page}</main>
+      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.some((c) => c.href === hash) && <SubNav items={where.section.children} hash={hash} />}<Suspense fallback={<Loading />}>{page}</Suspense></main>
       <Footer />
       <PlanRunBar hash={hash} />
       <TabBar hash={hash} />
