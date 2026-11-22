@@ -4,7 +4,7 @@ import { FREE_INFO, SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '.
 import { fmtDate, fmtSum, payConfig, startPurchase, type PayConfig } from '../lib/pay';
 import { setPlan, useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
-import { track } from '../lib/track';
+import { track, trackUser } from '../lib/track';
 import { L } from '../i18n';
 
 const ICON: Record<PlanId, typeof Bot> = { general: Bot, exam: Target, all: Crown };
@@ -17,7 +17,7 @@ export default function Pricing() {
   const [ai, setAi] = useState<boolean | null>(null);
   const [days, setDays] = useState(30);
   useEffect(() => {
-    track('pricing_view');
+    track('pricing_view'); trackUser('pricing_view');
     void payConfig().then(setCfg);
     void fetch('/api/ai/status').then((r) => r.json()).then((j: { enabled?: boolean }) => setAi(!!j.enabled)).catch(() => setAi(false));
   }, []);

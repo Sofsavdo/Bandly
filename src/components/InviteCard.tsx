@@ -1,5 +1,6 @@
 // Profil: do'stlarni taklif qilish — shaxsiy havola (sayt va Telegram), ulashish, statistika.
 import { Copy, Gift, Share2 } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { L } from '../i18n';
@@ -18,6 +19,7 @@ export function InviteCard() {
   const link = r.bot ? `https://t.me/${r.bot}?start=ref_${r.code}` : `${location.origin}/?ref=${r.code}`;
   const text = L('Men Sellzen’da ingliz tilini o‘rganyapman — sen ham qo‘shil:');
   const share = async () => {
+    trackUser('referral_share');
     try { if (navigator.share) { await navigator.share({ title: 'Sellzen', text, url: link }); return; } } catch { /* bekor qilindi */ }
     await navigator.clipboard?.writeText(`${text} ${link}`).catch(() => undefined); setMsg(L('Havola nusxalandi'));
   };

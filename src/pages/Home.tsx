@@ -5,6 +5,7 @@ import { ALL_LESSONS, UNITS } from '../content/lessons';
 import { DailyCards } from '../components/DailyCards';
 import { ProgressCard } from '../components/ProgressCard';
 import { PlanCard } from '../components/PlanCard';
+import { InsightsCard } from '../components/InsightsCard';
 import { ExamHero } from '../components/ExamHero';
 import { QuestsCard } from '../components/QuestsCard';
 import { Illo } from '../components/Illo';
@@ -153,6 +154,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
       <QuickLinks />
       <ExamHero />
       {lvl && <PlanCard />}
+      {lvl && <InsightsCard />}
 
       {/* Bitta ixcham kartochka: davom ettirish + asosiy ko'rsatkichlar + bugungi maqsad (avval 4 ta katta blok edi) */}
       <section className="card prog">

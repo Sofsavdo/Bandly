@@ -1,5 +1,6 @@
 // #/start — ro'yxatdan o'tishdan oldingi savolnoma: 8 ta qisqa savol (bir bosishda keyingisiga o'tadi) → shaxsiy reja → hisob.
 import { ArrowLeft, ArrowRight, CalendarDays, Check, Rocket } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { useMemo, useState } from 'react';
 import { JoinForm } from '../components/JoinForm';
 import { Illo } from '../components/Illo';
@@ -55,7 +56,7 @@ export default function Start() {
   };
 
   const finish = (ans: Answers) => {
-    saveAnswers(ans);
+    saveAnswers(ans); trackUser('onboarding_done');
     savePrefs({ goal: ans.goal, minutes: ans.minutes });
     const band = targetBand(ans.goal, ans.target);
     if (band !== null || ans.examDate) setTarget(band ?? p.target, ans.examDate ?? p.examDate);

@@ -1,6 +1,7 @@
 // Admin kabineti: analitika (Umumiy · O'sish · Natijalar · Tizim), lidlar, foydalanuvchilar, to'lovlar, xodimlar, sertifikatlar.
 // Analitika yuklanmasa ham boshqa tablar ishlaydi (avval xato butun kabinetni to'sardi).
 import { BarChart3, RefreshCw } from 'lucide-react';
+import { CohortPanel, type Cohort2 } from '../components/AdminCohort';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
@@ -19,6 +20,7 @@ interface Data {
   walls?: { walled: number; converted: number; rate: number | null; today: number };
   backup?: { enabled: boolean; keepDays: number; newestLocalAt: number | null; localCount: number; lastError: string | null; offsite: 'not_configured' | 'misconfigured' | 'configured'; lastOffsiteAt: number | null; lastOffsiteError: string | null; stale: boolean };
   growth?: { events: Record<string, { total: number; unique: number }>; visitors: { landing: number; signupStart: number; pricing: number; checkout: number; landingToSignupStartPct: number | null }; cohort: { signups: number; placement: number; lesson: number; mock: number; paid: number; renewed: number; placementPct: number | null; lessonPct: number | null; mockPct: number | null; paidPct: number | null }; previous: { signups: number; placement: number; lesson: number; mock: number; paid: number; renewed: number }; referredSignups: number; referredActivated: number; referredSharePct: number | null };
+  cohort2?: Cohort2; definitions?: Record<string, string>;
   bands?: { learners: number; withBaseline: number; measured: number; avgGain: number | null; medianGain: number | null; shareHalf: number | null; shareOne: number | null; avgDays: number | null; officials: number; officialVsBaseline: number | null };
 }
 
@@ -151,6 +153,7 @@ export default function Admin() {
       </>}
 
       {sub === 'growth' && <>
+        {data.cohort2 && <CohortPanel c={data.cohort2} defs={data.definitions} />}
         {g && (
           <section className="card">
             <h3 style={{ marginTop: 0 }}>{L('Voronka: shu davrda ro‘yxatdan o‘tganlar')}</h3>

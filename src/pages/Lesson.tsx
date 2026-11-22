@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Star, Volume2 } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { say, stopSpeaking } from '../lib/speech';
 import { ItemView } from '../components/LessonItem';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -163,6 +164,7 @@ export default function LessonPage({ id }: { id: string }) {
       ) : !started ? (
         <MissionIntro unit={unit} lesson={lesson} steps={steps.map((st) => STEP_UZ[st])} onStart={() => {
           // Bepul tarif: o'tilgan dars — takrorlash bepul; yangi dars — kunlik kvotadan (obunachiga cheklov yo'q)
+          trackUser('lesson_start');
           if (loadProgress()[lesson.id]?.passedAt) { setStarted(true); return; }
           void requestUnlock(ielts ? 'ielts' : 'ge', lesson.id).then((r) => { if (r.ok) setStarted(true); else setLimitAt(r.resetAt); });
         }} />

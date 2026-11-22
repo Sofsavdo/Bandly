@@ -1,4 +1,5 @@
 import { Lightbulb, Mic, ShieldCheck, Sparkles } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { Illo } from '../components/Illo';
 import { useEffect, useRef, useState } from 'react';
 import { EvalCard } from '../components/EvalCard';
@@ -114,7 +115,7 @@ export default function Speaking() {
     let aiAsked = 0;
     sig.current = { cancelled: false };
     const ex = new Examiner(Math.random, personaLevel(profile), profile.level);
-    setStage('live');
+    setStage('live'); trackUser('speaking_start');
     let step = ex.start();
     while (!sig.current.cancelled) {
       setPart(step.part); setInterim(''); setTyped(''); setElapsed(0); setFlash(false); flashed.current = false;

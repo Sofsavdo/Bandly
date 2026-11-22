@@ -1,4 +1,5 @@
 import { CalendarCheck, ArrowRight, Play } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { startRun, type RunTask } from '../lib/planRun';
 import { ALL_NODES, nodeById, skillNodeTitle, topicOfNode } from '../content/curriculum/inventory';
 import { ALL_LESSONS, nextIeltsLesson } from '../content/lessons';
@@ -17,12 +18,15 @@ import { useProfile } from '../lib/store';
 import { dueMistakes } from '../lib/mistakes';
 import { L } from '../i18n';
 
-const ERR_UZ: Record<string, string> = {
+export const ERR_UZ: Record<string, string> = {
   'G.tense': L('zamonlar'), 'G.article': L('artikllar'), 'G.preposition': L('predloglar'), 'G.sva': L('ega-kesim moslashuvi'), 'G.word_order': L('so‘z tartibi'), 'G.modal': L('modal fe’llar'),
   'G.conditional': L('shart gaplar'), 'G.plural': L('ko‘plik'), 'G.pronoun': L('olmoshlar'), 'G.quantifier': L('miqdor'), 'G.passive': L('majhul nisbat'), 'G.relative_clause': L('nisbiy gaplar'),
   'G.comparison': L('taqqoslash'), 'G.gerund_infinitive': L('gerund/infinitiv'), 'G.complex_structure': L('murakkab tuzilmalar'), 'V.word_choice': L('so‘z tanlash'), 'V.spelling': L('imlo'),
   'R.inference': L('xulosa chiqarish (Reading)'), 'R.detail': L('tafsilotni topish (Reading)'), 'R.main_idea': L('asosiy g‘oya (Reading)'),
   'L.detail': L('tafsilotni eshitish (Listening)'), 'L.gist': L('umumiy mazmun (Listening)'), 'L.distractor': L('chalg‘ituvchi javoblar (Listening)'),
+  'V.collocation': L('so‘z birikmalari'), 'V.form': L('so‘z shakli'), 'P.stress': L('urg‘u'), 'P.phoneme': L('tovushlar talaffuzi'), 'P.intonation': L('ohang'),
+  'S.hesitation': L('to‘xtalib qolish (Speaking)'), 'S.fluency': L('ravonlik (Speaking)'), 'S.coherence': L('fikrni bog‘lash (Speaking)'),
+  'W.coherence': L('bog‘lanish (Writing)'), 'W.task_response': L('topshiriqqa javob (Writing)'), 'W.organisation': L('tuzilish (Writing)'), 'W.sentence_variety': L('gap xilma-xilligi (Writing)'),
 };
 const levelOf = (l: string): number => ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].indexOf(l);
 
@@ -68,6 +72,10 @@ function PlanBody() {
   const { tasks: plan, weak } = buildDailyPlan({ level: p.level!, saved, prefs: { ...prefs, minutes }, skills, examDate, now: Date.now() });
   const planKey = plan.map((t) => t.nodeId).join(',');
   useEffect(() => { recordPlanned(today, planKey ? planKey.split(',') : []); }, [today, planKey]);
+  // Analytics 2.0: bugungi rejadagi barcha vazifalar bugun bajarilgan bo'lsa — plan_done (kuniga bir marta sanaladi)
+  const plannedToday = loadLog()[today] ?? [];
+  const planDone = plannedToday.length > 0 && plannedToday.every((id) => saved.mastery[id]?.lastDay === today);
+  useEffect(() => { if (planDone) trackUser('plan_done'); }, [planDone]);
   const weekTarget = weeklyLessonTarget(prefs.minutes);
   const since = weekStart();
   const lp = loadProgress();

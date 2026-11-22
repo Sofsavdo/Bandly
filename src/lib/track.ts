@@ -24,3 +24,17 @@ export function track(name: TrackEvent): void {
     void fetch('/api/event', { method: 'POST', headers: { 'content-type': 'application/json' }, body, keepalive: true }).catch(() => undefined);
   } catch { /* o'lchov ixtiyoriy */ }
 }
+
+// Kirgan o'quvchining hodisasi (Analytics 2.0, server/userEvents.ts): ichki hisob bo'yicha, bir kunda bir marta sanaladi.
+export type UserEvent = 'onboarding_done' | 'lesson_start' | 'mock_start' | 'speaking_start' | 'writing_start' | 'plan_done' | 'pricing_view' | 'checkout_start' | 'referral_share' | 'insight_follow';
+const sentToday = new Set<string>();
+export function trackUser(name: UserEvent): void {
+  try {
+    const tk = (JSON.parse(localStorage.getItem('bandly.account.v1') ?? 'null') as { token?: string } | null)?.token;
+    if (!tk) return;
+    const key = `${name}:${new Date().toDateString()}`;
+    if (sentToday.has(key)) return; // shu sahifa sessiyasida takror yubormaymiz (server baribir deduplikatsiya qiladi)
+    sentToday.add(key);
+    void fetch('/api/uevent', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': tk }, body: JSON.stringify({ name }), keepalive: true }).catch(() => undefined);
+  } catch { /* o'lchov ixtiyoriy */ }
+}

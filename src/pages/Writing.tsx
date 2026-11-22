@@ -1,4 +1,5 @@
 import { BookOpenCheck, CheckCircle2, CircleAlert, Layers, PenLine, Sparkles } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { EvalCard } from '../components/EvalCard';
 import { JoinForm } from '../components/JoinForm';
@@ -156,7 +157,7 @@ export default function Writing() {
             {topic && <details style={{ marginTop: 6 }}><summary>{L('Mavzu so‘zlari (')}{topic.title})</summary><p className="fb-line">{topic.vocab.map((x) => <span key={x.phrase} className="chip-up" title={x.uz}>{x.phrase}</span>)}</p></details>}
           </div>
           <div className="card">
-            <textarea className="essay" value={text} onChange={(e) => setText(e.target.value)} placeholder={L('Javobingizni inglizcha yozing... (abzatslarni bo‘sh qator bilan ajrating)')} />
+            <textarea className="essay" value={text} onChange={(e) => { if (!text) trackUser('writing_start'); setText(e.target.value); }} placeholder={L('Javobingizni inglizcha yozing... (abzatslarni bo‘sh qator bilan ajrating)')} />
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <span className={words >= p.minWords ? 'ok' : 'pill'}>{words}  {L('so‘z')}</span>
               {aiOn && acct && <button className="btn" disabled={aiBusy || words < 30} onClick={() => { setAiBusy(true); setAiErr(''); aiEvaluateWriting(p.task, p.prompt, text).then((e) => { setAiEval(e); addXp(10); saveResult({ kind: 'writing', title: `${p.title} · AI`, correct: Object.values(e.bands).filter((x) => x !== null).length, total: 4, band: e.overall }); }).catch((e: Error) => setAiErr(e.message)).finally(() => setAiBusy(false)); }}>{aiBusy ? L('AI baholayapti…') : L('AI baholash')}</button>}
