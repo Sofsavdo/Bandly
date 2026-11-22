@@ -81,5 +81,15 @@
   "(inglizcha qayta tanildi)",
   "AND test_id = ?",
   "til-xato:{0}",
-  "yo‘q (demo)"
+  "yo‘q (demo)",
+  "He is … / She is …",
+  "How do you feel about…?",
+  "How much is / are …?",
+  "My name is … / My surname is …",
+  "Opponents of this view claim that…",
+  "When in Rome, do as the Romans do.",
+  "Why don’t you…?",
+  "\\b(unfair|unhappy|unusual|unclear|unpaid|unreliable|unprofessional|unnecessary|dishonest|dissatisfied|disorganised|disorganized|impossible|impatient|impolite|illegal|illogical|irresponsible|irregular|irrelevant|inaccurate|inefficient|incorrect|inconvenient)\\b",
+  "\\b(unpossible|inlegal|unlegal|unresponsible|disresponsible|unhonest|unregular)\\b",
+  "\\bhighly (likely|unlikely|effective|recommended|qualified|popular|valued|regarded)\\b"
 ]
