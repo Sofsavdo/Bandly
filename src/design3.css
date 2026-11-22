@@ -1206,3 +1206,32 @@ h2 { font-size: clamp(22px, 2.6vw, 28px); }
 .lead-form input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--line); font-size: 16px; background: var(--surface); color: var(--ink); }
 .lead-consent { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
 .lead-consent input { margin-top: 2px; flex: none; }
+
+/* ---------- Admin analitikasi ---------- */
+.seg-scroll { max-width: 100%; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+.seg-scroll::-webkit-scrollbar { display: none; }
+.seg-scroll button { flex: 0 0 auto; white-space: nowrap; }
+.acharts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 16px; }
+.acharts .card { margin: 0; }
+.acharts .abars { margin: 0; }
+.afunnel { display: grid; gap: 10px; }
+.afstep { display: grid; grid-template-columns: minmax(110px, 160px) 1fr 56px 52px 64px; align-items: center; gap: 10px; font-size: 14px; }
+.afstep > span { color: var(--ink-2); font-weight: 600; }
+.afbar { height: 16px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.afbar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--brand), var(--lilac)); }
+.afstep b { text-align: right; font-variant-numeric: tabular-nums; }
+.afstep small { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.adelta { font-style: normal; font-weight: 700; font-size: 12px; }
+.adelta.up { color: var(--ok, #1f9d61); } .adelta.down { color: var(--danger, #d14343); }
+details.card > summary { cursor: pointer; list-style: none; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card[open] > summary { margin-bottom: 12px; }
+@media (max-width: 560px) {
+  .afstep { grid-template-columns: 1fr 52px 48px; row-gap: 4px; }
+  .afstep > span { grid-column: 1 / -1; }
+  .afstep .afbar { grid-column: 1 / 2; }
+  .afstep small:last-child { display: none; }
+}
+.page-head .seg.seg-inline { display: inline-flex; width: auto; }
+.card .kpis { margin: 0; }
+.card .kpis .kpi2 { background: var(--surface-2); box-shadow: none; }
