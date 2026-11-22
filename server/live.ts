@@ -85,13 +85,31 @@ export function setupMessage(cfg: LiveConfig, model: string, systemText: string)
 const FOREIGN_SCRIPT = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\u0600-\u06ff\u0590-\u05ff\u0e00-\u0e7f\u0900-\u097f\u10a0-\u10ff\u0530-\u058f]/;
 const CYRILLIC = /[\u0400-\u04ff]/;
 const ES_PT = new Set(['que', 'não', 'nao', 'você', 'voce', 'está', 'estás', 'obrigado', 'obrigada', 'hola', 'gracias', 'porque', 'también', 'também', 'tambem', 'muy', 'pero', 'estoy', 'eres', 'usted', 'bueno', 'entonces', 'então', 'isso', 'fala', 'falar', 'hablar', 'habla', 'puedes', 'pode', 'olá', 'claro', 'ahora', 'agora', 'cómo', 'como', 'qué', 'por', 'favor', 'mucho', 'muito', 'bien', 'bem', 'tienes', 'tem', 'del', 'los', 'las', 'uma', 'una', 'para', 'esto', 'este', 'esta', 'sim']);
+// O'zbekcha (lotin) — o'quvchi o'zbek bo'lmasa: kamida 2 ta xos so'z yoki o‘/g‘ bilan so'z
+const UZ_WORDS = new Set(['siz', 'sizga', 'sizni', 'bilan', 'emas', 'yaxshi', 'qanday', 'nima', 'kerak', 'uchun', 'juda', 'endi', 'yana', 'ayting', 'aytchi', 'gapiring', 'gapir', 'deding', 'dedingiz', 'tushunmadim', 'ajoyib', 'barakalla', 'xato', 'javob', 'savol', 'ingliz', 'tili', 'tilida', 'qiling', 'keling', 'lekin', 'chunki', 'hozir', 'qaytadan', 'mana', 'kechirasiz', 'rahmat', 'qani', 'ustozingizman', 'deymiz']);
+const UZ_APOS = /\b[a-z]*[og][‘'ʻ’][a-z]+/i;
+// Sof ruscha matn — o'quvchi qozoq/qirg'iz/tojik bo'lsa (o'z harflari yo'q va ruscha yordamchi so'zlar ko'p)
+const RU_WORDS = new Set(['что', 'это', 'ты', 'вы', 'как', 'мне', 'тебе', 'пожалуйста', 'давай', 'скажи', 'говори', 'правильно', 'хорошо', 'очень', 'нужно', 'надо', 'потому', 'сейчас', 'ещё', 'еще', 'тоже', 'только', 'повтори', 'понял', 'поняла', 'теперь', 'здесь', 'почему']);
+const OWN_LETTERS: Record<string, RegExp> = { kk: /[әғқңөұүһі]/i, ky: /[ңөү]/i, tg: /[ҳқғӣӯҷ]/i };
 export function wrongLanguage(text: string, nativeCode: string): boolean {
   if (FOREIGN_SCRIPT.test(text)) return true;
   if (CYRILLIC.test(text) && !['ru', 'kk', 'ky', 'tg'].includes(nativeCode)) return true;
-  const words = new Set(text.toLowerCase().normalize('NFC').split(/[^\p{L}']+/u).filter(Boolean));
+  const words = new Set(text.toLowerCase().normalize('NFC').split(/[^\p{L}'‘’ʻ]+/u).filter(Boolean));
   let hits = 0;
   for (const w of words) if (ES_PT.has(w)) hits++;
-  return hits >= 3;
+  if (hits >= 3) return true;
+  if (nativeCode !== 'uz') {
+    let uz = UZ_APOS.test(text) ? 1 : 0;
+    for (const w of words) if (UZ_WORDS.has(w.replace(/[‘'ʻ’].*$/, ''))) uz++;
+    if (uz >= 2) return true;
+  }
+  const own = OWN_LETTERS[nativeCode];
+  if (own && !own.test(text)) {
+    let ru = 0;
+    for (const w of words) if (RU_WORDS.has(w)) ru++;
+    if (ru >= 3) return true;
+  }
+  return false;
 }
 
 interface LiveDeps {

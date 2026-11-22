@@ -86,3 +86,25 @@ console.log('coach.test: OK');
   assert.equal(resolvePersona('strict', { adult: false, mode: 'practice' }).id, 'strict');
   assert.equal(resolvePersona('strict', { adult: false, mode: 'exam' }).id, 'examiner');
 }
+
+// O'zbek bo'lmagan o'quvchi: ko'rsatmada o'zbekcha namuna gap bo'lmasligi kerak (aks holda model o'zbekcha gapirib yuboradi)
+{
+  const { buildLivePrompt: blp, buildPrompt: bp } = await import('./coach');
+  const UZ_SAMPLE = /Men Sellzen|tushunmadim|nima deding|tentak|eshak|ahmoq|dahshat|uyat|g'o'ldira/i;
+  for (const [native, own] of [['Kyrgyz (Cyrillic)', 'устатыңызмын'], ['Tajik (Cyrillic)', 'устоди'], ['Kazakh (Cyrillic)', 'ұстазыңызбын'], ['Russian', 'преподаватель']] as const) {
+    for (const style of [0, 1, 2, 3] as const) {
+      const p = blp({ adult: true, native, level: 'B1', firstCall: true, style });
+      assert.ok(!UZ_SAMPLE.test(p), `${native} style ${style}: o'zbekcha namuna qolgan`);
+      assert.ok(!/\{(INTRO|SWEAR|SCOLD|MILD)\}/.test(p), 'to‘ldirilmagan belgi');
+      assert.ok(p.includes(own), `${native}: o'z tilidagi tanishtiruv yo'q`);
+      assert.ok(/NOT Uzbek/.test(p), `${native}: o'zbekcha taqiqi yo'q`);
+    }
+    for (const persona of ['bandi', 'savage', 'friendly', 'strict'] as const) {
+      const { system } = bp(persona, [], 'I go school yesterday', { mode: 'practice', native, adult: true });
+      assert.ok(!UZ_SAMPLE.test(system), `${native} ${persona}: matnli ustozda o'zbekcha namuna`);
+    }
+  }
+  const uz = blp({ adult: true, native: 'Uzbek (Latin script)', firstCall: true, style: 3 });
+  assert.ok(/Men Sellzen/.test(uz) && /tentak/.test(uz) && !/NOT Uzbek/.test(uz), "o'zbek o'quvchi uchun o'zbekcha namunalar saqlanadi");
+  console.log('coach native prompts: OK');
+}

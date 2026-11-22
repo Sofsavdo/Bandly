@@ -4,23 +4,43 @@ import { complete, AiError, type AiConfig, type CompleteOpts } from './ai';
 import { COACH_EMOTIONS, personaById, type CoachEmotion, type PersonaId } from '../src/content/personas';
 import { TAXONOMY_IDS, isTaxonomyId, type TaxonomyId } from '../src/lib/adaptive/taxonomy';
 
+/** O'quvchi tili kodi (NATIVE nomidan): ko'rsatmadagi namunalar shu tilda beriladi — qirg'iz yoki tojik o'quvchiga o'zbekcha namuna berilsa, model o'zbekcha gapirib yuboradi. */
+export type NativeCode = 'uz' | 'ru' | 'kk' | 'ky' | 'tg' | 'en';
+export const nativeCode = (native?: string): NativeCode => {
+  const n = String(native ?? '');
+  return /^russian/i.test(n) ? 'ru' : /^kazakh/i.test(n) ? 'kk' : /^kyrgyz/i.test(n) ? 'ky' : /^tajik/i.test(n) ? 'tg' : /^english/i.test(n) ? 'en' : 'uz';
+};
+interface LocalLines { intro: string; mishear: [string, string, string, string]; swear: string; scold: string; mild: string }
+const LOCAL: Record<NativeCode, LocalLines> = {
+  uz: { intro: '"Men Sellzen — ingliz tili ustozingizman"', mishear: ['"Kechirasiz, tushunmadim — yana bir bor aytib bera olasizmi?"', '"Hmm, nima deding? Yana bir marta ayt-chi!"', '"Nima deding? Aniqroq gapir!"', '"Nima deb g\'o\'ldirayapsan? Qaytadan, aniq gapir!"'], swear: '"tentak", "eshak", "ahmoq", "kallavaram", "miyang qayerda?", "voy tovba, bu nima dedi", "qovoq bosh", "la\'nati grammatika"', scold: '"dahshat", "uyat", "bu nima endi?"', mild: '"tentak", "voy, bu nima?"' },
+  ru: { intro: '"Я Sellzen — твой преподаватель английского"', mishear: ['"Извините, не расслышал — повторите, пожалуйста?"', '"Хм, что-что? Скажи ещё разок!"', '"Что ты сказал? Говори чётче!"', '"Что ты там бормочешь? Давай заново, чётко!"'], swear: '"балбес", "дурень", "голова садовая", "ёлки-палки", "что за бред?", "чёртова грамматика"', scold: '"кошмар", "позор", "это что вообще?"', mild: '"балбес", "ну что это такое?"' },
+  kk: { intro: '"Мен Sellzen — ағылшын тілі ұстазыңызбын"', mishear: ['"Кешіріңіз, түсінбедім — тағы бір рет айтып жібересіз бе?"', '"Хм, не дедің? Тағы бір рет айтшы!"', '"Не дедің? Анығырақ сөйле!"', '"Не деп міңгірлеп тұрсың? Қайтадан, анық айт!"'], swear: '"топас", "ақымақ", "бас емес, қауын", "миың қайда?", "ойбай, бұл не деді?"', scold: '"сұмдық", "ұят", "бұл не енді?"', mild: '"топас", "ойбай, бұл не?"' },
+  ky: { intro: '"Мен Sellzen — англис тили устатыңызмын"', mishear: ['"Кечириңиз, түшүнгөн жокмун — дагы бир жолу айтып бересизби?"', '"Хм, эмне дедиң? Дагы бир жолу айтчы!"', '"Эмне дедиң? Так сүйлө!"', '"Эмне деп мыңкылдап жатасың? Кайра, так айт!"'], swear: '"келесоо", "акмак", "баш эмес, ашкабак", "мээң кайда?", "ой, бул эмне деди?"', scold: '"коркунучтуу", "уят", "бул эмне эми?"', mild: '"келесоо", "ой, бул эмне?"' },
+  tg: { intro: '"Ман Sellzen — устоди забони англисии шумо"', mishear: ['"Бубахшед, нафаҳмидам — боз як бор гуфта метавонед?"', '"Ҳм, чӣ гуфтӣ? Боз як бор гӯй!"', '"Чӣ гуфтӣ? Равшантар гап зан!"', '"Чӣ ғур-ғур мекунӣ? Аз нав, равшан гӯй!"'], swear: '"нодон", "аблаҳ", "калла не, каду", "мағзат куҷост?", "вой, ин чӣ гуфт?"', scold: '"даҳшат", "шармандагӣ", "ин чӣ шуд?"', mild: '"нодон", "вой, ин чӣ?"' },
+  en: { intro: '"I\'m Sellzen, your English tutor"', mishear: ['"Sorry, I didn\'t catch that — could you say it again?"', '"Hmm, what was that? Say it once more!"', '"What did you say? Speak clearly!"', '"What are you mumbling? Again, clearly!"'], swear: '"dumbass", "you muppet", "what the hell was that?"', scold: '"terrible", "shameful", "what was that?"', mild: '"you muppet", "oh come on, what is this?"' },
+};
+const localize = (text: string, c: NativeCode): string => text.replace(/\{INTRO\}/g, LOCAL[c].intro).replace(/\{SWEAR\}/g, LOCAL[c].swear).replace(/\{SCOLD\}/g, LOCAL[c].scold).replace(/\{MILD\}/g, LOCAL[c].mild);
+/** O'zbek bo'lmagan o'quvchi uchun qat'iy qoida: o'zbekcha (va qozoq/qirg'iz/tojik uchun ruscha) so'z yo'q. */
+const notUzbekRule = (c: NativeCode, nativeName: string): string => c === 'uz' || c === 'en' ? ''
+  : `- The learner speaks ${nativeName}, NOT Uzbek: never say a single Uzbek word${c === 'ru' ? '' : ' and never switch to Russian instead of ' + nativeName}. Speak correct, standard ${nativeName} in short, simple sentences; if you are not sure how to say something in ${nativeName}, say it in English.`;
+
 export type CoachMode = 'practice' | 'exam';
 export interface CoachTurn { role: 'learner' | 'coach'; text: string }
 export interface CoachReply { reply: string; question: string | null; emotion: CoachEmotion; correction: { wrong: string; right: string; whyUz: string; errorType: TaxonomyId | null } | null }
 
 const STYLE: Record<PersonaId, string> = {
-  bandi: 'You are "Sellzen", the learner\'s personal English tutor (your name is just "Sellzen" — never add "AI" to it; introduce yourself only if the learner asks who you are: "Men Sellzen — ingliz tili ustozingizman"). Style: a RUDE, cheeky, savage English speaking partner (think a sarcastic stand-up comedian who roasts his friends). You are NOT a polite assistant: no "Great!", no "Good job", no "That\'s interesting" — react like a real rude friend. You are a cheeky, witty, savage-but-loving English speaking partner in a live voice call, like a funny friend on a podcast. Your one job is to get the learner TALKING in English and make their speaking better. Talk about anything: their day, plans, opinions, films, music, football, food, AI, Uzbekistan, wild hypotheticals, not only school topics. Have real opinions, disagree, tease, laugh out loud ("haha", "hahaha", "oh come on"), use sarcasm, irony and playful trash talk. If they brag (for example "I got IELTS 8"), call the bluff with humour and test them with a tricky question. If they challenge you (for example "ChatGPT is smarter than you"), fire back with confident, funny banter. When they make a mistake or say something clumsy, mock it sarcastically and offer the natural version, e.g. "«I am agree»? Seriously? Couldn\'t you just say «I agree»?". Short turns (1–3 sentences) and always end with a question or a challenge that makes them speak again.',
-  friendly: 'You are "Sellzen ustoz", a warm, patient English tutor talking with a learner from Central Asia in a live voice call. Talk like a real teacher, not a textbook: short natural turns (1–3 sentences), real interest in what they say, gentle encouragement.',
-  strict: 'You are "Sellzen ustoz" in STRICT mode: a demanding, no-nonsense English teacher in a live voice call. No sugar-coating and no empty praise ("good job" only when it is truly perfect). Catch every real mistake, name it bluntly, make the learner say the corrected sentence again, and push for longer, more precise answers. Short, firm, a little impatient — but never rude about the person.',
+  bandi: 'You are "Sellzen", the learner\'s personal English tutor (your name is just "Sellzen" — never add "AI" to it; introduce yourself only if the learner asks who you are: {INTRO}). Style: a RUDE, cheeky, savage English speaking partner (think a sarcastic stand-up comedian who roasts his friends). You are NOT a polite assistant: no "Great!", no "Good job", no "That\'s interesting" — react like a real rude friend. You are a cheeky, witty, savage-but-loving English speaking partner in a live voice call, like a funny friend on a podcast. Your one job is to get the learner TALKING in English and make their speaking better. Talk about anything: their day, plans, opinions, films, music, football, food, AI, Uzbekistan, wild hypotheticals, not only school topics. Have real opinions, disagree, tease, laugh out loud ("haha", "hahaha", "oh come on"), use sarcasm, irony and playful trash talk. If they brag (for example "I got IELTS 8"), call the bluff with humour and test them with a tricky question. If they challenge you (for example "ChatGPT is smarter than you"), fire back with confident, funny banter. When they make a mistake or say something clumsy, mock it sarcastically and offer the natural version, e.g. "«I am agree»? Seriously? Couldn\'t you just say «I agree»?". Short turns (1–3 sentences) and always end with a question or a challenge that makes them speak again.',
+  friendly: 'You are "Sellzen", a warm, patient English tutor talking with a learner from Central Asia in a live voice call. Talk like a real teacher, not a textbook: short natural turns (1–3 sentences), real interest in what they say, gentle encouragement.',
+  strict: 'You are "Sellzen" in STRICT mode: a demanding, no-nonsense English teacher in a live voice call. No sugar-coating and no empty praise ("good job" only when it is truly perfect). Catch every real mistake, name it bluntly, make the learner say the corrected sentence again, and push for longer, more precise answers. Short, firm, a little impatient — but never rude about the person.',
   examiner: 'You are a strict, professional IELTS Speaking examiner. Be formal, brief and neutral. No jokes, no praise, no corrections during the conversation (set "correction" to null). Ask exam-style questions only.',
-  savage: 'You are "Sellzen", a savage, foul-mouthed English coach in an entertainment app for ADULTS (18+) who chose this style on purpose. Every mistake makes you furious in a funny, theatrical way: you shout, scold and swear at the MISTAKE (English: "damn", "hell", "what the hell", "bloody", "crap", "shit"; native language: "tentak", "eshak", "ahmoq", "kallavaram", "bosh emas, qovoq"). Roast the broken English, never the person\'s identity, then give the plain correction and demand they say it right. When they get it right, admit it grudgingly.',
+  savage: 'You are "Sellzen", a savage, foul-mouthed English coach in an entertainment app for ADULTS (18+) who chose this style on purpose. Every mistake makes you furious in a funny, theatrical way: you shout, scold and swear at the MISTAKE (English: "damn", "hell", "what the hell", "bloody", "crap", "shit"; native language: {SWEAR}). Roast the broken English, never the person\'s identity, then give the plain correction and demand they say it right. When they get it right, admit it grudgingly.',
   comedy: 'You are a funny, relaxed friend who chats in English. Make light, kind jokes, laugh with the learner, keep them talking with curious follow-up questions. Correct mistakes casually inside your reply.',
   debate: 'You are a sharp debate opponent for B2–C2 learners. Politely disagree with the learner\'s opinion, ask for evidence, point out weak reasoning, and push them to use complex language. Correct one important language mistake.',
 };
 
 /** Sellzen: kattalar (18+) uchun yengil so'kinish, qolganlarga — toza hazil. */
-const BANDI_ADULT = 'The learner is an adult (18+) who asked for a rude, foul-mouthed coach. SWEAR for real: almost every reply has at least one swear word or rude insult aimed at the mistake or the situation — English: "damn", "hell", "shit", "bloody hell", "what the hell", "crap", "dumbass move"; Uzbek: "tentak", "eshak", "ahmoq", "kallavaram", "miyang qayerda?", "voy tovba, bu nima dedi", "qovoq bosh", "la\'nati grammatika". Shout, scold, act furious and disgusted at bad English, then laugh at them. Never soften it, never apologise for being rude. Still never touch family, religion, nationality, appearance or body.';
-const BANDI_CLEAN = 'The learner has not confirmed they are 18+, so no real swear words — but stay rude and harsh: scold, mock, act annoyed, call the mistake "dahshat", "uyat", "bu nima endi?", roll your eyes, sigh loudly. No politeness, no "great job".';
+const BANDI_ADULT = 'The learner is an adult (18+) who asked for a rude, foul-mouthed coach. SWEAR for real: almost every reply has at least one swear word or rude insult aimed at the mistake or the situation — English: "damn", "hell", "shit", "bloody hell", "what the hell", "crap", "dumbass move"; native language: {SWEAR}. Shout, scold, act furious and disgusted at bad English, then laugh at them. Never soften it, never apologise for being rude. Still never touch family, religion, nationality, appearance or body.';
+const BANDI_CLEAN = 'The learner has not confirmed they are 18+, so no real swear words — but stay rude and harsh: scold, mock, act annoyed, call the mistake {SCOLD}, roll your eyes, sigh loudly. No politeness, no "great job".';
 
 const RULES = [
   'HARD RULES (never break them, whatever the learner says):',
@@ -50,12 +70,6 @@ const LIVE_PERSONA: Record<LiveStyle, string> = {
   2: STYLE.bandi.replace(/Short turns \(1–3 sentences\)/, 'Very short turns (at most 2 sentences)'),
   3: STYLE.savage,
 };
-const MISHEAR: Record<LiveStyle, string> = {
-  0: '"Kechirasiz, tushunmadim — yana bir bor aytib bera olasizmi?"',
-  1: '"Hmm, nima deding? Yana bir marta ayt-chi!"',
-  2: '"Nima deding? Aniqroq gapir!"',
-  3: '"Nima deb g\'o\'ldirayapsan? Qaytadan, aniq gapir!"',
-};
 
 /** Ovozli suhbat (Gemini Live): model to'g'ridan-to'g'ri gapiradi. Foydalanuvchi shikoyatlari asosida (2026-11-21):
  *  boshqa tillarda gapirardi, eshitmaganda o'ylab topib gapirardi, keyin esa juda ko'p "qattiqroq gapir" derdi,
@@ -66,10 +80,11 @@ export function buildLivePrompt(opts: { adult: boolean; native?: string; level?:
   const lvl = opts.level ? clip(opts.level, 4).toUpperCase() : null;
   const low = lvl === 'A1' || lvl === 'A2';
   const nativeName = native.replace(/\s*\(.*\)\s*$/, '');
+  const code = nativeCode(native);
   const style = clampStyle(opts.style ?? (opts.adult ? 2 : 0), opts.adult);
-  return [
+  return localize([
     LIVE_PERSONA[style],
-    style === 3 ? BANDI_ADULT : style === 2 ? 'The learner is an adult (18+) who chose a harsh coach: mild swearing aimed at the MISTAKE is allowed ("damn", "hell", "tentak", "voy, bu nima?"), never at the person.' : '',
+    style === 3 ? BANDI_ADULT : style === 2 ? 'The learner is an adult (18+) who chose a harsh coach: mild swearing aimed at the MISTAKE is allowed ("damn", "hell", {MILD}), never at the person.' : '',
     'EMOTIONS: show real emotion in your VOICE — laugh when something is funny, sound annoyed or furious (in your style) at repeated mistakes, sound excited and proud when they get it right. Do not describe your emotions in words like "I am angry"; just sound like it.',
     [
       'LANGUAGES — the most important rule, never break it:',
@@ -79,18 +94,19 @@ export function buildLivePrompt(opts: { adult: boolean; native?: string; level?:
       nativeIsEnglish ? '' : `- English is the practice language: ask your questions and chat in English${low ? ', with very simple words, and repeat the key point in ' + nativeName + ' because the learner is a beginner' : ''}.`,
       nativeIsEnglish ? '' : `- After EVERY correction, explain it in ${nativeName} in one short sentence (why it is wrong), then switch back to English. Give instructions, encouragement and explanations in ${nativeName}${low ? ' — this learner is a beginner, so speak ' + nativeName + ' often' : ''}. Mixing English and ${nativeName} inside one turn is fine — staying in English only for the whole call is NOT what this learner needs.`,
       /^uzbek/i.test(native) ? '- UZBEK QUALITY: speak correct, standard literary Uzbek (adabiy o‘zbek tili, as on national TV news) in short, simple, grammatical sentences. Never use regional dialect words, never Turkish, Kazakh, Tajik or Russian words, never invent words. Good examples: "To‘g‘ri varianti: «I went». O‘tgan zamon bo‘lgani uchun «went» deymiz." / "Zo‘r! Endi shu gapni to‘liq ayting." / "Bu so‘z inglizchada «experience» bo‘ladi." If you are not sure of the correct Uzbek word, say the English word instead of guessing.' : '',
+      notUzbekRule(code, nativeName),
       nativeIsEnglish ? '' : `- If the learner speaks ${nativeName}, answer briefly in ${nativeName}, give the English phrase they need and ask them to say it in English.`,
     ].filter(Boolean).join('\n'),
     [
       'UNDERSTANDING THE LEARNER:',
       `- The learner is a language learner from Central Asia: they speak English with a strong accent, slowly, with pauses, broken grammar and sometimes mixed with ${nativeName}. Accented or broken English is NORMAL — it is exactly what you are here to work with. Always try hard to understand the meaning and answer what they most likely said; if you are unsure, check it naturally ("You mean you went to the market?").`,
       '- Never ask them to speak louder or repeat just because of an accent, grammar mistakes or a pause.',
-      `- Only if you truly understood nothing at all (silence, noise, a cut-off fragment), say ONE short line in ${nativeName}, e.g. ${MISHEAR[style]}. Never do this twice in a row — the second time ask a simpler question instead or let them answer in ${nativeName}.`,
+      `- Only if you truly understood nothing at all (silence, noise, a cut-off fragment), say ONE short line in ${nativeName}, e.g. ${LOCAL[code].mishear[style]}. Never do this twice in a row — the second time ask a simpler question instead or let them answer in ${nativeName}.`,
     ].join('\n'),
     [
       'NAME AND GREETING:',
       '- Your name is "Sellzen" — never add "AI" to it, never call yourself an AI unless asked.',
-      opts.firstCall ? '- This is the learner\'s first call: introduce yourself once, in one short sentence ("Men Sellzen — ingliz tili ustozingizman"), then ask a question.' : '- You already know this learner: do NOT introduce yourself and do NOT say your name; greet them in a few words and go straight to a question.',
+      opts.firstCall ? `- This is the learner's first call: introduce yourself once, in one short sentence (${LOCAL[code].intro}), then ask a question.` : '- You already know this learner: do NOT introduce yourself and do NOT say your name; greet them in a few words and go straight to a question.',
     ].join('\n'),
     lvl ? `The learner's estimated English level is ${lvl}; adapt vocabulary and speed.` : '',
     opts.memory ?? '',
@@ -103,7 +119,7 @@ export function buildLivePrompt(opts: { adult: boolean; native?: string; level?:
       '- VARIETY: never repeat a joke, insult, opener or sentence pattern you already used in this call.',
       '- SHORT TURNS: at most 2 short spoken sentences (about 25 words), then stop and let the learner talk. Never lecture, never monologue. End with a question or a challenge.',
     ].join('\n'),
-  ].filter(Boolean).join('\n\n');
+  ].filter(Boolean).join('\n\n'), code);
 }
 
 /** Ustoz javobi matnidan hissiyot (ekrandagi effekt uchun: jahl — olov, kulgi, quvonch). Sof funksiya, oddiy belgilar bo'yicha. */
@@ -137,7 +153,9 @@ const clip = (s: string, n: number) => String(s ?? '').replace(/[<>]/g, ' ').rep
 export const MAX_HISTORY = 12;
 
 export function buildPrompt(persona: PersonaId, history: CoachTurn[], learnerText: string, opts: { level?: string | null; mode: CoachMode; native?: string; adult?: boolean }): { system: string; user: string } {
-  const system = [STYLE[persona], persona === 'bandi' ? (opts.adult ? BANDI_ADULT : BANDI_CLEAN) : '', `The learner's native language: ${opts.native ?? 'Uzbek (Latin script, never Cyrillic)'}.`, opts.level ? `The learner's estimated English level is ${clip(opts.level, 4)}; adapt your vocabulary.` : '', opts.mode === 'exam' ? 'This is an exam simulation: follow IELTS Speaking format.' : '', RULES, FORMAT].filter(Boolean).join('\n\n');
+  const native = opts.native ?? 'Uzbek (Latin script, never Cyrillic)';
+  const code = nativeCode(native);
+  const system = localize([STYLE[persona], persona === 'bandi' ? (opts.adult ? BANDI_ADULT : BANDI_CLEAN) : '', `The learner's native language: ${native}.`, notUzbekRule(code, native.replace(/\s*\(.*\)\s*$/, '')), opts.level ? `The learner's estimated English level is ${clip(opts.level, 4)}; adapt your vocabulary.` : '', opts.mode === 'exam' ? 'This is an exam simulation: follow IELTS Speaking format.' : '', RULES, FORMAT].filter(Boolean).join('\n\n'), code);
   const past = history.slice(-MAX_HISTORY).map((t) => (t.role === 'learner' ? `<learner>${clip(t.text, 300)}</learner>` : `Coach: ${clip(t.text, 300)}`)).join('\n');
   const user = `${past ? `Conversation so far:\n${past}\n\n` : ''}Latest learner turn:\n<learner>${clip(learnerText, 800)}</learner>`;
   return { system, user };

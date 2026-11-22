@@ -9,7 +9,8 @@ export const channelUrl = (ch = CHANNEL): string => `https://t.me/${ch.replace(/
 export interface BotDeps {
   api: (method: string, body: Record<string, unknown>) => Promise<unknown>;
   publicUrl: string;
-  tr: (lang?: string) => Tr;
+  /** Matn tarjimasi: tgId berilsa — o'quvchining saytda tanlagan tili ustun (Telegram tilidan). */
+  tr: (lang?: string, tgId?: number) => Tr;
   /** Kanal a'zoligi (getChatMember). Tekshirib bo'lmasa (bot admin emas, tarmoq) — true: foydalanuvchini to'sib qo'ymaymiz. */
   isMember: (tgId: number) => Promise<boolean>;
   hasPhone: (tgId: number) => boolean;
@@ -124,7 +125,7 @@ async function welcome(d: BotDeps, chatId: number, from: TgFrom, tr: Tr): Promis
 export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
   const u = update as { message?: TgMsg; callback_query?: TgCallback };
   if (u.callback_query) {
-    const q = u.callback_query; const tr = d.tr(lc(q.from)); const chatId = q.message?.chat.id ?? q.from.id;
+    const q = u.callback_query; const tr = d.tr(lc(q.from), q.from.id); const chatId = q.message?.chat.id ?? q.from.id;
     if (q.data === 'chk') {
       if (!(await d.isMember(q.from.id))) { await d.api('answerCallbackQuery', { callback_query_id: q.id, text: tr('Hali obuna bo‘lmadingiz. Kanalga obuna bo‘lib, qayta bosing.'), show_alert: true }); return; }
       await d.api('answerCallbackQuery', { callback_query_id: q.id, text: tr('Rahmat! Obuna tasdiqlandi.') });
@@ -138,7 +139,7 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
   }
   const m = u.message;
   if (!m?.chat?.id || m.chat.type !== 'private' || !m.from?.id) return;
-  const tr = d.tr(lc(m.from)); const chatId = m.chat.id; const from = m.from;
+  const tr = d.tr(lc(m.from), m.from?.id); const chatId = m.chat.id; const from = m.from;
   if (m.contact) {
     if (Number(m.contact.user_id) !== from.id) { await d.api('sendMessage', { ...phoneMsg(chatId, tr), text: tr('Iltimos, o‘zingizning raqamingizni «Raqamni ulashish» tugmasi orqali yuboring.') }); return; }
     const raw = String(m.contact.phone_number ?? '');

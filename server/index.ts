@@ -195,7 +195,8 @@ const httpServer = createServer(async (req, res) => {
       const api = (method: string, body: Record<string, unknown>) => tgApi(bot.token, method, body);
       void handleBot(upd, {
         api, publicUrl: bot.publicUrl,
-        tr: (lc) => (t: string) => trServer(db, lc, t),
+        // Til: saytda tanlangan til (bog'langan hisob bo'lsa), bo'lmasa Telegram ilovasi tili
+        tr: (lc, tgId) => { let saved: string | undefined; try { saved = tgId === undefined ? undefined : (db.prepare('SELECT lang FROM players WHERE tg_id = ?').get(tgId) as { lang?: string | null } | undefined)?.lang ?? undefined; } catch { saved = undefined; } return (t: string) => trServer(db, saved || lc, t); },
         isMember: (id) => checkMember(api, CHANNEL, id),
         hasPhone: (id) => hasBotPhone(db, id) || (() => { const p = db.prepare('SELECT id FROM players WHERE tg_id = ?').get(id) as { id: number } | undefined; return !!p && hasLead(db, p.id); })(),
         savePhone: (id, phone) => saveBotPhone(db, id, phone),
