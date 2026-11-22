@@ -12,6 +12,7 @@ import { takeExamTab, type ExamTab } from '../lib/examTab';
 import { IeltsCourseCard } from './IeltsCourse';
 import { L } from '../i18n';
 import { ExamPath } from '../components/ExamPath';
+import { FREE_INFO } from '../config';
 
 const skills = [
   { href: '#/exam/reading', icon: BookOpen, tone: 'blue', title: 'Reading', text: L('Matn va savollar, taymer, dalil izohlari'), free: true },
@@ -27,7 +28,7 @@ export default function Exam() {
     <div>
       <div className="card page-head with-illo t-butter">
         <h2>{L('Imtihonga')} <em className="it">{L('tayyorgarlik')}</em> {hasTrack(p, 'exam') && <span className="badge on">{p.planUntil.exam ? L('Obuna faol') : L('Demo')}</span>}</h2>
-        <p style={{ margin: '4px 0 6px' }}>{L('Mock testlar bepul. AI baho: haftasiga 1 ta Writing va 1 ta Speaking bepul.')}</p>
+        <p style={{ margin: '4px 0 6px' }}>{L('Mock testlar bepul. AI baho: haftasiga {0} ta Writing va {1} ta Speaking bepul.', [FREE_INFO.writingPerWeek, FREE_INFO.speakingPerWeek])}</p>
         <div className="seg seg-dark" role="tablist" aria-label={L('Imtihon')}>
           {(['ielts', 'cefr', 'sat'] as const).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{k.toUpperCase()}</button>)}
         </div>

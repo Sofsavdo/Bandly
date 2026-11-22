@@ -1,7 +1,7 @@
 // Kunlik bepul dars tugaganda: ertagacha taymer va obuna taklifi. Bepul qoladiganlar aniq ko'rsatiladi.
 import { Clock, Crown, Repeat } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { SALE_PLANS, planForTrack } from '../config';
+import { FREE_INFO, SALE_PLANS, planForTrack } from '../config';
 import { COURSE_TRACK, type Course } from '../lib/freeRules';
 import { fmtSum, payConfig, startPurchase, type PayConfig } from '../lib/pay';
 import { L } from '../i18n';
@@ -19,7 +19,7 @@ export function DailyLimit({ course, resetAt, back }: { course: Course; resetAt:
   return (
     <section className="card daily-limit">
       <h2 style={{ marginTop: 0 }}>{L('Bugungi bepul dars bajarildi! 🎉')}</h2>
-      <p>{L('{0}: kuniga 1 ta yangi dars bepul.', [COURSE_UZ[course]])}</p>
+      <p>{L('{0}: kuniga {1} ta yangi dars bepul.', [COURSE_UZ[course], FREE_INFO.lessonsPerDay])}</p>
       <div className="dl-timer"><Clock size={18} />  {L('Keyingi bepul dars:')} <b>{hms(resetAt - now)}</b></div>
       <div className="row" style={{ marginTop: 12 }}>
         {cfg?.enabled

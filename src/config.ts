@@ -18,23 +18,42 @@ export interface SalePlan {
   id: PlanId; title: string; short: string; monthlyUzs: number; usd: string; tracks: TrackId[]; recommended?: boolean;
   voiceMin: number; writing: number; speaking: number; features: string[];
 }
+// Limit raqamlari (ovozli daqiqa, AI baholash soni) va narx admin panelda o'zgaradi: ilova ochilganda serverdan olinadi
+// (applyServerLimits) va "features" matni shu raqamlardan quriladi — e'lon qilingan va haqiqiy limit doim bir xil.
+const voiceLine = (n: number) => L('AI ustoz bilan ovozli suhbat: {0} daqiqa / oy', [n]);
 export const SALE_PLANS: SalePlan[] = [
   {
     id: 'general', title: 'General English', short: L('A1–C2 darslar, grammar va AI ustoz bilan ovozli suhbat.'), monthlyUzs: 69_000, usd: '$5.99',
     tracks: ['grammar', 'mocks'], voiceMin: 60, writing: 0, speaking: 0,
-    features: [L('A1–C2 darslar — kunlik cheklovsiz'), L('Grammar: barcha mavzular, o‘zbekcha izohlar'), L('AI ustoz bilan ovozli suhbat: 60 daqiqa / oy'), L('Darslar, xatolar ustida ishlash va kunlik reja')],
+    get features() { return [L('A1–C2 darslar — kunlik cheklovsiz'), L('Grammar: barcha mavzular, o‘zbekcha izohlar'), voiceLine(this.voiceMin), L('Darslar, xatolar ustida ishlash va kunlik reja')].concat(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : [], this.speaking > 0 ? [L('AI Speaking baholash: {0} ta / oy', [this.speaking])] : []); },
   },
   {
     id: 'exam', title: 'Exam Preparation', short: L('IELTS, CEFR (Multilevel) va SAT: bo‘limlar bo‘yicha tayyorgarlik va AI baholash.'), monthlyUzs: 99_000, usd: '$7.99',
     tracks: ['exam', 'mocks'], voiceMin: 60, writing: 10, speaking: 10,
-    features: [L('IELTS kursi, CEFR va SAT — kunlik cheklovsiz'), L('Reading, Listening, Writing, Speaking mashqlari'), L('AI Writing baholash: 10 ta / oy'), L('AI Speaking baholash (to‘liq mock): 10 ta / oy'), L('AI ustoz bilan ovozli suhbat: 60 daqiqa / oy'), L('Eshit va takrorla — cheksiz')],
+    get features() { return [L('IELTS kursi, CEFR va SAT — kunlik cheklovsiz'), L('Reading, Listening, Writing, Speaking mashqlari'), ...(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : []), ...(this.speaking > 0 ? [L('AI Speaking baholash (to‘liq mock): {0} ta / oy', [this.speaking])] : []), voiceLine(this.voiceMin), L('Eshit va takrorla — cheksiz')]; },
   },
   {
     id: 'all', title: 'All Access', short: L('Hammasi bitta obunada: General English + imtihon tayyorgarligi.'), monthlyUzs: 129_000, usd: '$9.99',
     tracks: ['exam', 'grammar', 'mocks'], voiceMin: 60, writing: 20, speaking: 20, recommended: true,
-    features: [L('General English va Exam Preparation’dagi hamma narsa'), L('AI Writing baholash: 20 ta / oy'), L('AI Speaking baholash: 20 ta / oy'), L('AI ustoz bilan ovozli suhbat: 60 daqiqa / oy'), L('Barcha AI ustoz xarakterlari')],
+    get features() { return [L('General English va Exam Preparation’dagi hamma narsa'), ...(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : []), ...(this.speaking > 0 ? [L('AI Speaking baholash: {0} ta / oy', [this.speaking])] : []), voiceLine(this.voiceMin), L('Barcha AI ustoz xarakterlari')]; },
   },
 ];
+/** Bepul tarif raqamlari (landing va ogohlantirishlarda ko'rsatiladi). Server qiymati bilan yangilanadi. */
+export const FREE_INFO = { lessonsPerDay: 1, firstDayLessons: 3, writingPerWeek: 1, speakingPerWeek: 1, liveMinutesPerDay: 5 };
+export interface ServerLimits {
+  free: typeof FREE_INFO;
+  plans: Record<PlanId, { voiceMin: number; writing: number; speaking: number }>;
+}
+/** Serverdagi (admin paneldagi) limitlar va 30 kunlik narxlarni tariflarga yozadi. */
+export function applyServerLimits(limits: ServerLimits | undefined, monthly?: Partial<Record<PlanId, number>>): void {
+  for (const p of SALE_PLANS) {
+    const l = limits?.plans?.[p.id];
+    if (l) { p.voiceMin = l.voiceMin; p.writing = l.writing; p.speaking = l.speaking; }
+    const m = monthly?.[p.id];
+    if (typeof m === 'number' && m > 0) p.monthlyUzs = m;
+  }
+  if (limits?.free) Object.assign(FREE_INFO, limits.free);
+}
 export interface PeriodDef { days: number; label: string; note?: string }
 export const SALE_PERIODS: PeriodDef[] = [{ days: 30, label: L('1 oy') }, { days: 90, label: L('3 oy'), note: '−10%' }, { days: 365, label: L('12 oy'), note: L('2 oy bepul') }];
 /** 3 oy = 3 × oylik × 0,9 (mingga pastga yaxlitlanadi); 12 oy = 10 × oylik. */

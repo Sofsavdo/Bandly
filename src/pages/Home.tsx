@@ -19,7 +19,7 @@ import { loadProgress, nextLesson } from '../lib/lessons';
 import { openExamTab } from '../lib/examTab';
 import { loadAnswers } from '../lib/onboarding';
 import { L } from '../i18n';
-import { SALE_PLANS } from '../config';
+import { FREE_INFO, SALE_PLANS } from '../config';
 import { fmtSum } from '../lib/pay';
 import { QuickLinks } from '../components/QuickLinks';
 import { track } from '../lib/track';
@@ -97,7 +97,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           </ol>
           <div className="section-title"><h2>{L('Narxlar')}</h2></div>
           <div className="land-prices">
-            <div className="card"><h3>{L('Bepul')}</h3><p className="price">0 {L('so‘m')}</p><ul><li><Check size={15} />{L('Daraja testi va mock testlar')}</li><li><Check size={15} />{L('Har kuni bitta yangi dars')}</li><li><Check size={15} />{L('So‘z o‘yinlari va duel')}</li></ul></div>
+            <div className="card"><h3>{L('Bepul')}</h3><p className="price">0 {L('so‘m')}</p><ul><li><Check size={15} />{L('Daraja testi va mock testlar')}</li><li><Check size={15} />{FREE_INFO.lessonsPerDay === 1 ? L('Har kuni bitta yangi dars') : L('Har kuni {0} ta yangi dars', [FREE_INFO.lessonsPerDay])}</li><li><Check size={15} />{L('So‘z o‘yinlari va duel')}</li></ul></div>
             {SALE_PLANS.map((pl) => (
               <div key={pl.id} className={`card${pl.recommended ? ' best' : ''}`}><h3>{pl.title}</h3><p className="price">{fmtSum(pl.monthlyUzs)} {L('so‘m / oy')}</p><ul>{pl.features.slice(0, 3).map((f) => <li key={f}><Check size={15} />{f}</li>)}</ul></div>
             ))}
