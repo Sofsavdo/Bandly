@@ -6,7 +6,7 @@ import { LockCard } from '../../components/Gate';
 import { fmt } from '../../components/hooks';
 import { pickSession } from '../../lib/srs';
 import { addXp, consumeGame, getProfile, recordReview } from '../../lib/store';
-import { shuffle } from '../../lib/vocabGame';
+import { distinctWords, shuffle } from '../../lib/vocabGame';
 import { recordWordItem } from '../../lib/adaptive/record';
 import { L } from '../../i18n';
 
@@ -32,7 +32,7 @@ export default function Pairs() {
 
   function start() {
     if (!consumeGame()) { setLocked(true); return; }
-    const ids = pickSession(vocabForLevel(getProfile().level).map((w) => w.id), getProfile().srs, Date.now(), 6);
+    const ids = distinctWords(pickSession(vocabForLevel(getProfile().level).map((w) => w.id), getProfile().srs, Date.now(), 14), vocabById, 6); // bir xil ma'noli so'zlar bir turda chiqmasin
     setWords(ids);
     setRightOrder(shuffle(ids));
     setSelL(null); setMatched([]); setMistakes({}); mistakesRef.current = {}; setElapsed(0); setMood('idle');

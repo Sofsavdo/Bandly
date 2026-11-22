@@ -49,7 +49,7 @@ export const scenes: Scene[] = [
     phrases: [
       ph('check in', 'phrasal verb', 'ro‘yxatdan o‘tmoq (aviareys, mehmonxona)', 'to register when you arrive at an airport or hotel', 'You must check in two hours before the flight.'),
       ph('window seat', 'n', 'deraza yonidagi o‘rindiq', 'a seat next to the window', 'I always ask for a window seat.'),
-      ph('Here you are', 'idiom', 'marhamat (biror narsani uzatganda)', 'what you say when you give someone something', 'Here you are, this is my passport.'),
+      ph('Here you are', 'phr', 'marhamat (biror narsani uzatganda)', 'what you say when you give someone something', 'Here you are, this is my passport.'),
     ],
     retell: {
       points: [
@@ -84,9 +84,9 @@ export const scenes: Scene[] = [
       { q: 'When does the cafe close?', options: ['At six', 'At nine', 'At five'], answer: 0, line: 8 },
     ],
     phrases: [
-      ph('I am very sorry', 'idiom', 'juda afsusdaman (kechirim)', 'a polite way to say sorry', 'I am very sorry for the delay.'),
+      ph('I am very sorry', 'phr', 'juda afsusdaman (kechirim)', 'a polite way to say sorry', 'I am very sorry for the delay.'),
       ph('by the way', 'linker', 'aytgancha, darvoqe', 'used to add a new subject', 'By the way, what time does the shop open?'),
-      ph('no problem at all', 'idiom', 'umuman muammo emas (xushmuomalalik)', 'a friendly way to say that something is not a trouble', 'No problem at all, I can wait.'),
+      ph('no problem at all', 'phr', 'umuman muammo emas (xushmuomalalik)', 'a friendly way to say that something is not a trouble', 'No problem at all, I can wait.'),
     ],
     retell: {
       points: [
@@ -122,7 +122,7 @@ export const scenes: Scene[] = [
       { q: 'What does he want to improve?', options: ['His speaking', 'Spending too long on details', 'His computer skills'], answer: 1, line: 7 },
     ],
     phrases: [
-      ph('take a seat', 'idiom', 'o‘tiring (rasmiy taklif)', 'a polite way to ask someone to sit', 'Please take a seat, the doctor will see you soon.'),
+      ph('take a seat', 'phr', 'o‘tiring (muloyim taklif)', 'a polite way to ask someone to sit', 'Please take a seat, the doctor will see you soon.'),
       ph('apply for', 'phrasal verb', 'ariza topshirmoq (ishga)', 'to make a formal request for a job or place', 'She decided to apply for a scholarship.'),
       ph('set a deadline', 'collocation', 'muddat belgilamoq', 'to decide the last date for finishing work', 'It helps to set a deadline for each task.'),
     ],
@@ -160,7 +160,7 @@ export const scenes: Scene[] = [
     ],
     phrases: [
       ph('make a complaint', 'collocation', 'shikoyat qilmoq (rasmiy)', 'to say officially that you are not satisfied', 'You can make a complaint at the front desk.'),
-      ph('free of charge', 'idiom', 'bepul (to‘lovsiz)', 'without having to pay', 'The tour is free of charge for children.'),
+      ph('free of charge', 'phr', 'bepul (to‘lovsiz)', 'without having to pay', 'The tour is free of charge for children.'),
       ph('apologise for the inconvenience', 'collocation', 'noqulaylik uchun uzr so‘ramoq', 'to say sorry for causing trouble', 'We apologise for the inconvenience caused by the delay.'),
     ],
     retell: {
@@ -199,7 +199,7 @@ export const scenes: Scene[] = [
     phrases: [
       ph('walk me through', 'phrasal verb', 'menga qadamma-qadam tushuntirib bermoq', 'to explain each step of something to me', 'Can you walk me through the process?'),
       ph('go off', 'phrasal verb', 'jaranglamoq (signal), portlamoq', 'to make a sudden loud noise', 'The alarm may go off at midnight.'),
-      ph('I could not be certain', 'idiom', 'aniq ayta olmayman', 'a careful way to say you are not completely sure', 'I could not be certain who was at the door.'),
+      ph('I could not be certain', 'phr', 'aniq bila olmadim (ishonchim komil emas edi)', 'a careful way to say you are not completely sure', 'I could not be certain who was at the door.'),
     ],
     retell: {
       points: [
@@ -234,7 +234,7 @@ export const scenes: Scene[] = [
       { q: 'How much time do they have?', options: ['About forty minutes', 'About four hours', 'About five minutes'], answer: 0, line: 7 },
     ],
     phrases: [
-      ph('copy that', 'idiom', 'tushunarli, qabul qildim (radio)', 'a way to confirm that you heard a message', 'Copy that, we are moving to the exit.'),
+      ph('copy that', 'phr', 'tushunarli, qabul qildim (radio)', 'a way to confirm that you heard a message', 'Copy that, we are moving to the exit.'),
       ph('at the current rate', 'collocation', 'hozirgi tezlikda', 'if things continue at the same speed', 'At the current rate, the lake will be empty by summer.'),
       ph('keep me updated', 'collocation', 'meni doimiy xabardor qilib turmoq', 'to give me new information regularly', 'Please keep me updated about the results.'),
     ],
@@ -272,7 +272,7 @@ export const scenes: Scene[] = [
     ],
     phrases: [
       ph('worn out', 'adj', 'juda charchagan (holdan toygan)', 'extremely tired', 'After the long trip I felt worn out.'),
-      ph('set the tone', 'idiom', 'ohangni belgilamoq (kayfiyatni)', 'to decide the mood of what follows', 'A friendly start can set the tone for the meeting.'),
+      ph('set the tone', 'idiom', 'ohangni belgilamoq (kayfiyatni)', 'to establish the mood or character of what follows', 'A friendly start can set the tone for the meeting.'),
       ph('give it a go', 'idiom', 'bir urinib ko‘rmoq', 'to try something', 'I will give it a go this weekend.'),
     ],
     retell: {
@@ -343,7 +343,7 @@ export const scenes: Scene[] = [
     ],
     phrases: [
       ph('with respect', 'linker', 'hurmat bilan aytganda (rasmiy e’tiroz)', 'a polite way to start disagreeing', 'With respect, I do not think that is accurate.'),
-      ph('a fair point', 'idiom', 'o‘rinli fikr (rozi bo‘lganda)', 'a reasonable argument that you accept', 'That is a fair point, I had not thought of it.'),
+      ph('a fair point', 'collocation', 'o‘rinli fikr (rozi bo‘lganda)', 'a reasonable argument that you accept', 'That is a fair point; I had not thought of it.'),
       ph('precisely why', 'collocation', 'aynan shuning uchun', 'exactly the reason', 'That is precisely why we need new rules.'),
     ],
     retell: {
@@ -379,7 +379,7 @@ export const scenes: Scene[] = [
     phrases: [
       ph('depend on', 'phrasal verb', 'ga tayanmoq, bog‘liq bo‘lmoq', 'to need something in order to survive', 'Many communities depend on fishing.'),
       ph('in the hope of', 'collocation', 'umidida, maqsadida', 'with the wish that something will happen', 'They moved in the hope of finding work.'),
-      ph('delay the inevitable', 'idiom', 'muqarrarni kechiktirmoq', 'to postpone something that will certainly happen', 'Repairs may only delay the inevitable.'),
+      ph('delay the inevitable', 'collocation', 'muqarrarni kechiktirmoq', 'to postpone something that will certainly happen', 'Repairs may only delay the inevitable.'),
     ],
     retell: {
       points: [

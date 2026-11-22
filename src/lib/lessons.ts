@@ -107,9 +107,11 @@ export function saveAttempt(lessonId: string, r: CheckResult, now = Date.now()):
 export function nextLesson(units: Unit[], progress: ProgressMap, level: string | null | undefined): { unitId: string; lessonId: string } | null {
   const order = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   const min = level ? Math.max(0, order.indexOf(level)) : 0;
+  // Starter (noldan boshlovchilar) bo'limlari tavsiya etiladi, lekin kursni allaqachon boshlagan o'quvchini ularga qaytarmaymiz
+  const begun = units.some((u) => !isStarterUnit(u) && u.lessons.some((l) => !!progress[l.id]?.passedAt));
   const pick = (from: number) => {
     for (const u of units) {
-      if (order.indexOf(u.level) < from) continue;
+      if (order.indexOf(u.level) < from || (begun && isStarterUnit(u))) continue;
       for (let i = 0; i < u.lessons.length; i++) if (isUnlocked(u, i, progress, { units, level }) && !progress[u.lessons[i]!.id]?.passedAt) return { unitId: u.id, lessonId: u.lessons[i]!.id };
     }
     return null;
@@ -120,14 +122,18 @@ export function nextLesson(units: Unit[], progress: ProgressMap, level: string |
 /** Darsning ochiqligi. ctx berilsa — qat'iy yo'l: o'quvchining darajasidan past darslar ochiq (takrorlash uchun),
  *  o'z darajasi va undan yuqorida bo'lim faqat oldingi bo'lim to'liq o'tilganda, dars esa oldingi dars o'tilganda ochiladi.
  *  ctx bo'lmasa — eski qoida: bo'limning birinchi darsi ochiq, qolganlari oldingisidan keyin. */
+export const isStarterUnit = (u: Unit): boolean => /^a1-s\d/.test(u.id);
 export function isUnlocked(unit: Unit, index: number, progress: ProgressMap, ctx?: { units: Unit[]; level: string | null | undefined }): boolean {
+  if (progress[unit.lessons[index]?.id ?? '']?.passedAt) return true; // o'tilgan dars hech qachon yopilmaydi (keyin oldiga yangi dars qo'shilsa ham)
   if (index > 0) return !!progress[unit.lessons[index - 1]!.id]?.passedAt;
-  if (!ctx) return true;
+  if (!ctx || isStarterUnit(unit)) return true;
+  if (unit.lessons.some((l) => !!progress[l.id]?.passedAt)) return true; // bo'lim allaqachon boshlangan
   const order = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   const lv = ctx.level ? order.indexOf(ctx.level) : 0;
   if (order.indexOf(unit.level) < lv) return true;
-  const k = ctx.units.findIndex((u) => u.id === unit.id);
-  const prev = k > 0 ? ctx.units[k - 1] : undefined;
+  const main = ctx.units.filter((u) => !isStarterUnit(u)); // Starter bo'limlari majburiy emas — a1-u1 ularsiz ham ochiq
+  const k = main.findIndex((u) => u.id === unit.id);
+  const prev = k > 0 ? main[k - 1] : undefined;
   if (!prev || order.indexOf(prev.level) < lv) return true;
   return prev.lessons.every((l) => !!progress[l.id]?.passedAt);
 }

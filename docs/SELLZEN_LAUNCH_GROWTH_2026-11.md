@@ -11,7 +11,7 @@ Raqamlar kod va Railway'dan olingan. Taxminlar alohida belgilangan.
 |---|---|
 | Kirish | Mehmon **faqat landingni** ko'radi (imkoniyatlar, "Qanday ishlaydi", narxlar, savollar). Qolgan hamma narsa — Telegram orqali bir bosishda ro'yxatdan o'tgandan keyin |
 | Birinchi kirish | Ro'yxat → **maqsad va shaxsiy reja** (`#/start`, ustoz uslubi ham shu yerda) → **daraja testi** (`#/placement`). Bu ikki qadam bajarilmaguncha boshqa sahifalar ochilmaydi — har bir o'quvchi darajasi va maqsadini birinchi kundayoq biladi |
-| General English | 144 dars (A1–C2, har darajada 24 ta), 1 584 mashq, Grammar (alohida bo'lim — darslarni to'ldiradi, takror emas), so'z o'yinlari |
+| General English | 186 dars (Starter 6 + A1–C2, har darajada 30 ta), 2 046 mashq (2026-11-22), Grammar (alohida bo'lim — darslarni to'ldiradi, takror emas), so'z o'yinlari |
 | IELTS | 36 darslik kurs (Reading, Listening, Writing, Speaking strategiyalari) + mock testlar + AI Writing/Speaking baho |
 | CEFR Multilevel | **Yangi: "O'rganish yo'li"** — daraja → shu darajadagi darslar → grammatika → o'qish/tinglash strategiyalari → mashq testlari → gapirish/yozish. Mashq to'plami hali kam (1 Reading + 1 Listening) |
 | SAT | **Yangi: "O'rganish yo'li"** — B2–C1 darslar, grammatika, so'z boyligi, mashq savollari (8 R&W + 9 Math — ramziy) |
