@@ -153,7 +153,7 @@ export default function Admin() {
       </>}
 
       {sub === 'growth' && <>
-        {data.cohort2 && <CohortPanel c={data.cohort2} defs={data.definitions} />}
+        {data.cohort2 && <CohortPanel c={data.cohort2} />}
         {g && (
           <section className="card">
             <h3 style={{ marginTop: 0 }}>{L('Voronka: shu davrda ro‘yxatdan o‘tganlar')}</h3>

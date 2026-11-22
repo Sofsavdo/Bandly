@@ -158,18 +158,24 @@ export interface Evaluation {
   overall: number;
   strengths: string[];
   improve: string[];
-  corrections: { said: string; better: string }[];
+  /** said — o'quvchi matnidan AYNAN olingan ibora (server tekshiradi), better — tuzatilgan variant, why — sababi (o'quvchi tilida), criterion — mezon */
+  corrections: { said: string; better: string; why?: string; criterion?: Criterion }[];
   /** Bandni eng ko'p tushirayotgan mezon va +0.5 uchun aniq qadam (o'quvchi tilida) */
   focus?: string;
 }
 
+export type Criterion = 'task' | 'coherence' | 'lexical' | 'grammar' | 'fluency';
+const CRITERIA: Criterion[] = ['task', 'coherence', 'lexical', 'grammar', 'fluency'];
+/** Dalilni tekshirish uchun: katta-kichik harf, tirnoq va bo'shliqlar farqi hisobga olinmaydi. */
+export const normEvidence = (s: string): string => s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
 const halfBand = (n: unknown): number | null => (typeof n === 'number' && Number.isFinite(n) ? Math.min(9, Math.max(0, Math.round(n * 2) / 2)) : null);
 const strings = (a: unknown, max: number, len: number): string[] => (Array.isArray(a) ? a.filter((x): x is string => typeof x === 'string').slice(0, max).map((x) => x.slice(0, len)) : []);
 
 /** IELTS yaxlitlash: o'rtachani 0.5 ga (.25 yuqoriga .5, .75 yuqoriga butun). */
 export const roundBand = (avg: number): number => Math.floor(avg * 2 + 0.5) / 2;
 
-export function parseEvaluation(raw: string, keys: string[]): Evaluation {
+/** source berilsa — faqat o'quvchi matnida haqiqatan bor iboralarga tuzatish qoldiriladi (AI o'ylab topgan "dalil" tashlanadi). */
+export function parseEvaluation(raw: string, keys: string[], source?: string): Evaluation {
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new AiError(502, 'AI javobi noto‘g‘ri formatda');
   let j: Record<string, unknown>;
@@ -179,8 +185,12 @@ export function parseEvaluation(raw: string, keys: string[]): Evaluation {
   const nums = Object.values(bands).filter((x): x is number => x !== null);
   if (nums.length < 2) throw new AiError(502, 'AI baholari yetarli emas');
   const corr = Array.isArray(j.corrections) ? j.corrections.slice(0, 6).flatMap((c: unknown) => {
-    const o = c as { said?: unknown; better?: unknown };
-    return typeof o?.said === 'string' && typeof o?.better === 'string' ? [{ said: o.said.slice(0, 200), better: o.better.slice(0, 200) }] : [];
+    const o = c as { said?: unknown; better?: unknown; why?: unknown; criterion?: unknown };
+    if (typeof o?.said !== 'string' || typeof o?.better !== 'string' || !o.said.trim() || normEvidence(o.said) === normEvidence(o.better)) return [];
+    if (source !== undefined && !normEvidence(source).includes(normEvidence(o.said))) return []; // matnda yo'q — dalil emas
+    const why = typeof o.why === 'string' && o.why.trim() ? o.why.trim().slice(0, 240) : undefined;
+    const criterion = CRITERIA.includes(o.criterion as Criterion) ? (o.criterion as Criterion) : undefined;
+    return [{ said: o.said.slice(0, 200), better: o.better.slice(0, 200), ...(why ? { why } : {}), ...(criterion ? { criterion } : {}) }];
   }) : [];
   const focus = typeof j.focus === 'string' && j.focus.trim() ? j.focus.trim().slice(0, 400) : undefined;
   return { bands, overall: roundBand(nums.reduce((a, b) => a + b, 0) / nums.length), strengths: strings(j.strengths, 5, 240), improve: strings(j.improve, 5, 240), corrections: corr, ...(focus ? { focus } : {}) };
@@ -198,18 +208,18 @@ const WRITING_COMMON = 'Coherence and Cohesion — 7: logical progression, a cle
 const SPEAKING_DESCRIPTORS = 'Fluency and Coherence — 7: speaks at length without noticeable effort, uses a range of connectives and discourse markers flexibly; 6: willing to speak at length but may lose coherence through repetition, self-correction or hesitation; 5: keeps going but relies on repetition, self-correction or slow speech, overuses some connectives. Lexical Resource — 7: flexible vocabulary on a variety of topics, some idiomatic and less common items, effective paraphrase; 6: enough vocabulary to discuss topics at length, generally paraphrases successfully; 5: manages familiar and unfamiliar topics with limited flexibility. Grammar — 7: a range of complex structures with some flexibility, frequent error-free sentences; 6: a mix of simple and complex structures with limited flexibility, errors rarely cause comprehension problems; 5: basic sentence forms with reasonable accuracy, complex structures limited and error-prone.';
 
 export async function evaluateSpeaking(cfg: AiConfig, turns: { q: string; text: string }[], opts?: CompleteOpts, native = NATIVE_DEFAULT): Promise<Evaluation> {
-  const system = `You are a certified-style IELTS Speaking examiner. You only have a speech-to-text transcript, so pronunciation cannot be judged: set "pronunciation" to null. Score fluency (Fluency and Coherence), lexical (Lexical Resource), grammar (Grammatical Range and Accuracy) from 0 to 9 in steps of 0.5, applying the public band descriptors strictly. ${SPEAKING_DESCRIPTORS} Very short answers (under ~15 words per question) cannot score above 5 for fluency. Reply with JSON only in this shape: {"fluency":n,"lexical":n,"grammar":n,"pronunciation":null,"strengths":["..."],"improve":["..."],"corrections":[{"said":"...","better":"..."}],"focus":"..."}. Write "strengths" and "improve" in ${native}, at most 3 short items each; "corrections" in English, at most 4; "focus" in ${native}: ONE or two sentences naming the lowest criterion and the single concrete change that would raise the overall band by 0.5. ${GUARD}`;
+  const system = `You are a certified-style IELTS Speaking examiner. You only have a speech-to-text transcript, so pronunciation cannot be judged: set "pronunciation" to null. Score fluency (Fluency and Coherence), lexical (Lexical Resource), grammar (Grammatical Range and Accuracy) from 0 to 9 in steps of 0.5, applying the public band descriptors strictly. ${SPEAKING_DESCRIPTORS} Very short answers (under ~15 words per question) cannot score above 5 for fluency. Reply with JSON only in this shape: {"fluency":n,"lexical":n,"grammar":n,"pronunciation":null,"strengths":["..."],"improve":["..."],"corrections":[{"said":"exact words the candidate said","better":"corrected version","why":"...","criterion":"grammar|lexical|fluency"}],"focus":"..."}. Write "strengths" and "improve" in ${native}, at most 3 short items each; "corrections" at most 4: "said" copied EXACTLY from the transcript, "better" in English, "why" in ${native} (one short sentence explaining the rule); "focus" in ${native}: ONE or two sentences naming the lowest criterion and the single concrete change that would raise the overall band by 0.5. ${GUARD}`;
   const body = turns.slice(0, 12).map((t, i) => `Q${i + 1}: ${clip(t.q, 200)}\n<candidate>${clip(t.text, 1200)}</candidate>`).join('\n\n');
-  return parseEvaluation(await complete(cfg, system, body, { maxTokens: 700, ...opts }), ['fluency', 'lexical', 'grammar', 'pronunciation']);
+  return parseEvaluation(await complete(cfg, system, body, { maxTokens: 900, ...opts }), ['fluency', 'lexical', 'grammar', 'pronunciation'], turns.map((t) => t.text).join('\n'));
 }
 
 export async function evaluateWriting(cfg: AiConfig, task: 1 | 2, prompt: string, text: string, opts?: CompleteOpts, native = NATIVE_DEFAULT): Promise<Evaluation> {
   const crit = task === 1 ? 'task_achievement' : 'task_response';
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   const min = task === 1 ? 150 : 250;
-  const system = `You are a certified-style IELTS Writing Task ${task} examiner. Score ${crit} (${task === 1 ? 'Task Achievement' : 'Task Response'}), coherence (Coherence and Cohesion), lexical (Lexical Resource), grammar (Grammatical Range and Accuracy) from 0 to 9 in steps of 0.5, applying the public band descriptors strictly. ${task === 1 ? WRITING_T1 : WRITING_T2} ${WRITING_COMMON} The answer has ${words} words; the minimum is ${min}${words < min ? `, so it is UNDER LENGTH: ${crit} cannot exceed ${words < min * 0.6 ? 4 : 5}` : ''}. Off-topic or memorised text scores low on ${crit}. Reply with JSON only in this shape: {"${crit}":n,"coherence":n,"lexical":n,"grammar":n,"strengths":["..."],"improve":["..."],"corrections":[{"said":"exact phrase from the text","better":"corrected phrase"}],"focus":"..."}. Write "strengths" and "improve" in ${native}, at most 3 short items each; "corrections" in English, at most 5; "focus" in ${native}: ONE or two sentences naming the lowest criterion and the single concrete change that would raise the overall band by 0.5. ${GUARD}`;
+  const system = `You are a certified-style IELTS Writing Task ${task} examiner. Score ${crit} (${task === 1 ? 'Task Achievement' : 'Task Response'}), coherence (Coherence and Cohesion), lexical (Lexical Resource), grammar (Grammatical Range and Accuracy) from 0 to 9 in steps of 0.5, applying the public band descriptors strictly. ${task === 1 ? WRITING_T1 : WRITING_T2} ${WRITING_COMMON} The answer has ${words} words; the minimum is ${min}${words < min ? `, so it is UNDER LENGTH: ${crit} cannot exceed ${words < min * 0.6 ? 4 : 5}` : ''}. Off-topic or memorised text scores low on ${crit}. Reply with JSON only in this shape: {"${crit}":n,"coherence":n,"lexical":n,"grammar":n,"strengths":["..."],"improve":["..."],"corrections":[{"said":"exact phrase from the text","better":"corrected phrase","why":"...","criterion":"task|coherence|lexical|grammar"}],"focus":"..."}. Write "strengths" and "improve" in ${native}, at most 3 short items each; "corrections" at most 5: "said" copied EXACTLY from the candidate's text, "better" in English (a corrected or potentially stronger version of that phrase only, never a rewrite of the whole essay), "why" in ${native} (one short sentence: what was wrong and why the new version is better); "focus" in ${native}: ONE or two sentences naming the lowest criterion and the single concrete change that would raise the overall band by 0.5. ${GUARD}`;
   const user = `Task prompt: ${clip(prompt, 600)}\n<candidate>${clip(text, 4000)}</candidate>`;
-  return parseEvaluation(await complete(cfg, system, user, { maxTokens: 900, ...opts }), [crit, 'coherence', 'lexical', 'grammar']);
+  return parseEvaluation(await complete(cfg, system, user, { maxTokens: 1200, ...opts }), [crit, 'coherence', 'lexical', 'grammar'], text);
 }
 
 // ---------------- Shaxsiyatli suhbat (reaksiya + savol) ----------------

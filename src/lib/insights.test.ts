@@ -37,6 +37,7 @@ const withErr = { ...base(), mistakes: ms };
 const r1 = recommend(withErr, 0);
 assert.equal(r1.reason, 'recurring_error'); assert.equal(r1.lessonId, 'a2', 'o‘tilgan a1 emas; daraja B1 dan yuqori b1 emas');
 assert.equal(lessonFor({ ...withErr, passed: new Set(['a1', 'a2']) }, 'G.article'), null, 'o‘zlashtirilgan dars qayta berilmaydi');
+assert.equal(lessonFor({ ...withErr, level: 'B1' }, 'G.article')!.id, 'b1', 'B1 o‘quvchiga darajasiga eng yaqin dars (A1 emas)');
 const r2 = recommend(base(), 0);
 assert.equal(r2.reason, 'weak_skill'); assert.equal(r2.skill, 'reading'); assert.equal(r2.href, '#/mocks/reading');
 const strong = { ...base(), results: [...base().results.slice(2), { id: 'a', kind: 'reading' as const, title: '', correct: 0, total: 0, band: 7.5, date: '' }, { id: 'b', kind: 'reading' as const, title: '', correct: 0, total: 0, band: 7.5, date: '' }], mastery: { 'ge.lesson.a1': rec(0.9), 'ge.lesson.a2': rec(0.9) } };

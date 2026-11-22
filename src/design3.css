@@ -1287,3 +1287,12 @@ details.card[open] > summary { margin-bottom: 12px; }
 .eh-risk { margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, currentColor 8%, transparent); }
 .eh-risk.unlikely { background: color-mix(in srgb, var(--coral) 16%, transparent); } .eh-risk.ok, .eh-risk.reached { background: color-mix(in srgb, var(--green) 14%, transparent); }
 .eh-weeks { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
+/* Writing Lab (EvalCard) */
+.lab-list { padding-left: 20px; display: grid; gap: 12px; }
+.lab-pair { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.lab-said { text-decoration: line-through; text-decoration-color: var(--coral); color: var(--ink-2); }
+.lab-better { font-weight: 700; color: var(--green); }
+.lab-why { margin: 4px 0; font-size: 14px; color: var(--ink-2); }
+.lab-rewrite { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lab-rewrite input { flex: 1 1 200px; min-width: 0; }
+.lab-rewrite small { display: inline-flex; align-items: center; gap: 4px; flex-basis: 100%; }

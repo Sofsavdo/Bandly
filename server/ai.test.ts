@@ -212,3 +212,19 @@ assert.equal((await import('./ai')).configFromEnv({ AI_API_KEY: 'AQ.Ab12' }).pro
   assert.equal(calls.filter((c) => c.includes('googleapis')).length, 1, 'kalit xatosida qolgan Gemini modellari o‘tkazib yuboriladi');
   console.log('ai backup: OK');
 }
+// Writing Lab: tuzatish faqat o'quvchi matnida haqiqatan bor iboraga; sabab va mezon saqlanadi; o'zgarishsiz "tuzatish" tashlanadi
+{
+  const essay = 'Nowadays many people thinks that   technology is   good. In conclusion I am agree.';
+  const raw = JSON.stringify({ task_response: 6, coherence: 6, lexical: 6, grammar: 5, strengths: [], improve: [], corrections: [
+    { said: 'many people thinks', better: 'many people think', why: 'people — ko‘plik, fe’l -s olmaydi', criterion: 'grammar' },
+    { said: 'I AM AGREE', better: 'I agree', why: 'agree — fe’l, am kerak emas', criterion: 'weird' },
+    { said: 'technology  is good', better: 'technology is good' },
+    { said: 'this phrase is not in the essay', better: 'x' },
+  ] });
+  const e = parseEvaluation(raw, ['task_response', 'coherence', 'lexical', 'grammar'], essay);
+  assert.deepEqual(e.corrections.map((c) => c.said), ['many people thinks', 'I AM AGREE'], 'matnda yo‘q yoki o‘zgarmagan tuzatishlar olib tashlanadi');
+  assert.equal(e.corrections[0]!.criterion, 'grammar'); assert.equal(e.corrections[0]!.why, 'people — ko‘plik, fe’l -s olmaydi');
+  assert.equal(e.corrections[1]!.criterion, undefined, 'noma’lum mezon qabul qilinmaydi');
+  assert.equal(e.overall, 6, 'ball server tomonda hisoblanadi');
+  console.log('ai writing lab: OK');
+}

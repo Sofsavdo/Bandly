@@ -219,7 +219,7 @@ export default function Speaking() {
             </div>
           </div>
         </div>
-        {aiEval && <EvalCard ev={aiEval} title={L('AI baho (suhbat matni bo‘yicha)')} />}
+        {aiEval && <EvalCard ev={aiEval} source="coach" title={L('AI baho (suhbat matni bo‘yicha)')} />}
         {aiState === 'error' && <p className="notice">{L('AI baho berolmadi:')} {aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">{L('Tariflar')}</a></>}{L('. Quyidagi qoidaviy tahlil ishlaydi.')}</p>}
         <div className="card">
           <div className="table-scroll"><table className="data wrap">

@@ -68,10 +68,13 @@ const isMastered = (i: InsightInput, lessonId: string) => i.passed.has(lessonId)
 const SKILL_HREF: Record<Skill, string> = { grammar: '#/grammar', vocabulary: '#/games/pairs', reading: '#/mocks/reading', listening: '#/mocks/listening', writing: '#/exam/writing', speaking: '#/exam/speaking' };
 const SKILL_OF_PREFIX: Record<string, Skill> = { G: 'grammar', V: 'vocabulary', R: 'reading', L: 'listening', W: 'writing', S: 'speaking', P: 'speaking' };
 
-/** Shu xato turini nishonga olgan, o'quvchi darajasidan oshmaydigan, hali o'zlashtirilmagan birinchi dars. */
+/** Shu xato turini nishonga olgan, o'quvchi darajasidan oshmaydigan, hali o'zlashtirilmagan dars — darajaga ENG YAQINI
+ *  (B1 o'quvchiga A1 Starter darsi emas, B1/A2 dagi mos dars); bir darajada — kurs tartibida birinchisi. */
 export function lessonFor(i: InsightInput, t: TaxonomyId): Lesson | null {
-  const cap = i.level ? LV.indexOf(i.level) : LV.length - 1;
-  return i.lessons.find((x) => x.lesson.taxonomyIds.includes(t) && LV.indexOf(x.level) <= Math.max(0, cap) && !isMastered(i, x.lesson.id))?.lesson ?? null;
+  const cap = Math.max(0, i.level ? LV.indexOf(i.level) : LV.length - 1);
+  const c = i.lessons.filter((x) => x.lesson.taxonomyIds.includes(t) && LV.indexOf(x.level) <= cap && !isMastered(i, x.lesson.id));
+  const best = Math.max(-1, ...c.map((x) => LV.indexOf(x.level)));
+  return c.find((x) => LV.indexOf(x.level) === best)?.lesson ?? null;
 }
 
 export function recommend(i: InsightInput, dueMistakes: number): Recommendation {

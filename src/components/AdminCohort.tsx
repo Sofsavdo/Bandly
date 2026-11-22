@@ -21,11 +21,20 @@ const FEATURE: Record<string, string> = {
   lesson: L('Darslar'), mock: L('Mock testlar'), writing_eval: L('Writing baholash'), speaking_eval: L('Speaking baholash'), coach: L('AI ustoz'),
   plan_done: L('Kunlik reja bajarildi'), insight_follow: L('Tavsiyaga amal qildi'),
 };
+// Ta'riflar (server/userEvents.ts DEFINITIONS bilan bir xil ma'noda; bu yerda tarjima qilinadigan nusxa)
+const DEFS: string[] = [
+  L('Kohorta — tanlangan davrda ro‘yxatdan o‘tgan o‘quvchilar. Har bir qadam: shu o‘quvchilardan nechtasi (noyob) ro‘yxatdan keyin istalgan vaqtda bajargan.'),
+  L('Faollashgan — ro‘yxatdan o‘tgandan keyin 7 kun ichida kamida bitta dars, mock yoki daraja testini tugatgan.'),
+  L('D1/D7/D30 — ro‘yxatdan o‘tgan kundan aynan 1/7/30 kun o‘tib XP olgan o‘quvchilar ulushi; faqat shu kun allaqachon kelgan o‘quvchilar hisoblanadi.'),
+  L('To‘lagan — kamida bitta muvaffaqiyatli to‘lov (referal yoki admin sovg‘a qilgan kunlar to‘lov emas). Uzaytirgan — kamida ikki to‘lov.'),
+  L('Faol o‘quvchi — davr ichida kamida bir kun XP olgan. Daromad va AI xarajati faol o‘quvchilar soniga bo‘linadi.'),
+  L('Bitta AI baholash narxi — Writing/Speaking baholash xarajati ÷ saqlangan baholashlar soni.'),
+];
 const pct = (x: number | null) => (x === null ? '—' : `${x}%`);
 const num = (x: number) => x.toLocaleString('ru-RU');
 const usd = (x: number | null) => (x === null ? '—' : `$${x}`);
 
-export function CohortPanel({ c, defs }: { c: Cohort2; defs?: Record<string, string> }) {
+export function CohortPanel({ c }: { c: Cohort2 }) {
   return (
     <section className="card">
       <h3 style={{ marginTop: 0 }}>{L('Kohorta: shu davrda ro‘yxatdan o‘tgan {0} o‘quvchi', [num(c.signups)])}</h3>
@@ -48,7 +57,7 @@ export function CohortPanel({ c, defs }: { c: Cohort2; defs?: Record<string, str
       </div>
       <h4>{L('Funksiyalardan foydalanish (noyob o‘quvchilar)')}</h4>
       <div className="table-scroll"><table className="data wrap"><tbody>{c.adoption.map((a) => <tr key={a.feature}><td>{FEATURE[a.feature] ?? a.feature}</td><td>{num(a.users)}</td></tr>)}</tbody></table></div>
-      {defs && <details className="fold" style={{ marginTop: 10 }}><summary>{L('Ta’riflar')}</summary><ul className="muted" style={{ fontSize: 13 }}>{Object.entries(defs).map(([k, v]) => <li key={k}>{L(v)}</li>)}</ul></details>}
+      <details className="fold" style={{ marginTop: 10 }}><summary>{L('Ta’riflar')}</summary><ul className="muted" style={{ fontSize: 13 }}>{DEFS.map((d) => <li key={d}>{d}</li>)}</ul></details>
     </section>
   );
 }
