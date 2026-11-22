@@ -18,7 +18,7 @@ export const A1_S1: Unit = {
       explanationUz: [
         'Xush kelibsiz! Ingliz alifbosida 26 ta harf bor va ularning ko‘pi sizga lotin yozuvidan tanish. Faqat harflarning NOMI boshqacha aytiladi: A — “ey”, E — “i:”, I — “ay”, Y — “uay”, R — “a:”, W — “dabl yu”, Z — “zed”.',
         'Ismni so‘rashganda ko‘pincha “How do you spell it?” (Qanday yoziladi?) deyishadi. Siz harflarni birma-bir aytasiz: “A-Z-I-Z”. Ikkita bir xil harf ketma-ket kelsa, “double” deyish mumkin: Anna — A, double N, A.',
-        'O‘zbek o‘quvchilar ko‘pincha E va I, G va J harflarini adashtiradi: E — “i:”, I — “ay”; G — “ji:”, J — “jey”. Yana bir qoida: ism, familiya, shahar va davlat nomi doim katta harf bilan yoziladi: Aziz Karimov, Tashkent, Uzbekistan. Xato qilsangiz ham qo‘rqmang — mashq qilgan sari oson bo‘ladi!',
+        'O‘zbek o‘quvchilar ko‘pincha E va I, G va J harflarini adashtiradi: E — [i:], I — [ay]; G — “ji:”, J — “jey”. Yana bir qoida: ism, familiya, shahar va davlat nomi doim katta harf bilan yoziladi: Aziz Karimov, Tashkent, Uzbekistan. Xato qilsangiz ham qo‘rqmang — mashq qilgan sari oson bo‘ladi!',
       ],
       table: [
         { form: 'A /eɪ/, E /iː/, I /aɪ/', example: 'A — “ey”, E — “i:”, I — “ay”' },
@@ -35,13 +35,13 @@ export const A1_S1: Unit = {
       vocab: [{ en: 'alphabet', uz: 'alifbo' }, { en: 'letter', uz: 'harf' }, { en: 'spell', uz: 'harflab aytmoq' }, { en: 'surname', uz: 'familiya' }],
       practice: [
         ch('How do you say the letter “E”?', ['“i:” — like “see”', '“ey” — like “say”', '“ay” — like “my”'], 0, 'E harfining nomi “i:” — xuddi “see” so‘zidagi kabi.'),
-        ch('Which letter sounds like the word “you”?', ['U', 'Y', 'W'], 0, 'U harfining nomi “yu” — you so‘zi bilan bir xil eshitiladi.'),
+        ch('Which letter sounds like the word “you”?', ['U', 'Y', 'W'], 0, 'U harfining nomi [yu] — you so‘zi bilan bir xil eshitiladi.'),
         gap('How do you ___ your name? — A-Z-I-Z.', ['spell'], 'Harflab aytishni so‘rash: How do you spell…?'),
         lch('C, A, T.', 'Listen. Which word is spelled?', ['cat', 'kat', 'sat'], 0, 'C — “si:”, A — “ey”, T — “ti:”: cat (mushuk).'),
         ord(['spell', 'How', 'that', 'do', 'you'], 'How do you spell that', 'Savol: How do you spell + narsa?'),
       ],
       check: [
-        ch('Which letter is “ay”?', ['A', 'E', 'I'], 2, 'I harfi “ay” deb aytiladi (A — “ey”, E — “i:”).'),
+        ch('Which letter is “ay”?', ['A', 'E', 'I'], 2, 'I harfi [ay] deb aytiladi (A — “ey”, E — [i:]).'),
         ch('Which letter is “jey”?', ['G', 'J', 'Y'], 1, 'J — “jey”, G — “ji:”. Bu ikkisini ko‘p adashtirishadi.'),
         ch('Which sentence is written correctly?', ['my name is aziz.', 'My name is Aziz.', 'my Name is aziz.'], 1, 'Gap boshi va ism katta harf bilan: My name is Aziz.'),
         ch('How do you spell “Anna” aloud?', ['A, double N, A', 'A, N, A', 'A, double A, N'], 0, 'Ikkita bir xil harf ketma-ket — double N.'),
@@ -90,7 +90,7 @@ export const A1_S1: Unit = {
       check: [
         ch('Which word starts with /v/ (top teeth on the lower lip)?', ['very', 'wet', 'when'], 0, 'very — v: yuqori tishlar pastki labga tegadi. wet, when — w.'),
         ch('In which word is the letter “w” silent?', ['write', 'window', 'week'], 0, 'write so‘zida w o‘qilmaydi: “rayt”.'),
-        ch('Which letter is silent in “hour”?', ['h', 'o', 'r'], 0, 'hour “aua” deb o‘qiladi — h o‘qilmaydi.'),
+        ch('Which letter is silent in “hour”?', ['h', 'o', 'r'], 0, 'hour [aua] deb o‘qiladi — h o‘qilmaydi.'),
         lgap('They live in the west of the city.', 'Listen. They live in the ___ of the city.', ['west'], 'w — lablar dumaloq: west (g‘arb). vest — kamzul.'),
         gap('It is a big ___ — it carries cars across the sea. (ship / sheep)', ['ship'], 'Qisqa “i”: ship (kema). sheep — qo‘y.'),
         ord(['is', 'This', 'brother', 'my'], 'This is my brother', 'this va brother — ovozli th /ð/.'),
@@ -320,7 +320,7 @@ export const A1_U9: Unit = {
       explanationUz: [
         'wear — kiyib yurmoq. Odat haqida Present Simple ishlatiladi: I wear jeans at the weekend. He/she bilan -s: My father wears a suit. Inkor va savol: I don’t wear a tie. What do you wear to work?',
         'Kiyimingiz BORligini have got bilan aytamiz: I have got a new jacket. She has got two dresses. wear — kiyish odati, have got — egalik. “Hozir kiyib turibman” (I am wearing…) A2 da o‘rganiladi.',
-        'Ba’zi kiyimlar doim ko‘plikda: jeans, trousers, shorts, shoes — My jeans ARE blue (is emas). O‘zbekchada “shim” birlikda, shuning uchun “My trousers is…” deb xato qilish oson.',
+        'Ba’zi kiyimlar doim ko‘plikda: jeans, trousers, shorts, shoes — My jeans ARE blue (is emas). O‘zbekchada [shim] birlikda, shuning uchun “My trousers is…” deb xato qilish oson.',
       ],
       table: [
         { form: 'I / you / we / they + wear', example: 'We wear a uniform at school.' },
