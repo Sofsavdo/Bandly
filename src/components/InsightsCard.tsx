@@ -59,7 +59,7 @@ export function InsightsCard() {
       <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Lightbulb size={18} /> {L('Sizni nima to‘xtatyapti?')}</h3>
       <div className="ins-rec">
         <p style={{ margin: 0 }}>{why(data.rec)}</p>
-        <a className="btn primary sm" href={data.rec.href} onClick={follow}>{L('Shu mashqni boshlash')} <ArrowRight size={14} /></a>
+        <a className="btn primary sm" href={data.rec.href} onClick={follow}>{L('Boshlash')} <ArrowRight size={14} /></a>
       </div>
       {outcome && outcome.state !== 'pending' && prev?.skill && (
         <p className={`ins-out ${outcome.state}`}>
@@ -68,15 +68,13 @@ export function InsightsCard() {
         </p>
       )}
       <div className="ins-skills">
-        {data.scores.map((s) => (
-          <div key={s.skill} className="ins-skill">
-            <span>{SKILL_UZ[s.skill]}</span>
-            {s.score === null ? <small className="muted">{L('hali ma’lumot yo‘q')}</small> : <><i><b style={{ width: `${s.score}%` }} /></i><small>{s.score}</small></>}
+        {measured.map((s) => (
+          <div key={s.skill} className="ins-skill" title={L('Ballar taxminiy (0–100): oxirgi natijalaringiz va darslardagi o‘zlashtirishdan hisoblanadi, rasmiy imtihon bahosi emas.')}>
+            <span>{SKILL_UZ[s.skill]}</span><small>{s.score}</small><i><b style={{ width: `${s.score}%` }} /></i>
           </div>
         ))}
       </div>
       {data.errors.length > 0 && <p className="muted" style={{ margin: '8px 0 0', fontSize: 13 }}>{L('Takrorlanayotgan xatolar:')} {data.errors.map((e) => `${ERR_UZ[e.taxonomy] ?? e.taxonomy} (${e.count})`).join(', ')}</p>}
-      <p className="muted" style={{ margin: '6px 0 0', fontSize: 12 }}>{L('Ballar taxminiy (0–100): oxirgi natijalaringiz va darslardagi o‘zlashtirishdan hisoblanadi, rasmiy imtihon bahosi emas.')}</p>
     </section>
   );
 }

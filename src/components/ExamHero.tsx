@@ -66,10 +66,10 @@ export function ExamHero() {
         {days !== null && days > 0
           ? <p className="eh-days"><b>{days}</b> {L('kun qoldi')}</p>
           : <a className="eh-set" href="#/start"><CalendarDays size={16} /> {days !== null ? L('Imtihon sanasi o‘tdi — yangisini belgilang') : L('Imtihon sanasini belgilang')}</a>}
-        <a className="btn sm eh-btn" href="#/mocks">{L('Mock test — ballni aniqlash')}</a>
+        <a className="btn sm eh-btn" href="#/mocks">{L('Mock test')}</a>
       </div>
       {exam !== 'sat' && <PlanDetails examDate={p.examDate} current={cur} target={p.target} results={results} />}
-      <PRing value={exam === 'sat' || cur === null ? 0 : cur} max={exam === 'sat' ? 1 : p.target} size={104} stroke={9} color="var(--peach)" label={L('Hozirgi natija: {0}', [curLabel])}>
+      <PRing value={exam === 'sat' || cur === null ? 0 : cur} max={exam === 'sat' ? 1 : p.target} size={76} stroke={7} color="var(--peach)" label={L('Hozirgi natija: {0}', [curLabel])}>
         <div className="eh-ring"><b>{curLabel}</b><small>{L('hozir')}</small></div>
       </PRing>
     </section>

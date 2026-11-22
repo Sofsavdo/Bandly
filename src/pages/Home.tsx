@@ -135,7 +135,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   const hello = h < 12 ? L('Xayrli tong') : h < 18 ? L('Xayrli kun') : L('Xayrli kech');
 
   return (
-    <div>
+    <div className="home">
       <div className="hello">
         <span className="avatar xs" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
         <div className="grow">
@@ -151,10 +151,8 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         </div>
       )}
 
-      <QuickLinks />
       <ExamHero />
       {lvl && <PlanCard />}
-      {lvl && <InsightsCard />}
 
       {/* Bitta ixcham kartochka: davom ettirish + asosiy ko'rsatkichlar + bugungi maqsad (avval 4 ta katta blok edi) */}
       <section className="card prog">
@@ -170,9 +168,10 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <div><b>{lp.level}</b><span>{lvl ? `${lvl} · ${L('bosqich')}` : L('bosqich')}</span></div>
         </div>
         <div className="prog-bar" role="progressbar" aria-valuemin={0} aria-valuemax={p.dailyGoal} aria-valuenow={Math.min(p.dailyXp, p.dailyGoal)} aria-label={L('Kunlik maqsad {0}/{1} XP', [p.dailyXp, p.dailyGoal])}><i style={{ width: `${Math.min(1, p.dailyXp / Math.max(1, p.dailyGoal)) * 100}%` }} /></div>
-        <p className="prog-note">{left === 0 ? L('Bugungi maqsad bajarildi — seriya saqlandi!') : L('Bugungi maqsadgacha {0} XP', [left])}</p>
       </section>
 
+      <QuickLinks />
+      {lvl && <InsightsCard />}
       {!acc && <p className="notice">{L('Progress hozir faqat shu qurilmada.')} <a href="#/profile">{L('Hisob oching')}</a>  {L('— boshqa qurilmada ham ochiladi.')}</p>}
       {!lvl && <PlanCard />}
       <QuestsCard />

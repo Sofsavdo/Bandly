@@ -109,7 +109,7 @@ export default function Profile() {
         <details className="fold" style={{ margin: '10px 0' }}><summary>{L('AI ustoz xarakteri')}</summary><PersonaPicker /></details>
       </div>
 
-      <CertProfileCard />
+      <details className="card fold cert-fold"><summary><h3 style={{ display: 'inline', margin: 0 }}>{L('Sertifikat uchun ma’lumot')}</h3></summary><CertProfileCard /></details>
       <div className="card">
         <h3>{L('Natijalar tarixi')}</h3>
         <ResultList results={results} limit={10} moreHref="#/results" />

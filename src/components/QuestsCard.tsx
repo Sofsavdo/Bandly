@@ -35,9 +35,8 @@ export function QuestsCard() {
           return (
             <li key={q.id} className={`quest${claimed ? ' claimed' : ''}`}>
               <div className="grow">
-                <a href={q.href}><b>{q.titleUz}</b></a>
-                <div className="audio-bar" style={{ marginTop: 6 }} aria-hidden="true"><i style={{ width: `${(q.progress / q.target) * 100}%` }} /></div>
-                <span className="muted" style={{ fontSize: 12.5 }}>{q.progress}/{q.target}</span>
+                <a href={q.href} className="quest-title"><b>{q.titleUz}</b><span className="muted">{q.progress}/{q.target}</span></a>
+                <div className="audio-bar" aria-hidden="true"><i style={{ width: `${(q.progress / q.target) * 100}%` }} /></div>
               </div>
               {claimed ? <span className="ok" aria-label={L('Olindi')}><CheckCircle2 size={20} /></span>
                 : <button type="button" className="btn sm primary" disabled={!q.done} onClick={() => { const r = claimQuest(qd, q); if (r.xp) { addXp(r.xp); setQd(r.qd); } }}><Gift size={14} /> +{QUEST_XP}  {L('XP')}</button>}

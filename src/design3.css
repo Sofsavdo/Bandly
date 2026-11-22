@@ -1296,3 +1296,60 @@ details.card[open] > summary { margin-bottom: 12px; }
 .lab-rewrite { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .lab-rewrite input { flex: 1 1 200px; min-width: 0; }
 .lab-rewrite small { display: inline-flex; align-items: center; gap: 4px; flex-basis: 100%; }
+
+/* ===== Bosh sahifa: ixcham, premium (2026-11-23). Bloklar ekranni to'sib qo'ymasin. ===== */
+/* Imtihon bloki: matn chapda, kichik halqa o'ngda — telefonda ham bir qatorda */
+.exam-hero { padding: 14px 16px; gap: 10px; border-radius: 22px; margin-bottom: 12px; align-items: center; }
+.exam-hero .eh-main { flex: 1 1 0; gap: 6px; }
+.exam-hero .eh-main .btn.sm { height: 30px; padding: 0 12px; font-size: 12.5px; }
+.eh-days b { font-size: 34px; }
+.eh-eye { font-size: 13px; }
+.exam-hero .eh-plan { margin-top: 2px; font-size: 13.5px; }
+.eh-ring b { font-size: 18px; } .eh-ring small { font-size: 10.5px; }
+/* Tezkor menyu: telefonda bitta gorizontal qator (2 qator o'rniga) */
+@media (max-width: 819px) {
+  .quick { display: flex; overflow-x: auto; scrollbar-width: none; gap: 6px; margin: 0 -16px 12px; padding: 0 16px; scroll-snap-type: x proximity; }
+  .quick::-webkit-scrollbar { display: none; }
+  .quick a { flex: none; height: 40px; padding: 0 12px 0 4px; border-radius: 999px; scroll-snap-align: start; white-space: nowrap; }
+  .quick a span { width: 30px; height: 30px; border-radius: 50%; }
+  .quick a span svg { width: 16px; height: 16px; }
+}
+/* Tahlil kartochkasi: tavsiya + faqat o'lchangan ko'nikmalar */
+.insights { padding: 16px !important; }
+.insights h3 { font-size: 16px; margin-bottom: 10px; }
+.insights .ins-rec { padding: 10px 12px; gap: 8px 12px; font-size: 14px; }
+.ins-skills { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px 14px; margin-top: 10px; }
+.ins-skill { font-size: 12.5px; }
+/* Kartochkalar orasidagi masofa va ichki joy telefonda kamroq */
+@media (max-width: 640px) {
+  .card { padding: 16px; }
+  .quests h3, .plan-card h3 { font-size: 16px; }
+  .quest .audio-bar { margin-top: 4px !important; }
+  /* Kun so'zi: ta'rif va maslahat kartochkasi telefonda ortiqcha — faqat so'z, tarjima va misol */
+  .daily-card.word .def { display: none; }
+  .daily-card.tip { display: none; }
+  .daily-card h3 { font-size: 22px !important; }
+}
+.quest .quest-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: inherit; text-decoration: none; }
+.quest .quest-title span { font-size: 12px; font-weight: 600; flex: none; }
+.quest .audio-bar { margin-top: 6px; height: 5px; }
+.quest { padding: 8px 10px !important; }
+.daily-card.word .row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.daily-card.word .row > * { flex: none; }
+.plan-card .path-step, .plan-row { padding-top: 10px; padding-bottom: 10px; }
+.quest .grow { flex: 1 1 auto; min-width: 0; }
+.quest .audio-bar { width: 100%; }
+/* Kompyuterda bosh sahifa juda keng cho'zilmasin — o'qilishi oson ustun */
+@media (min-width: 980px) { .home { max-width: 920px; margin-inline: auto; } }
+/* Profil: 4 ta ko'rsatkich telefonda bitta ixcham qatorda (2×2 katta plitka o'rniga), sertifikat ma'lumoti yig'iladigan */
+@media (max-width: 640px) {
+  .ptiles { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; }
+  .ptile { flex-direction: column !important; align-items: center !important; text-align: center; padding: 10px 4px !important; gap: 4px !important; }
+  .ptile svg { width: 44px !important; height: 44px !important; }
+  .ptile small { display: none; }
+  .ptile b { font-size: 12.5px; }
+  .prof-head { padding: 16px !important; }
+  .prof-head .avatar { width: 56px; height: 56px; font-size: 24px; }
+}
+.cert-fold > .card, .cert-fold .card { box-shadow: none; border: 0; padding: 12px 0 0; margin: 0; background: none; }
+.cert-fold .card > h3:first-child { display: none; }
