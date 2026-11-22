@@ -14,7 +14,7 @@ for (const [p, h] of Object.entries(html)) if (p.endsWith('.html')) {
   const lang = p.startsWith('ru/') ? 'ru' : 'uz';
   assert.ok(h.includes(`<html lang="${lang}">`), `${p}: til`);
   assert.ok(h.includes('href="/#/placement"'), `${p}: CTA mehmonga ochiq daraja testiga olib boradi (login devoriga emas)`);
-  assert.ok(!/Band<b>ly|Bandly/.test(h) && h.includes('Sell<b>zen</b>'), `${p}: eski brend yo'q`);
+  assert.ok(!/Band<b>ly|Bandly/.test(h) && h.includes('SELLZEN<em>.UZ</em>') && h.includes('href="/#/"'), `${p}: eski brend yo'q`);
   assert.equal(new Set([...h.matchAll(/<h1>/g)]).size <= 1 && (h.match(/<h1>/g) ?? []).length, 1, `${p}: bitta h1`);
   // hreflang: o'zaro (A → B bo'lsa, B → A) va o'ziga ishora qiladi
   const a = alts(h);

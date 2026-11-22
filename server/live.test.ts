@@ -28,6 +28,14 @@ assert.equal(liveConfigFromEnv('k', { LIVE_SILENCE_MS: '50' } as never)!.silence
 for (const t of ['你好，我们开始吧', '안녕하세요', 'مرحبا', 'Hola, ¿cómo estás? Muy bien, gracias', 'Olá, você está bem? Muito obrigado']) assert.equal(wrongLanguage(t, 'uz'), true, t);
 assert.equal(wrongLanguage('Привет, как дела?', 'uz'), true, 'o‘zbek (lotin) uchun kirill — xato');
 assert.equal(wrongLanguage('Привет, как дела?', 'ru'), false, 'rus tili tanlangan bo‘lsa — to‘g‘ri');
+// Qirg'iz / tojik / qozoq / rus o'quvchiga o'zbekcha javob — xato; qozoq/qirg'iz/tojikka sof ruscha — xato; o'z tilida — to'g'ri
+for (const c of ['ky', 'tg', 'kk', 'ru', 'en']) assert.equal(wrongLanguage('Kechirasiz, tushunmadim — yana bir bor ayting.', c), true, `uz → ${c}`);
+assert.equal(wrongLanguage('Kechirasiz, tushunmadim — yana bir bor ayting.', 'uz'), false);
+for (const c of ['ky', 'tg', 'kk']) assert.equal(wrongLanguage('Что ты сказал? Скажи ещё раз, пожалуйста, очень плохо слышно.', c), true, `ru → ${c}`);
+assert.equal(wrongLanguage('Кечириңиз, түшүнгөн жокмун — дагы бир жолу айтып бересизби?', 'ky'), false);
+assert.equal(wrongLanguage('Бубахшед, нафаҳмидам — боз як бор гуфта метавонед?', 'tg'), false);
+assert.equal(wrongLanguage('Кешіріңіз, түсінбедім — тағы бір рет айтыңызшы.', 'kk'), false);
+assert.equal(wrongLanguage('Not "I go" — "I went". Go to school and say it again, please.', 'ky'), false, 'inglizcha — har doim mumkin');
 for (const t of ['Not "I go" — "I went", it is past! Say it again.', 'Eshitmadim! Qattiqroq gapir. Bu nima endi?', 'What do you do para... sorry, for fun?']) assert.equal(wrongLanguage(t, 'uz'), false, t);
 
 // To'liq yo'l: soxta Gemini serveri. Birinchi model "topilmaydi" (1008), zaxira model ishlaydi.
