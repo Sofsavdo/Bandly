@@ -20,26 +20,28 @@ export const IELTS_CEFR = [
 ];
 const IELTS_SRC = { title: 'IELTS and the CEFR — ielts.org', url: 'https://ielts.org/organisations/ielts-for-organisations/compare-ielts/ielts-and-the-cefr' };
 
+/** Ilovadagi brend belgisi (src/components/Logo.tsx bilan bir xil shakl). */
+const LOGO = '<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A4A66"/><stop offset=".45" stop-color="#9DB0C9"/><stop offset=".6" stop-color="#5B6E8C"/><stop offset="1" stop-color="#26344E"/></linearGradient></defs><path d="M86 38V30.5L50 9.5L14 30.5V46.5L86 53.5V69.5L50 90.5L14 69.5V62" fill="none" stroke="url(#lg)" stroke-width="13" stroke-linejoin="round"/></svg>';
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
 type Lang = 'uz' | 'ru';
-interface Page { slug: string; title: string; short: string; blurb: string; ru?: string }
+interface Page { slug: string; title: string; short: string; blurb: string; ru?: string; group: 'level' | 'score' | 'prep' }
 /** O'zbekcha sahifalar; `ru` — ruscha versiyaning slug'i (hreflang juftligi). */
 const PAGES: Page[] = [
-  { slug: 'ingliz-tili-darajasini-aniqlash', title: 'Ingliz tili darajasini aniqlash testi', short: 'Daraja testi', blurb: '20 tagacha savol, ~3 daqiqa: A1 dan C1 gacha darajangiz va shaxsiy reja — bepul.', ru: 'test-urovnya-angliyskogo' },
-  { slug: 'ielts-band-kalkulyator', title: 'IELTS band kalkulyatori', short: 'Band kalkulyatori', blurb: 'To‘g‘ri javoblar sonidan band va Overall ball, rasmiy yaxlitlash qoidasi bilan.' },
-  { slug: 'multilevel-ball-hisoblash', title: 'CEFR Multilevel ball hisoblash', short: 'Multilevel ball', blurb: 'Multilevel balingiz (0–75) qaysi darajaga (B1, B2, C1) teng va imtihon formati.', ru: 'multilevel-bally' },
-  { slug: 'cefr-darajalari', title: 'CEFR darajalari: A1 dan C2 gacha', short: 'CEFR darajalari', blurb: 'Har bir daraja nimani anglatadi, IELTS va Multilevel’dagi taxminiy mosligi.', ru: 'urovni-cefr' },
-  { slug: 'ielts-cefr-multilevel', title: 'IELTS ↔ CEFR ↔ Multilevel', short: 'IELTS ↔ CEFR', blurb: 'IELTS balini CEFR darajasi va O‘zbekiston Multilevel ballari bilan solishtirish.' },
-  { slug: 'ielts-speaking-part-2-mavzulari', title: 'IELTS Speaking Part 2 mavzulari', short: 'Speaking Part 2', blurb: 'Part 2 kartochkalari ro‘yxati va har biriga Part 3 savollari.' },
-  { slug: 'ielts-writing-task-2-savollari', title: 'IELTS Writing Task 2 savollari', short: 'Writing Task 2', blurb: 'Insho turlari bo‘yicha guruhlangan Task 2 savollari.' },
-  { slug: 'speaking-writing-mavzular', title: 'IELTS Speaking va Writing mavzulari', short: 'Mavzu generatori', blurb: 'Tasodifiy Speaking va Writing mavzulari, imtihon taymeri bilan.' },
+  { slug: 'ingliz-tili-darajasini-aniqlash', group: 'level', title: 'Ingliz tili darajasini aniqlash testi', short: 'Daraja testi', blurb: '20 tagacha savol, ~3 daqiqa: A1 dan C1 gacha darajangiz va shaxsiy reja — bepul.', ru: 'test-urovnya-angliyskogo' },
+  { slug: 'ielts-band-kalkulyator', group: 'score', title: 'IELTS band kalkulyatori', short: 'Band kalkulyatori', blurb: 'To‘g‘ri javoblar sonidan band va Overall ball, rasmiy yaxlitlash qoidasi bilan.' },
+  { slug: 'multilevel-ball-hisoblash', group: 'score', title: 'CEFR Multilevel ball hisoblash', short: 'Multilevel ball', blurb: 'Multilevel balingiz (0–75) qaysi darajaga (B1, B2, C1) teng va imtihon formati.', ru: 'multilevel-bally' },
+  { slug: 'cefr-darajalari', group: 'level', title: 'CEFR darajalari: A1 dan C2 gacha', short: 'CEFR darajalari', blurb: 'Har bir daraja nimani anglatadi, IELTS va Multilevel’dagi taxminiy mosligi.', ru: 'urovni-cefr' },
+  { slug: 'ielts-cefr-multilevel', group: 'level', title: 'IELTS ↔ CEFR ↔ Multilevel', short: 'IELTS ↔ CEFR', blurb: 'IELTS balini CEFR darajasi va O‘zbekiston Multilevel ballari bilan solishtirish.' },
+  { slug: 'ielts-speaking-part-2-mavzulari', group: 'prep', title: 'IELTS Speaking Part 2 mavzulari', short: 'Speaking Part 2', blurb: 'Part 2 kartochkalari ro‘yxati va har biriga Part 3 savollari.' },
+  { slug: 'ielts-writing-task-2-savollari', group: 'prep', title: 'IELTS Writing Task 2 savollari', short: 'Writing Task 2', blurb: 'Insho turlari bo‘yicha guruhlangan Task 2 savollari.' },
+  { slug: 'speaking-writing-mavzular', group: 'prep', title: 'IELTS Speaking va Writing mavzulari', short: 'Mavzu generatori', blurb: 'Tasodifiy Speaking va Writing mavzulari, imtihon taymeri bilan.' },
 ];
 const RU_PAGES: Page[] = [
-  { slug: 'test-urovnya-angliyskogo', title: 'Тест на уровень английского', short: 'Тест уровня', blurb: 'До 20 вопросов, ~3 минуты: ваш уровень от A1 до C1 и личный план — бесплатно.' },
-  { slug: 'multilevel-bally', title: 'Баллы CEFR Multilevel', short: 'Баллы Multilevel', blurb: 'Какому уровню (B1, B2, C1) соответствуют баллы Multilevel (0–75) и формат экзамена.' },
-  { slug: 'urovni-cefr', title: 'Уровни CEFR: от A1 до C2', short: 'Уровни CEFR', blurb: 'Что означает каждый уровень и примерное соответствие IELTS и Multilevel.' },
+  { slug: 'test-urovnya-angliyskogo', group: 'level', title: 'Тест на уровень английского', short: 'Тест уровня', blurb: 'До 20 вопросов, ~3 минуты: ваш уровень от A1 до C1 и личный план — бесплатно.' },
+  { slug: 'multilevel-bally', group: 'score', title: 'Баллы CEFR Multilevel', short: 'Баллы Multilevel', blurb: 'Какому уровню (B1, B2, C1) соответствуют баллы Multilevel (0–75) и формат экзамена.' },
+  { slug: 'urovni-cefr', group: 'level', title: 'Уровни CEFR: от A1 до C2', short: 'Уровни CEFR', blurb: 'Что означает каждый уровень и примерное соответствие IELTS и Multilevel.' },
 ];
 const pathOf = (lang: Lang, slug: string) => `${lang === 'ru' ? '/ru' : ''}/vositalar/${slug}`;
 const pairOf = (lang: Lang, slug: string): { uz: string; ru: string } | null => {
@@ -47,8 +49,8 @@ const pairOf = (lang: Lang, slug: string): { uz: string; ru: string } | null => 
   return uz?.ru ? { uz: uz.slug, ru: uz.ru } : null;
 };
 const UI = {
-  uz: { nav: 'Vositalar', ctaH: 'Ingliz tili darajangizni bepul aniqlang', ctaP: '3 daqiqalik test: A1 dan C1 gacha darajangiz, maqsadingizga mos kunlik reja, darslar va mock testlar.', ctaB: 'Testni boshlash', foot: 'Sellzen — o‘zbek tilida ingliz tili va IELTS, CEFR, SAT tayyorgarligi. Bu vositalar bepul va ro‘yxatdan o‘tishsiz ishlaydi. Sellzen IELTS, Cambridge yoki UzBMB’ning rasmiy hamkori emas; natijalar taxminiy.' },
-  ru: { nav: 'Инструменты', ctaH: 'Узнайте свой уровень английского бесплатно', ctaP: 'Тест на 3 минуты: уровень от A1 до C1, ежедневный план под вашу цель, уроки и пробные экзамены.', ctaB: 'Начать тест', foot: 'Sellzen — английский язык и подготовка к IELTS, CEFR, SAT. Инструменты бесплатны и работают без регистрации. Sellzen не является официальным партнёром IELTS, Cambridge или UzBMB; результаты приблизительные.' },
+  uz: { all: 'Barcha vositalar', app: 'Ilovani ochish', groups: { level: 'Darajangizni bilib oling', score: 'Ballni hisoblash', prep: 'Imtihonga tayyorgarlik' }, open: 'Ochish', fTools: 'Bepul vositalar', fApp: 'Sellzen', fLinks: [['/#/', 'Ilova'], ['/#/placement', 'Daraja testi'], ['/#/pricing', 'Narxlar'], ['https://t.me/Sellzenbot', 'Telegram bot'], ['https://t.me/Sellzen_AI', 'Telegram kanal']], tag: 'Ingliz tili, IELTS, CEFR va SAT — AI ustoz bilan.', nav: 'Vositalar', ctaH: 'Ingliz tili darajangizni bepul aniqlang', ctaP: '3 daqiqalik test: A1 dan C1 gacha darajangiz, maqsadingizga mos kunlik reja, darslar va mock testlar.', ctaB: 'Testni boshlash', foot: 'Sellzen — o‘zbek tilida ingliz tili va IELTS, CEFR, SAT tayyorgarligi. Bu vositalar bepul va ro‘yxatdan o‘tishsiz ishlaydi. Sellzen IELTS, Cambridge yoki UzBMB’ning rasmiy hamkori emas; natijalar taxminiy.' },
+  ru: { all: 'Все инструменты', app: 'Открыть приложение', groups: { level: 'Узнайте свой уровень', score: 'Расчёт баллов', prep: 'Подготовка к экзамену' }, open: 'Открыть', fTools: 'Бесплатные инструменты', fApp: 'Sellzen', fLinks: [['/#/', 'Приложение'], ['/#/placement', 'Тест уровня'], ['/#/pricing', 'Тарифы'], ['https://t.me/Sellzenbot', 'Telegram-бот'], ['https://t.me/Sellzen_AI', 'Telegram-канал']], tag: 'Английский, IELTS, CEFR и SAT — с AI-наставником.', nav: 'Инструменты', ctaH: 'Узнайте свой уровень английского бесплатно', ctaP: 'Тест на 3 минуты: уровень от A1 до C1, ежедневный план под вашу цель, уроки и пробные экзамены.', ctaB: 'Начать тест', foot: 'Sellzen — английский язык и подготовка к IELTS, CEFR, SAT. Инструменты бесплатны и работают без регистрации. Sellzen не является официальным партнёром IELTS, Cambridge или UzBMB; результаты приблизительные.' },
 } as const;
 
 function layout(o: { slug: string; title: string; description: string; body: string; script?: string; lang?: Lang; kind?: 'tool' | 'page'; faq?: { q: string; a: string }[] }): string {
@@ -80,10 +82,10 @@ ${alt}
 :root{--bg:#f4f7f8;--card:#fff;--ink:#0B1F3A;--muted:#55627a;--line:#e1e7ec;--acc:#0F766E;--acc2:#2563eb;--ok:#1f9d61}
 @media (prefers-color-scheme:dark){:root{--bg:#0b1422;--card:#132033;--ink:#eef3f8;--muted:#a3b0c2;--line:#22324a;--acc:#2dd4bf;--acc2:#60a5fa;--ok:#4cc98e}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header,main,footer{max-width:860px;margin:0 auto;padding:0 16px}
+header,main,footer,nav.tools{max-width:960px;margin:0 auto;padding:0 16px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:18px;padding-bottom:6px;flex-wrap:wrap}
-.logo{font-weight:800;font-size:20px;color:var(--ink);text-decoration:none}.logo b{color:var(--acc)}
-nav{display:flex;gap:6px;flex-wrap:wrap}nav a{font-size:14px;padding:6px 10px;border-radius:99px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--card)}nav a.on{background:var(--ink);color:var(--bg)}
+.logo{display:inline-flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none}.logo svg{width:30px;height:30px}.logo .word{font-weight:800;letter-spacing:.06em;font-size:16px}.logo em{font-style:normal;color:var(--muted)}.hright{display:flex;align-items:center;gap:12px}.lang{font-size:14px;color:var(--muted);text-decoration:none;font-weight:600}.btn.sm{padding:9px 14px;font-size:14px}
+nav.tools{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-top:8px;padding-bottom:4px;white-space:nowrap}nav.tools::-webkit-scrollbar{display:none}nav.tools a{flex:0 0 auto;font-size:14px;padding:6px 12px;border-radius:99px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--card)}nav.tools a.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 h1{font-size:clamp(26px,5vw,38px);line-height:1.15;margin:18px 0 8px}h2{font-size:21px;margin:26px 0 8px}
 .lead{color:var(--muted);margin:0 0 18px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0}
@@ -96,18 +98,21 @@ table{width:100%;border-collapse:collapse;font-size:15px}th,td{text-align:left;p
 .btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}
 .cta{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:0}.cta p{margin:6px 0 14px}.cta .btn{background:#fff;color:#0B1F3A}
 .muted{color:var(--muted)}.note{font-size:14px;color:var(--muted)}ul.src{padding-left:18px;font-size:14px}a{color:var(--acc)}
-footer{padding-top:24px;padding-bottom:40px;font-size:14px;color:var(--muted)}
+footer{margin-top:28px;padding-top:26px;padding-bottom:40px;font-size:14px;color:var(--muted);border-top:1px solid var(--line)}.fgrid{display:grid;gap:22px;grid-template-columns:1.4fr 1fr 1fr}.fgrid h3{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:4px 0 8px}.fgrid a:not(.logo){display:block;color:var(--ink);text-decoration:none;padding:3px 0}.fgrid a:not(.logo):hover{color:var(--acc)}.fbrand p{margin:10px 0 0;max-width:280px}.fnote{font-size:12.5px;margin:14px 0 0}@media(max-width:640px){.fgrid{grid-template-columns:1fr 1fr}.fbrand{grid-column:1/-1}}
+.groups h2{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:26px 0 10px}.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}.tile{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}.tile:hover{border-color:var(--acc);transform:translateY(-1px)}.tile b{font-size:17px;line-height:1.3}.tile span{color:var(--muted);font-size:14.5px;flex:1}.tile i{font-style:normal;color:var(--acc);font-weight:700;font-size:14px}
 .timer{font-variant-numeric:tabular-nums;font-size:34px;font-weight:800}
 </style>
 ${ld.map((x) => `<script type="application/ld+json">${json(x)}</script>`).join('\n')}
 </head>
 <body>
-<header><a class="logo" href="/">Sell<b>zen</b></a><nav aria-label="${ui.nav}">${pages.map((p) => `<a href="${pathOf(lang, p.slug)}"${p.slug === o.slug ? ' class="on" aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}${pair && o.slug ? `<a href="${pathOf(lang === 'uz' ? 'ru' : 'uz', lang === 'uz' ? pair.ru : pair.uz)}" hreflang="${lang === 'uz' ? 'ru' : 'uz'}">${lang === 'uz' ? 'RU' : 'UZ'}</a>` : ''}</nav></header>
+<header><a class="logo" href="/" aria-label="Sellzen">${LOGO}<span class="word">SELLZEN<em>.UZ</em></span></a><div class="hright">${pair ? `<a class="lang" href="${pathOf(lang === 'uz' ? 'ru' : 'uz', o.slug ? (lang === 'uz' ? pair.ru : pair.uz) : '')}" hreflang="${lang === 'uz' ? 'ru' : 'uz'}">${lang === 'uz' ? 'Русский' : 'O‘zbekcha'}</a>` : ''}<a class="btn sm" href="/#/">${ui.app}</a></div></header>
+${o.slug ? `<nav class="tools" aria-label="${ui.nav}"><a href="${pathOf(lang, '')}">← ${ui.all}</a>${pages.map((p) => `<a href="${pathOf(lang, p.slug)}"${p.slug === o.slug ? ' class="on" aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}</nav>` : ''}
 <main>
 ${o.body}
 <section class="card cta"><h2 style="margin-top:0">${ui.ctaH}</h2><p>${ui.ctaP}</p><a class="btn" href="/#/placement" onclick="try{navigator.sendBeacon('/api/event',new Blob(['{&quot;name&quot;:&quot;seo_cta&quot;}'],{type:'application/json'}))}catch(e){}">${ui.ctaB}</a></section>
 </main>
-<footer>${ui.foot}</footer>
+<footer><div class="fgrid"><div class="fbrand"><a class="logo" href="/" aria-label="Sellzen">${LOGO}<span class="word">SELLZEN<em>.UZ</em></span></a><p>${ui.tag}</p></div><div><h3>${ui.fTools}</h3>${pages.map((p) => `<a href="${pathOf(lang, p.slug)}">${esc(p.short)}</a>`).join('')}</div><div><h3>${ui.fApp}</h3>${ui.fLinks.map(([h, t]) => `<a href="${h}"${h.startsWith('http') ? ' rel="noopener"' : ''}>${t}</a>`).join('')}</div></div><p class="fnote">${ui.foot}</p><p class="fnote">© 2026 Sellzen</p></footer>
+${o.slug ? '<script>var t=document.querySelector("nav.tools .on");if(t)t.parentNode.scrollLeft=t.offsetLeft-16;</script>' : ''}
 ${o.script ? `<script>${o.script}</script>` : ''}
 </body>
 </html>
@@ -210,7 +215,7 @@ function indexPage(lang: Lang = 'uz'): string {
   const h = lang === 'ru' ? { t: 'Бесплатные инструменты для английского и IELTS', l: 'Работают без регистрации.', d: 'Тест на уровень английского, баллы CEFR Multilevel и уровни CEFR — бесплатно.' } : { t: 'Bepul ingliz tili va IELTS vositalari', l: 'Ro‘yxatdan o‘tishsiz ishlaydigan, o‘zbek tilidagi bepul vositalar.', d: 'Ingliz tili daraja testi, IELTS band kalkulyatori, Multilevel ball hisoblash, CEFR darajalari va IELTS Speaking/Writing mavzulari — bepul, o‘zbek tilida.' };
   const body = `<h1>${h.t}</h1>
 <p class="lead">${h.l}</p>
-${pages.map((p) => `<section class="card"><h2 style="margin-top:0"><a href="${pathOf(lang, p.slug)}">${esc(p.title)}</a></h2><p class="muted" style="margin:0">${esc(p.blurb)}</p></section>`).join('\n')}`;
+<div class="groups">${(['level', 'score', 'prep'] as const).filter((g) => pages.some((p) => p.group === g)).map((g) => `<h2>${UI[lang].groups[g]}</h2><div class="tiles">${pages.filter((p) => p.group === g).map((p) => `<a class="tile" href="${pathOf(lang, p.slug)}"><b>${esc(p.title)}</b><span>${esc(p.blurb)}</span><i>${UI[lang].open} →</i></a>`).join('')}</div>`).join('\n')}</div>`;
   return layout({ slug: '', title: h.t, description: h.d, body, lang, kind: 'page' });
 }
 
