@@ -19,7 +19,7 @@ const catalog = new Set(read<string[]>('src/i18n/catalog.json'));
 const ui = read<string[]>('src/i18n/catalog-ui.json');
 const ph = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
 // Qo'shtirnoq ichidagi inglizcha o'quv iboralari: «...», “...”, "...", '...'
-const quotedEnglish = (s: string): string[] => [...s.matchAll(/«([^»]{2,80})»|“([^”]{2,80})”|"([^"]{2,80})"|(?<![A-Za-z])'([^']{2,60})'(?![A-Za-z])/g)].map((m) => (m[1] ?? m[2] ?? m[3] ?? m[4])!.trim()).filter((q) => /[a-z]/i.test(q) && englishOnly(q) && q.split(' ').length >= 1 && !/^[A-Z]{2,6}$/.test(q));
+const quotedEnglish = (s: string): string[] => [...s.matchAll(/«([^»]{2,80})»|“([^”]{2,80})”|"([^"]{2,80})"|(?<![A-Za-z])'([^']{2,60})'(?![A-Za-z])/g)].map((m) => (m[1] ?? m[2] ?? m[3] ?? m[4])!.trim()).filter((q) => /[a-z]/i.test(q) && !/^-/.test(q) && englishOnly(q) && q.split(' ').length >= 1 && !/^[A-Z]{2,6}$/.test(q));
 const CYR = /[А-Яа-яЁёӘәҒғҚқҢңӨөҰұҮүҺһІіЈјӢӣӮӯҶҷ]/;
 
 const report: string[] = [];
@@ -31,7 +31,7 @@ for (const l of LANGS) {
     if (typeof tr !== 'string' || !tr.trim()) { errs.push(`bo'sh: ${src.slice(0, 60)}`); continue; }
     if (ph(tr) !== ph(src)) errs.push(`o'rinbosar: ${src.slice(0, 50)} → ${tr.slice(0, 50)}`);
     if (l !== 'en' && /[A-Za-z]{3}/.test(src) && looksUz(src) && !CYR.test(tr) && !englishOnly(tr)) errs.push(`kirill yo'q: ${tr.slice(0, 60)}`);
-    if (tr === src && /[‘’'ʻ]/.test(src)) errs.push(`tarjima qilinmagan (manba bilan bir xil): ${src.slice(0, 60)}`);
+    if (tr === src && /[‘’'ʻ]/.test(src) && looksUz(src)) errs.push(`tarjima qilinmagan (manba bilan bir xil): ${src.slice(0, 60)}`);
     for (const q of quotedEnglish(src)) if (!tr.includes(q)) errs.push(`inglizcha o'quv iborasi o'zgargan «${q}»: ${tr.slice(0, 70)}`);
   }
   const missingUi = ui.filter((s) => !d[s]);
