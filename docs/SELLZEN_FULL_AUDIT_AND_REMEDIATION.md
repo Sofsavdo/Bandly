@@ -14,7 +14,7 @@ Jiddiylik: **K** — kritik (pul, ma'lumot yoki xavfsizlik), **Y** — yuqori (a
 | Tasdiqlanmagan (kod to'g'ri chiqdi) | 3 |
 | Qaror bilan qoldirilgan / hujjatlashtirilgan | 4 |
 | Interfeys tarjimasi | 2 101 matn × 5 til = 100% (test bilan majburiy) |
-| Kontent tushuntirishlari tarjimasi | repo fayllarida yo'q (≈5 600 matn) — ochiq ish |
+| Kontent tushuntirishlari tarjimasi | 5 702 matn × 5 til = 100% (test bilan majburiy) |
 
 ## 2. Tuzatilgan muammolar
 
@@ -57,8 +57,11 @@ Jiddiylik: **K** — kritik (pul, ma'lumot yoki xavfsizlik), **Y** — yuqori (a
 | Interfeys, server xabarlari, bot (2 101 matn) | manba | 100% | 100% | 100% | 100% | 100% |
 | Sahifa sarlavhasi va meta tavsif (ish vaqtida) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Bot (Telegram `language_code` bo'yicha) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Dars tushuntirishlari (≈5 600 matn) | manba | baza (AI) bo'lsa | baza | baza | baza | baza |
+| Dars va mashq tushuntirishlari, ko'rsatmalar, glossariy, mock tavsiflari (5 702 matn) | manba | 100% | 100% | 100% | 100% | 100% |
+| Jami katalog (7 803 matn) | manba | 100% | 100% | 100% | 100% | 100% |
 | SEO vositalar sahifalari | ✓ | ✓ | — | — | — | — |
+
+Katalog avtomatik yig'iladi (`scripts/i18n/extract.ts`); evristika o'tkazib yuboradigan aralash satrlar (formulalar «sifat + ly», ko'rsatmalar «(inkor)») `src/i18n/extra-content.json` da qo'lda ro'yxatlangan va kontentda borligi tekshiriladi. Ish vaqtidagi tekshiruv (ilova tarjima qiladigan modullar → barcha kontent modullari) tarjima qilinmagan o'zbekcha satr qoldirmadi; qolgan 35 ta satr — inglizcha o'quv materiali va identifikatorlar.
 
 Inglizcha o'quv materiali himoyasi: so'zlar, misol gaplar, matnlar, skriptlar, AI ko'rsatmalari va javob variantlari katalogga kirmaydi (`englishOnly`, `keep-english.json`); qo'shtirnoq ichidagi inglizcha iboralar har bir tarjimada harfma-harf saqlanishi test bilan tekshiriladi.
 
@@ -68,7 +71,8 @@ Terminlar lug'ati (izchillik uchun): dars — урок / сабақ / сабак
 
 | Ish | Kim | Izoh |
 |---|---|---|
-| Dars tushuntirishlarini 5 tilga tarjima qilish | jamoa / metodist | Repo fayllariga qo'shiladi, locales test tekshiradi |
+| Tarjimalarni ona tilida so'zlashuvchi muharrir ko'rib chiqishi | jamoa / metodist | Tarjimalar to'liq, lekin inson-muharrir tekshiruvi o'tkazilmagan (ayniqsa kk/ky/tg); tuzatishlar `src/i18n/locales/*.json` ga |
+| Yangi kontent qo'shilganda tarjima | jamoa | locales test endi butun katalogni talab qiladi — tarjimasiz yangi o'zbekcha matn CI ni yiqitadi |
 | SEO sahifalarini en/kk/ky/tg ga kengaytirish | jamoa | hreflang va sitemap bilan |
 | Tashqi zaxira | ega | `BACKUP_S3_*` o'zgaruvchilari |
 | Bot tokenini almashtirish | ega | Chatda ko'rsatilgan; BotFather'da yangilab Railway `TELEGRAM_BOT_TOKEN` ga qo'yish |

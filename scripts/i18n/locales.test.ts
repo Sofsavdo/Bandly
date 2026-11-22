@@ -2,7 +2,9 @@
 // Tekshiradi: yo'q/bo'sh/eskirgan kalitlar, o'rinbosarlar ({0}, {n}) mosligi, yozuv tizimi (ru/kk/ky/tg — kirill),
 // tarjima qilinmay ko'chirilgan matn, va INGLIZCHA O'QUV MATERIALI tarjimada o'zgarmasligi (qo'shtirnoq ichidagi inglizcha
 // ibora — «I went», 'look forward to' — har bir tilda harfma-harf saqlanadi).
-// Interfeys (catalog-ui.json: ekranlar, server xabarlari, bot) quyidagi COMPLETE ro'yxatidagi tillarda 100% bo'lishi shart.
+// Interfeys (catalog-ui.json: ekranlar, server xabarlari, bot) va butun katalog (darslar, izohlar, mashq ko'rsatmalari)
+// quyidagi COMPLETE ro'yxatidagi tillarda 100% bo'lishi shart. Yangi o'zbekcha matn qo'shilsa — locales/*.json ga tarjimasi
+// ham qo'shiladi (inglizcha o'quv materiali bo'lsa — keep-english.json ga).
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -36,6 +38,8 @@ for (const l of LANGS) {
   }
   const missingUi = ui.filter((s) => !d[s]);
   if (COMPLETE.includes(l) && missingUi.length) errs.push(`interfeysda ${missingUi.length} ta tarjima yo'q, masalan: ${missingUi.slice(0, 3).join(' | ')}`);
+  const missingAll = [...catalog].filter((s) => !d[s]);
+  if (COMPLETE.includes(l) && missingAll.length) errs.push(`katalogda ${missingAll.length} ta tarjima yo'q, masalan: ${missingAll.slice(0, 3).join(' | ')}`);
   assert.deepEqual(errs, [], `${l}: ${errs.length} ta muammo`);
   report.push(`${l}: interfeys ${ui.length - missingUi.length}/${ui.length}, jami ${Object.keys(d).length}/${catalog.size}`);
 }

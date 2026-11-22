@@ -111,9 +111,9 @@ Ro'yxatdan o'tmagan mehmon faqat landing sahifasini (`#/`) va ochiq SEO vositala
 - Interfeys tillari: **o'zbekcha (asosiy, manba)**, ruscha, inglizcha, qozoqcha, qirg'izcha, tojikcha. Til tanlovi `bandly.lang` da saqlanadi; birinchi ochilishda Telegram yoki brauzer tili aniqlanadi.
 - Kalit — o'zbekcha manba matn: `L('...')`. Katalog: `npx tsx scripts/i18n/extract.ts` → `src/i18n/catalog.json` (hammasi) va `src/i18n/catalog-ui.json` (ekranlar, server xabarlari, bot).
 - Tarjimalar **kodda**: `src/i18n/locales/{en,ru,kk,ky,tg}.json`. Server birlashtirish tartibi: AI tarjima (baza) < repo fayllari < metodist tahriri (baza). Til interfeys katalogi 100% bo'lganda yoqiladi.
-- `scripts/i18n/locales.test.ts` (`npm test` ichida): eskirgan/bo'sh kalit, `{0}` o'rinbosarlar, kirill yozuvi, qo'shtirnoqdagi inglizcha o'quv iboralari o'zgarmaganini va **5 tilda interfeys 100%** ekanini tekshiradi.
+- `scripts/i18n/locales.test.ts` (`npm test` ichida): eskirgan/bo'sh kalit, `{0}` o'rinbosarlar, kirill yozuvi, qo'shtirnoqdagi inglizcha o'quv iboralari o'zgarmaganini va **5 tilda butun katalog (interfeys + kontent) 100%** ekanini tekshiradi. Evristika o'tkazib yuboradigan aralash satrlar `src/i18n/extra-content.json` da.
 - Inglizcha o'quv materiali (so'zlar, misol gaplar, matnlar, audio skriptlar, javob variantlari) **tarjima qilinmaydi**; faqat atrofidagi tushuntirish va interfeys tarjima qilinadi. Bunga `src/i18n/keep-english.json` va extractor filtrlari xizmat qiladi.
-- Hali qolgan ish: dars tushuntirishlari (katalogdagi ~5 600 kontent matni) repo fayllarida yo'q — ular bazadagi AI/metodist tarjimasi bo'lsa shundan, bo'lmasa o'zbekcha ko'rsatiladi. SEO vositalar sahifalari hozircha o'zbekcha + ruscha.
+- Katalog (7 803 matn: 2 101 interfeys + 5 702 kontent) 5 tilda kodda to'liq. Inson-muharrir (ona tili) tekshiruvi hali o'tkazilmagan. SEO vositalar sahifalari hozircha o'zbekcha + ruscha.
 
 ## Zaxira nusxa
 
@@ -131,7 +131,7 @@ Hodisalar (`server/events.ts`): umumiy son va **noyob brauzerlar** (anonim `band
 
 ## Keyingi bosqichlar
 
-1. Dars tushuntirishlarini 5 tilga tarjima qilib repo fayllariga qo'shish (metodist tekshiruvi bilan).
+1. Tarjimalarni ona tilida so'zlashuvchi muharrir bilan ko'rib chiqish (ayniqsa kk/ky/tg).
 2. SEO vositalar sahifalarini en/kk/ky/tg ga kengaytirish (hreflang, sitemap).
 3. Tashqi zaxira omborini ulash (`BACKUP_S3_*`) va zaxiradan tiklashni muntazam sinash.
 
