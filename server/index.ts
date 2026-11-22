@@ -641,6 +641,8 @@ const httpServer = createServer(async (req, res) => {
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
     if (e instanceof ApiError || e instanceof AiError || e instanceof TtsError) return send(res, e.status, { error: trServer(db, reqLang(req), e.message) });
+    // Mijoz so'rov o'rtasida uzildi (sahifa yopildi, tarmoq uzildi) — javob beradigan odam yo'q, logni ifloslantirmaymiz
+    if ((e as NodeJS.ErrnoException)?.code === 'ECONNRESET' || (e as Error)?.message === 'aborted' || req.destroyed) { if (!res.headersSent) res.destroy(); return; }
     console.error(e);
     return send(res, 500, { error: 'Server xatosi' });
   }
