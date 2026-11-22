@@ -50,7 +50,14 @@ const acad = checkWriting(lessonById('c1-u1-l3')!.lesson.writing!, 'Lots of youn
 assert.ok(!acad.passed && acad.forbidden.length > 0, 'informal words are flagged in the academic rewrite');
 assert.equal(wordCount("I'm from Tashkent, it’s big."), 5);
 const { nextLesson } = await import('../../lib/lessons');
-assert.equal(nextLesson(UNITS, {}, null)!.lessonId, 'a1-u1-l1');
+assert.equal(nextLesson(UNITS, {}, null)!.lessonId, 'a1-s1-l1', 'noldan boshlovchi Starter bo‘limidan boshlaydi');
+assert.equal(nextLesson(UNITS, { 'a1-u1-l1': { attempts: 1, best: 1, passedAt: 1 } }, null)!.lessonId, 'a1-u1-l2', 'kursni boshlagan o‘quvchi Starter ga qaytarilmaydi');
+{ // Starter majburiy emas: a1-u1 ochiq; o'tilgan dars yangi dars qo'shilsa ham yopilmaydi
+  const a1u1 = UNITS.find((x) => x.id === 'a1-u1')!; const a2u1 = UNITS.find((x) => x.id === 'a2-u1')!;
+  assert.ok(isUnlocked(a1u1, 0, {}, { units: UNITS, level: null }));
+  assert.ok(isUnlocked(a2u1, 0, { 'a2-u1-l1': { attempts: 1, best: 1, passedAt: 1 } }, { units: UNITS, level: 'A1' }));
+  assert.ok(!isUnlocked(a2u1, 0, {}, { units: UNITS, level: 'A1' }), 'A1 tugamaguncha A2 yopiq');
+}
 assert.equal(nextLesson(UNITS, {}, 'B1')!.lessonId, 'b1-u1-l1', 'starts at the learner level');
 assert.equal(nextLesson(UNITS, { 'b1-u1-l1': { attempts: 1, best: 1, passedAt: 1 } }, 'B1')!.lessonId, 'b1-u1-l2');
 const { lessonWordIds } = await import('./index');
@@ -90,7 +97,7 @@ assert.equal(nextIeltsLesson(passAll, 'A2')!.lesson.id, IELTS_TRACKS[1]!.start.l
 assert.equal(IELTS_LESSONS.length, 36, 'IELTS kursi: 36 dars'); assert.deepEqual(IELTS_TRACKS.map((t) => t.skill), ['reading', 'listening', 'writing', 'speaking']);
 assert.equal(nextInCourse(rt.start.lessons[0]!.id)!.lesson.id, rt.start.lessons[1]!.id);
 assert.equal(nextInCourse(rt.start.lessons.at(-1)!.id)!.lesson.id, rt.core.lessons[0]!.id, 'Start → Core');
-assert.equal(nextInCourse('a1-u1-l1')!.lesson.id, ALL_LESSONS[1]!.lesson.id, 'GE darsidan keyin GE darsi');
+assert.equal(nextInCourse(ALL_LESSONS[0]!.lesson.id)!.lesson.id, ALL_LESSONS[1]!.lesson.id, 'GE darsidan keyin GE darsi');
 assert.ok(!isIeltsLesson(nextInCourse(ALL_LESSONS.at(-1)!.lesson.id)?.lesson.id ?? ''), 'GE oxiridan IELTS ga sakramaydi');
 console.log(`lessons.test: IELTS ${IELTS_UNITS.length} units, ${IELTS_LESSONS.length} lessons`);
 // To'liq gap (fikr-mulohaza): bo'shliq to'ldiriladi, ishoralar olib tashlanadi, qisqartmalar yopishadi

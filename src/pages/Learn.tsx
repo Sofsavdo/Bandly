@@ -64,7 +64,7 @@ export default function Learn() {
                     <>
                       <h3>{i + 1}. {l.titleUz}</h3>
                       <p>{l.objectiveUz}</p>
-                      <PRing value={best} max={100} size={50} stroke={5} dark color="var(--peach)" label={L('Eng yaxshi natija {0}%', [best])}><b style={{ fontSize: 12 }}>{pr?.passedAt ? <CheckCircle2 size={16} color="#fff" /> : `${best}%`}</b></PRing>
+                      <PRing value={best} max={100} size={50} stroke={5} dark color="var(--peach)" label={L('Eng yaxshi natija {0}%', [best])}><b style={{ fontSize: 12 }}>{pr?.passedAt ? <CheckCircle2 size={16} color="var(--on-inv)" /> : `${best}%`}</b></PRing>
                       <div className="lfoot"><span className="lstart">{pr?.passedAt ? L('Takrorlash') : open ? L('Boshlash') : <><Lock size={13} />  {L('Yopiq')}</>}</span><span className="muted" style={{ fontSize: 12.5 }}>{l.minutes}  {L('daq')}</span></div>
                     </>
                   );

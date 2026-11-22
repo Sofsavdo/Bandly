@@ -6,6 +6,7 @@ import { vocabById, vocabForLevel } from '../../content/vocab';
 import { lines, pickLine } from '../../content/lines';
 import { LockCard } from '../../components/Gate';
 import { norm } from '../../lib/grade';
+import { spellingAccepts } from '../../lib/vocabGame';
 import { pickSession } from '../../lib/srs';
 import { addXp, consumeGame, getProfile, recordReview, useProfile } from '../../lib/store';
 import { blankExample, speak } from '../../lib/vocabGame';
@@ -38,7 +39,7 @@ export default function Spell() {
   function check() {
     if (result || !text.trim()) return;
     const w = vocabById[ids[i]];
-    const ok = norm(text) === norm(w.word);
+    const ok = norm(text) === norm(w.word) || spellingAccepts(w, text);
     recordReview(w.id, ok);
     recordWordItem(w.id, ok, 'spelling');
     setResult(ok ? 'ok' : 'bad');

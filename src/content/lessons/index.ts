@@ -16,6 +16,10 @@ import { B1_U4, B1_U5, B1_U6, B1_U7, B1_U8 } from './b1more';
 import { B2_U4, B2_U5, B2_U6, B2_U7, B2_U8 } from './b2more';
 import { C1_U4, C1_U5, C1_U6, C1_U7, C1_U8 } from './c1more';
 import { C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8 } from './c2more';
+import { A1_S1, A1_S2, A1_U9, A1_U10 } from './starter';
+import { A2_U9, A2_U10, B1_U9, B1_U10 } from './midplus';
+import { B2_U9, B2_U10, C1_U9, C1_U10 } from './upperplus';
+import { C2_U9, C2_U10 } from './c2plus';
 import { IELTS_UNITS, IELTS_TRACKS } from '../ielts';
 
 /** General English path (pilot slice A1–C2). Order matters: units and lessons follow the learning sequence. */
@@ -23,7 +27,7 @@ const withWriting = (u: Unit): Unit => ({ ...u, lessons: u.lessons.map((l) => {
   const w = WRITING[l.id] ? { ...l, writing: WRITING[l.id] } : l;
   return (w.vocab?.length ?? 0) < 3 && LESSON_VOCAB[l.id] ? { ...w, vocab: LESSON_VOCAB[l.id] } : w; // eski darslarga so'zlar (juftini top o'yini uchun)
 }) });
-export const UNITS: Unit[] = [A1_U1, A1_U2, A1_U3, A1_U4, A1_U5, A1_U6, A1_U7, A1_U8, A2_U1, A2_U2, A2_U3, A2_U4, A2_U5, A2_U6, A2_U7, A2_U8, B1_U1, B1_U2, B1_U3, B1_U4, B1_U5, B1_U6, B1_U7, B1_U8, B2_U1, B2_U2, B2_U3, B2_U4, B2_U5, B2_U6, B2_U7, B2_U8, C1_U1, C1_U2, C1_U3, C1_U4, C1_U5, C1_U6, C1_U7, C1_U8, C2_U1, C2_U2, C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8].map(withWriting);
+export const UNITS: Unit[] = [A1_S1, A1_S2, A1_U1, A1_U2, A1_U3, A1_U4, A1_U5, A1_U6, A1_U7, A1_U8, A1_U9, A1_U10, A2_U1, A2_U2, A2_U3, A2_U4, A2_U5, A2_U6, A2_U7, A2_U8, A2_U9, A2_U10, B1_U1, B1_U2, B1_U3, B1_U4, B1_U5, B1_U6, B1_U7, B1_U8, B1_U9, B1_U10, B2_U1, B2_U2, B2_U3, B2_U4, B2_U5, B2_U6, B2_U7, B2_U8, B2_U9, B2_U10, C1_U1, C1_U2, C1_U3, C1_U4, C1_U5, C1_U6, C1_U7, C1_U8, C1_U9, C1_U10, C2_U1, C2_U2, C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8, C2_U9, C2_U10].map(withWriting);
 
 const flatten = (units: Unit[]) => units.flatMap((unit) => unit.lessons.map((lesson, index) => ({ unit, lesson, index })));
 export const ALL_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(UNITS);

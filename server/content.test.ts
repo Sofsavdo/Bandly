@@ -29,7 +29,7 @@ assert.deepEqual(pub[0]!.lessons[0], UNITS[0]!.lessons[0], 'dars mazmuni o‘zga
   assert.equal(seedContent(d2, changed), 1 + UNITS.find((x) => x.id === 'a1-u2')!.lessons.length, 'faqat yangi bo‘lim qo‘shildi');
   const p2 = publishedUnits(d2);
   assert.deepEqual(p2.map((x) => x.id), UNITS.map((x) => x.id), 'yangi bo‘lim o‘z joyiga tushdi');
-  assert.equal(p2[0]!.lessons[0]!.titleUz, 'Yangilangan', 'tegilmagan dars statikdan yangilandi');
+  assert.equal(p2.find((x) => x.id === 'a1-u1')!.lessons[0]!.titleUz, 'Yangilangan', 'tegilmagan dars statikdan yangilandi');
 }
 
 // Tahrirlash: qoralama o'quvchilarga ko'rinmaydi, e'lon qilingach ko'rinadi

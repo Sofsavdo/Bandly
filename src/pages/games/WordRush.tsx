@@ -25,7 +25,7 @@ export default function WordRush() {
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [mood, setMood] = useState<Mood>('idle');
-  const [msg, setMsg] = useState('Tayyormisiz?');
+  const [msg, setMsg] = useState(() => L('Tayyormisiz?'));
   const [missed, setMissed] = useState<string[]>([]);
   const [earned, setEarned] = useState(0);
   const [locked, setLocked] = useState(false);

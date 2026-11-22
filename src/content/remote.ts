@@ -5,9 +5,12 @@ import { deepTranslate } from '../i18n';
 import { refreshLessonNodes } from './curriculum/inventory';
 import type { Unit } from './lessons/types';
 
-const KEY = 'bandly.content.v1';
+// v2: v1 keshiga tarjima qilingan (masalan, ruscha) nusxa yozilib qolardi — o'zbekcha ochilganda ham ruscha chiqardi
+const KEY = 'bandly.content.v2';
+try { localStorage.removeItem('bandly.content.v1'); } catch { /* */ }
 const valid = (u: unknown): u is Unit[] => Array.isArray(u) && u.length > 0 && u.every((x) => x && typeof x === 'object' && Array.isArray((x as Unit).lessons));
-const apply = (units: Unit[]) => { applyUnits(deepTranslate(units)); refreshLessonNodes(); };
+// Keshga doim asl (o'zbekcha) matn yoziladi; tarjima faqat xotiradagi nusxaga qo'llanadi
+const apply = (units: Unit[]) => { applyUnits(deepTranslate(structuredClone(units))); refreshLessonNodes(); };
 
 export async function loadRemoteContent(): Promise<void> {
   let cached: { version: number; units: Unit[] } | null = null;
@@ -19,6 +22,6 @@ export async function loadRemoteContent(): Promise<void> {
     clearTimeout(t);
     if (!r.ok) return;
     const j = (await r.json()) as { version: number; units: Unit[] | null };
-    if (j.units && valid(j.units)) { apply(j.units); try { localStorage.setItem(KEY, JSON.stringify(j)); } catch { /* */ } }
+    if (j.units && valid(j.units)) { try { localStorage.setItem(KEY, JSON.stringify(j)); } catch { /* */ } apply(j.units); }
   } catch { /* oflayn yoki sekin tarmoq: kesh yoki ichki darslar bilan davom etadi */ }
 }

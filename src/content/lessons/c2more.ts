@@ -16,7 +16,7 @@ export const C2_U3: Unit = {
       taxonomyIds: ['V.collocation', 'V.word_choice'], minutes: 12,
       explanationUz: [
         'Idiomaning ma’nosi so‘zlardan kelib chiqmaydi: break the ice — “muz sindirmoq” emas, “tanishuvdagi noqulaylikni yo‘qotmoq”. Ularni so‘zma-so‘z tarjima qilmang, kontekstdan tushuning.',
-        'Ko‘p ishlatiladiganlar: a blessing in disguise (avvaliga yomon, keyin foydali chiqqan narsa), cut corners (ishni yengil-yelpi qilmoq), on the fence (ikkilanib turgan), the tip of the iceberg (muammoning ko‘rinib turgan kichik qismi), a steep learning curve (tez va qiyin o‘rganish).',
+        'Ko‘p ishlatiladiganlar: a blessing in disguise (avvaliga yomon, keyin foydali chiqqan narsa), cut corners (ishni yengil-yelpi qilmoq), on the fence (ikkilanib turgan), the tip of the iceberg (muammoning ko‘rinib turgan kichik qismi), a steep learning curve (qisqa vaqtda ko‘p narsani o‘rganish zarurati — boshida qiyin).',
         'Uslub: idiomalar asosan og‘zaki va yarim-rasmiy nutqda. IELTS Speaking’da 2–3 ta o‘rinli idioma yaxshi; akademik esseda ehtiyot bo‘ling. Shaklini o‘zgartirmang: “break the ices” — xato.',
       ],
       table: [
@@ -39,8 +39,8 @@ export const C2_U3: Unit = {
         ord(['in', 'a', 'disguise', 'blessing', 'It', 'was'], 'It was a blessing in disguise', 'a blessing in disguise.'),
       ],
       check: [
-        ch('“The new software has a steep learning curve” means ___.', ['it is easy to learn', 'it takes effort to learn quickly', 'it is expensive'], 1, 'Tez va qiyin o‘rganish.'),
-        ch('Which idiom fits? “Missing the flight was ___ — the plane was delayed for 12 hours.”', ['a blessing in disguise', 'the tip of the iceberg', 'on the fence'], 0, 'Yomon ko‘ringan, aslida yaxshi.'),
+        ch('“The new software has a steep learning curve” means ___.', ['it is easy to learn', 'there is a lot to learn, and it is hard at first', 'it is expensive'], 1, 'Qisqa vaqtda ko‘p narsa o‘rganiladi, boshida qiyin.'),
+        ch('Which idiom fits? “Missing the flight was ___ — I met my future business partner while I waited for the next one.”', ['a blessing in disguise', 'the tip of the iceberg', 'on the fence'], 0, 'Yomon ko‘ringan, aslida yaxshi.'),
         ch('Which is the correct form?', ['break the ices', 'break the ice', 'breaking ice the'], 1, 'Idioma shakli o‘zgarmaydi.'),
         gap('Don’t cut ___ — do the job properly.', ['corners'], 'cut corners.'),
         gap('Most voters are still on the ___. (ikkilanib turibdi)', ['fence'], 'on the fence.'),
@@ -101,7 +101,7 @@ export const C2_U3: Unit = {
       objective: 'Use euphemism and understatement to speak tactfully and with irony.',
       taxonomyIds: ['V.word_choice', 'S.coherence'], minutes: 12,
       explanationUz: [
-        'Evfemizm — og‘ir yoki qo‘pol so‘z o‘rniga yumshog‘i: died → passed away, fired → let go, old → elderly, poor → disadvantaged / less well-off, lie → be economical with the truth.',
+        'Evfemizm — og‘ir yoki qo‘pol so‘z o‘rniga yumshog‘i: died → passed away, fired → let go, old → elderly, poor → disadvantaged / less well-off, hide the truth / mislead → be economical with the truth.',
         'Understatement — atay kamaytirib aytish (ingliz madaniyatiga xos): “The exam wasn’t exactly easy.” (= juda qiyin edi) “It was a bit of a disaster.” “He’s not the most reliable person.” (= umuman ishonchsiz)',
         'Ish yozishmalarida tanqidni yumshatadi: “There may be some room for improvement.” (= ancha yaxshilash kerak). Ma’noni to‘g‘ri tushunish C2 uchun muhim: so‘zlovchi aslida nima demoqchi?',
       ],
@@ -114,7 +114,7 @@ export const C2_U3: Unit = {
         { en: 'Fifty employees were let go after the merger.', uz: 'Birlashuvdan keyin ellik xodim ishdan bo‘shatildi.' },
         { en: 'The hotel wasn’t exactly luxurious.', uz: 'Mehmonxona unchalik hashamatli emas edi (aslida yomon edi).' },
         { en: 'We had a bit of a problem with the car.', uz: 'Mashina bilan kichkinagina muammo bo‘ldi (aslida jiddiy).' },
-        { en: 'He was rather economical with the truth.', uz: 'U haqiqatni ancha “tejab” gapirdi (yolg‘on aralashtirdi).' },
+        { en: 'He was rather economical with the truth.', uz: 'U haqiqatni ancha “tejab” gapirdi (hammasini aytmay, chalg‘itdi).' },
       ],
       vocab: [{ en: 'pass away', uz: 'olamdan o‘tmoq' }, { en: 'let go', uz: 'ishdan bo‘shatmoq (yumshoq)' }, { en: 'understatement', uz: 'kamaytirib aytish' }, { en: 'room for improvement', uz: 'yaxshilanishi kerak bo‘lgan joy' }],
       practice: [
@@ -128,14 +128,14 @@ export const C2_U3: Unit = {
         ch('“He’s not the most punctual person” means he is ___.', ['always on time', 'often late', 'never late'], 1, 'Understatement — tez-tez kechikadi.'),
         ch('Which is a euphemism for “old people”?', ['the elderly', 'the olds', 'old men'], 0, 'the elderly — muloyim.'),
         ch('“We had a bit of a disagreement” probably means ___.', ['a big argument', 'no problem at all', 'a long holiday'], 0, 'Kamaytirib aytilgan katta janjal.'),
-        gap('She was economical with the ___. (yolg‘on aralashtirdi)', ['truth'], 'economical with the truth.'),
+        gap('She was economical with the ___. (haqiqatni yashirdi)', ['truth'], 'economical with the truth.'),
         gap('Several workers were ___ go last month. (bo‘shatildi)', ['let'], 'were let go.'),
         ord(['a', 'It', 'bit', 'was', 'disaster', 'of', 'a'], 'It was a bit of a disaster', 'a bit of a + ot.'),
       ],
       writing: {
         promptUz: 'Muvaffaqiyatsiz yakunlangan voqea (ish, sayohat) haqida xushmuomala e’lon yoki xat yozing: evfemizm va understatement bilan.', minWords: 40,
-        require: [{ re: String.raw`\b(not exactly|not the most|not entirely|a bit of a|rather|somewhat|room for improvement)\b`, labelUz: 'understatement (not exactly, a bit of a…)' }, { re: String.raw`\b(let go|passed away|less well-off|economical with the truth|the elderly|disadvantaged|downsizing)\b`, labelUz: 'evfemizm' }],
-        model: 'Dear colleagues, as you know, the last quarter was not exactly our best. Sales were somewhat lower than expected, and the new website was a bit of a disaster. Sadly, the company has had to let go of six employees. We all agree that there is some room for improvement, and we are confident that next year will be better.',
+        require: [{ re: String.raw`\b(not exactly|not the most|not entirely|a bit of a|rather|somewhat|room for improvement)\b`, labelUz: 'understatement (not exactly, a bit of a…)' }, { re: String.raw`\b(let go|let( \w+){1,3} go|passed away|less well-off|economical with the truth|the elderly|disadvantaged|downsizing)\b`, labelUz: 'evfemizm' }],
+        model: 'Dear colleagues, as you know, the last quarter was not exactly our best. Sales were somewhat lower than expected, and the new website was a bit of a disaster. Sadly, the company has had to let six employees go. We all agree that there is some room for improvement, and we are confident that next year will be better.',
       },
     },
   ],

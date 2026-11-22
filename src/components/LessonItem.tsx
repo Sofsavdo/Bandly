@@ -24,7 +24,7 @@ export function ItemView({ item, value, onChange, revealed, quiet = false }: { i
       {item.kind === 'gap' && (
         <input type="text" autoComplete="off" disabled={revealed} value={typeof value === 'string' ? value : ''} placeholder={L('Javobni yozing')} onChange={(e) => onChange(e.target.value)} />
       )}
-      {item.kind === 'order' && <OrderInput item={item} value={Array.isArray(value) ? value : []} onChange={onChange} disabled={revealed} />}
+      {item.kind === 'order' && <OrderInput key={item.answer} item={item} value={Array.isArray(value) ? value : []} onChange={onChange} disabled={revealed} />}
       {revealed && !quiet && (
         <p style={{ marginTop: 8 }}>
           {ok ? <span className="ok"><CheckCircle2 size={16} />  {L('To‘g‘ri.')} </span> : <span className="bad"><XCircle size={16} />  {L('Noto‘g‘ri. To‘g‘ri javob: «')}{correctAnswerText(item)}». </span>}
@@ -38,6 +38,8 @@ export function ItemView({ item, value, onChange, revealed, quiet = false }: { i
 export function OrderInput({ item, value, onChange, disabled }: { item: Extract<Item, { kind: 'order' }>; value: string[]; onChange: (v: string[]) => void; disabled: boolean }) {
   const pool = item.words.map((w, i) => ({ w, i }));
   const [picked, setPicked] = useState<number[]>([]);
+  // Javob tashqaridan tozalansa (keyingi savol, qayta urinish) — tanlangan so'zlar ham tozalanadi, eski tanlov qolib ketmaydi
+  useEffect(() => { if (!value.length && picked.length) setPicked([]); }, [value.length, picked.length]);
   const add = (i: number) => { if (disabled || picked.includes(i)) return; const n = [...picked, i]; setPicked(n); onChange(n.map((k) => item.words[k]!)); };
   const undo = () => { if (disabled) return; const n = picked.slice(0, -1); setPicked(n); onChange(n.map((k) => item.words[k]!)); };
   return (

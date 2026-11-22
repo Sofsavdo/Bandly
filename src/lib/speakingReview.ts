@@ -23,7 +23,7 @@ const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const SINGLE = vocab.filter((w) => (w.level === 'B2' || w.level === 'C1') && !w.word.includes(' ') && w.topic !== 'Fe‘l + predlog');
 const PHRASES = vocab.filter((w) => w.word.includes(' ')).map((w) => {
   const [first, ...rest] = w.word.replace(/[’']/g, "['’]").split(' ');
-  const verbish = w.pos === 'phrasal verb' || w.pos === 'collocation' || w.pos === 'idiom';
+  const verbish = w.pos === 'phrasal verb' || w.pos === 'collocation' || w.pos === 'idiom' || w.pos === 'phr'; // phr: "get used to" → "gets used to" ham topiladi
   return { w, re: new RegExp(`\\b${first}${verbish ? '(?:s|es|ed|d|ing)?' : ''}\\b(?:\\s+\\w+)?\\s+${rest.map(esc).join('\\s+')}\\b|\\b${esc(w.word)}\\b`, 'i') };
 });
 
