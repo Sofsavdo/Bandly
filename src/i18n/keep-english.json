@@ -9,5 +9,6 @@
   "tests/{0}/publish",
   "tests/{0}/restore",
   "{0} item {1}: gap prompt lacks ___",
-  "(o'clock|o’clock|half past|quarter)"
+  "(o'clock|o’clock|half past|quarter)",
+  "o’clock / half past / quarter"
 ]
