@@ -1271,3 +1271,28 @@ details.card[open] > summary { margin-bottom: 12px; }
 /* Pastki menyu (tabbar) ostida qolmasin: scrollIntoView va fokus bilan aylantirishda pastdan joy qoldiriladi */
 @media (max-width: 979px) { html { scroll-padding-bottom: calc(84px + env(safe-area-inset-bottom)); scroll-padding-top: 72px; } }
 .lrow .sq.butter { color: #14162b; } /* sariq fonda oq ikonka ko‘rinmasdi */
+/* Shaxsiy o'quv tahlili (InsightsCard) */
+.insights .ins-rec { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border-radius: 16px; background: var(--lilac-50); }
+.insights .ins-rec p { flex: 1 1 260px; }
+.insights .ins-out { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+.insights .ins-out.improved { color: var(--green); } .insights .ins-out.declined { color: var(--coral); }
+.ins-skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 16px; margin-top: 12px; }
+.ins-skill { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 8px; font-size: 13.5px; font-weight: 600; }
+.ins-skill i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.ins-skill i b { display: block; height: 100%; background: var(--brand); border-radius: inherit; }
+.ins-skill small { font-weight: 600; }
+.exam-hero .eh-plan { flex-basis: 100%; order: 3; margin-top: 8px; font-size: 14px; }
+.exam-hero .eh-plan summary { cursor: pointer; font-weight: 700; }
+.exam-hero { flex-wrap: wrap; }
+.eh-risk { margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, currentColor 8%, transparent); }
+.eh-risk.unlikely { background: color-mix(in srgb, var(--coral) 16%, transparent); } .eh-risk.ok, .eh-risk.reached { background: color-mix(in srgb, var(--green) 14%, transparent); }
+.eh-weeks { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
+/* Writing Lab (EvalCard) */
+.lab-list { padding-left: 20px; display: grid; gap: 12px; }
+.lab-pair { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.lab-said { text-decoration: line-through; text-decoration-color: var(--coral); color: var(--ink-2); }
+.lab-better { font-weight: 700; color: var(--green); }
+.lab-why { margin: 4px 0; font-size: 14px; color: var(--ink-2); }
+.lab-rewrite { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lab-rewrite input { flex: 1 1 200px; min-width: 0; }
+.lab-rewrite small { display: inline-flex; align-items: center; gap: 4px; flex-basis: 100%; }

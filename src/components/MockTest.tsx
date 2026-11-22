@@ -10,7 +10,7 @@ import { saveResult } from '../lib/storage';
 import { addXp, getProfile } from '../lib/store';
 import { getAccount, myRefCode } from '../lib/account';
 import { renderStory, resultLink, shareCard } from '../lib/shareCard';
-import { track } from '../lib/track';
+import { track, trackUser } from '../lib/track';
 import { recordTestAnswers } from '../lib/adaptive/record';
 import { clearAttempt, createAttempt, isExpired, loadAttempt, remainingSeconds, saveAttempt, setAnswer, submitAttempt, toggleFlag, unanswered, type ExamAttempt } from '../lib/examAttempt';
 import { fmt } from './hooks';
@@ -153,7 +153,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     return () => window.removeEventListener('keydown', on);
   }, [started, submitted, step, update, attempt?.current, ids]);
 
-  const begin = () => { recorded.current = false; const a = createAttempt(key, minutes); saveAttempt(a); setAttempt(a); setNow(Date.now()); };
+  const begin = () => { trackUser('mock_start'); recorded.current = false; const a = createAttempt(key, minutes); saveAttempt(a); setAttempt(a); setNow(Date.now()); };
   const restart = () => { clearAttempt(key); recorded.current = false; setAttempt(null); setConfirm(false); };
 
   if (!attempt) {

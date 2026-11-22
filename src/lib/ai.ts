@@ -7,7 +7,7 @@ export interface Evaluation {
   overall: number;
   strengths: string[];
   improve: string[];
-  corrections: { said: string; better: string }[];
+  corrections: { said: string; better: string; why?: string; criterion?: 'task' | 'coherence' | 'lexical' | 'grammar' | 'fluency' }[];
   /** Bandni eng ko'p tushirayotgan mezon va +0.5 uchun aniq qadam */
   focus?: string;
 }

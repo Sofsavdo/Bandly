@@ -1,4 +1,5 @@
 import { Lightbulb, Mic, ShieldCheck, Sparkles } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { Illo } from '../components/Illo';
 import { useEffect, useRef, useState } from 'react';
 import { EvalCard } from '../components/EvalCard';
@@ -114,7 +115,7 @@ export default function Speaking() {
     let aiAsked = 0;
     sig.current = { cancelled: false };
     const ex = new Examiner(Math.random, personaLevel(profile), profile.level);
-    setStage('live');
+    setStage('live'); trackUser('speaking_start');
     let step = ex.start();
     while (!sig.current.cancelled) {
       setPart(step.part); setInterim(''); setTyped(''); setElapsed(0); setFlash(false); flashed.current = false;
@@ -218,7 +219,7 @@ export default function Speaking() {
             </div>
           </div>
         </div>
-        {aiEval && <EvalCard ev={aiEval} title={L('AI baho (suhbat matni bo‘yicha)')} />}
+        {aiEval && <EvalCard ev={aiEval} source="coach" title={L('AI baho (suhbat matni bo‘yicha)')} />}
         {aiState === 'error' && <p className="notice">{L('AI baho berolmadi:')} {aiErr}{/tarif|limit/i.test(aiErr) && <> <a href="#/pricing">{L('Tariflar')}</a></>}{L('. Quyidagi qoidaviy tahlil ishlaydi.')}</p>}
         <div className="card">
           <div className="table-scroll"><table className="data wrap">

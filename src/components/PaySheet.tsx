@@ -1,4 +1,5 @@
 import { Check, Clock, Copy, CreditCard, Loader2, X } from 'lucide-react';
+import { trackUser } from '../lib/track';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SALE_PLANS, TRACK_NAME, type PlanId } from '../config';
 import { getAccount, type Account } from '../lib/account';
@@ -29,7 +30,7 @@ export function PaySheet() {
   const deadline = useRef(0);
 
   const begin = useCallback(async (w: { track: PlanId; days: number }) => {
-    setErr(''); setStage('creating');
+    setErr(''); setStage('creating'); trackUser('checkout_start');
     try {
       const v = await createPayment(w.track, w.days);
       rememberOpen(v.id); setPay(v); deadline.current = Date.now() + v.expires_in * 1000; setLeft(v.expires_in); setStage('pending');

@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt, liveKickoff } from './coach';
 import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt } from './coachMemory';
-import { tzDay } from './day';
+import { tzDay, tzDayStart } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { ApiError, PROGRESS_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
@@ -42,6 +42,7 @@ import { runLeagueNotices } from './leagueNotify';
 import { MAX_AUDIO, NATIVE_STT_CODE, recordStt, sttAllowed, sttConfigFromEnv, transcribeLearner } from './stt';
 import { analytics } from './analytics';
 import { ensureEventsTable, recordEvent } from './events';
+import { cohortReport, DEFINITIONS, ensureUserEventsTable, recordUserEvent } from './userEvents';
 import { attachReferral, maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
@@ -68,6 +69,7 @@ ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan u
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
 expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
 ensureEventsTable(db);
+ensureUserEventsTable(db);
 ensureMemoryTable(db);
 ensureLeadsTable(db);
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
@@ -172,6 +174,13 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/event') {
       const b = await readJson(req, 256);
       recordEvent(db, b.name, ip, b.vid); // anonim identifikator xeshlanadi; IP faqat xotirada (suiiste'mol chegarasi)
+      res.writeHead(204); return void res.end();
+    }
+    // Kirgan o'quvchining hodisasi (Analytics 2.0): token majburiy, bir kunda bir hodisa bir marta sanaladi
+    if (req.method === 'POST' && url.pathname === '/api/uevent') {
+      const b = await readJson(req, 256);
+      const pid = byToken(db, String(req.headers['x-token'] ?? '')).id;
+      recordUserEvent(db, pid, b.name);
       res.writeHead(204); return void res.end();
     }
     if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
@@ -279,7 +288,8 @@ const httpServer = createServer(async (req, res) => {
     // ---- Admin analitikasi ----
     if (req.method === 'GET' && url.pathname === '/api/admin/analytics') {
       requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
-      return send(res, 200, { ...analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))), bands: bandStats(db), walls: wallStats(db), backup: backupStatus() });
+      const span = Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30)), nowA = Date.now(), fromA = tzDayStart(nowA) - (span - 1) * 86_400_000;
+      return send(res, 200, { ...analytics(db, nowA, span), cohort2: cohortReport(db, fromA, nowA + 1, nowA), definitions: DEFINITIONS, bands: bandStats(db), walls: wallStats(db), backup: backupStatus() });
     }
     // ---- Limitlar va narxlar (faqat admin) ----
     if (url.pathname === '/api/admin/settings') {
