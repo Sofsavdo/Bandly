@@ -44,6 +44,15 @@ const deep = (v: unknown, key = ''): void => {
   if (Array.isArray(v)) v.forEach((x) => deep(x, key)); else for (const [k, x] of Object.entries(v as Record<string, unknown>)) deep(x, k);
 };
 for (const m of MODS) { const mod = await import(join(ROOT, 'src/content', m)); for (const [k, v] of Object.entries(mod)) deep(v, k); }
+// Evristika o'tkazib yuboradigan aralash satrlar (formulalar «sifat + ly», ko'rsatmalar «(inkor)» va h.k.) — qo'lda ro'yxat.
+// Har biri kontentda haqiqatan bo'lishi shart (eskirgani --check da xato beradi).
+const contentStrings = new Set<string>();
+const collect = (v: unknown, s2 = new WeakSet<object>()): void => { if (typeof v === 'string') { contentStrings.add(v.replace(/\s+/g, ' ').trim()); return; } if (!v || typeof v !== 'object' || s2.has(v as object)) return; s2.add(v as object); Object.values(v as Record<string, unknown>).forEach((x) => collect(x, s2)); };
+for (const m of MODS) { const mod = await import(join(ROOT, 'src/content', m)); collect(mod); }
+const EXTRA = JSON.parse(readFileSync(join(ROOT, 'src/i18n/extra-content.json'), 'utf8')) as string[];
+const staleExtra = EXTRA.filter((x) => !contentStrings.has(x));
+if (staleExtra.length) { console.error(`extra-content.json: kontentda topilmadi (${staleExtra.length}): ${staleExtra.slice(0, 3).join(' | ')}`); process.exit(1); }
+for (const x of EXTRA) if (!KEEP_EN.has(x)) set.add(x); // qo'lda tanlangan: englishOnly evristikasini chetlab o'tadi («double + son»)
 
 section = 'server';
 // 3) Server xabarlari (xatolar, bot matnlari): `${x}` → {0}
