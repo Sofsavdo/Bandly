@@ -1353,3 +1353,41 @@ details.card[open] > summary { margin-bottom: 12px; }
 }
 .cert-fold > .card, .cert-fold .card { box-shadow: none; border: 0; padding: 12px 0 0; margin: 0; background: none; }
 .cert-fold .card > h3:first-child { display: none; }
+
+/* ===== Kesilish/toshish tuzatishlari (skaner natijasi, 2026-11-23) ===== */
+/* Ichki menyu: ustun kengligi matnga moslashadi (qisqa nomlar kamroq, uzunlari ko'proq joy oladi) — "Hisoblash" kesilmaydi */
+@media (max-width: 640px) {
+  .subnav { grid-template-columns: repeat(var(--n, 3), minmax(max-content, 1fr)); }
+  .subnav a span { overflow: visible; text-overflow: clip; }
+}
+@media (max-width: 380px) { .subnav a { font-size: 12px; padding: 0 3px; letter-spacing: -.02em; } }
+/* Kun so'zi: grid elementi ichidagi tugmalar qatori kartochkani kengaytirmasin */
+.daily { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 761px) { .daily { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.daily-card { min-width: 0; }
+.daily-card.word .row { flex-wrap: wrap; overflow: visible; }
+/* Davom ettirish: dars nomi kesilmaydi — 2 qatorgacha */
+.prog-next b { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
+/* Ko'rsatkich yorliqlari: kesilmaydi, kerak bo'lsa ikki qator */
+.prog-stats span { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.2; }
+/* Taklif havolasi: to'liq ko'rinadi (kichik shrift, so'z ichida bo'linadi) */
+.invite-link code { white-space: normal; overflow: visible; text-overflow: clip; word-break: break-all; font-size: 12.5px; }
+/* Darslar xaritasi va kurs kartochkalari: nomlar 3 qatorgacha, kengroq yorliq */
+.zn-label { max-width: 168px; -webkit-line-clamp: 3; line-clamp: 3; }
+.lcard p { -webkit-line-clamp: 4; line-clamp: 4; }
+/* Ichki menyu (uzun tillar: ru, kk): ustunlar kontentga moslashib qisqaradi, kerak bo'lsa matn 2 qatorga o'tadi — ekrandan chiqmaydi */
+@media (max-width: 640px) {
+  .subnav { grid-template-columns: repeat(var(--n, 3), auto); }
+  .subnav a { white-space: normal; text-align: center; line-height: 1.1; height: auto; min-height: 30px; padding-block: 3px; }
+}
+/* Uzun yozuvli tugmalar: matn qatorga o'tadi, ikonka tugma ichida qoladi */
+.btn { white-space: normal; text-align: center; line-height: 1.2; height: auto; min-height: 48px; padding-block: 6px; }
+.btn.sm { height: auto; min-height: 38px; padding-block: 4px; }
+.btn > svg { flex: none; }
+.lcard p { display: block; -webkit-line-clamp: unset; line-clamp: none; overflow: visible; }
+/* Reyting: o'z o'rningiz paneli — ism/XP ustuni tugma tufayli siqilmasin */
+.me-bar .grow { flex: 1 1 auto; min-width: 110px; }
+.me-bar .btn { flex: 0 1 auto; }
+/* Telefonda sarlavha kartochkalaridagi bezak rasm matn ustiga tushib, chetda kesilib qolardi — yashiriladi */
+@media (max-width: 560px) { .card.page-head.with-illo .illo, .card.page-head .illo { display: none; } .card.page-head.with-illo { padding-right: 16px; } }
+@media (max-width: 560px) { .card.hero > .illo { display: none; } }
