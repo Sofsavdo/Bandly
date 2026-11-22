@@ -18,6 +18,7 @@ import { addMistake } from '../lib/mistakes';
 import { logErrors } from '../lib/adaptive/store';
 import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
 import { L } from '../i18n';
+import { FREE_INFO, SALE_PLANS } from '../config';
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
 const PHASE_UZ: Record<Phase, string> = { idle: L('Gapiring — tinglayman'), listening: L('Tinglayapman…'), thinking: L('O‘ylayapman…'), speaking: L('Sellzen gapiryapti'), error: L('Qayta urinib ko‘ring') };
@@ -89,7 +90,8 @@ export default function Coach() {
   const phaseRef = useRef<Phase>('idle');
   const setPhase = (ph: Phase) => { phaseRef.current = ph; setPhaseState(ph); };
   const [err, setErr] = useState('');
-  const [limitHit, setLimitHit] = useState(false);
+  const [limitMsg, setLimitMsg] = useState<string | null>(null);
+  const VOICE_LIMIT = L('Bugungi bepul ovozli javoblar tugadi — Sellzen ovozi ertaga qaytadi.');
   const [lvl, setLvl] = useState(0);
   const [emotion, setEmotionState] = useState<CoachEmotion>('neutral');
   const emoRef = useRef<CoachEmotion>('neutral');
@@ -121,7 +123,7 @@ export default function Coach() {
     const stopWatch = server ? await watchBargeIn(() => { s.cancelled = true; stopSpeaking(); }) : () => undefined;
     try {
       const res = await speakLine(line, s, emoRef.current === 'laugh' ? 'laugh' : emoRef.current === 'angry' ? 'angry' : 'happy');
-      if (res === 'limit') { setCaption(line); setLimitHit(true); end(); return; }
+      if (res === 'limit') { setCaption(line); setLimitMsg(VOICE_LIMIT); end(); return; }
       setCaption(res === 'silent' ? line : ''); // ovoz chiqmadi — javob matn bo'lib ko'rinadi, suhbat davom etadi
     } catch { setCaption(line); } finally { stopWatch(); }
     if (!liveRef.current) return;
@@ -144,7 +146,7 @@ export default function Coach() {
         onHeard: () => undefined,
         onSaid: (t) => { if (/\bha(ha)+\b|lol/i.test(t)) setEmotion('laugh'); else if (/damn|hell|shit|what the|ahmoq|tentak|eshak/i.test(t)) setEmotion('angry'); },
         onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); setLiveFailed(true); end(); } }, // keyingi urinish — oddiy ovozli rejim (STT + matn AI + ovoz)
-        onLimit: () => { setLimitHit(true); end(); },
+        onLimit: (m) => { setLimitMsg(m || L('Bugungi bepul ovozli suhbat daqiqalari tugadi. Yangi daqiqalar ertaga beriladi.')); end(); },
         onClosed: () => { if (settled && liveRef.current) end(); done(false); },
         onEmotion: (e) => setEmotion(e),
       }).then((c) => { liveRefCall.current = c; }).catch(() => { setLiveFailed(true); done(false); });
@@ -249,8 +251,8 @@ export default function Coach() {
         {orb}
         <h2>{L('Sellzen')}</h2>
         <p>{L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>
-        {minutes?.subscribed && <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span>}
-        {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
+        {minutes?.subscribed ? <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span> : minutes && FREE_INFO.liveMinutesPerDay > 0 ? <span className="pill">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span> : null}
+        {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a></p>}
         {status && !status.coach && <p className="notice">{L('AI ustoz tez orada ochiladi.')}</p>}
         {!acc
           ? <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />
@@ -272,7 +274,7 @@ export default function Coach() {
           {caption && <p className="tutor-caption" aria-live="polite"><b>{L('Sellzen')}:</b> {caption}</p>}
           {liveFailed && !!status?.live && <p className="notice" role="status">{L('Jonli ovozli suhbat hozir ishlamayapti — oddiy ovozli rejimda davom etamiz: siz gapirasiz, Sellzen matn va ovoz bilan javob beradi.')}</p>}
           {err && <p className="tutor-err">{err}</p>}
-          {limitHit && <p className="notice voice-limit">{L('Bugungi bepul ovozli javoblar tugadi — Sellzen ovozi ertaga qaytadi.')} <a href="#/pricing">{L('Obuna: oyiga 60 daqiqa')}</a></p>}
+          {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a></p>}
         </div>
         <div className="tutor-ctrl">
           {canListen && !liveRefCall.current && (

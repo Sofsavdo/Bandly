@@ -105,7 +105,7 @@ footer{margin-top:28px;padding-top:26px;padding-bottom:40px;font-size:14px;color
 ${ld.map((x) => `<script type="application/ld+json">${json(x)}</script>`).join('\n')}
 </head>
 <body>
-<header><a class="logo" href="/" aria-label="Sellzen">${LOGO}<span class="word">SELLZEN<em>.UZ</em></span></a><div class="hright">${pair ? `<a class="lang" href="${pathOf(lang === 'uz' ? 'ru' : 'uz', o.slug ? (lang === 'uz' ? pair.ru : pair.uz) : '')}" hreflang="${lang === 'uz' ? 'ru' : 'uz'}">${lang === 'uz' ? 'Русский' : 'O‘zbekcha'}</a>` : ''}<a class="btn sm" href="/#/">${ui.app}</a></div></header>
+<header><a class="logo" href="/" aria-label="Sellzen">${LOGO}<span class="word">SELLZEN<em>.UZ</em></span></a><div class="hright">${pair ? `<a class="lang" href="${pathOf(lang === 'uz' ? 'ru' : 'uz', o.slug ? (lang === 'uz' ? pair.ru : pair.uz) : '')}" hreflang="${lang === 'uz' ? 'ru' : 'uz'}">${lang === 'uz' ? 'RU' : 'UZ'}</a>` : ''}<a class="btn sm" href="/#/">${ui.app}</a></div></header>
 ${o.slug ? `<nav class="tools" aria-label="${ui.nav}"><a href="${pathOf(lang, '')}">← ${ui.all}</a>${pages.map((p) => `<a href="${pathOf(lang, p.slug)}"${p.slug === o.slug ? ' class="on" aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}</nav>` : ''}
 <main>
 ${o.body}

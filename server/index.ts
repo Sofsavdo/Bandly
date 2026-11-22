@@ -16,7 +16,8 @@ import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listL
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
 import { demoMode, PERIODS, PLAN_IDS, priceFor } from './pricing';
-import { addCall, callLeft, CALL_MONTH_SECONDS, ttsSeconds } from './callMinutes';
+import { addCall, callLeft, callMonthSeconds, ttsSeconds } from './callMinutes';
+import { ensureSettings, listSettings, publicLimits, settingValue, updateSettings } from './settings';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
 import { freeLimitsFromEnv, freeStatus, unlockLesson, wallStats } from './freeQuota';
 import { listStudioTests, publicStudioTests, publishedStudioTests, saveStudioTest, setStudioTestStatus } from './studioTests';
@@ -50,18 +51,20 @@ import { complete, AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpe
 const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
 // AI Coach limits (env). Global ceiling is FAIL-CLOSED: unset or 0 = coach disabled even with a key (owner decision OD-09).
-const COACH_FREE_DAILY_ANSWERS = Number(process.env.COACH_FREE_DAILY_ANSWERS ?? process.env.VOICE_DAILY_ANSWERS ?? 5); // obunasiz: AI ustoz suhbatidagi neyron ovozli javoblar/kun
-const COACH_GLOBAL_DAILY = Number(process.env.AI_GLOBAL_DAILY_CALLS ?? 0);
+// Limitlar admin panelda o'zgaradi (server/settings.ts) — shuning uchun har chaqiruvda o'qiladi.
+const COACH_FREE_DAILY_ANSWERS = () => settingValue('COACH_FREE_DAILY_ANSWERS'); // obunasiz: AI ustoz suhbatidagi neyron ovozli javoblar/kun
+const COACH_GLOBAL_DAILY = () => settingValue('AI_GLOBAL_DAILY_CALLS');
 const STUDIO_VOICE_DAILY_CHARS = Number(process.env.STUDIO_VOICE_DAILY_CHARS ?? 20_000);
 const stt = sttConfigFromEnv();
 const coachAi = coachConfig(ai);
 const live = liveConfigFromEnv(ai.provider === 'gemini' ? ai.key : null); // Gemini Live: ovozdan-ovozga AI ustoz // ovozli suhbat uchun tez model (Gemini: Flash-Lite birinchi) // ElevenLabs Scribe (AI ustoz uchun nutqni tanish); bo'lmasa brauzer tanishi
-const COACH_DAILY_LIMIT = Number(process.env.AI_COACH_DAILY_LIMIT ?? 30);
+const COACH_DAILY_LIMIT = () => settingValue('AI_COACH_DAILY_LIMIT');
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
+ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan ustun)
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
 expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
 ensureEventsTable(db);
@@ -278,6 +281,12 @@ const httpServer = createServer(async (req, res) => {
       requireRole(db, String(req.headers['x-token'] ?? ''), []); // faqat admin
       return send(res, 200, { ...analytics(db, Date.now(), Math.min(90, Math.max(7, Number(url.searchParams.get('days')) || 30))), bands: bandStats(db), walls: wallStats(db), backup: backupStatus() });
     }
+    // ---- Limitlar va narxlar (faqat admin) ----
+    if (url.pathname === '/api/admin/settings') {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), []);
+      if (req.method === 'GET') return send(res, 200, { items: listSettings(db) });
+      if (req.method === 'PUT') { const b = await readJson(req, 8192); return send(res, 200, { items: updateSettings(db, (b.values ?? {}) as Record<string, unknown>, me.id) }); }
+    }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['methodologist']);
@@ -319,7 +328,7 @@ const httpServer = createServer(async (req, res) => {
         const text = String(b.text ?? '').trim();
         if (text.length < 20) throw new ApiError(400, 'Matn juda qisqa');
         if (ai.provider === 'none') throw new ApiError(503, 'AI yordamchi ulanmagan: matn ajratib olindi, uni darsga qo‘lda kiriting (Tahrirlash).');
-        useGlobalAi(db, COACH_GLOBAL_DAILY); // umumiy AI chegarasi (xarajat nazorati)
+        useGlobalAi(db, COACH_GLOBAL_DAILY()); // umumiy AI chegarasi (xarajat nazorati)
         const media = b.media && typeof b.media === 'object' ? b.media as { kind: 'video' | 'audio'; url: string } : null;
         const drafts = await aiDraftLessons(ai, text, { level: unit.level, unitTitle: unit.data.titleUz, note: typeof b.note === 'string' ? b.note : undefined }, () => '');
         const created = drafts.map((d) => {
@@ -444,10 +453,10 @@ const httpServer = createServer(async (req, res) => {
       const b = await readJson(req);
       return send(res, 200, submitDuel(db, String(b.token ?? ''), dm[1], Number(b.score), Number(b.correct), Number(b.ms)));
     }
-    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY > 0, configured: ai.provider !== 'none', stt: !!stt, live: !!live && COACH_GLOBAL_DAILY > 0 });
+    if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY() > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY() > 0, configured: ai.provider !== 'none', stt: !!stt, live: !!live && COACH_GLOBAL_DAILY() > 0 });
     if (req.method === 'GET' && url.pathname === '/api/coach/minutes') {
       const tk = String(req.headers['x-token'] ?? ''); const pid = byToken(db, tk).id; const sub = entitlements(db, tk).plan !== null;
-      return send(res, 200, { subscribed: sub, total: Math.round(CALL_MONTH_SECONDS / 60), left: Math.floor(callLeft(db, pid, sub) / 60) });
+      return send(res, 200, { subscribed: sub, total: Math.round(callMonthSeconds() / 60), left: Math.floor(callLeft(db, pid, sub) / 60) });
     }
     // Nutqni tanish: brauzer yozib olgan bitta navbat (ovoz) → matn. Ovoz saqlanmaydi.
     if (req.method === 'POST' && url.pathname === '/api/ai/stt') {
@@ -477,8 +486,8 @@ const httpServer = createServer(async (req, res) => {
       const text = String(b.text ?? '');
       const t0 = Date.now();
       const reply = await once(`${player.id}:${turnId}`, async () => {
-        useGlobalAi(db, COACH_GLOBAL_DAILY);                       // platform ceiling first (fail-closed)
-        useAi(db, token, Date.now(), COACH_DAILY_LIMIT, 'coach');  // per-learner daily limit
+        useGlobalAi(db, COACH_GLOBAL_DAILY());                       // platform ceiling first (fail-closed)
+        useAi(db, token, Date.now(), COACH_DAILY_LIMIT(), 'coach', 'Bugungi AI ustoz xabarlari tugadi. Yangi xabarlar ertaga 00:00 da (Toshkent vaqti). Ovozli suhbat va darslar ishlayveradi.');  // per-learner daily limit
         return withAiCtx({ playerId: player.id, feature: 'coach' }, () => coachTurn(coachAi, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true }));
       });
       console.log(`[coach] ${Date.now() - t0}ms ${resolved.id} adult=${b.adult === true}`); // javob matni yozilmaydi
@@ -491,7 +500,7 @@ const httpServer = createServer(async (req, res) => {
       const now = Date.now();
       if (url.pathname === '/api/ai/followup') {
         const player = byToken(db, token);
-        useGlobalAi(db, COACH_GLOBAL_DAILY, now);   // platforma kunlik chegarasi (belgilanmagan bo'lsa — yopiq)
+        useGlobalAi(db, COACH_GLOBAL_DAILY(), now);   // platforma kunlik chegarasi (belgilanmagan bo'lsa — yopiq)
         useAi(db, token, now);                      // o'quvchining kunlik limiti
         try {
           const lv = Math.max(0, Math.min(3, Math.floor(Number(b.level) || 0)));
@@ -508,7 +517,7 @@ const httpServer = createServer(async (req, res) => {
         if (kind === 'speaking' && !turns.some((t) => t.text.trim().length > 10)) throw new ApiError(400, 'Baholash uchun javoblar yetarli emas');
         if (kind === 'writing' && text.trim().split(/\s+/).length < 30) throw new ApiError(400, 'Matn juda qisqa (kamida 30 so‘z)');
         const q = useAssessment(db, token, kind, now);  // server obunasi + oylik kvota (EXAM 10, ALL 20)
-        try { useGlobalAi(db, COACH_GLOBAL_DAILY, now); } catch (e) { refundAssessment(db, q.playerId, kind, now); throw e; }
+        try { useGlobalAi(db, COACH_GLOBAL_DAILY(), now); } catch (e) { refundAssessment(db, q.playerId, kind, now); throw e; }
         try {
           const nat = nativeOf(req.headers['x-lang']);
           const r = await withAiCtx({ playerId: q.playerId, feature: `${kind}_eval` }, () => (kind === 'speaking' ? evaluateSpeaking(ai, turns, undefined, nat) : evaluateWriting(ai, Number(b.task) === 1 ? 1 : 2, String(b.prompt ?? '').slice(0, 2000), text, undefined, nat)));
@@ -542,7 +551,7 @@ const httpServer = createServer(async (req, res) => {
       if (tts.provider !== 'elevenlabs') useAi(db, token, now, TTS_DAILY_LIMIT, 'tts');
       else if (paid && coachCall) useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now);
       else if (paid && isCoach && contPart) useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); // javobning davomi — bitta javob bir marta sanaladi
-      else if (paid) { useAi(db, token, now, isCoach ? COACH_FREE_DAILY_ANSWERS : VOICE_DAILY_ANSWERS, bucket); try { useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); } catch (e) { refundAi(db, player.id, bucket, now); throw e; } }
+      else if (paid) { useAi(db, token, now, isCoach ? COACH_FREE_DAILY_ANSWERS() : VOICE_DAILY_ANSWERS, bucket); try { useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now); } catch (e) { refundAi(db, player.id, bucket, now); throw e; } }
       let out: Awaited<ReturnType<typeof synthesize>>;
       try { out = await synthesize(tts, text, opts); } catch (e) {
         if (paid) { if (!coachCall && !(isCoach && contPart)) refundAi(db, player.id, bucket, now); refundGlobalVoiceChars(db, reserve, now); }
@@ -556,7 +565,7 @@ const httpServer = createServer(async (req, res) => {
     }
     // ---------------- To'lov (Hamyon) ----------------
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
-      return send(res, 200, { enabled: !!hapi, demo: DEMO, periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
+      return send(res, 200, { enabled: !!hapi, demo: DEMO, limits: publicLimits(), periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
     if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; const xl = reqLang(req); if (/^(uz|en|ru|kk|ky|tg)$/.test(xl)) db.prepare('UPDATE players SET lang = ? WHERE id = ?').run(xl, pid); return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid) }); }
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {
@@ -676,6 +685,7 @@ if (live) attachLive(httpServer, {
   },
   prompt: (o) => buildLivePrompt(o),
   native: (lang) => nativeOf(lang),
+  tr: (lang, text) => trServer(db, lang, text),
   // Birinchi qo'ng'iroq — server bo'yicha (boshqa qurilmada ham to'g'ri); xotira — o'tgan qo'ng'iroqlardagi xatolar
   context: (pid) => ({ firstCall: !db.prepare('SELECT 1 FROM live_usage WHERE player_id = ? LIMIT 1').get(pid), memory: memoryForPrompt(getMemory(db, pid)) }),
   kickoff: liveKickoff,

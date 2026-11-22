@@ -7,7 +7,7 @@ import type { Duplex } from 'node:stream';
 import type { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer, type RawData } from 'ws';
 import { tzDay } from './day';
-import { CALL_MONTH_SECONDS } from './callMinutes';
+import { callMonthSeconds } from './callMinutes';
 import { clampStyle, emotionOf, type LiveEmotion } from './coach';
 import { addLiveUsage, emptyLive, type LiveUsage } from './aiUsage';
 
@@ -31,10 +31,11 @@ export function liveConfigFromEnv(geminiKey: string | null, env: NodeJS.ProcessE
     key, model, fallbackModel: fb && fb !== model ? fb : null,
     voice: (env.GEMINI_LIVE_VOICE ?? '').trim() || 'Puck',
     url: (env.GEMINI_LIVE_URL ?? '').trim() || 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent',
-    freeDailySeconds: Math.max(0, Number(env.LIVE_FREE_DAILY_MINUTES ?? 5)) * 60,
-    maxSessionSec: Math.max(60, Number(env.LIVE_MAX_SESSION_MINUTES ?? 10) * 60),
+    // Admin panelda o'zgaradi — har safar env'dan o'qiladi (getter)
+    get freeDailySeconds() { return Math.max(0, Number(env.LIVE_FREE_DAILY_MINUTES ?? 5) || 0) * 60; },
+    get maxSessionSec() { return Math.max(60, (Number(env.LIVE_MAX_SESSION_MINUTES ?? 10) || 10) * 60); },
     pricePerMin: Number(env.PRICE_LIVE_PER_MIN ?? 0.03),
-    freeGlobalDailySeconds: Math.max(0, Number(env.LIVE_FREE_GLOBAL_DAILY_MINUTES ?? 0) || 0) * 60,
+    get freeGlobalDailySeconds() { return Math.max(0, Number(env.LIVE_FREE_GLOBAL_DAILY_MINUTES ?? 0) || 0) * 60; },
     silenceMs: Math.min(2000, Math.max(300, Number(env.LIVE_SILENCE_MS ?? 900) || 900)),
   };
 }
@@ -125,6 +126,8 @@ interface LiveDeps {
   /** Qo'ng'iroq tugagach suhbat yozuvi (xotira uchun) */
   onTranscript?: (playerId: number, turns: { who: 'learner' | 'coach'; text: string }[], nativeCode: string) => void;
   native: (lang: string) => string;
+  /** Server xabarini o'quvchi tiliga tarjima qilish (limit xabari) */
+  tr?: (lang: string, text: string) => string;
   /** Qo'ng'iroq tugadi: daqiqa va xarajat yoziladi */
   onEnd: (playerId: number, seconds: number, model: string, usage?: LiveUsage) => void;
   log?: (msg: string) => void;
@@ -159,9 +162,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const who = d.auth(token);
   if (!who) { send({ type: 'error', code: 401, message: 'Hisobga kiring' }); client.close(); return; }
   const allowance = liveAllowance(d.cfg, { staff: who.staff, subscriberLeftSec: who.subscriberLeftSec, freeUsedTodaySec: liveUsedToday(d.db, who.id), platformUsedTodaySec: liveUsedTodayAll(d.db) });
-  if (allowance < 5) { send({ type: 'limit', message: `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(CALL_MONTH_SECONDS / 60)} daqiqa.` }); client.close(); return; }
-
   const lang = String(url.searchParams.get('lang') ?? 'uz').slice(0, 2);
+  if (allowance < 5) { send({ type: 'limit', message: (d.tr ?? ((_l: string, t: string) => t))(lang, `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqa.`) }); client.close(); return; }
   const ctx = d.context?.(who.id) ?? { firstCall: false, memory: '' };
   const adult = url.searchParams.get('adult') === '1';
   // Xarakter (profil): 0 Yumshoq, 1 Hazil, 2 Qattiq, 3 Jallod; 2–3 faqat 18+ bilan

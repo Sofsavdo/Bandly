@@ -34,6 +34,8 @@ void initI18n().then(async () => {
     import('./content/satPractice'),
   ]);
   for (const m of mods) for (const v of Object.values(m as Record<string, unknown>)) deepTranslate(v);
+  // Admin paneldagi limit va narxlar (tariflar matni, bepul tarif raqamlari) — ko'pi bilan 1,5 soniya kutiladi
+  await Promise.race([import('./lib/pay').then((m) => m.payConfig()).catch(() => undefined), new Promise((r) => setTimeout(r, 1500))]);
   const [{ default: App }, { startSync }, { initPay }, { bootTelegram }, { pullIfNewer, startCloud }, { loadRemoteContent }, { loadStudioTests }] = await Promise.all([
     import('./App'), import('./lib/account'), import('./lib/pay'), import('./lib/telegram'), import('./lib/cloud'), import('./content/remote'), import('./content/mockTests'),
   ]);

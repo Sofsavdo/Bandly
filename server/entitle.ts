@@ -1,9 +1,10 @@
 // Server tomonidagi huquqlar va AI baholash kvotasi (MONETIZATION_SPEC §7, AI_COST_CONTROL_SPEC).
 // Obuna holati faqat serverdagi subscriptions jadvalidan olinadi — mijozdagi "plan" belgilariga ishonilmaydi.
 import type { DatabaseSync } from 'node:sqlite';
-import { SALE_PLANS, type PlanId } from '../src/config';
+import type { PlanId } from '../src/config';
 import { ApiError, byToken } from './db';
 import { freeAssessKey, freeAssessLimit, freeLimitsFromEnv } from './freeQuota';
+import { settingValue } from './settings';
 
 /** Faol tarif: exam + grammar → all, faqat exam → exam, faqat grammar → general. */
 export function planOf(db: DatabaseSync, playerId: number, now = Date.now()): PlanId | null {
@@ -13,8 +14,8 @@ export function planOf(db: DatabaseSync, playerId: number, now = Date.now()): Pl
 }
 
 export type AssessKind = 'writing' | 'speaking';
-/** Oylik kvota: tarifdagi son (EXAM 10, ALL 20; GENERAL va bepul — 0). */
-export const assessLimit = (plan: PlanId | null, kind: AssessKind): number => (plan ? SALE_PLANS.find((p) => p.id === plan)![kind] : 0);
+/** Oylik kvota: tarifdagi son (standart EXAM 10, ALL 20; GENERAL va bepul — 0). Admin panelda o'zgartiriladi (PLAN_<TARIF>_<TUR>). */
+export const assessLimit = (plan: PlanId | null, kind: AssessKind): number => (plan ? settingValue(`PLAN_${plan.toUpperCase()}_${kind.toUpperCase()}`) : 0);
 const monthKey = (kind: string, now: number) => `assess-${kind}:${new Date(now).toISOString().slice(0, 7)}`;
 
 /** Baholashdan OLDIN chaqiriladi: tarif va oylik kvota tekshiriladi va 1 ta band qilinadi. Xato bo'lsa refundAssessment. */

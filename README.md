@@ -115,6 +115,13 @@ Ro'yxatdan o'tmagan mehmon faqat landing sahifasini (`#/`) va ochiq SEO vositala
 - Inglizcha o'quv materiali (so'zlar, misol gaplar, matnlar, audio skriptlar, javob variantlari) **tarjima qilinmaydi**; faqat atrofidagi tushuntirish va interfeys tarjima qilinadi. Bunga `src/i18n/keep-english.json` va extractor filtrlari xizmat qiladi.
 - Katalog (7 803 matn: 2 101 interfeys + 5 702 kontent) 5 tilda kodda to'liq. Inson-muharrir (ona tili) tekshiruvi hali o'tkazilmagan. SEO vositalar sahifalari hozircha o'zbekcha + ruscha.
 
+## Limitlar va narxlar (admin panel)
+
+Admin kabineti → **Limitlar**: bepul tarif (kunlik darslar, haftalik AI baholash, kunlik ovozli suhbat daqiqalari, ovozli javoblar), tariflar (oylik ovozli daqiqa, AI Writing/Speaking soni), AI ustoz kunlik xabarlari, qo'ng'iroq davomiyligi, taklif bonuslari (XP, All Access kunlari, 30 kunlik cheklov), oylik narxlar va xarajat himoyasi.
+- Ustunlik: admin panelda saqlangan qiymat > Railway o'zgaruvchisi > koddagi standart (`server/settings.ts`). O'zgarish serverni qayta ishga tushirmasdan darhol ishlaydi va `admin_audit` jurnaliga yoziladi; "qaytarish" tugmasi admin qiymatini o'chiradi.
+- Tariflar sahifasi, landing, ogohlantirishlar va to'lov summasi bir xil manbadan oladi (`/api/pay/config` → `limits`), shuning uchun e'lon qilingan va haqiqiy limit doim bir xil.
+- Test: `server/settings.test.ts`.
+
 ## Zaxira nusxa
 
 Kunlik avtomatik zaxira (`server/autoBackup.ts`), `BACKUP_KEEP_DAYS`. Tashqi S3-mos ombor ixtiyoriy (`BACKUP_S3_*` — to'liq bo'lmasa xato ko'rsatiladi). Holat admin panelida (Analitika → Zaxira): oxirgi nusxa vaqti, soni, tashqi ombor holati, xatolar, 27 soatdan eski bo'lsa ogohlantirish. Tiklash: `docs/runbooks/backup-restore.md`.

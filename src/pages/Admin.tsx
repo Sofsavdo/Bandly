@@ -6,6 +6,7 @@ import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
 import { CertAdmin } from '../components/CertAdmin';
 import { LeadsPanel, PaymentsPanel, StaffPanel, UsersPanel } from '../components/AdminOps';
+import { LimitsPanel } from '../components/AdminLimits';
 import { L } from '../i18n';
 
 interface Day { day: string; signups: number; active: number; paid: number; revenue: number; aiUsd: number }
@@ -21,7 +22,7 @@ interface Data {
   bands?: { learners: number; withBaseline: number; measured: number; avgGain: number | null; medianGain: number | null; shareHalf: number | null; shareOne: number | null; avgDays: number | null; officials: number; officialVsBaseline: number | null };
 }
 
-type Tab = 'stats' | 'leads' | 'users' | 'payments' | 'staff' | 'certs';
+type Tab = 'stats' | 'limits' | 'leads' | 'users' | 'payments' | 'staff' | 'certs';
 type Sub = 'overview' | 'growth' | 'results' | 'system';
 
 const num = (n: number) => n.toLocaleString('ru-RU');
@@ -89,10 +90,10 @@ export default function Admin() {
 
   const tabs = (
     <div className="seg seg-scroll" role="tablist" aria-label={L('Admin kabineti')} style={{ marginBottom: 14 }}>
-      {([['stats', L('Analitika')], ['leads', L('Lidlar')], ['users', L('Foydalanuvchilar')], ['payments', L('To‘lovlar')], ['staff', L('Xodimlar')], ['certs', L('Sertifikatlar')]] as const).map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>)}
+      {([['stats', L('Analitika')], ['limits', L('Limitlar')], ['leads', L('Lidlar')], ['users', L('Foydalanuvchilar')], ['payments', L('To‘lovlar')], ['staff', L('Xodimlar')], ['certs', L('Sertifikatlar')]] as const).map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>)}
     </div>
   );
-  if (tab !== 'stats') return <div>{tabs}{tab === 'leads' ? <LeadsPanel /> : tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <PaymentsPanel /> : tab === 'staff' ? <StaffPanel /> : <CertAdmin />}</div>;
+  if (tab !== 'stats') return <div>{tabs}{tab === 'limits' ? <LimitsPanel /> : tab === 'leads' ? <LeadsPanel /> : tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <PaymentsPanel /> : tab === 'staff' ? <StaffPanel /> : <CertAdmin />}</div>;
 
   const head = (
     <section className="card page-head t-sky">

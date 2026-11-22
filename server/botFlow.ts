@@ -60,33 +60,23 @@ export function phoneMsg(chatId: number, tr: Tr): Record<string, unknown> {
 
 export interface BotStats { lessons: number; ielts: number; mocks: number }
 
-/** Raqamdan keyingi asosiy xabar: bot nima beradi va ichkariga kirishga undovchi tugmalar (har biri ilovaning kerakli joyini ochadi). */
-export function welcomeMsg(chatId: number, publicUrl: string, tr: Tr, name?: string, ref?: string, channel = CHANNEL, stats?: BotStats): Record<string, unknown> {
-  const hi = name ? tr('Tabriklaymiz, {0}!').replace('{0}', name.slice(0, 32)) : tr('Tabriklaymiz!');
+/** Raqamdan keyingi asosiy xabar: qisqa va 3 ta tugma (egasi qarori 2026-11-22: avvalgisi juda uzun, tugmalar ko'p edi).
+ *  Qolgan bo'limlar ilova ichida; /help — buyruqlar, kanal va yordam. */
+export function welcomeMsg(chatId: number, publicUrl: string, tr: Tr, name?: string, ref?: string, _channel = CHANNEL, stats?: BotStats): Record<string, unknown> {
+  const hi = name ? tr('Xush kelibsiz, {0}!').replace('{0}', name.slice(0, 32)) : tr('Xush kelibsiz!');
   const app = (route: string) => ({ url: appUrl(publicUrl, route, ref) });
-  const n = (v: number | undefined, text: string) => (v ? text.replace('{0}', String(v)) : text.replace('{0} ', ''));
+  const lessons = stats?.lessons ? `${tr('{0} ta dars').replace('{0}', String(stats.lessons))}, ` : '';
   return {
     chat_id: chatId,
     caption: [
-      `🎉 ${hi} ${tr('Siz Sellzen’dasiz.')}`,
+      `🎉 ${hi}`,
+      `Sellzen — ${tr('ingliz tili uchun AI ustoz')}: ${lessons}${tr('mock testlar va ovozli suhbat.')}`,
       '',
-      tr('Sellzen — ingliz tilini o‘zbek tilida tushuntiradigan AI ustoz. Shu yerda o‘qiysiz, mashq qilasiz va natijangizni ko‘rasiz:'),
-      '',
-      `🎯 ${tr('3 daqiqada darajangizni bilib oling — bepul')}`,
-      `⏱ ${n(stats?.mocks, tr('{0} ta mock test (IELTS, CEFR) — bepul, taymer va natija bilan'))}`,
-      `📚 ${n(stats?.lessons, tr('General English: A1 dan C2 gacha {0} dars'))}`,
-      `🎓 ${n(stats?.ielts, tr('IELTS kursi: {0} dars — Reading, Listening, Writing, Speaking'))}`,
-      `🎙 ${tr('AI ustoz bilan gaplashing — xatolaringizni o‘zbekcha tushuntiradi')}`,
-      `🎮 ${tr('So‘z o‘yinlari va do‘stlar bilan duel — bepul')}`,
-      '',
-      `👇 ${tr('Boshlash uchun tugmani bosing — ilova shu yerning o‘zida ochiladi, hisobingiz avtomatik yaratiladi.')}`,
+      `👇 ${tr('Boshlash uchun tugmani bosing.')}`,
     ].join('\n'),
     reply_markup: { inline_keyboard: [
-      [{ text: `🎯 ${tr('Darajamni bepul aniqlash')}`, web_app: app('/placement') }],
-      [{ text: `⏱ ${tr('Bepul mock test')}`, web_app: app('/mocks') }, { text: `📚 ${tr('General English')}`, web_app: app('/learn') }],
-      [{ text: `🎓 ${tr('IELTS darslari')}`, web_app: app('/ielts') }, { text: `🎙 ${tr('AI ustoz')}`, web_app: app('/coach') }],
-      [{ text: `🎮 ${tr('O‘yinlar va duel')}`, web_app: app('/games') }, { text: `🚀 ${tr('Ilovani ochish')}`, web_app: app('/') }],
-      [{ text: `📢 ${tr('Kanal')}`, url: channelUrl(channel) }, { text: `💬 ${tr('Yordam')}`, callback_data: 'help' }],
+      [{ text: `🚀 ${tr('Ilovani ochish')}`, web_app: app('/') }],
+      [{ text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: app('/placement') }, { text: `🎙 ${tr('AI ustoz')}`, web_app: app('/coach') }],
     ] },
   };
 }

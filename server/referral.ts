@@ -8,7 +8,8 @@ import { awardXp } from './xp';
 import { extend } from './payments';
 import { tracksOf } from './pricing';
 
-export const REF_XP = Math.max(0, Math.min(150, Number(process.env.REF_XP ?? 100)));
+/** Ikkala tomonga beriladigan XP (admin panel: REF_XP). Har chaqiruvda o'qiladi. */
+export const refXp = (env: NodeJS.ProcessEnv = process.env): number => Math.max(0, Math.min(150, Math.floor(Number(env.REF_XP ?? 100) || 0)));
 const DAY = 86_400_000;
 /** Ikkala tomonga beriladigan All Access kunlari (0 — o'chiq, eng ko'pi 30). */
 export const refPlanDays = (env: NodeJS.ProcessEnv = process.env): number => Math.max(0, Math.min(30, Math.floor(Number(env.REF_PLAN_DAYS ?? 0) || 0)));
@@ -54,7 +55,8 @@ export function maybeRewardReferral(db: DatabaseSync, playerId: number, now = Da
   const did = db.prepare("SELECT 1 FROM xp_events WHERE player_id = ? AND source IN ('lesson', 'placement') AND accepted > 0 LIMIT 1").get(playerId);
   if (!did) return false;
   if (Number(db.prepare('UPDATE players SET ref_rewarded = 1, ref_rewarded_at = ? WHERE id = ? AND ref_rewarded = 0').run(now, playerId).changes) === 0) return false;
-  if (REF_XP > 0) { awardXp(db, playerId, `ref:new:${playerId}`, 'referral', REF_XP, now); awardXp(db, p.referred_by, `ref:by:${playerId}`, 'referral', REF_XP, now); }
+  const xpBonus = refXp(env);
+  if (xpBonus > 0) { awardXp(db, playerId, `ref:new:${playerId}`, 'referral', xpBonus, now); awardXp(db, p.referred_by, `ref:by:${playerId}`, 'referral', xpBonus, now); }
   const days = refPlanDays(env);
   if (days > 0) {
     for (const t of tracksOf('all')) extend(db, playerId, t, days, now); // taklif qilingan — har doim (bir marta: ref_rewarded)
@@ -70,5 +72,5 @@ export function maybeRewardReferral(db: DatabaseSync, playerId: number, now = Da
 export interface RefStats { code: string; invited: number; activated: number; xpEach: number; planDays: number }
 export function refStats(db: DatabaseSync, playerId: number): RefStats {
   const r = db.prepare('SELECT COUNT(*) AS invited, COALESCE(SUM(ref_rewarded), 0) AS activated FROM players WHERE referred_by = ?').get(playerId) as { invited: number; activated: number };
-  return { code: refCodeOf(db, playerId), invited: r.invited, activated: r.activated, xpEach: REF_XP, planDays: refPlanDays() };
+  return { code: refCodeOf(db, playerId), invited: r.invited, activated: r.activated, xpEach: refXp(), planDays: refPlanDays() };
 }

@@ -45,10 +45,11 @@ const msg = (text: string, extra: Record<string, unknown> = {}) => ({ message: {
   assert.deepEqual(h.calls.map((c) => c.m), ['sendMessage', 'sendMessage']);
   assert.deepEqual(h.calls[0]!.b.reply_markup, { remove_keyboard: true });
   const w = h.calls[1]!.b;
-  assert.match(w.text, /Tabriklaymiz, Ali!/); assert.match(w.text, /144 dars/); assert.match(w.text, /36 dars/);
+  assert.match(w.text, /Xush kelibsiz, Ali!/); assert.match(w.text, /144 ta dars/); assert.ok(w.text.split('\n').length <= 5, 'welcome qisqa');
   const kb = JSON.stringify(w.reply_markup);
-  for (const r of ['%2Fplacement', '%2Fmocks', '%2Flearn', '%2Fielts', '%2Fcoach', '%2Fgames']) assert.match(kb, new RegExp(`r=${r}&ref=abc234`), r);
-  assert.match(kb, /Bepul mock test/); assert.match(kb, /General English/); assert.match(kb, /IELTS darslari/);
+  for (const r of ['%2F', '%2Fplacement', '%2Fcoach']) assert.match(kb, new RegExp(`r=${r}&ref=abc234`), r);
+  assert.ok(w.reply_markup.inline_keyboard.flat().length <= 3, 'welcome: ko‘pi bilan 3 tugma');
+  assert.match(kb, /Ilovani ochish/); assert.match(kb, /Darajamni aniqlash/); assert.match(kb, /AI ustoz/);
 }
 // 3) Hammasi bor: /start → darhol xush kelibsiz; /mock → ochish tugmasi; /help; guruh — javob yo'q
 {
@@ -60,7 +61,7 @@ const msg = (text: string, extra: Record<string, unknown> = {}) => ({ message: {
   h.d.sendPhoto = async () => { throw new Error('failed to get HTTP URL content'); };
   const err0 = console.error; console.error = () => undefined;
   await handleBot(msg('/start'), h.d); console.error = err0;
-  assert.equal(h.calls[0]!.m, 'sendMessage'); assert.match(h.calls[0]!.b.text, /Sellzen’dasiz/);
+  assert.equal(h.calls[0]!.m, 'sendMessage'); assert.match(h.calls[0]!.b.text, /Xush kelibsiz/);
   h.calls.length = 0; delete h.d.sendPhoto;
   await handleBot(msg('/start'), h.d); assert.equal(h.calls[0]!.m, 'sendMessage');
   await handleBot(msg('/mock'), h.d); assert.match(JSON.stringify(h.calls[1]!.b), /r=%2Fmocks/);

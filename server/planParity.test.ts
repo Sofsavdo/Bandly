@@ -5,7 +5,7 @@ import { SALE_PLANS } from '../src/config';
 import { createDb } from './db';
 import { assessLimit, planOf } from './entitle';
 import { tracksOf, priceFor } from './pricing';
-import { CALL_MONTH_SECONDS, PLAN_VOICE_MINUTES } from './callMinutes';
+import { callMonthSeconds, PLAN_VOICE_MINUTES } from './callMinutes';
 
 const db = createDb();
 const now = Date.UTC(2026, 10, 21);
@@ -31,7 +31,7 @@ for (const plan of SALE_PLANS) {
 assert.ok(pid > 0);
 // 5) Ovozli suhbat daqiqalari: server standarti tarifdagi qiymatdan olinadi (alohida "60" konstantasi yo'q)
 assert.equal(PLAN_VOICE_MINUTES, Math.min(...SALE_PLANS.map((p) => p.voiceMin)));
-if (process.env.COACH_CALL_MONTH_MINUTES === undefined) assert.equal(CALL_MONTH_SECONDS, PLAN_VOICE_MINUTES * 60, 'server oylik daqiqasi = tarifdagi voiceMin');
+if (process.env.COACH_CALL_MONTH_MINUTES === undefined) assert.equal(callMonthSeconds(), PLAN_VOICE_MINUTES * 60, 'server oylik daqiqasi = tarifdagi voiceMin');
 // Obunasiz: AI baholash pullik kvotasi yo'q
 assert.equal(assessLimit(null, 'writing'), 0);
 console.log('planParity: OK');

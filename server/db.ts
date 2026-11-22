@@ -389,14 +389,15 @@ export function useGlobalAi(db: DatabaseSync, limit: number, now = Date.now()): 
   return (row?.calls ?? 0) + 1;
 }
 
-export const AI_DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT ?? 120);
+/** Bir o'quvchiga kuniga AI so'rovlari (admin panel: AI_DAILY_LIMIT). Har chaqiruvda o'qiladi. */
+export const aiDailyLimit = (): number => { const n = Number(process.env.AI_DAILY_LIMIT); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 120; };
 
 /** Har bir AI so'rovdan oldin chaqiriladi: token tekshiriladi va kunlik limit hisoblanadi. */
-export function useAi(db: DatabaseSync, token: string, now = Date.now(), limit = AI_DAILY_LIMIT, bucket = ''): number {
+export function useAi(db: DatabaseSync, token: string, now = Date.now(), limit = aiDailyLimit(), bucket = '', message = 'Bugungi AI limiti tugadi. Yangi limit ertaga 00:00 da (Toshkent vaqti).'): number {
   const p = byToken(db, token);
   const day = (bucket ? `${bucket}:` : '') + tzDay(now);
   const row = db.prepare('SELECT calls FROM ai_usage WHERE player_id = ? AND day = ?').get(p.id, day) as { calls: number } | undefined;
-  if ((row?.calls ?? 0) >= limit) throw new ApiError(429, 'Bugungi AI limiti tugadi. Ertaga qayta urinib ko‘ring.');
+  if ((row?.calls ?? 0) >= limit) throw new ApiError(429, message);
   db.prepare('INSERT INTO ai_usage (player_id, day, calls) VALUES (?, ?, 1) ON CONFLICT(player_id, day) DO UPDATE SET calls = calls + 1').run(p.id, day);
   return (row?.calls ?? 0) + 1;
 }

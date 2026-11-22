@@ -1,6 +1,6 @@
 import { Check, Crown, Gift, Info, Sparkles, Target, Bot } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '../config';
+import { FREE_INFO, SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '../config';
 import { fmtDate, fmtSum, payConfig, startPurchase, type PayConfig } from '../lib/pay';
 import { setPlan, useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
@@ -51,7 +51,7 @@ export default function Pricing() {
           <h3 style={{ margin: 0 }}>{L('Bepul')}</h3>
           <div className="price">{L('0 so‘m')}</div>
           <ul>
-            {[L('Mock Arena: barcha Reading va Listening testlari — cheksiz'), L('Darajani aniqlash testi va natijalar'), L('Har kursda kuniga 1 ta yangi dars (birinchi kuni 3 ta)'), L('O‘tilgan darslarni takrorlash va “Xatolarim” — cheksiz'), L('AI baho: haftasiga 1 ta Writing va 1 ta Speaking'), L('AI ustoz: kuniga 5 daqiqa'), L('O‘yinlar, duel va reyting')].map((f) => <li key={f}><Check size={16} />{f}</li>)}
+            {[L('Mock Arena: barcha Reading va Listening testlari — cheksiz'), L('Darajani aniqlash testi va natijalar'), L('Har kursda kuniga {0} ta yangi dars (birinchi kuni {1} ta)', [FREE_INFO.lessonsPerDay, FREE_INFO.firstDayLessons]), L('O‘tilgan darslarni takrorlash va “Xatolarim” — cheksiz'), L('AI baho: haftasiga {0} ta Writing va {1} ta Speaking', [FREE_INFO.writingPerWeek, FREE_INFO.speakingPerWeek]), L('AI ustoz: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay]), L('O‘yinlar, duel va reyting')].map((f) => <li key={f}><Check size={16} />{f}</li>)}
           </ul>
           <a className="btn" href="#/placement">{L('Bepul boshlash')}</a>
         </div>
