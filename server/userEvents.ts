@@ -58,7 +58,9 @@ export interface CohortReport {
   activated: number; activationPct: number | null;
   paid: number; activationToPaidPct: number | null; freeToPaidPct: number | null;
   renewed: number; renewalPct: number | null;
-  period: { activeUsers: number; revenue: number; arpu: number | null; aiUsd: number; aiUsdPerActive: number | null; aiEvalUsd: number; aiEvals: number; aiUsdPerEval: number | null };
+  period: { activeUsers: number; revenue: number; arpu: number | null; aiUsd: number; aiUsdPerActive: number | null; aiEvalUsd: number; aiEvals: number; aiUsdPerEval: number | null;
+    /** Tariflar bo'yicha haqiqiy to'lovlar (faqat 'success'; admin/referal sovg'a kunlari bu yerda yo'q). */
+    byPlan: { plan: string; payments: number; revenue: number }[] };
   adoption: { feature: string; users: number }[];
 }
 
@@ -112,6 +114,7 @@ export function cohortReport(db: DatabaseSync, from: number, to: number, now = D
   const activeUsers = (db.prepare('SELECT COUNT(DISTINCT player_id) AS n FROM xp_events WHERE accepted > 0 AND ts >= ? AND ts < ?').get(from, to) as { n: number }).n;
   const revenue = (db.prepare("SELECT COALESCE(SUM(COALESCE(hamyon_amount, amount)), 0) AS s FROM payments WHERE status = 'success' AND paid_at >= ? AND paid_at < ?").get(from, to) as { s: number }).s;
   const aiUsd = (db.prepare('SELECT COALESCE(SUM(cost_usd), 0) AS s FROM ai_cost_events WHERE ts >= ? AND ts < ?').get(from, to) as { s: number }).s;
+  const byPlan = db.prepare("SELECT track AS plan, COUNT(*) AS payments, COALESCE(SUM(COALESCE(hamyon_amount, amount)), 0) AS revenue FROM payments WHERE status = 'success' AND paid_at >= ? AND paid_at < ? GROUP BY track ORDER BY revenue DESC").all(from, to).map((r) => ({ plan: String(r.plan), payments: Number(r.payments), revenue: Number(r.revenue) }));
   const aiEvalUsd = (db.prepare("SELECT COALESCE(SUM(cost_usd), 0) AS s FROM ai_cost_events WHERE ts >= ? AND ts < ? AND feature IN ('writing_eval', 'speaking_eval')").get(from, to) as { s: number }).s;
   const aiEvals = (db.prepare("SELECT COUNT(*) AS n FROM exam_results WHERE module = 'ai' AND at >= ? AND at < ?").get(from, to) as { n: number }).n;
   const round2 = (x: number) => Math.round(x * 100) / 100, round4 = (x: number) => Math.round(x * 10_000) / 10_000;
@@ -126,7 +129,7 @@ export function cohortReport(db: DatabaseSync, from: number, to: number, now = D
     period: {
       activeUsers, revenue, arpu: activeUsers ? Math.round(revenue / activeUsers) : null,
       aiUsd: round2(aiUsd), aiUsdPerActive: activeUsers ? round4(aiUsd / activeUsers) : null,
-      aiEvalUsd: round2(aiEvalUsd), aiEvals, aiUsdPerEval: aiEvals ? round4(aiEvalUsd / aiEvals) : null,
+      aiEvalUsd: round2(aiEvalUsd), aiEvals, aiUsdPerEval: aiEvals ? round4(aiEvalUsd / aiEvals) : null, byPlan,
     },
     adoption: [
       { feature: 'lesson', users: adopt("SELECT COUNT(DISTINCT player_id) AS n FROM xp_events WHERE source = 'lesson' AND accepted > 0 AND ts >= ? AND ts < ?") },
