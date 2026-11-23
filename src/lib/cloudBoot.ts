@@ -2,7 +2,7 @@
 // navbatdagi hisob progressini qurilmaga yozadi. Shu bilan sahifa yangilanayotganda eski xotira yangi progress ustidan yozolmaydi.
 // Faqat progressMerge.ts (o'zi hech narsani import qilmaydi) import qilinadi.
 import { mergeSnapshot } from './progressMerge';
-export const SKIP = /^bandly\.(account\.v1|lang|sound|stt|tg|tg\.auth|pay\.open|bossrun\.v1|learnview\.v1|xpq\.v1|content\.v1|cloud\..*|attempt\.v1\..*)$/;
+export const SKIP = /^bandly\.(account\.v1|lang|sound|stt|tg|tg\.auth|pay\.open|bossrun\.v1|learnview\.v1|xpq\.v1|content\.v\d+|i18n\..*|cloud\..*|attempt\.v1\..*)$/; // kesh va qurilma sozlamalari — progress emas
 export const REV = 'bandly.cloud.rev';
 export const PENDING = 'bandly.cloud.pending';
 export const syncable = (k: string): boolean => k.startsWith('bandly.') && !SKIP.test(k);
