@@ -1429,3 +1429,4 @@ main.container { min-height: 100vh; }
 /* Grammatika mavzu tugmalari: ixcham, yonga suriladi */
 .page-head .tabs { margin-inline: -4px; padding: 2px 16px 2px 4px; }
 .page-head .tabs .btn { flex: none; min-height: 36px; padding: 0 14px; font-size: 13.5px; }
+.tg-join .tg-open { margin-top: 10px; }
