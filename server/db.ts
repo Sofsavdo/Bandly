@@ -137,6 +137,10 @@ export function createDb(path = ':memory:'): DatabaseSync {
 }
 
 export const PROGRESS_MAX = 600_000; // bayt (JSON)
+/** Eski ilova versiyalari yuboradigan, progress bo'lmagan kesh kalitlari — saqlanmaydi (o'quvchiga xato ham qaytmaydi). */
+const NOT_PROGRESS = /^bandly\.(content\.v\d+|i18n\..*)$/;
+/** PUT /api/progress so'rovining o'qish chegarasi: eski mijoz kesh bilan katta yuborsa ham qabul qilib, keshni tashlab yuboramiz. */
+export const PROGRESS_BODY_MAX = 8_000_000;
 /** Hisob progressini o'qiydi (yo'q bo'lsa data = null). */
 export function getProgress(db: DatabaseSync, token: string): { data: Record<string, string> | null; rev: number; updated_at: number } {
   const p = byToken(db, token);
@@ -153,6 +157,7 @@ export function putProgress(db: DatabaseSync, token: string, data: unknown, base
   const clean: Record<string, string> = {};
   for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
     if (!/^bandly\.[\w.:-]{1,80}$/.test(k) || typeof v !== 'string') throw new ApiError(400, 'Noto‘g‘ri kalit');
+    if (NOT_PROGRESS.test(k)) continue;
     clean[k] = v;
   }
   const json = JSON.stringify(clean);

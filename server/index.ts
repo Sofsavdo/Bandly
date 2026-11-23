@@ -3,7 +3,7 @@ import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt, liveKick
 import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt } from './coachMemory';
 import { tzDay, tzDayStart } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, PROGRESS_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_BODY_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -475,7 +475,7 @@ const httpServer = createServer(async (req, res) => {
     if (url.pathname === '/api/progress') {
       const token = String(req.headers['x-token'] ?? '');
       if (req.method === 'GET') return send(res, 200, getProgress(db, token));
-      if (req.method === 'PUT') { const b = await readJson(req, PROGRESS_MAX + 4096); return send(res, 200, putProgress(db, token, b.data, Number(b.rev))); }
+      if (req.method === 'PUT') { const b = await readJson(req, PROGRESS_BODY_MAX); return send(res, 200, putProgress(db, token, b.data, Number(b.rev))); }
     }
     if (req.method === 'POST' && url.pathname === '/api/sync') {
       const b = await readJson(req);
