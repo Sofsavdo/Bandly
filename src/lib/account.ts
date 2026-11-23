@@ -4,7 +4,9 @@ import { onLogin, pushProgress, stageClear } from './cloud';
 import { L } from '../i18n';
 
 const KEY = 'bandly.account.v1';
-export interface Account { token: string; nickname: string; tg?: boolean }
+export interface Account { token: string; nickname: string; tg?: boolean; /** Telegram profil rasmi (bo'lmasa — bosh harf) */ photo?: string | null }
+/** Profil rasmini yangilaydi (/api/me javobidan). */
+export const setPhoto = (photo: string | null | undefined): void => { const a = getAccount(); if (a && photo !== undefined && a.photo !== photo) setAccount({ ...a, photo }); };
 
 export const getAccount = (): Account | null => {
   try { return JSON.parse(localStorage.getItem(KEY) ?? 'null') as Account | null; } catch { return null; }
@@ -58,7 +60,7 @@ export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown)
   const ref = getRef();
   const body = kind === 'webapp' ? { initData: payload, link, ref } : { user: payload, link, ref };
   const r = await call<Account & { linked: boolean }>(kind === 'webapp' ? '/api/auth/telegram/webapp' : '/api/auth/telegram', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
-  setAccount({ token: r.token, nickname: r.nickname, tg: true });
+  setAccount({ token: r.token, nickname: r.nickname, tg: true, photo: (r as { photo?: string | null }).photo ?? null });
   await onLogin();
   void syncNow();
   return r;

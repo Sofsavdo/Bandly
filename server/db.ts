@@ -110,6 +110,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   if (!cols.includes('tg_id')) db.exec('ALTER TABLE players ADD COLUMN tg_id INTEGER');
   // Rollar (2026-11-17): admin va metodist kabineti uchun
   if (!cols.includes('role')) db.exec('ALTER TABLE players ADD COLUMN role TEXT');
+  if (!cols.includes('photo_url')) db.exec('ALTER TABLE players ADD COLUMN photo_url TEXT'); // Telegram profil rasmi (ixtiyoriy)
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_tg ON players (tg_id) WHERE tg_id IS NOT NULL');
   // Hisob progressi (2026-11-17): o'quvchining qurilmadagi ma'lumotlari hisobga saqlanadi — boshqa qurilmada kirsa ham ko'rinadi
   // Sessiyalar (2026-11-17): har qurilma — alohida token; bazada faqat SHA-256 xeshi saqlanadi. Eski players.token

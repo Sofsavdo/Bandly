@@ -6,7 +6,12 @@
 // Bot tokeni faqat server muhit o'zgaruvchisida (TELEGRAM_BOT_TOKEN); kodga yoki logga yozilmaydi.
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
-export interface TgUser { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string }
+export interface TgUser { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string; photo_url?: string }
+/** Profil rasmi: faqat Telegram'ning https manzillari (boshqa domen — tashqi kuzatuv/xavf, qabul qilinmaydi). */
+export function safePhoto(v: unknown): string | undefined {
+  if (typeof v !== 'string' || v.length > 500) return undefined;
+  try { const u = new URL(v); return u.protocol === 'https:' && /(^|\.)(t\.me|telegram\.org|telesco\.pe)$/.test(u.hostname) ? u.href : undefined; } catch { return undefined; }
+}
 export type Tr = (s: string) => string;
 export const WIDGET_MAX_AGE_S = 300; // spec: 5 daqiqa
 export const WEBAPP_MAX_AGE_S = 3600; // Mini App ochilgandan keyin 1 soat (ilova fonda turib qayta yuklanishi mumkin)
@@ -30,7 +35,7 @@ function parseUser(u: Partial<Record<keyof TgUser, unknown>>): TgUser {
   const id = Number(u.id);
   if (!Number.isSafeInteger(id) || id <= 0) throw new TgAuthError('Telegram foydalanuvchi id noto‘g‘ri');
   const s = (v: unknown) => (typeof v === 'string' && v ? v.slice(0, 64) : undefined);
-  return { id, first_name: s(u.first_name), last_name: s(u.last_name), username: s(u.username) };
+  return { id, first_name: s(u.first_name), last_name: s(u.last_name), username: s(u.username), photo_url: safePhoto(u.photo_url) };
 }
 
 /** Login Widget ma'lumoti (id, first_name, …, auth_date, hash). */

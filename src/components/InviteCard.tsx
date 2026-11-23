@@ -30,7 +30,7 @@ export function InviteCard() {
           <p className="muted" style={{ margin: '2px 0 10px' }}>{r.planDays ? L('Do‘stingiz birinchi darsni tugatsa — ikkalangizga +{0} kun All Access va +{1} XP.', [r.planDays, r.xpEach]) : L('Do‘stingiz birinchi darsni tugatsa — ikkalangizga +{0} XP.', [r.xpEach])}</p>
         </div>
       </div>
-      <div className="invite-link"><code>{link}</code><button className="icon-btn sm" aria-label={L('Nusxalash')} onClick={() => { void navigator.clipboard?.writeText(link).then(() => setMsg(L('Havola nusxalandi'))); }}><Copy size={16} /></button></div>
+      <div className="invite-link"><code>{link.replace(/^https?:\/\//, '')}</code><button className="icon-btn sm" aria-label={L('Nusxalash')} onClick={() => { void navigator.clipboard?.writeText(link).then(() => setMsg(L('Havola nusxalandi'))); }}><Copy size={16} /></button></div>
       <div className="row" style={{ marginTop: 10, justifyContent: 'space-between' }}>
         <span className="muted">{L('Taklif qilinganlar: {0} · faol: {1}', [r.invited, r.activated])}</span>
         <button className="btn primary sm" onClick={() => void share()}><Share2 size={15} /> {L('Ulashish')}</button>

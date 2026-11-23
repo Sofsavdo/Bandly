@@ -28,10 +28,10 @@ export default function Mocks() {
       <div className="card page-head with-illo">
         <h2 style={{ margin: 0 }}>{L('Mock')} <em className="it">{L('Arena')}</em></h2>
         <p style={{ margin: '6px 0 12px' }}>{L('Imtihon sharoiti: taymer, avtomatik baho va izohlar.')}</p>
-        <div className="row">
-          <span className="pill">{L('Yechilgan')} {solved}/{total}</span>
-          <span className="pill">{L('Urinish')} {res.length}</span>
-          <span className="pill">{L('O‘rtacha')} {avg !== null ? avg.toFixed(1) : '—'}</span>
+        <div className="stat-pills">
+          <span><b>{solved}<small>/{total}</small></b>{L('Yechilgan')}</span>
+          <span><b>{res.length}</b>{L('Urinish')}</span>
+          <span><b>{avg !== null ? avg.toFixed(1) : '—'}</b>{L('O‘rtacha')}</span>
         </div>
         <Illo kind="clock" size={128} />
       </div>
