@@ -69,14 +69,15 @@ export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown)
 /** Bot orqali kirish: kod olinadi, bot ochiladi (/start login_<kod>), foydalanuvchi botda tasdiqlaguncha har 2 s tekshiriladi.
  *  open — bot havolasini ochish (yangi oyna/ilova). signal bilan to'xtatiladi. */
 export async function loginViaBot(open: (url: string) => void, signal: { cancelled: boolean }): Promise<Account> {
-  const s = await call<{ code: string; bot: string }>('/api/auth/bot/start', { method: 'POST' });
+  const s = await call<{ code: string; poll: string; bot: string }>('/api/auth/bot/start', { method: 'POST' });
   open(`https://t.me/${s.bot}?start=login_${s.code}`);
   const until = Date.now() + 10 * 60_000;
   while (!signal.cancelled && Date.now() < until) {
     await new Promise((r) => setTimeout(r, 2000));
     if (signal.cancelled) break;
     let r: { pending?: boolean; token?: string; nickname?: string };
-    try { r = await call(`/api/auth/bot/${s.code}`); } catch (e) { if (/eskirgan|expired|410/i.test((e as Error).message)) throw e; continue; } // tarmoq uzilishi — qayta urinamiz
+    try { r = await call(`/api/auth/bot/${s.poll}`); } catch (e) { // poll — havoladagi koddan farqli maxfiy kalit
+      if (/eskirgan|expired|410/i.test((e as Error).message)) throw e; continue; } // tarmoq uzilishi — qayta urinamiz
     if (r.token && r.nickname) {
       setAccount({ token: r.token, nickname: r.nickname, tg: true });
       await onLogin();
