@@ -23,6 +23,9 @@ export const MAX_DELTA_PER_HOUR = 1500;
 
 export function createDb(path = ':memory:'): DatabaseSync {
   const db = new DatabaseSync(path);
+  // Boshqa ulanish (kunlik zaxira nusxa — VACUUM INTO, tekshiruv) o'qib turganida yozuv darhol "database is locked" bilan
+  // yiqilmasin: 5 soniyagacha kutadi. Faqat shu ulanish sozlamasi — baza fayli/formati o'zgarmaydi.
+  db.exec('PRAGMA busy_timeout = 5000');
   db.exec(`
     CREATE TABLE IF NOT EXISTS players (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -217,7 +220,8 @@ export function join(db: DatabaseSync, nickname: string, now = Date.now()): { to
   let id: number;
   try {
     id = Number(db.prepare('INSERT INTO players (token, nickname, created_at, updated_at) VALUES (?, ?, ?, ?)').run(placeholder(), nick, now, now).lastInsertRowid);
-  } catch {
+  } catch (e) {
+    if (!/UNIQUE/i.test(String((e as Error)?.message))) throw e; // qulf/disk xatosi "laqab band" deb ko'rsatilmasin
     throw new ApiError(409, 'Bu laqab band');
   }
   return { token: newSession(db, id, now), nickname: nick };
