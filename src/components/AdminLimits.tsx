@@ -5,7 +5,7 @@ import { getAccount } from '../lib/account';
 import { fmtDate } from '../lib/pay';
 import { L } from '../i18n';
 
-type Group = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety';
+type Group = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety' | 'bot';
 interface Item { key: string; group: Group; label: string; hint?: string; def: number; min: number; max: number; unit?: string; value: number; source: 'admin' | 'env' | 'default'; updatedAt: number | null }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -21,6 +21,7 @@ const GROUPS: { id: Group; title: string; note: string }[] = [
   { id: 'coach', title: L('AI ustoz'), note: L('Hamma o‘quvchilar uchun.') },
   { id: 'referral', title: L('Taklif (referal) bonuslari'), note: L('Taklif qilingan o‘quvchi birinchi dars yoki daraja testini tugatganda ikkala tomonga beriladi.') },
   { id: 'prices', title: L('Narxlar'), note: L('Oylik narx; 3 oylik (−10%) va 12 oylik (10 oy narxi) shundan hisoblanadi. Yangi to‘lovlarga qo‘llanadi.') },
+  { id: 'bot', title: L('Telegram bot'), note: L('O‘chiq bo‘lsa, /start bosilganda darhol xush kelibsiz xabari keladi (reklama tarmoqlari talabi uchun).') },
   { id: 'safety', title: L('Xarajat himoyasi'), note: L('AI xarajati keskin oshib ketmasligi uchun umumiy chegaralar.') },
 ];
 const UNIT: Record<string, string> = { min: L('daqiqa'), day: L('kun'), uzs: L('so‘m') };
@@ -78,7 +79,9 @@ export function LimitsPanel() {
                       <small>{it.hint ? `${L(it.hint)} · ` : ''}{SOURCE[it.source]}{it.source === 'admin' && it.updatedAt ? ` · ${fmtDate(it.updatedAt)}` : ''} · {L('standart: {0}', [it.def.toLocaleString('ru-RU')])}</small>
                     </label>
                     <div className="limit-input">
-                      <input id={`lim-${it.key}`} type="number" inputMode="numeric" min={it.min} max={it.max} step={1} value={v} aria-invalid={bad} onChange={(e) => setDraft({ ...draft, [it.key]: e.target.value })} />
+                      {it.min === 0 && it.max === 1
+                        ? <label className="switch"><input id={`lim-${it.key}`} type="checkbox" checked={v === '1'} onChange={(e) => setDraft({ ...draft, [it.key]: e.target.checked ? '1' : '0' })} /> {v === '1' ? L('Yoqilgan') : L('O‘chiq')}</label>
+                        : <input id={`lim-${it.key}`} type="number" inputMode="numeric" min={it.min} max={it.max} step={1} value={v} aria-invalid={bad} onChange={(e) => setDraft({ ...draft, [it.key]: e.target.value })} />}
                       {it.unit && <span>{UNIT[it.unit]}</span>}
                       {it.source === 'admin' && <button type="button" className="icon-btn" title={L('Admin qiymatini o‘chirish')} aria-label={L('Admin qiymatini o‘chirish')} disabled={busy} onClick={() => { if (window.confirm(L('Admin qiymati o‘chirilib, Railway yoki standart qiymat qaytsinmi?'))) void save({ [it.key]: null }); }}><RotateCcw size={15} /></button>}
                     </div>

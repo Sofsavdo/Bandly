@@ -77,4 +77,21 @@ assert.equal(await checkMember(async () => ({ status: 'restricted', is_member: f
 const err = console.error; console.error = () => undefined;
 assert.equal(await checkMember(async () => { throw new Error('member list is inaccessible'); }, '@c', 1), true);
 console.error = err;
+// Admin paneldan majburiy obuna va telefon o'chirilgan (standart): /start → darhol xush kelibsiz, kanal/telefon so'ralmaydi
+{
+  const h = harness({ member: false, phone: false });
+  h.d.requireSubscribe = () => false; h.d.requirePhone = () => false;
+  await handleBot(msg('/start ref_zz9988'), h.d);
+  assert.equal(h.calls.length, 1, 'bitta xabar — xush kelibsiz');
+  const b = h.calls[0]!.b;
+  assert.ok(!JSON.stringify(b).includes('request_contact'), 'telefon so‘ralmaydi');
+  assert.ok(!JSON.stringify(b).includes('"callback_data":"chk"'), 'obuna tekshiruvi yo‘q');
+  assert.ok(String(b.caption ?? b.text).includes('Ali'), 'ism bilan xush kelibsiz');
+  assert.equal(h.st.refs.get(5), 'zz9988', 'referal kodi baribir saqlanadi');
+  // faqat telefon yoqilgan: obunasiz ham telefon so'raladi
+  const h2 = harness({ member: false });
+  h2.d.requireSubscribe = () => false; h2.d.requirePhone = () => true;
+  await handleBot(msg('/start'), h2.d);
+  assert.ok(JSON.stringify(h2.calls[0]!.b).includes('request_contact'));
+}
 console.log('botFlow: OK');

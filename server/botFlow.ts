@@ -14,6 +14,9 @@ export interface BotDeps {
   /** Kanal a'zoligi (getChatMember). Tekshirib bo'lmasa (bot admin emas, tarmoq) — true: foydalanuvchini to'sib qo'ymaymiz. */
   isMember: (tgId: number) => Promise<boolean>;
   hasPhone: (tgId: number) => boolean;
+  /** Admin paneldan: majburiy kanal obunasi va telefon so'rash yoqilganmi (berilmasa — yoqilgan, eski xatti-harakat) */
+  requireSubscribe?: () => boolean;
+  requirePhone?: () => boolean;
   savePhone: (tgId: number, phone: string) => void;
   setRef: (tgId: number, ref: string) => void;
   getRef: (tgId: number) => string | undefined;
@@ -98,8 +101,8 @@ const ROUTES: Record<string, string> = { app: '/', level: '/placement', mock: '/
 /** Obuna va telefon bosqichidan o'tganini tekshiradi; o'tmagan bo'lsa — keyingi bosqich xabarini yuboradi. */
 async function gate(d: BotDeps, chatId: number, from: TgFrom, tr: Tr): Promise<boolean> {
   const ch = d.channel ?? CHANNEL;
-  if (!(await d.isMember(from.id))) { await d.api('sendMessage', subscribeMsg(chatId, tr, ch)); return false; }
-  if (!d.hasPhone(from.id)) { await d.api('sendMessage', phoneMsg(chatId, tr)); return false; }
+  if ((d.requireSubscribe?.() ?? true) && !(await d.isMember(from.id))) { await d.api('sendMessage', subscribeMsg(chatId, tr, ch)); return false; }
+  if ((d.requirePhone?.() ?? true) && !d.hasPhone(from.id)) { await d.api('sendMessage', phoneMsg(chatId, tr)); return false; }
   return true;
 }
 /** Xush kelibsiz xabari hech qachon yo'qolmasin: rasm yuborilmasa — xuddi shu matn va tugmalar oddiy xabar bo'lib ketadi. */
@@ -120,7 +123,7 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
       if (!(await d.isMember(q.from.id))) { await d.api('answerCallbackQuery', { callback_query_id: q.id, text: tr('Hali obuna bo‘lmadingiz. Kanalga obuna bo‘lib, qayta bosing.'), show_alert: true }); return; }
       await d.api('answerCallbackQuery', { callback_query_id: q.id, text: tr('Rahmat! Obuna tasdiqlandi.') });
       if (q.message?.message_id) await d.api('deleteMessage', { chat_id: chatId, message_id: q.message.message_id }).catch(() => undefined);
-      if (!d.hasPhone(q.from.id)) { await d.api('sendMessage', phoneMsg(chatId, tr)); return; }
+      if ((d.requirePhone?.() ?? true) && !d.hasPhone(q.from.id)) { await d.api('sendMessage', phoneMsg(chatId, tr)); return; }
       await welcome(d, chatId, q.from, tr); return;
     }
     if (q.data === 'help') { await d.api('answerCallbackQuery', { callback_query_id: q.id }); await d.api('sendMessage', helpMsg(chatId, tr)); return; }
@@ -135,7 +138,7 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
     const raw = String(m.contact.phone_number ?? '');
     d.savePhone(from.id, raw.startsWith('+') ? raw : `+${raw}`);
     await d.api('sendMessage', { chat_id: chatId, text: `✅ ${tr('Raqam saqlandi. Rahmat!')}`, reply_markup: { remove_keyboard: true } });
-    if (await d.isMember(from.id)) await welcome(d, chatId, from, tr); else await d.api('sendMessage', subscribeMsg(chatId, tr, d.channel ?? CHANNEL));
+    if (!(d.requireSubscribe?.() ?? true) || await d.isMember(from.id)) await welcome(d, chatId, from, tr); else await d.api('sendMessage', subscribeMsg(chatId, tr, d.channel ?? CHANNEL));
     return;
   }
   const text = (m.text ?? '').trim();
