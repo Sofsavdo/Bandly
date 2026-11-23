@@ -20,8 +20,8 @@ import { isTaxonomyId, type TaxonomyId } from '../lib/adaptive/taxonomy';
 import { L } from '../i18n';
 import { FREE_INFO, SALE_PLANS } from '../config';
 
-type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
-const PHASE_UZ: Record<Phase, string> = { idle: L('Gapiring — tinglayman'), listening: L('Tinglayapman…'), thinking: L('O‘ylayapman…'), speaking: L('Sellzen gapiryapti'), error: L('Qayta urinib ko‘ring') };
+type Phase = 'idle' | 'connecting' | 'listening' | 'thinking' | 'speaking' | 'error';
+const PHASE_UZ: Record<Phase, string> = { connecting: L('Ulanmoqda…'), idle: L('Gapiring — tinglayman'), listening: L('Tinglayapman…'), thinking: L('O‘ylayapman…'), speaking: L('Sellzen gapiryapti'), error: L('Qayta urinib ko‘ring') };
 // Suhbat boshlanishi har safar boshqacha (bir xil gap bilan boshlamaslik uchun)
 const OPENERS = [
   L('Salom! Inglizcha gaplashamiz, qiynalsangiz o‘zbekcha so‘rang. So, how was your day?'),
@@ -135,10 +135,12 @@ export default function Coach() {
   const startLiveCall = async (): Promise<boolean> => {
     const a = getAccount();
     if (!a) return false;
-    setPhase('thinking');
+    setPhase('connecting');
     return new Promise<boolean>((resolve) => {
       let settled = false;
-      const done = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
+      // 10 s ichida ulanmasa — kutib qolmaymiz: oddiy ovozli rejimga o'tamiz
+      const guard = setTimeout(() => { if (!settled) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } }, 10_000);
+      const done = (ok: boolean) => { if (!settled) { settled = true; clearTimeout(guard); resolve(ok); } };
       void startLive({ token: a.token, adult: p.adult, level: p.level, lang: getLang(), style: personaLevel(p) }, {
         onReady: () => { setPhase('listening'); done(true); },
         onSpeaking: (on) => setPhase(on ? 'speaking' : 'listening'),
@@ -243,7 +245,7 @@ export default function Coach() {
     void listen();
   };
 
-  const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 220 : 170} /></div>;
+  const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase === 'connecting' ? 'thinking' : phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 220 : 170} /></div>;
 
   if (!live) return (
     <div className="tutor">
@@ -279,7 +281,7 @@ export default function Coach() {
         </div>
         <div className="tutor-ctrl">
           {canListen && !liveRefCall.current && (
-            <button type="button" className={`mic-big ${phase === 'listening' ? 'on' : ''}`} disabled={phase === 'thinking'} onClick={mic}
+            <button type="button" className={`mic-big ${phase === 'listening' ? 'on' : ''}`} disabled={phase === 'thinking' || phase === 'connecting'} onClick={mic}
               aria-label={phase === 'listening' ? L('Tugatdim') : phase === 'speaking' ? L('Gapni bo‘lish') : L('Gapirish')}>
               {phase === 'listening' ? <Square size={28} /> : <Mic size={30} />}
             </button>

@@ -12,7 +12,7 @@ import { clampStyle, emotionOf, type LiveEmotion } from './coach';
 import { addLiveUsage, emptyLive, type LiveUsage } from './aiUsage';
 
 export interface LiveConfig {
-  key: string; model: string; fallbackModel: string | null; voice: string; url: string;
+  key: string; model: string; fallbackModel: string | null; /** Gemini setupComplete kutish muddati (ms), standart 8000 */ setupTimeoutMs?: number; voice: string; url: string;
   freeDailySeconds: number; maxSessionSec: number; pricePerMin: number;
   /** Gap tugadi deb hisoblash uchun jimlik (ms): qanchalik kichik — shunchalik tez javob, lekin o'ylab gapirganda bo'lib yuborish xavfi. */
   silenceMs: number;
@@ -175,6 +175,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   let turnOut = '', muted = false, wrongCount = 0, emo: LiveEmotion = 'neutral';
   const started = Date.now();
   let upstream: WebSocket | null = null;
+  let setupTimer: NodeJS.Timeout | null = null; // Gemini sozlash muddati (connect ichida)
   let ready = false, closed = false, model = d.cfg.model, triedFallback = false;
   const pending: Buffer[] = []; // tayyor bo'lguncha kelgan mikrofon ovozi (ko'p emas)
   const usage = emptyLive(); // Gemini qaytargan haqiqiy tokenlar (xarajat hisobi uchun)
@@ -182,7 +183,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const finish = (why: string) => {
     if (closed) return;
     closed = true;
-    clearTimeout(cap);
+    clearTimeout(cap); if (setupTimer) clearTimeout(setupTimer);
     try { upstream?.close(); } catch { /* */ }
     try { client.close(); } catch { /* */ }
     const secs = ready ? (Date.now() - started) / 1000 : 0;
@@ -192,15 +193,26 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   };
   const cap = setTimeout(() => { send({ type: 'limit', message: 'Ovozli suhbat vaqti tugadi.' }); finish('limit'); }, allowance * 1000);
 
+  // Gemini sozlashni (setupComplete) shuncha vaqtda tugatmasa — zaxira model, u ham bo'lmasa xato (foydalanuvchi "o'ylayapman"da qolib ketmasin)
   const connect = () => {
     const ws = new WebSocket(`${d.cfg.url}?key=${encodeURIComponent(d.cfg.key)}`);
     upstream = ws;
+    if (setupTimer) clearTimeout(setupTimer);
+    setupTimer = setTimeout(() => {
+      if (ready || closed || upstream !== ws) return;
+      log(`[live] sozlash kechikdi ${model}`);
+      try { ws.removeAllListeners('close'); ws.close(); } catch { /* */ }
+      if (!triedFallback && d.cfg.fallbackModel) { triedFallback = true; model = d.cfg.fallbackModel; connect(); return; }
+      send({ type: 'error', code: 504, message: 'Ovozli suhbat hozir ishlamayapti.' });
+      finish('setup-timeout');
+    }, d.cfg.setupTimeoutMs ?? 8000);
+    setupTimer.unref?.();
     ws.on('open', () => ws.send(JSON.stringify(setupMessage(d.cfg, model, systemText))));
     ws.on('message', (raw: RawData) => {
       let m: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
       try { m = JSON.parse(raw.toString()); } catch { return; }
       if (m.setupComplete) {
-        ready = true;
+        ready = true; if (setupTimer) clearTimeout(setupTimer);
         send({ type: 'ready' });
         // Sellzen suhbatni o'zi boshlaydi
         const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory }) ?? '(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)';
