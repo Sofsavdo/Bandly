@@ -120,11 +120,14 @@ const send = (res: ServerResponse, status: number, body: unknown) => {
   res.end(JSON.stringify(body));
 };
 
+/** Chegaradan oshgan so'rov: qolgan qismi o'qilmay tashlanadi (ulanish uzilmaydi) — mijoz 502 emas, aniq 413 javobini oladi. */
+const overflow = (req: IncomingMessage) => { req.removeAllListeners('data'); req.removeAllListeners('end'); req.resume(); };
+
 /** Hamyon callbacklari: urlencoded, JSON yoki multipart/form-data maydonlari. */
 function readForm(req: IncomingMessage, limit = 8192): Promise<Record<string, string>> {
   return new Promise((resolve, reject) => {
     let size = 0; const chunks: Buffer[] = [];
-    req.on('data', (c: Buffer) => { size += c.length; if (size > limit) { reject(new ApiError(413, 'So‘rov juda katta')); req.destroy(); return; } chunks.push(c); });
+    req.on('data', (c: Buffer) => { size += c.length; if (size > limit) { reject(new ApiError(413, 'So‘rov juda katta')); overflow(req); return; } chunks.push(c); });
     req.on('end', () => {
       const raw = Buffer.concat(chunks).toString('utf8');
       const ct = String(req.headers['content-type'] ?? '');
@@ -141,7 +144,7 @@ function readForm(req: IncomingMessage, limit = 8192): Promise<Record<string, st
 function readRaw(req: IncomingMessage, limit: number): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     let size = 0; const chunks: Buffer[] = [];
-    req.on('data', (c: Buffer) => { size += c.length; if (size > limit) { reject(new ApiError(413, 'Fayl juda katta')); req.destroy(); return; } chunks.push(c); });
+    req.on('data', (c: Buffer) => { size += c.length; if (size > limit) { reject(new ApiError(413, 'Fayl juda katta')); overflow(req); return; } chunks.push(c); });
     req.on('end', () => resolve(Buffer.concat(chunks)));
     req.on('error', reject);
   });
@@ -155,7 +158,7 @@ function readJson(req: IncomingMessage, limit = 2048): Promise<Record<string, un
     const chunks: Buffer[] = [];
     req.on('data', (c: Buffer) => {
       size += c.length;
-      if (size > limit) { reject(new ApiError(413, 'So‘rov juda katta')); req.destroy(); return; }
+      if (size > limit) { reject(new ApiError(413, 'So‘rov juda katta')); overflow(req); return; }
       chunks.push(c);
     });
     req.on('end', () => {

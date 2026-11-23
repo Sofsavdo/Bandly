@@ -64,3 +64,9 @@ offline = false;
 await A.mod.pushProgress();
 assert.ok(JSON.parse(getProgress(db, acc.token).data!['bandly.lessons.v1']!).l4, 'oflayn ish internet qaytganda saqlandi');
 console.log('cloud.test: OK');
+// Kontent keshi (har qanday versiya) va til sozlamalari progressga qo'shilmaydi — aks holda snapshot hajm chegarasidan oshib, saqlanmay qoladi
+{
+  const { syncable } = await import('./cloudBoot');
+  for (const k of ['bandly.content.v1', 'bandly.content.v2', 'bandly.content.v3', 'bandly.i18n.langs', 'bandly.i18n.pseudo']) assert.equal(syncable(k), false, k);
+  for (const k of ['bandly.lessons.v1', 'bandly.results.v1', 'bandly.mistakes.v1', 'bandly.vid']) assert.equal(syncable(k), true, k);
+}
