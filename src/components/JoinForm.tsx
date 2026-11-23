@@ -1,6 +1,6 @@
 import { Send } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { authConfig, getAccount, joinLeague, type Account, type AuthConfig } from '../lib/account';
+import { authConfig, getAccount, joinLeague, loginViaBot, type Account, type AuthConfig } from '../lib/account';
 import { refreshEntitlements } from '../lib/pay';
 import { inTelegram, mountLoginWidget, retryWebAppLogin } from '../lib/telegram';
 import { L } from '../i18n';
@@ -23,6 +23,18 @@ function TelegramJoin({ bot, text, onJoined }: { bot: string; text?: string; onJ
       const a = getAccount(); if (a) { void refreshEntitlements(); onJoined(a); }
     });
   }, [bot, onJoined]);
+  // Bot orqali kirish: vidjet domen yoki brauzer sababli ishlamasa ham ishlaydi
+  const sig = useRef({ cancelled: false });
+  const [botUrl, setBotUrl] = useState('');
+  useEffect(() => () => { sig.current.cancelled = true; }, []);
+  const viaBot = async () => {
+    setBusy(true); setErr(''); setBotUrl(''); sig.current = { cancelled: false };
+    const w = window.open('', '_blank'); // bosish paytida ochiladi — keyin ochilsa mobil brauzer bloklaydi
+    try {
+      const a = await loginViaBot((u) => { setBotUrl(u); if (w) w.location.href = u; }, sig.current);
+      void refreshEntitlements(); onJoined(a);
+    } catch (e) { w?.close(); setErr((e as Error).message); } finally { setBusy(false); setBotUrl(''); }
+  };
   const retry = async () => {
     setBusy(true); setErr('');
     try { await retryWebAppLogin(); const a = getAccount(); if (a) { void refreshEntitlements(); onJoined(a); } } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
@@ -35,8 +47,9 @@ function TelegramJoin({ bot, text, onJoined }: { bot: string; text?: string; onJ
         ? <button className="btn primary" disabled={busy} onClick={() => void retry()}>{busy ? L('Ulanmoqda…') : L('Kirish')}</button>
         : <>
             <div ref={box} className="tg-widget" aria-label={L('Telegram orqali kirish tugmasi')} />
-            {/* Zaxira yo'l: vidjet ishlamasa (domen sozlanmagan, ilova ichidagi brauzer) — botni ochib, ilovaga u yerdan kiriladi */}
-            <a className="btn sm tg-open" href={`https://t.me/${bot}`} target="_blank" rel="noreferrer">{L('Telegram ilovasida ochish')}</a>
+            {/* Zaxira yo'l: vidjet ishlamasa (domen sozlanmagan, ilova ichidagi brauzer) — botda tasdiqlanadi, sahifa o'zi kiradi */}
+            <button type="button" className="btn primary tg-open" disabled={busy} onClick={() => void viaBot()}>{busy ? L('Botda tasdiqlang…') : L('Telegram bot orqali kirish')}</button>
+            {busy && botUrl && <a className="btn sm" href={botUrl} target="_blank" rel="noreferrer">{L('Botni ochish')}</a>}
           </>}
       <p className="muted tg-note">{L('Faqat ismingiz va Telegram ID olinadi.')}</p>
       {err && <p className="notice">{err}</p>}

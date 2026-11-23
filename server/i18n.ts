@@ -58,9 +58,13 @@ export function dictFor(db: DatabaseSync, lang: Target): { v: string; dict: Reco
   if (hit) return hit;
   const rows = db.prepare('SELECT src, text, by FROM i18n WHERE lang = ?').all(lang) as { src: string; text: string; by: string }[];
   const dict: Record<string, string> = {};
-  for (const r of rows) if (r.by !== 'human') dict[r.src] = r.text;
+  // Bazadagi tarjimalar faqat HOZIRGI manbalar uchun va faqat inglizcha bo'lmagan matnlar uchun olinadi: eski AI tarjimalar orasida
+  // inglizcha o'quv gaplari (misollar, savollar) bor edi — ular lug'atga tushsa, darsdagi inglizcha matn tarjima bo'lib ketardi.
+  const valid = new Set(sources(db));
+  const ok = (src: string) => valid.has(src) && !englishOnly(src.replace(/\s+/g, ' ').trim());
+  for (const r of rows) if (r.by !== 'human' && ok(r.src)) dict[r.src] = r.text;
   for (const [k, t] of Object.entries(repoLocale(lang))) if (t) dict[k] = t;
-  for (const r of rows) if (r.by === 'human') dict[r.src] = r.text;
+  for (const r of rows) if (r.by === 'human' && ok(r.src)) dict[r.src] = r.text;
   const keys = Object.keys(dict).sort();
   const v = createHash('sha1').update(keys.map((k) => k + '\u0000' + dict[k]).join('\u0001')).digest('hex').slice(0, 12);
   const out = { v, dict };

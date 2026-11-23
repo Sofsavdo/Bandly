@@ -73,6 +73,7 @@ export function L(src: string, vars?: Vars): string {
   return PSEUDO ? MARK + out + MARK : out;
 }
 
+const ENGLISH_FIELDS = new Set(['en', 'example', 'listen', 'accept', 'answers', 'words', 'model', 'word', 'def', 'paragraphs', 'script', 'passage', 'transcript', 'said', 'better', 'objective']); // prompt/options/q da qavs ichidagi o'zbekcha izohlar bor — ular server lug'ati orqali (faqat aralash matn) tarjima qilinadi
 /** Ma'lumotlardagi (darslar, grammatika, so'zlar) o'zbekcha matnlarni joyida tarjima qiladi. Inglizcha misollar tegilmaydi — ular lug'atda yo'q. */
 export function deepTranslate<T>(obj: T, seen = new WeakSet<object>()): T {
   if ((lang === 'uz' && !PSEUDO) || !obj || typeof obj !== 'object' || seen.has(obj as object)) return obj;
@@ -80,6 +81,8 @@ export function deepTranslate<T>(obj: T, seen = new WeakSet<object>()): T {
   const o = obj as Record<string, unknown>;
   for (const k of Object.keys(o)) {
     const v = o[k];
+    // O'quv materiali — inglizcha maydonlar hech qachon tarjima qilinmaydi (misollar, savollar, variantlar, kalitlar, namunaviy javob, matnlar)
+    if (ENGLISH_FIELDS.has(k) || (k === 'title' && 'titleUz' in o)) continue;
     if (typeof v === 'string') {
       const key = v.replace(/\s+/g, ' ').trim();
       if (PSEUDO) { if (pseudoSet?.has(key) && !Object.isFrozen(o)) o[k] = MARK + (dict[key] ?? v) + MARK; continue; }

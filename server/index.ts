@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt, liveKickoff } from './coach';
 import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt } from './coachMemory';
 import { tzDay, tzDayStart } from './day';
@@ -63,6 +63,10 @@ const COACH_DAILY_LIMIT = () => settingValue('AI_COACH_DAILY_LIMIT');
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
+/** Saytga bot orqali kirish kodlari (xotirada, 10 daqiqa, bir martalik). Kod 128 bit tasodifiy; token faqat kodni yaratgan brauzerga beriladi. */
+const botLogins = new Map<string, { at: number; token?: string; nickname?: string }>();
+const BOT_LOGIN_TTL = 10 * 60_000;
+const sweepBotLogins = () => { const now = Date.now(); for (const [k, v] of botLogins) if (now - v.at > BOT_LOGIN_TTL) botLogins.delete(k); };
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
 ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan ustun)
@@ -197,6 +201,23 @@ const httpServer = createServer(async (req, res) => {
       claimBotPhone(db, u.id, pid); // botda ulashilgan raqam lidga o'tadi
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: u.photo_url ?? null });
     }
+    // ---- Bot orqali kirish (vidjet ishlamaganda: domen, ilova ichidagi brauzer) ----
+    if (req.method === 'POST' && url.pathname === '/api/auth/bot/start') {
+      if (!bot || !botUsername) throw new ApiError(503, 'Telegram orqali kirish hali sozlanmagan');
+      sweepBotLogins();
+      if (botLogins.size > 5000) throw new ApiError(429, 'Juda ko‘p so‘rov');
+      const code = randomBytes(16).toString('hex');
+      botLogins.set(code, { at: Date.now() });
+      return send(res, 200, { code, bot: botUsername });
+    }
+    const bl = url.pathname.match(/^\/api\/auth\/bot\/([a-f0-9]{32})$/);
+    if (req.method === 'GET' && bl) {
+      const e = botLogins.get(bl[1]!);
+      if (!e || Date.now() - e.at > BOT_LOGIN_TTL) { botLogins.delete(bl[1]!); return send(res, 410, { error: trServer(db, reqLang(req), 'Kod eskirgan — qayta urinib ko‘ring') }); }
+      if (!e.token) return send(res, 200, { pending: true });
+      botLogins.delete(bl[1]!); // bir martalik
+      return send(res, 200, { token: e.token, nickname: e.nickname });
+    }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
       revokeSession(db, String(req.headers['x-token'] ?? '')); // shu qurilma tokeni endi ishlamaydi
       return send(res, 200, { ok: true });
@@ -216,6 +237,16 @@ const httpServer = createServer(async (req, res) => {
         hasPhone: (id) => hasBotPhone(db, id) || (() => { const p = db.prepare('SELECT id FROM players WHERE tg_id = ?').get(id) as { id: number } | undefined; return !!p && hasLead(db, p.id); })(),
         savePhone: (id, phone) => saveBotPhone(db, id, phone),
         setRef: (id, ref) => setBotRef(db, id, ref), getRef: (id) => getBotRef(db, id),
+        confirmLogin: (code, from) => {
+          const e = botLogins.get(code);
+          if (!e || e.token || Date.now() - e.at > BOT_LOGIN_TTL) return false;
+          const r = loginTelegram(db, from.id, nickFrom(from));
+          const pid = byToken(db, r.token).id;
+          if (r.created) attachReferral(db, pid, getBotRef(db, from.id));
+          claimBotPhone(db, from.id, pid);
+          e.token = r.token; e.nickname = r.nickname;
+          return true;
+        },
         setRemind: (id, on) => setRemind(db, id, on),
         stats: BOT_STATS, sendPhoto: (msg) => sendWelcomePhoto(bot.token, msg),
       }).catch((e) => console.error('[bot]', (e as Error).message));
