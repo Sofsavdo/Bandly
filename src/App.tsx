@@ -57,7 +57,7 @@ const Leads = lazy(() => import('./pages/Leads'));
 const IeltsCourse = lazy(() => import('./pages/IeltsCourse'));
 const Certificates = lazy(() => import('./pages/Certificates'));
 const CertificateVerify = lazy(() => import('./pages/CertificateVerify'));
-const Loading = () => <div className="card">{L('Yuklanmoqda…')}</div>;
+const Loading = () => <div className="page-loading" role="status" aria-label={L('Yuklanmoqda…')}><div className="card skel" /><div className="card skel" /></div>; // sahifa joyini egallaydi — footer sakramaydi
 
 const routes: Record<string, () => ReactNode> = {
   '#/': () => <Home />,

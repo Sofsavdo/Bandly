@@ -1,5 +1,7 @@
 // Sertifikatlarim: olingan sertifikatlar, ko'rish, PDF/PNG yuklab olish, tekshirish havolasini nusxalash.
 import { Award, Copy, Download, Eye, FileText, X } from 'lucide-react';
+import { readCache, writeCache } from '../lib/cached';
+import { getAccount } from '../lib/account';
 import { useEffect, useState } from 'react';
 import { CertProfileCard } from '../components/CertProfileCard';
 import { claimCertificates, myCertificates, TYPE_UZ, type CertProfile } from '../lib/certificates';
@@ -29,13 +31,15 @@ export function CertPreview({ cert, onClose }: { cert: CertView; onClose: () => 
 }
 
 export default function Certificates() {
-  const [list, setList] = useState<CertView[] | null>(null);
-  const [profile, setProfile] = useState<CertProfile | null>(null);
+  const tk = getAccount()?.token ?? '';
+  const cached = readCache<{ certificates: CertView[]; profile: CertProfile | null }>('certs', tk); // keshdan darhol — sahifa titramaydi
+  const [list, setList] = useState<CertView[] | null>(cached?.certificates ?? null);
+  const [profile, setProfile] = useState<CertProfile | null>(cached?.profile ?? null);
   const [err, setErr] = useState('');
   const [open, setOpen] = useState<CertView | null>(null);
   const [busy, setBusy] = useState('');
   const [copied, setCopied] = useState('');
-  const load = () => myCertificates().then((r) => { setList(r.certificates); setProfile(r.profile); }).catch((e: Error) => setErr(e.message));
+  const load = () => myCertificates().then((r) => { setList(r.certificates); setProfile(r.profile); writeCache('certs', tk, { certificates: r.certificates, profile: r.profile }); }).catch((e: Error) => setErr(e.message));
   useEffect(() => { void load(); }, []);
   const ready = !!profile?.fullName && !!profile?.photoUrl;
   const onProfile = async (p: CertProfile) => { setProfile(p); if (p.fullName && p.photoUrl) { try { const r = await claimCertificates(); setList(r.certificates); } catch (e) { setErr((e as Error).message); } } };
@@ -47,10 +51,11 @@ export default function Certificates() {
         <p style={{ margin: '6px 0 0' }}>{L('To‘liq imtihon (L, R, W, S) uchun beriladi.')} <a href="#/mocks/full">{L('To‘liq imtihonni boshlash')}</a></p>
       </section>
       {profile && !ready && <p className="notice">{L('Sertifikat uchun profilga to‘liq ism va rasm qo‘shing.')}</p>}
-      {profile && (!ready || list?.length === 0) && <CertProfileCard onChange={(p) => void onProfile(p)} />}
       {err && <p className="notice" role="alert">{err}</p>}
-      {list === null && !err && <p className="muted">{L('Yuklanmoqda…')}</p>}
+      {list === null && !err && <div className="card skel" role="status" aria-label={L('Yuklanmoqda…')} />}
       {list && list.length === 0 && <div className="card"><p style={{ margin: 0 }}>{L('Hozircha sertifikat yo‘q.')} <a href="#/mocks/full">{L('To‘liq imtihonni topshiring')}</a></p></div>}
+      {/* Profil formasi ro'yxatdan KEYIN: ma'lumot kelganda yuqoridagi bloklar surilmaydi */}
+      {profile && (!ready || list?.length === 0) && <CertProfileCard onChange={(p) => void onProfile(p)} />}
       {list && list.length > 0 && (
         <ul className="cert-list">
           {list.map((c) => (
