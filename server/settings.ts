@@ -4,7 +4,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { ApiError } from './db';
 
-export type SettingGroup = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety';
+export type SettingGroup = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety' | 'bot';
 export interface SettingDef { key: string; group: SettingGroup; label: string; hint?: string; def: number; min: number; max: number; unit?: string }
 
 /** Ro'yxat tartibi admin panelda ko'rinish tartibi. Yorliqlar o'zbekcha (admin panel ilova tilida tarjima qiladi). */
@@ -28,6 +28,8 @@ export const SETTINGS: SettingDef[] = [
   { key: 'AI_COACH_DAILY_LIMIT', group: 'coach', label: 'Kuniga AI ustoz matnli xabarlari (bitta o‘quvchi)', def: 30, min: 0, max: 2000 },
   { key: 'LIVE_MAX_SESSION_MINUTES', group: 'coach', label: 'Bitta ovozli qo‘ng‘iroqning eng uzun davomi', def: 10, min: 1, max: 60, unit: 'min' },
   // Taklif (referal)
+  { key: 'BOT_REQUIRE_SUBSCRIBE', group: 'bot', label: 'Botda kanalga majburiy obuna', hint: '1 — yoqilgan, 0 — o‘chiq', def: 0, min: 0, max: 1 },
+  { key: 'BOT_REQUIRE_PHONE', group: 'bot', label: 'Botda telefon raqamini so‘rash', hint: '1 — yoqilgan, 0 — o‘chiq', def: 0, min: 0, max: 1 },
   { key: 'REF_XP', group: 'referral', label: 'Taklif bonusi: ikkala tomonga XP', def: 100, min: 0, max: 150 },
   { key: 'REF_PLAN_DAYS', group: 'referral', label: 'Taklif bonusi: ikkala tomonga All Access kunlari', hint: '0 — o‘chiq', def: 0, min: 0, max: 30, unit: 'day' },
   { key: 'REF_PLAN_MONTHLY_CAP', group: 'referral', label: 'Taklif qilgan bir kishiga 30 kunda ko‘pi bilan bonus', def: 3, min: 0, max: 100 },
