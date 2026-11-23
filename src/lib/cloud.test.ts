@@ -70,3 +70,11 @@ console.log('cloud.test: OK');
   for (const k of ['bandly.content.v1', 'bandly.content.v2', 'bandly.content.v3', 'bandly.i18n.langs', 'bandly.i18n.pseudo']) assert.equal(syncable(k), false, k);
   for (const k of ['bandly.lessons.v1', 'bandly.results.v1', 'bandly.mistakes.v1', 'bandly.vid']) assert.equal(syncable(k), true, k);
 }
+// Server: eski mijoz kontent keshini yuborsa ham progress saqlanadi, kesh esa tashlab yuboriladi
+{
+  const db = createDb(':memory:');
+  const { token } = join(db, 'KeshTest');
+  const r = putProgress(db, token, { 'bandly.lessons.v1': '{"a":1}', 'bandly.content.v2': 'x'.repeat(900_000), 'bandly.i18n.langs': '["uz"]' }, 0);
+  assert.equal(r.rev, 1);
+  assert.deepEqual(getProgress(db, token).data, { 'bandly.lessons.v1': '{"a":1}' });
+}

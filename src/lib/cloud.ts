@@ -47,6 +47,7 @@ export async function pushProgress(keepalive = false): Promise<void> {
   try {
     const r = await req<{ rev: number }>('PUT', { data, rev: getRev() }, keepalive);
     if (r.ok) { setRev(r.json.rev); lastSent = j; return; }
+    if (r.status === 400 || r.status === 413) { lastSent = j; return; } // server rad etdi: shu ma'lumotni har 20 s qayta yubormaymiz, o'zgarganda yana urinadi
     if (r.status !== 409) return;
     for (let i = 0; i < 3; i++) { // parallel yozuvlar bo'lsa bir necha marta urinadi
       const g = await req<Remote>('GET');
