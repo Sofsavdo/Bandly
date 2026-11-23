@@ -185,6 +185,30 @@ assert.equal(tokenFromProtocols(undefined), null);
   assert.deepEqual(transcripts, [{ pid: 9, n: 3, lang: 'uz' }], 'suhbat yozuvi (3 ta o‘quvchi navbati) xotira uchun berildi');
   http2.close(); up2.close();
 }
+// Gemini sozlashni kechiktirsa: zaxira modelga o'tadi; u ham javob bermasa — mijozga aniq xato ("o'ylayapman"da qolib ketmaydi)
+{
+  const up3 = new WebSocketServer({ port: 0 });
+  const seen: string[] = [];
+  up3.on('connection', (ws) => ws.on('message', (raw) => { const m = JSON.parse(raw.toString()); if (m.setup) { seen.push(m.setup.model); if (/fb-model/.test(m.setup.model) && process.env.__FB_OK === '1') ws.send(JSON.stringify({ setupComplete: {} })); } }));
+  await new Promise((r) => up3.once('listening', r));
+  const logs: string[] = [];
+  const mk = (fallbackModel: string | null) => { const h = createServer((_q, s) => { s.end(); }); attachLive(h, {
+    db, cfg: { ...cfg0, fallbackModel, setupTimeoutMs: 150, url: `ws://127.0.0.1:${(up3.address() as { port: number }).port}` },
+    auth: () => ({ id: 11, staff: true, subscriberLeftSec: 0 }), prompt: () => 'p', native: () => 'Uzbek', onEnd: () => undefined, log: (m) => logs.push(m),
+  }); return h; };
+  const run = async (h: ReturnType<typeof createServer>) => { await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
+    const ws = new WebSocket(`ws://127.0.0.1:${(h.address() as { port: number }).port}/api/ai/live`, ['sellzen.v1', 'tk.x']);
+    const m = await new Promise<{ type: string; code?: number }>((r) => ws.on('message', (d, bin) => { if (!bin) r(JSON.parse(d.toString())); }));
+    ws.close(); h.close(); return m; };
+  const t0 = Date.now();
+  const r1 = await run(mk(null));
+  assert.equal(r1.type, 'error'); assert.equal(r1.code, 504, 'sozlash kechikdi — aniq xato'); assert.ok(Date.now() - t0 < 2000, 'tez qaytadi');
+  assert.ok(logs.some((l) => /setup-timeout/.test(l)));
+  process.env.__FB_OK = '1'; seen.length = 0;
+  const r2 = await run(mk('models/fb-model'));
+  assert.equal(r2.type, 'ready', 'zaxira model bilan ulandi'); assert.equal(seen.length, 2, 'avval asosiy, keyin zaxira model');
+  delete process.env.__FB_OK; up3.close();
+}
 http.close(); upstream.close();
 // Bepul foydalanuvchilar uchun platformaning kunlik umumiy chegarasi (xarajat nazorati)
 {

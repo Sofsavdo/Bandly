@@ -41,7 +41,19 @@ export function downsample(input: Float32Array, fromRate: number, carry: number[
 const rms = (f: Float32Array): number => { let s = 0; for (let i = 0; i < f.length; i++) s += f[i]! * f[i]!; return Math.sqrt(s / Math.max(1, f.length)); };
 
 export async function startLive(o: { token: string; adult: boolean; level: string | null; lang: string; style?: number }, h: LiveHandlers): Promise<LiveCall> {
-  const { stream, ctx } = await micContext();
+  // Server (va Gemini) bilan ulanish mikrofon tayyorlanishi bilan PARALLEL boshlanadi — kutish vaqti qisqaradi.
+  // Mikrofon tayyor bo'lguncha kelgan xabarlar navbatda turadi va keyin qayta ishlanadi.
+  const proto0 = location.protocol === 'https:' ? 'wss' : 'ws';
+  const q0 = new URLSearchParams({ adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang, style: String(o.style ?? (o.adult ? 2 : 0)) });
+  const ws = new WebSocket(`${proto0}://${location.host}/api/ai/live?${q0}`, ['sellzen.v1', `tk.${o.token}`]);
+  ws.binaryType = 'arraybuffer';
+  const early: MessageEvent[] = [];
+  let earlyClose = false;
+  ws.onmessage = (e) => { early.push(e); };
+  ws.onclose = () => { earlyClose = true; };
+  let mic: Awaited<ReturnType<typeof micContext>>;
+  try { mic = await micContext(); } catch (e) { try { ws.close(); } catch { /* */ } throw e; }
+  const { stream, ctx } = mic;
   if (ctx.state === 'suspended') await ctx.resume().catch(() => undefined);
   if (!loaded.has(ctx)) { await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET], { type: 'application/javascript' }))); loaded.add(ctx); }
   const src = ctx.createMediaStreamSource(stream);
@@ -50,11 +62,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   src.connect(node); node.connect(mute); mute.connect(ctx.destination);
   const out = ctx.createGain(); out.connect(ctx.destination);
 
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   // Token URL'da emas (proksi loglariga tushmasin) — subprotocol sarlavhasida (server/live.ts tokenFromProtocols)
-  const q = new URLSearchParams({ adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang, style: String(o.style ?? (o.adult ? 2 : 0)) });
-  const ws = new WebSocket(`${proto}://${location.host}/api/ai/live?${q}`, ['sellzen.v1', `tk.${o.token}`]);
-  ws.binaryType = 'arraybuffer';
 
   let ready = false, ended = false, speaking = false, nextAt = 0, floor = 0.01;
   const playing = new Set<AudioBufferSourceNode>();
@@ -110,6 +118,10 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   };
   ws.onerror = () => { if (!ended) h.onError(L('Aloqa yo‘q'), !ready); };
   ws.onclose = () => { cleanup(); if (!ended) { ended = true; h.onClosed(); } };
+  // Mikrofon tayyorlanayotganda kelgan xabarlar (ready, salomlashish ovozi) — endi tartib bilan qayta ishlanadi
+  const onMsg = ws.onmessage as (e: MessageEvent) => void;
+  for (const e of early.splice(0)) onMsg(e);
+  if (earlyClose && !ended) { cleanup(); ended = true; h.onClosed(); }
 
   function cleanup() {
     stopPlayback();
