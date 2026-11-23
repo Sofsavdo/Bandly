@@ -1430,3 +1430,5 @@ main.container { min-height: 100vh; }
 .page-head .tabs { margin-inline: -4px; padding: 2px 16px 2px 4px; }
 .page-head .tabs .btn { flex: none; min-height: 36px; padding: 0 14px; font-size: 13.5px; }
 .tg-join .tg-open { margin-top: 10px; }
+.mission-say { margin: 0 0 4px; padding: 12px 14px; border-radius: 16px; background: var(--lilac-50); font-size: 15px; line-height: 1.45; }
+.mission-say b { color: var(--brand); }

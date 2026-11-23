@@ -5,7 +5,6 @@ import type { Lesson, Unit } from '../content/lessons/types';
 import { listenRound, pairsRound, reaction, type ListenItem, type PairsRound } from '../lib/lessonGame';
 import { say, stopSpeaking } from '../lib/speech';
 import { sfx } from '../lib/fx';
-import { AiAvatar } from './AiAvatar';
 import { L } from '../i18n';
 
 const playEn = (en: string, audio?: string) => { stopSpeaking(); if (audio) void new Audio(audio).play().catch(() => undefined); else void say(en, { cancelled: false }); };
@@ -14,13 +13,7 @@ const playEn = (en: string, audio?: string) => { stopSpeaking(); if (audio) void
 export function MissionIntro({ unit, lesson, steps, onStart }: { unit: Unit; lesson: Lesson; steps: string[]; onStart: () => void }) {
   return (
     <section className="card mission">
-      <div className="mission-top">
-        <AiAvatar phase="idle" emotion="sarcastic" size={96} />
-        <div className="bubble-say">
-          <small>{L('Sellzen')}</small>
-          <p>{L('Missiya: {0}', [unit.situationUz])}</p>
-        </div>
-      </div>
+      <p className="mission-say"><b>{L('Missiya:')}</b> {unit.situationUz}</p>
       <h2 style={{ margin: '12px 0 4px' }}><Target size={20} /> {lesson.titleUz}</h2>
       <p className="muted" style={{ margin: 0 }}>{lesson.objectiveUz}</p>
       <ol className="mission-steps">{steps.map((s, i) => <li key={s}><b>{i + 1}</b>{s}</li>)}</ol>
