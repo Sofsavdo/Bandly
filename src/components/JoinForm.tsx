@@ -33,7 +33,11 @@ function TelegramJoin({ bot, text, onJoined }: { bot: string; text?: string; onJ
       {text && <p>{text}</p>}
       {inTelegram()
         ? <button className="btn primary" disabled={busy} onClick={() => void retry()}>{busy ? L('Ulanmoqda…') : L('Kirish')}</button>
-        : <div ref={box} className="tg-widget" aria-label={L('Telegram orqali kirish tugmasi')} />}
+        : <>
+            <div ref={box} className="tg-widget" aria-label={L('Telegram orqali kirish tugmasi')} />
+            {/* Zaxira yo'l: vidjet ishlamasa (domen sozlanmagan, ilova ichidagi brauzer) — botni ochib, ilovaga u yerdan kiriladi */}
+            <a className="btn sm tg-open" href={`https://t.me/${bot}`} target="_blank" rel="noreferrer">{L('Telegram ilovasida ochish')}</a>
+          </>}
       <p className="muted tg-note">{L('Faqat ismingiz va Telegram ID olinadi.')}</p>
       {err && <p className="notice">{err}</p>}
     </div>

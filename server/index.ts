@@ -659,6 +659,9 @@ const httpServer = createServer(async (req, res) => {
       return createReadStream(full).pipe(res);
     }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true });
+    // Bitta domen (SEO va Telegram kirish vidjeti uchun): www.sellzen.uz → sellzen.uz (301). API bunga kirmaydi.
+    const host = String(req.headers.host ?? '');
+    if (/^www\./i.test(host) && (req.method === 'GET' || req.method === 'HEAD') && !url.pathname.startsWith('/api/')) { res.writeHead(301, { location: `https://${host.slice(4)}${req.url ?? '/'}` }); return void res.end(); }
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
