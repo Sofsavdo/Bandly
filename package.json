@@ -13,6 +13,7 @@
     "backup": "tsx scripts/backup/snapshot.ts",
     "restore:check": "tsx scripts/backup/restore-check.ts",
     "test:backup": "tsx scripts/backup/backup.test.ts",
+    "test:e2e": "npm run build && tsx e2e/run.ts",
     "test:ci": "npm run i18n:check && npm run build && npm test && npm run test:backup",
     "i18n:extract": "tsx scripts/i18n/extract.ts",
     "i18n:wrap": "tsx scripts/i18n/codemod.ts",
