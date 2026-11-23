@@ -26,10 +26,10 @@ export default function GamesHub() {
       <div className="card page-head with-illo t-pink">
         <h2>{L('So‘z o‘yinlari')}</h2><Illo kind="star" size={124} />
         <p>{L('Bepul va cheksiz.')}</p>
-        <div className="row pills-row">
-          <span className="pill">{L('Yangi')} {fresh}</span>
-          <span className="pill">{L('Takrorlash')} {due}</span>
-          <span className="pill">{L('Yodlangan')} {mastered}</span>
+        <div className="stat-pills">
+          <span><b>{fresh}</b>{L('Yangi')}</span>
+          <span><b>{due}</b>{L('Takrorlash')}</span>
+          <span><b>{mastered}</b>{L('Yodlangan')}</span>
         </div>
       </div>
       <div className="game-list">

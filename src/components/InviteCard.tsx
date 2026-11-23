@@ -1,7 +1,8 @@
 // Profil: do'stlarni taklif qilish — shaxsiy havola (sayt va Telegram), ulashish, statistika.
 import { Copy, Gift, Share2 } from 'lucide-react';
 import { trackUser } from '../lib/track';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useCached } from '../lib/cached';
 import { getAccount } from '../lib/account';
 import { L } from '../i18n';
 
@@ -9,13 +10,10 @@ interface Ref { code: string; invited: number; activated: number; xpEach: number
 
 export function InviteCard() {
   const acc = getAccount();
-  const [r, setR] = useState<Ref | null>(null);
+  const [r] = useCached<Ref>('referral', acc?.token ?? '', acc ? () => fetch('/api/referral', { headers: { 'x-token': acc.token } }).then((x) => (x.ok ? (x.json() as Promise<Ref>) : null)) : null);
   const [msg, setMsg] = useState('');
-  useEffect(() => {
-    if (!acc) return;
-    void fetch('/api/referral', { headers: { 'x-token': acc.token } }).then((x) => (x.ok ? x.json() : null)).then((j: Ref | null) => setR(j)).catch(() => setR(null));
-  }, [acc?.token]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (!acc || !r) return null;
+  if (!acc) return null;
+  if (!r) return <section className="card invite-skel" aria-hidden="true" />; // birinchi ochilish: joy oldindan band
   const link = r.bot ? `https://t.me/${r.bot}?start=ref_${r.code}` : `${location.origin}/?ref=${r.code}`;
   const text = L('Men Sellzen’da ingliz tilini o‘rganyapman — sen ham qo‘shil:');
   const share = async () => {

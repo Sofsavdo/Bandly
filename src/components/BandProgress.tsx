@@ -2,6 +2,7 @@
 // Ma'lumot serverdan (hisob bo'lsa); hisobsiz — qurilmadagi imtihonlar tarixi.
 import { Award, CalendarClock, ClipboardCheck, Trash2, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { readCache, writeCache } from '../lib/cached';
 import { getAccount } from '../lib/account';
 import { addOfficial, BAND_STEPS, fetchBands, removeBand, syncLocalMocks, type BandData, type BandRecord } from '../lib/bands';
 import { loadMocks } from '../lib/history';
@@ -21,14 +22,14 @@ function localData(): BandData {
 
 export function BandProgress({ compact = false }: { compact?: boolean }) {
   const acct = getAccount();
-  const [data, setData] = useState<BandData | null>(acct ? null : localData());
+  const [data, setData] = useState<BandData | null>(() => readCache<BandData>('bands', acct?.token ?? '') ?? localData()); // darhol (kesh yoki qurilmadagi natijalar), keyin server
   const [err, setErr] = useState('');
   useEffect(() => {
     if (!acct) return;
     let alive = true;
     fetchBands().then((d) => {
       if (!alive) return;
-      setData(d);
+      setData(d); writeCache('bands', acct.token, d);
       if (loadMocks().some((m) => !d.records.some((r) => r.source === 'mock' && r.at === m.at))) { syncLocalMocks(d.records); setTimeout(() => { void fetchBands().then((x) => alive && setData(x)).catch(() => undefined); }, 1500); }
     }).catch(() => { if (alive) setData(localData()); });
     return () => { alive = false; };

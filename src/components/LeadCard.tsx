@@ -1,18 +1,20 @@
 // Ixtiyoriy telefon raqami (rozilik bilan): mutaxassis rejani va obunani tushuntirib berishi uchun. Telegram orqali
 // tasdiqlangan raqamni ulashish yoki qo'lda yozish. Raqam faqat Sellzen jamoasi qo'ng'irog'i uchun ishlatiladi.
 import { Phone, Send } from 'lucide-react';
+import { readCache, writeCache } from '../lib/cached';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { loadAnswers } from '../lib/onboarding';
 import { L } from '../i18n';
 
 export function LeadCard({ goal, level, minutes }: { goal?: string; level?: string; minutes?: number }) {
-  const [state, setState] = useState<{ has: boolean; bot: string | null } | null>(null);
+  const token0 = getAccount()?.token ?? '';
+  const [state, setState] = useState<{ has: boolean; bot: string | null } | null>(() => readCache('lead', token0)); // keshdan darhol — blok kechikib qo'shilmaydi
   const [phone, setPhone] = useState('+998 ');
   const [ok, setOk] = useState(false);
   const [msg, setMsg] = useState('');
   const token = getAccount()?.token ?? '';
-  useEffect(() => { if (token) void fetch('/api/lead', { headers: { 'x-token': token } }).then((r) => (r.ok ? r.json() : null)).then((j) => setState(j)).catch(() => undefined); }, [token]);
+  useEffect(() => { if (token) void fetch('/api/lead', { headers: { 'x-token': token } }).then((r) => (r.ok ? r.json() : null)).then((j) => { if (j) { setState(j); writeCache('lead', token, j); } }).catch(() => undefined); }, [token]);
   if (!token || !state || state.has) return null;
   if (msg === 'saved') return <section className="card lead-card"><p className="ok" style={{ margin: 0 }}>{L('Rahmat! Mutaxassisimiz tez orada bog‘lanadi.')}</p></section>;
   const save = async () => {

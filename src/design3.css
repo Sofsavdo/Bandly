@@ -1391,3 +1391,26 @@ details.card[open] > summary { margin-bottom: 12px; }
 /* Telefonda sarlavha kartochkalaridagi bezak rasm matn ustiga tushib, chetda kesilib qolardi — yashiriladi */
 @media (max-width: 560px) { .card.page-head.with-illo .illo, .card.page-head .illo { display: none; } .card.page-head.with-illo { padding-right: 16px; } }
 @media (max-width: 560px) { .card.hero > .illo { display: none; } }
+/* Yuklanish paytida joy band qilinadi (sahifa titramasin) */
+.page-loading { min-height: 100vh; display: grid; align-content: start; gap: 14px; }
+.card.skel { min-height: 140px; background: linear-gradient(100deg, var(--surface) 30%, var(--surface-2) 50%, var(--surface) 70%) 0 0 / 300% 100%; animation: skel 1.4s ease-in-out infinite; }
+.card.skel + .card.skel { min-height: 260px; }
+.invite-skel { min-height: 250px; }
+@keyframes skel { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .card.skel { animation: none; } }
+/* O'yinlar: so'z statistikasi — uchta teng, ixcham katak (katta tugmalar 2+1 qatorga tushib qolmasin) */
+.stat-pills { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 420px; }
+.stat-pills span { display: grid; justify-items: center; gap: 1px; padding: 8px 4px; border-radius: 14px; background: color-mix(in srgb, var(--surface) 85%, transparent); font-size: 12px; font-weight: 600; color: var(--ink-2); text-align: center; min-width: 0; overflow-wrap: anywhere; }
+.stat-pills b { font-family: var(--display); font-size: 18px; color: var(--ink); line-height: 1.1; }
+/* Profil: halqa butunligicha kichrayadi (raqam markazda qoladi); ism fon chegarasiga tushmaydi */
+@media (max-width: 640px) {
+  .ptile svg { width: auto !important; height: auto !important; }
+  .ptile .pring { width: 46px !important; height: 46px !important; }
+  .ptile .pring > svg { width: 100% !important; height: 100% !important; }
+  .ptile .pring b { font-size: 15px; }
+  .prof-head { padding-top: 18px !important; background: linear-gradient(180deg, var(--lilac-50) 0 52px, var(--surface) 52px) !important; }
+  .prof-head h2 { margin-top: 4px; font-size: 20px; }
+  .prof-head p { font-size: 13.5px; }
+}
+/* Footer doim birinchi ekrandan pastda — kontent yuklanib uzayganda footer ekranga kirib-chiqib sakramasin */
+main.container { min-height: 100vh; }
