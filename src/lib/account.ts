@@ -66,6 +66,27 @@ export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown)
   return r;
 }
 
+/** Bot orqali kirish: kod olinadi, bot ochiladi (/start login_<kod>), foydalanuvchi botda tasdiqlaguncha har 2 s tekshiriladi.
+ *  open — bot havolasini ochish (yangi oyna/ilova). signal bilan to'xtatiladi. */
+export async function loginViaBot(open: (url: string) => void, signal: { cancelled: boolean }): Promise<Account> {
+  const s = await call<{ code: string; bot: string }>('/api/auth/bot/start', { method: 'POST' });
+  open(`https://t.me/${s.bot}?start=login_${s.code}`);
+  const until = Date.now() + 10 * 60_000;
+  while (!signal.cancelled && Date.now() < until) {
+    await new Promise((r) => setTimeout(r, 2000));
+    if (signal.cancelled) break;
+    let r: { pending?: boolean; token?: string; nickname?: string };
+    try { r = await call(`/api/auth/bot/${s.code}`); } catch (e) { if (/eskirgan|expired|410/i.test((e as Error).message)) throw e; continue; } // tarmoq uzilishi — qayta urinamiz
+    if (r.token && r.nickname) {
+      setAccount({ token: r.token, nickname: r.nickname, tg: true });
+      await onLogin();
+      void syncNow();
+      return getAccount()!;
+    }
+  }
+  throw new Error(L('Kirish tasdiqlanmadi — qayta urinib ko‘ring.'));
+}
+
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try { res = await fetch(path, init); } catch { throw new Error(L('Server bilan aloqa yo‘q')); }

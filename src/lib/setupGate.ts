@@ -6,10 +6,11 @@ import { getProfile } from './store';
 
 const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|leads|groups|welcome|login|certificates|duel\/)/;
 
-/** Mehmon (kirmagan) faqat landing sahifasini ko'radi (bosh sahifa / #/welcome: imkoniyatlar, narxlar, savollar).
- *  Daraja testi, narxlar sahifasi, duel taklifi va qolgan hamma narsa — ro'yxatdan o'tgandan keyin (qaytish manzili saqlanadi):
- *  shunda har bir natija (daraja, mock bali) darhol hisobga yoziladi va o'quvchi birinchi kirishdayoq darajasi va maqsadini biladi. */
-const PUBLIC = /^#\/(welcome)?$/;
+/** Mehmon (kirmagan) bo'limlarni KO'RA oladi: bosh sahifa, darslar xaritasi, IELTS kursi ro'yxati, Imtihon va Mock Arena ro'yxatlari,
+ *  o'yinlar ro'yxati, tariflar, bepul vositalar va duel taklifi. Kirish faqat HARAKATda so'raladi: darsni ochish, AI ustoz, test topshirish,
+ *  o'yin o'ynash, Writing/Speaking, daraja testi, profil va boshqalar (qaytish manzili saqlanadi) — natija darhol hisobga yoziladi.
+ *  (Egasi qarori 2026-11-23: oldingi "mehmon faqat landing" siyosati o'rniga.) */
+const PUBLIC = /^#\/(welcome|learn|ielts|exam|mocks|mocks\/(reading|listening)|games|pricing|tools|duel\/[A-Za-z0-9]{4,12})?$/;
 const LOGIN = /^#\/login(\?|$)/;
 const path = (hash: string): string => hash.split('?')[0] || '#/';
 export const needsLogin = (hash: string, account: boolean): boolean => !account && !PUBLIC.test(path(hash)) && !LOGIN.test(hash);

@@ -95,3 +95,23 @@ console.error = err;
   assert.ok(JSON.stringify(h2.calls[0]!.b).includes('request_contact'));
 }
 console.log('botFlow: OK');
+// Saytga bot orqali kirish: /start login_<kod> → tasdiq tugmasi → bosilganda confirmLogin, xabar tahrirlanadi; obuna talab qilinmaydi
+{
+  const h = harness();
+  const code = 'a'.repeat(32);
+  const got: string[] = [];
+  h.d.confirmLogin = (c, from) => { got.push(`${c}:${from.id}`); return c === code; };
+  await handleBot(msg(`/start login_${code}`), h.d);
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0]!.b.reply_markup.inline_keyboard[0][0].callback_data, `login:${code}`);
+  assert.equal(h.st.refs.size, 0);
+  h.calls.length = 0;
+  await handleBot({ callback_query: { id: 'q9', from: { id: 5, first_name: 'Ali' }, data: `login:${code}`, message: { message_id: 3, chat: { id: 5 } } } }, h.d);
+  assert.deepEqual(got, [`${code}:5`]);
+  assert.deepEqual(h.calls.map((c) => c.m), ['answerCallbackQuery', 'editMessageText']);
+  assert.match(h.calls[1]!.b.text, /Saytga kirdingiz/);
+  // eskirgan kod
+  h.calls.length = 0;
+  await handleBot({ callback_query: { id: 'q10', from: { id: 5 }, data: `login:${'b'.repeat(32)}`, message: { message_id: 3, chat: { id: 5 } } } }, h.d);
+  assert.match(h.calls[0]!.b.text, /eskirgan/);
+}

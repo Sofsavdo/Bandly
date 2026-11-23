@@ -19,6 +19,8 @@ export interface BotDeps {
   requirePhone?: () => boolean;
   savePhone: (tgId: number, phone: string) => void;
   setRef: (tgId: number, ref: string) => void;
+  /** Saytga bot orqali kirish: kodni shu Telegram foydalanuvchisiga bog'laydi (true — kod yaroqli va tasdiqlandi) */
+  confirmLogin?: (code: string, from: { id: number; first_name?: string; last_name?: string; username?: string }) => boolean;
   getRef: (tgId: number) => string | undefined;
   setRemind: (tgId: number, on: boolean) => boolean;
   channel?: string;
@@ -126,6 +128,13 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
       if ((d.requirePhone?.() ?? true) && !d.hasPhone(q.from.id)) { await d.api('sendMessage', phoneMsg(chatId, tr)); return; }
       await welcome(d, chatId, q.from, tr); return;
     }
+    const lg = q.data?.match(/^login:([a-f0-9]{32})$/);
+    if (lg && d.confirmLogin) {
+      const ok = d.confirmLogin(lg[1]!, q.from);
+      await d.api('answerCallbackQuery', { callback_query_id: q.id, text: ok ? tr('Tasdiqlandi!') : tr('Kod eskirgan — saytda qayta urinib ko‘ring.'), show_alert: !ok });
+      if (q.message?.message_id) await d.api('editMessageText', { chat_id: chatId, message_id: q.message.message_id, text: ok ? `✅ ${tr('Saytga kirdingiz. Brauzerga qayting — sahifa o‘zi yangilanadi.')}` : `⚠️ ${tr('Kod eskirgan — saytda qayta urinib ko‘ring.')}` }).catch(() => undefined);
+      return;
+    }
     if (q.data === 'help') { await d.api('answerCallbackQuery', { callback_query_id: q.id }); await d.api('sendMessage', helpMsg(chatId, tr)); return; }
     await d.api('answerCallbackQuery', { callback_query_id: q.id });
     return;
@@ -150,6 +159,12 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
     return;
   }
   if (name === 'help') { await d.api('sendMessage', helpMsg(chatId, tr)); return; }
+  // Saytga kirish: /start login_<kod> — tasdiqlash tugmasi (begona havola orqali birov hisobiga kirib olinmasin)
+  const login = name === 'start' ? cmd?.[2]?.match(/^login_([a-f0-9]{32})$/)?.[1] : undefined;
+  if (login && d.confirmLogin) {
+    await d.api('sendMessage', { chat_id: chatId, text: tr('Sellzen saytiga kirishni tasdiqlaysizmi? Agar saytda kirish tugmasini o‘zingiz bosmagan bo‘lsangiz, tasdiqlamang.'), reply_markup: { inline_keyboard: [[{ text: `✅ ${tr('Ha, kirish')}`, callback_data: `login:${login}` }]] } });
+    return;
+  }
   if (name === 'start') { const ref = cmd?.[2]?.match(/^ref_([a-z2-9]{6,10})$/)?.[1]; if (ref) d.setRef(from.id, ref); }
   if (!(await gate(d, chatId, from, tr))) return;
   if (name && ROUTES[name] && name !== 'app') {
