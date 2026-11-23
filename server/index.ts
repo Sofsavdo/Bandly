@@ -14,7 +14,7 @@ import { listeningTests } from '../src/content/listeningTests';
 import { readingTests } from '../src/content/readingTests';
 import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
-import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, reconcile, recent, statusFor } from './payments';
+import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, callbackOutcome, reconcile, recent, statusFor } from './payments';
 import { demoMode, PERIODS, PLAN_IDS, priceFor } from './pricing';
 import { addCall, callLeft, callMonthSeconds, ttsSeconds } from './callMinutes';
 import { ensureSettings, listSettings, publicLimits, settingValue, updateSettings } from './settings';
@@ -632,10 +632,11 @@ const httpServer = createServer(async (req, res) => {
       const p = findByCallback(db, f);
       if (url.pathname.endsWith('/prepare')) { if (p) markPrepared(db, p.id, f.payment_id); return send(res, 200, { result: 'ok' }); }
       if (!p) return send(res, 200, { result: 'ok' }); // qayta urinishni to'xtatish uchun 200
-      const paid = f.status === 'paid';
+      const outcome = callbackOutcome(f.status);
       const amt = Math.round(Number(f.amount));
       console.log('Hamyon complete: order=%s status=%s amount=%s', p.id, f.status, f.amount);
-      try { applyResult(db, p.id, paid ? 'paid' : 'cancel', { paidAmount: paid ? (Number.isFinite(amt) ? amt : -1) : undefined, reason: f.reason }); } catch (e) { console.error(e); return send(res, 500, { error: 'retry' }); }
+      if (!outcome) return send(res, 200, { result: 'ok' }); // noma'lum holat: to'lov ochiq qoladi (status so'rovi/reconcile hal qiladi)
+      try { applyResult(db, p.id, outcome, { paidAmount: outcome === 'paid' ? (Number.isFinite(amt) ? amt : -1) : undefined, reason: f.reason }); } catch (e) { console.error(e); return send(res, 500, { error: 'retry' }); }
       return send(res, 200, { result: 'ok' });
     }
     // Admin akkaunti (rol 'admin') ham metodist rolini bera oladi

@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { randomBytes } from 'node:crypto';
 import type { TrackId } from '../src/lib/types';
-import { ApiError, byToken } from './db';
+import { ApiError, byToken, tx } from './db';
 import { HamyonError, type HamyonApi } from './hamyon';
 import { PERIODS, isPlan, priceFor, tracksOf } from './pricing';
 
@@ -78,11 +78,14 @@ export function applyResult(db: DatabaseSync, id: string, status: 'paid' | 'canc
       db.prepare("UPDATE payments SET note = ? WHERE id = ?").run(`amount_mismatch: ${opts.paidAmount} != ${expected}`, id);
       return 'mismatch';
     }
-    // Faqat ochiq (yoki kech kelgan: bekor/muddati o'tgan) to'lov yetkaziladi
-    const r = db.prepare(`UPDATE payments SET status = 'success', paid_at = ? WHERE id = ? AND status IN (${OPEN_SQL}, 'cancelled', 'expired')`).run(now, id);
-    if (Number(r.changes) === 0) return 'already';
-    for (const t of tracksOf(p.track)) extend(db, p.player_id, t, p.days, now); // tarif bir nechta bo'limni ochadi
-    return 'delivered';
+    // Faqat ochiq (yoki kech kelgan: bekor/muddati o'tgan) to'lov yetkaziladi. Holat va obuna BITTA tranzaksiyada:
+    // obuna yozilmay qolsa, to'lov ham 'success' bo'lmaydi va Hamyonning qayta urinishi (yoki reconcile) uni yetkazadi.
+    return tx(db, () => {
+      const r = db.prepare(`UPDATE payments SET status = 'success', paid_at = ? WHERE id = ? AND status IN (${OPEN_SQL}, 'cancelled', 'expired')`).run(now, id);
+      if (Number(r.changes) === 0) return 'already' as const;
+      for (const t of tracksOf(p.track)) extend(db, p.player_id, t, p.days, now); // tarif bir nechta bo'limni ochadi
+      return 'delivered' as const;
+    });
   }
   const r = db.prepare(`UPDATE payments SET status = 'cancelled', note = ? WHERE id = ? AND status IN (${OPEN_SQL})`).run(opts.reason ?? '', id);
   return Number(r.changes) ? 'cancelled' : 'already';
@@ -135,6 +138,15 @@ export async function reconcile(db: DatabaseSync, api: HamyonApi, shopId: string
   return n;
 }
 
+/** Hamyon complete callbackidagi status: faqat aniq «paid» yetkaziladi, faqat aniq bekor qilish yopadi; boshqasi (pending,
+ *  processing, bo'sh, noma'lum) e'tiborsiz qoldiriladi — to'lov ochiq turadi va status so'rovi/reconcile uni keyin hal qiladi. */
+export function callbackOutcome(status: string | undefined): 'paid' | 'cancel' | null {
+  const s = String(status ?? '').trim().toLowerCase();
+  if (s === 'paid') return 'paid';
+  if (s === 'cancel' || s === 'canceled' || s === 'cancelled') return 'cancel';
+  return null;
+}
+
 /** Hamyon callback: to'lovni order_id (bizning id) yoki Hamyon payment_id bo'yicha topadi. */
 export function findByCallback(db: DatabaseSync, form: Record<string, string>): PaymentRow | undefined {
   let p: PaymentRow | undefined;
@@ -154,9 +166,7 @@ export function grant(db: DatabaseSync, nickname: string, track: string, days: n
   if (!Number.isFinite(days) || days < 1 || days > 400) throw new ApiError(400, 'Muddat 1–400 kun');
   const pl = db.prepare('SELECT id FROM players WHERE lower(nickname) = lower(?)').get(nickname) as { id: number } | undefined;
   if (!pl) throw new ApiError(404, 'Foydalanuvchi topilmadi');
-  let until = 0;
-  for (const t of tracksOf(track)) until = Math.max(until, extend(db, pl.id, t, Math.floor(days), now));
-  return until;
+  return tx(db, () => { let until = 0; for (const t of tracksOf(track)) until = Math.max(until, extend(db, pl.id, t, Math.floor(days), now)); return until; });
 }
 
 export const recent = (db: DatabaseSync, limit = 100) => db.prepare('SELECT p.id, pl.nickname, p.track, p.days, p.amount, p.hamyon_amount, p.status, p.note, p.error, p.created_at, p.paid_at FROM payments p JOIN players pl ON pl.id = p.player_id ORDER BY p.created_at DESC LIMIT ?').all(limit);

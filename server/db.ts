@@ -196,6 +196,15 @@ export function loginTelegram(db: DatabaseSync, tgId: number, nick: string, link
   throw new ApiError(409, 'Hisob ochib bo‘lmadi, qayta urinib ko‘ring');
 }
 
+/** Bir nechta yozuvni bitta butun amal qilib bajaradi: xato bo'lsa hammasi bekor qilinadi (yarim yozilgan holat qolmaydi).
+ *  SAVEPOINT ishlatiladi — ichma-ich chaqirilsa ham, ochiq tranzaksiya ichida ham xavfsiz. */
+let txSeq = 0;
+export function tx<T>(db: DatabaseSync, fn: () => T): T {
+  const sp = `sz_tx_${++txSeq}`;
+  db.exec(`SAVEPOINT ${sp}`);
+  try { const r = fn(); db.exec(`RELEASE ${sp}`); return r; } catch (e) { db.exec(`ROLLBACK TO ${sp}`); db.exec(`RELEASE ${sp}`); throw e; }
+}
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
