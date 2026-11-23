@@ -10,8 +10,8 @@ assert.equal(setupRoute('#/start', st(true, false, null)), null, 'savolnomaning 
 assert.equal(setupRoute('#/placement', st(true, true, null)), null);
 assert.equal(setupRoute('#/pricing', st(true, false, null)), null, 'to‘lov sahifasi ochiq');
 // Mehmon bo'limlarni ko'radi; kirish faqat harakatda (dars, AI ustoz, test, o'yin, profil...) — login sahifasiga, qaytish manzili bilan
-for (const h of ['', '#/', '#/welcome', '#/learn', '#/ielts', '#/exam', '#/mocks', '#/mocks/reading', '#/mocks/listening', '#/games', '#/pricing', '#/tools', '#/duel/ABCD', '#/duel/abc123']) assert.equal(authRoute(h, false), null, `mehmon ko‘radi: ${h || '(bo‘sh)'}`);
-for (const h of ['#/placement', '#/start', '#/mocks/full', '#/mocks/reading/reading-11', '#/learn/a1-u1-l1', '#/exam/writing', '#/exam/speaking', '#/coach', '#/profile', '#/results', '#/games/pairs', '#/duel', '#/duel/AB', '#/duel/ABCD/x', '#/certificates', '#/grammar', '#/practice', '#/mistakes', '#/league'])
+for (const h of ['', '#/', '#/welcome', '#/placement', '#/learn', '#/ielts', '#/exam', '#/mocks', '#/mocks/reading', '#/mocks/listening', '#/games', '#/pricing', '#/tools', '#/duel/ABCD', '#/duel/abc123']) assert.equal(authRoute(h, false), null, `mehmon ko‘radi: ${h || '(bo‘sh)'}`);
+for (const h of ['#/start', '#/mocks/full', '#/mocks/reading/reading-11', '#/learn/a1-u1-l1', '#/exam/writing', '#/exam/speaking', '#/coach', '#/profile', '#/results', '#/games/pairs', '#/duel', '#/duel/AB', '#/duel/ABCD/x', '#/certificates', '#/grammar', '#/practice', '#/mistakes', '#/league'])
   assert.equal(authRoute(h, false), `#/login?next=${encodeURIComponent(h)}`, `mehmonga yopiq: ${h}`);
 assert.equal(authRoute('#/login?next=%23%2Fmocks', false), null, 'login sahifasining o‘zi ochiq');
 assert.equal(authRoute('#/login?next=%23%2Fmocks%2Freading%2Freading-5', true), '#/mocks/reading/reading-5', 'kirgandan keyin so‘ralgan sahifa');
