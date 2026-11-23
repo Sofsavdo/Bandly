@@ -35,11 +35,23 @@ const fakeHamyon = createServer(async (req, res) => {
 await new Promise<void>((r) => fakeHamyon.listen(0, '127.0.0.1', r));
 const hamyonPort = (fakeHamyon.address() as { port: number }).port;
 
+// ---- Soxta AI provayder (OpenAI formati): 503 / JSON emas / bo'sh — haqiqiy AI va xarajat yo'q ----
+const aiMode = { mode: '503' as '503' | 'garbage' | 'empty', calls: 0 };
+const fakeAi = createServer(async (req, res) => {
+  await body(req); aiMode.calls++;
+  if (aiMode.mode === '503') { res.statusCode = 503; res.setHeader('content-type', 'application/json'); return res.end(JSON.stringify({ error: { message: 'overloaded' } })); }
+  if (aiMode.mode === 'garbage') { res.setHeader('content-type', 'text/html'); return res.end('<html>gateway</html>'); }
+  res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ choices: [{ message: { content: '' } }] }));
+});
+await new Promise<void>((r) => fakeAi.listen(0, '127.0.0.1', r));
+const aiPort = (fakeAi.address() as { port: number }).port;
+
 // ---- Server: maxfiy o'zgaruvchilar meros qilib olinmaydi ----
 const PORT = 32000 + Math.floor(Math.random() * 2000);
 const env: NodeJS.ProcessEnv = {};
 for (const [k, v] of Object.entries(process.env)) if (!/KEY|TOKEN|SECRET|HAMYON|TELEGRAM|^AI_|GEMINI|ELEVEN|S3|ADMIN|PUBLIC_URL|PRICE/i.test(k)) env[k] = v;
-Object.assign(env, { PORT: String(PORT), HOST: '127.0.0.1', DB_PATH: DB, BACKUP_DISABLED: '1', NODE_ENV: 'test', HAMYON_SHOP_ID: SHOP.shopId, HAMYON_SHOP_KEY: SHOP.shopKey, HAMYON_BASE_URL: `http://127.0.0.1:${hamyonPort}` });
+Object.assign(env, { PORT: String(PORT), HOST: '127.0.0.1', DB_PATH: DB, BACKUP_DISABLED: '1', NODE_ENV: 'test', HAMYON_SHOP_ID: SHOP.shopId, HAMYON_SHOP_KEY: SHOP.shopKey, HAMYON_BASE_URL: `http://127.0.0.1:${hamyonPort}`,
+  AI_PROVIDER: 'openai', AI_API_KEY: 'sk-test-not-real', AI_MODEL: 'test-model', AI_FALLBACK_MODEL: ' ', AI_BASE_URL: `http://127.0.0.1:${aiPort}`, AI_GLOBAL_DAILY_CALLS: '100' });
 const srv = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
 let log = ''; srv.stdout.on('data', (c) => (log += c)); srv.stderr.on('data', (c) => (log += c));
 const base = `http://127.0.0.1:${PORT}`;
@@ -110,6 +122,20 @@ try {
   const pay3 = String(c3.json.id), hp3 = [...hamyon.status.keys()].at(-1)!;
   await form('/api/pay/hamyon/complete', signed(hp3, Number(c3.json.pay_amount), { order_id: pay3, status: 'paid' }));
   assert.equal((await me()).subs.grammar, until1 + 30 * 86_400_000, 'muddat ustiga qo‘shiladi');
+  // ---- AI ishlamay qolsa: tushunarli xabar, oylik baholash kvotasi qaytariladi, sayt ishlashda davom etadi ----
+  const essay = Array.from({ length: 45 }, (_, i) => `word${i}`).join(' ');
+  const usedBefore = (await me()).ai.writing.used as number;
+  for (const mode of ['503', 'garbage', 'empty'] as const) {
+    aiMode.mode = mode; aiMode.calls = 0;
+    const w = await api('/api/ai/writing', { method: 'POST', body: JSON.stringify({ token, text: essay, task: 2 }) });
+    assert.ok(w.status === 503 || w.status === 502, `${mode}: ${w.status}`);
+    assert.ok(typeof w.json.error === 'string' && w.json.error.length > 5 && !/stack|Error:/.test(w.json.error), `${mode}: tushunarli xabar`);
+    assert.equal(aiMode.calls, 1, `${mode}: bitta model sozlamasida bir marta so'raladi (ortiqcha xarajat yo'q)`);
+    assert.equal((await me()).ai.writing.used, usedBefore, `${mode}: AI javob bermasa kvota sarflanmaydi`);
+  }
+  assert.equal((await api('/api/health')).status, 200);
+  assert.equal((await api('/api/pay/config')).status, 200, 'AI ishlamasa ham boshqa API ishlaydi');
+
   // 10) Callback yo'qolsa: foydalanuvchi status so'raganda Hamyondan o'qib yetkaziladi
   const c4 = await api('/api/pay/create', { method: 'POST', body: JSON.stringify({ token, track: 'exam', days: 30 }) });
   const pay4 = String(c4.json.id), hp4 = [...hamyon.status.keys()].at(-1)!;
@@ -147,6 +173,6 @@ try {
   assert.equal((await api(`/api/auth/bot/${'0'.repeat(32)}`)).status, 410);
   console.log('http.test: OK');
 } finally {
-  srv.kill(); fakeHamyon.close();
+  srv.kill(); fakeHamyon.close(); fakeAi.close();
   rmSync(dir, { recursive: true, force: true });
 }
