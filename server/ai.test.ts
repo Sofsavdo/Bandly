@@ -73,6 +73,12 @@ for (const provider of ['anthropic', 'openai', 'gemini'] as const) {
   const e = await evaluateSpeaking(cfg, [{ q: 'q1', text: 'I am agree with this idea' }]);
   assert.equal(e.overall, roundBand((6 + 6.5 + 5.5) / 3));
   assert.equal(e.bands.pronunciation, null);
+  // Model talaffuzga raqam qo'ysa ham (transkriptdan baholab bo'lmaydi) — e'tiborsiz, umumiy bandga qo'shilmaydi
+  reply = '{"fluency":6,"lexical":6,"grammar":6,"pronunciation":9,"strengths":[],"improve":[],"corrections":[]}';
+  const e2 = await evaluateSpeaking(cfg, [{ q: 'q1', text: 'I think cities are better for young people' }]);
+  assert.equal(e2.bands.pronunciation, null, 'talaffuz baholanmaydi');
+  assert.equal(e2.overall, 6, 'umumiy band faqat 3 mezondan');
+  assert.deepEqual(Object.keys(e2.bands), ['fluency', 'lexical', 'grammar', 'pronunciation'], 'ko‘rsatish tartibi o‘zgarmadi');
   reply = '{"task_response":6,"coherence":6,"lexical":6.5,"grammar":6,"strengths":[],"improve":["x"],"corrections":[]}';
   const w = await evaluateWriting(cfg, 2, 'Prompt', 'Essay text');
   assert.equal(w.overall, 6);
