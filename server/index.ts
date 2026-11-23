@@ -63,8 +63,6 @@ const COACH_DAILY_LIMIT = () => settingValue('AI_COACH_DAILY_LIMIT');
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
-/** Asosiy domen: PUBLIC_URL (bot va Mini App manzili) yoki CANONICAL_HOST. */
-const CANON_HOST = ((): string | null => { try { const u = process.env.PUBLIC_URL?.trim() || (process.env.CANONICAL_HOST ? `https://${process.env.CANONICAL_HOST.trim()}` : ''); return u ? new URL(u).hostname.toLowerCase() : null; } catch { return null; } })();
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
 ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan ustun)
@@ -661,10 +659,8 @@ const httpServer = createServer(async (req, res) => {
       return createReadStream(full).pipe(res);
     }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true });
-    // Bitta domen (SEO va Telegram kirish vidjeti uchun): barcha boshqa manzillar (sellzen.uz, *.up.railway.app) → PUBLIC_URL domeni (301).
-    // Kirish vidjeti faqat BotFather'dagi domenda ishlaydi; Mini App ham PUBLIC_URL'da ochiladi. API va lokal ishga tushirish bunga kirmaydi.
-    const host = String(req.headers.host ?? '').toLowerCase().replace(/:\d+$/, '');
-    if (CANON_HOST && host && host !== CANON_HOST && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(host) && (req.method === 'GET' || req.method === 'HEAD') && !url.pathname.startsWith('/api/')) { res.writeHead(301, { location: `https://${CANON_HOST}${req.url ?? '/'}` }); return void res.end(); }
+    // Domenlararo 301 yo'naltirish YO'Q: brauzerlar 301 ni doimiy eslab qoladi va qarama-qarshi yo'naltirishlar bilan cheksiz aylanish
+    // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (www.sellzen.uz) ko'rsatiladi.
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
