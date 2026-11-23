@@ -10,7 +10,7 @@ const dcs = (f: Record<string, string>) => Object.keys(f).filter((k) => k !== 'h
 // Login Widget
 const w: Record<string, string> = { id: '42', first_name: 'Ali', username: 'ali_uz', auth_date: String(now - 10) };
 w.hash = createHmac('sha256', createHash('sha256').update(TOKEN).digest()).update(dcs(w)).digest('hex');
-assert.deepEqual(verifyWidget(w, TOKEN, now), { id: 42, first_name: 'Ali', last_name: undefined, username: 'ali_uz' });
+assert.deepEqual(verifyWidget(w, TOKEN, now), { id: 42, first_name: 'Ali', last_name: undefined, username: 'ali_uz', photo_url: undefined });
 assert.throws(() => verifyWidget({ ...w, first_name: 'Vali' }, TOKEN, now), TgAuthError, 'o‘zgartirilgan maydon');
 assert.throws(() => verifyWidget(w, '123456789:AAother_token_value_xxxxxxxxxxxxxxx', now), TgAuthError, 'boshqa bot');
 assert.throws(() => verifyWidget(w, TOKEN, now + 400), /eskirgan/, '5 daqiqadan eski');
@@ -123,3 +123,14 @@ assert.notEqual(webhookSecret(TOKEN), webhookSecret(TOKEN + 'x'));
   assert.equal((fd.get('photo') as File).name, 'w.jpg'); assert.equal(r.photo[1]!.file_id, 'big');
 }
 console.log('telegram.test: OK');
+// Profil rasmi: faqat Telegram https manzillari
+{
+  const { safePhoto } = await import('./telegram');
+  assert.equal(safePhoto('https://t.me/i/userpic/320/abc.jpg'), 'https://t.me/i/userpic/320/abc.jpg');
+  assert.equal(safePhoto('https://cdn4.telesco.pe/file/x.jpg'), 'https://cdn4.telesco.pe/file/x.jpg');
+  assert.equal(safePhoto('http://t.me/i/userpic/1.jpg'), undefined, 'http emas');
+  assert.equal(safePhoto('https://evil.com/t.me.jpg'), undefined, 'boshqa domen');
+  assert.equal(safePhoto('https://t.me.evil.com/x.jpg'), undefined);
+  assert.equal(safePhoto(42), undefined);
+  console.log('telegram photo: OK');
+}

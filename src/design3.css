@@ -1414,3 +1414,18 @@ details.card[open] > summary { margin-bottom: 12px; }
 }
 /* Footer doim birinchi ekrandan pastda — kontent yuklanib uzayganda footer ekranga kirib-chiqib sakramasin */
 main.container { min-height: 100vh; }
+.avatar.has-photo { padding: 0; overflow: hidden; background: var(--surface-2); }
+.avatar.has-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+.stat-pills b small { font-size: 12px; color: var(--muted); font-weight: 600; }
+/* Reja yengillashtirilgani — bitta qisqa qator, katta tugma o'rniga havola */
+.plan-lowered { margin: 6px 0 10px; font-size: 13px; color: var(--muted); }
+.plan-lowered button { border: 0; background: none; padding: 0; color: var(--brand); font: inherit; font-weight: 650; cursor: pointer; }
+.plan-line { font-size: 12.5px; }
+/* IELTS kursi va boshqa filtr chiplari: ixcham, chetda "kesilgan" ko'rinmasin (yonga suriladi, so'nggi chip to'liq) */
+.chips .chip { height: 34px; padding: 0 14px; font-size: 13.5px; flex: none; }
+.chips { padding-inline-end: 16px; scroll-padding-inline: 16px; }
+/* Taklif havolasi: protokolsiz, ixcham */
+.invite-link code { font-family: inherit; font-size: 13px; color: var(--ink-2); }
+/* Grammatika mavzu tugmalari: ixcham, yonga suriladi */
+.page-head .tabs { margin-inline: -4px; padding: 2px 16px 2px 4px; }
+.page-head .tabs .btn { flex: none; min-height: 36px; padding: 0 14px; font-size: 13.5px; }

@@ -117,7 +117,7 @@ function PlanBody() {
           <p className="muted" style={{ fontSize: 13 }}>{L('Haftalik maqsad: kuniga')} {prefs.minutes}  {L('daqiqa × 5 kun ÷ ~12 daqiqalik dars =')} {weekTarget}  {L('ta dars.')}</p>
         </div>
       )}
-      {load.lowered && !full && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% i bajarildi, shuning uchun bugungi reja')} {prefs.minutes} → {load.minutes}  {L('daqiqaga yengillashtirildi.')} <button type="button" className="btn sm" onClick={() => setFull(true)}>{L('To‘liq rejani ko‘rsatish')}</button></p>}
+      {load.lowered && !full && <p className="plan-lowered" title={L('Oxirgi {0} kunda rejaning {1}% i bajarildi', [rv.days, Math.round((rv.rate ?? 0) * 100)])}>{L('Reja yengillashtirildi: {0} → {1} daq', [prefs.minutes, load.minutes])} <button type="button" onClick={() => setFull(true)}>{L('To‘liq reja')}</button></p>}
       {load.suggestMore && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% ini bajardingiz — zo‘r! Xohlasangiz, “Rejani sozlash”da kunlik vaqtni oshiring.')}</p>}
       {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>{L('Ko‘nikmalar tekshiruvi bo‘yicha')} {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(L(' va '))}  {L('zaifroq — rejada ko‘proq beriladi.')}</p>}
       {ieRow && <a className="path-step" href={ieRow.href}><b>{ieRow.title}</b><span>{ieRow.minutes}  {L('daq')} · {L('IELTS kursi')}</span></a>}

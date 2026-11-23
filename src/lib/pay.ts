@@ -1,4 +1,4 @@
-import { getAccount } from './account';
+import { setPhoto, getAccount } from './account';
 import { track as trackEvent } from './track';
 import { applyServerPlans, getProfile } from './store';
 import type { TrackId } from './types';
@@ -34,7 +34,8 @@ export async function refreshEntitlements(): Promise<void> {
   if (!a) return;
   const c = await payConfig();
   try {
-    const me = await api<{ subs: Record<TrackId, number | null> }>('/api/me', { headers: hdr() });
+    const me = await api<{ subs: Record<TrackId, number | null>; photo?: string | null }>('/api/me', { headers: hdr() });
+    setPhoto(me.photo);
     const any = Object.values(me.subs).some(Boolean);
     if (c.enabled || any) applyServerPlans(me.subs);
   } catch (e) {

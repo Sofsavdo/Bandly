@@ -61,7 +61,6 @@ export default function Grammar() {
       <div className="card page-head with-illo t-sky">
         <h2>{L('Grammar')}</h2><Illo kind="pencil" size={124} />
         {profile.level ? <p className="evidence">{L('Sizning darajangiz:')} <b>{profile.level}</b>. “{FOR_YOU}{L('” bo‘limida aynan sizga mos savollar bor.')}</p> : <p className="evidence"><a href="#/placement">{L('Darajangizni aniqlang')}</a>{L(': sizga mos savollar tanlab beriladi.')}</p>}
-        <p>{L('Har javobdan keyin o‘zbekcha tushuntirish chiqadi. Noto‘g‘ri javoblar "')}{MISTAKES}{L('" bo‘limida takrorlanadi.')}</p>
         <div className="tabs">
           {tabs.map((t) => (
             <button key={t} className={`btn ${t === topic ? 'primary' : ''}`} onClick={() => change(t)}>

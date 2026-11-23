@@ -1,4 +1,5 @@
 import { ArrowRight, BookOpenCheck, Check, Compass, Flame, Plus, Send } from 'lucide-react';
+import { UserAvatar } from '../components/UserAvatar';
 import { useEffect, useState } from 'react';
 import { authConfig, getAccount } from '../lib/account';
 import { ALL_LESSONS, UNITS } from '../content/lessons';
@@ -137,7 +138,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
   return (
     <div className="home">
       <div className="hello">
-        <span className="avatar xs" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
+        <UserAvatar acc={acc} className="avatar xs" />
         <div className="grow">
           <h2>{hello}{acc?.nickname ? `, ${acc.nickname}` : ''}!</h2>
           <small>{lvl ? L('Daraja {0}', [lvl]) : L('Daraja aniqlanmagan')} · {Math.round(lp.pct * 100)}{L('% keyingi bosqichgacha')}</small>

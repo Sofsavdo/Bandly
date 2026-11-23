@@ -192,9 +192,10 @@ const httpServer = createServer(async (req, res) => {
       catch (e) { if (e instanceof TgAuthError) throw new ApiError(401, e.message); throw e; }
       const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
       const pid = byToken(db, r.token).id;
+      if (u.photo_url !== undefined) db.prepare('UPDATE players SET photo_url = ? WHERE id = ?').run(u.photo_url, pid); // Telegram rasmi (har kirishda yangilanadi)
       if (r.created) attachReferral(db, pid, b.ref ?? getBotRef(db, u.id)); // taklif havolasi orqali kelgan bo'lsa (botda /start ref_ ham)
       claimBotPhone(db, u.id, pid); // botda ulashilgan raqam lidga o'tadi
-      return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created });
+      return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: u.photo_url ?? null });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
       revokeSession(db, String(req.headers['x-token'] ?? '')); // shu qurilma tokeni endi ishlamaydi
@@ -579,7 +580,7 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
       return send(res, 200, { enabled: !!hapi, demo: DEMO, limits: publicLimits(), periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
-    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; const xl = reqLang(req); if (/^(uz|en|ru|kk|ky|tg)$/.test(xl)) db.prepare('UPDATE players SET lang = ? WHERE id = ?').run(xl, pid); return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid) }); }
+    if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; const xl = reqLang(req); if (/^(uz|en|ru|kk|ky|tg)$/.test(xl)) db.prepare('UPDATE players SET lang = ? WHERE id = ?').run(xl, pid); return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid), photo: (db.prepare('SELECT photo_url FROM players WHERE id = ?').get(pid) as { photo_url: string | null } | undefined)?.photo_url ?? null }); }
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {
       if (!hapi) throw new ApiError(503, 'To‘lov hali ulanmagan');
       const b = await readJson(req);

@@ -1,4 +1,5 @@
 import { Lock, LogOut, Trophy } from 'lucide-react';
+import { UserAvatar } from '../components/UserAvatar';
 import { useEffect, useState } from 'react';
 import { authConfig, getAccount, onAccountChange } from '../lib/account';
 import { JoinForm } from '../components/JoinForm';
@@ -39,7 +40,7 @@ export default function Profile() {
   return (
     <div>
       <section className="card prof-head">
-        <span className="avatar" aria-hidden="true">{(acc?.nickname ?? 'B').slice(0, 1).toUpperCase()}</span>
+        <UserAvatar acc={acc} />
         <h2>{acc?.nickname}</h2>
         <p className="muted">{p.level ? `${p.level} · ${LEVEL_INFO[p.level].name}` : L('Daraja aniqlanmagan')} · {lp.level}{L('-bosqich · jami')} {p.xp}  {L('XP')}</p>
         <div className="bar" style={{ width: '100%', maxWidth: 420 }}><i style={{ width: `${lp.pct * 100}%` }} /></div>
