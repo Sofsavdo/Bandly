@@ -1,8 +1,9 @@
-import { Mic, Square, Volume2 } from 'lucide-react';
+import { Mic, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { serverSttReady } from '../lib/voiceTurn';
 import { accuracy, verdict } from '../lib/shadow';
-import { listenTurn, say, SpeechError, stopSpeaking, sttSupported, ttsSupported } from '../lib/speech';
+import { listenTurn, SpeechError, stopSpeaking, sttSupported } from '../lib/speech';
+import { ClipButton } from './ClipButton';
 import { L } from '../i18n';
 
 /** Speaking step: listen to each example sentence, say it, see which words were recognised.
@@ -18,7 +19,6 @@ export function LessonSpeak({ sentences, onDone }: { sentences: string[]; onDone
   const stt = typeof window !== 'undefined' && (serverSttReady() || sttSupported());
   const allSaid = sentences.every((_, i) => said[i] !== undefined);
   useEffect(() => { if (allSaid || !stt) onDone?.(); }, [allSaid, stt]); // eslint-disable-line react-hooks/exhaustive-deps
-  const tts = typeof window !== 'undefined' && ttsSupported();
 
   const listen = async (i: number) => {
     if (active !== null) return;
@@ -46,7 +46,7 @@ export function LessonSpeak({ sentences, onDone }: { sentences: string[]; onDone
         return (
           <div key={s} className="q">
             <p className="row">
-              {tts && <button type="button" className="btn sm" aria-label={L('Eshitish: {0}', [s])} onClick={() => { stopSpeaking(); void say(s, { cancelled: false }); }}><Volume2 size={14} /></button>}
+              <ClipButton className="btn sm" text={s} size={14} />
               <b>{s}</b>
             </p>
             {active === i

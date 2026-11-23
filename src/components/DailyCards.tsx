@@ -1,8 +1,8 @@
-import { Download, Share2, Volume2 } from 'lucide-react';
+import { Download, Share2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { vocab, vocabForLevel } from '../content/vocab';
 import { tipOfDay } from '../content/tips';
-import { say } from '../lib/speech';
+import { ClipButton } from './ClipButton';
 import { renderCard, shareCard } from '../lib/shareCard';
 import { recordReview, useProfile } from '../lib/store';
 import { levelIndex } from '../lib/levels';
@@ -23,7 +23,6 @@ export function DailyCards() {
   const w = useMemo(() => wordOfDay(p.level), [p.level]);
   const tip = tipOfDay();
   const [msg, setMsg] = useState('');
-  const listen = () => { void say(w.word, { cancelled: false }, 'en-GB'); };
   const share = async (kind: 'tip' | 'word') => {
     const blob = kind === 'tip'
       ? await renderCard({ title: L('Kun maslahati'), body: tip.en, sub: tip.uz, foot: L('— Sellzen, IELTS ustozi') })
@@ -41,7 +40,7 @@ export function DailyCards() {
         <p className="def">{w.def}</p>
         <p className="ex">“{w.example}”</p>
         <div className="row">
-          <button className="btn sm" onClick={listen}><Volume2 size={15} />  {L('Eshitish')}</button>
+          <ClipButton className="btn sm" text={w.word} size={15}>  {L('Eshitish')}</ClipButton>
           <button className="btn sm" onClick={() => { recordReview(w.id, false); setMsg(L('Takrorlashga qo‘shildi')); }}>{L('Yodlayman')}</button>
           <button className="btn sm" onClick={() => { recordReview(w.id, true); setMsg(L('Bildim: kamroq takrorlanadi')); }}>{L('Bilaman')}</button>
           <button className="icon-btn" aria-label={L('Rasm sifatida ulashish')} onClick={() => void share('word')}><Share2 size={16} /></button>

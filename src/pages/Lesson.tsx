@@ -1,6 +1,6 @@
-import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Star, Volume2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Flame, Heart, RotateCcw, Star } from 'lucide-react';
 import { trackUser } from '../lib/track';
-import { say, stopSpeaking } from '../lib/speech';
+import { ClipButton } from '../components/ClipButton';
 import { ItemView } from '../components/LessonItem';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { lessonById, lessonNodeId, lessonWordIds, nextInCourse, isIeltsLesson, ieltsUnlocked, UNITS } from '../content/lessons';
@@ -258,7 +258,7 @@ export default function LessonPage({ id }: { id: string }) {
           <div className="takeaway">
             <b>{L('Esda tuting')}</b>
             <p>{lesson.objectiveUz}</p>
-            <ul>{lesson.examples.slice(0, 3).map((e) => <li key={e.en}><button type="button" className="icon-btn sm" aria-label={L('Eshitish: {0}', [e.en])} onClick={() => { stopSpeaking(); if (e.audio) void new Audio(e.audio).play().catch(() => undefined); else void say(e.en, { cancelled: false }); }}><Volume2 size={14} /></button><span><b>{e.en}</b><small>{e.uz}</small></span></li>)}</ul>
+            <ul>{lesson.examples.slice(0, 3).map((e) => <li key={e.en}><ClipButton className="icon-btn sm" text={e.en} audio={e.audio} size={14} /><span><b>{e.en}</b><small>{e.uz}</small></span></li>)}</ul>
           </div>
           <details className="fold"><summary>{L('Javoblarni ko‘rish')}</summary>
           {lesson.check.map((it, i) => <ItemView key={i} item={it} value={cAns[i]} revealed onChange={() => undefined} />)}

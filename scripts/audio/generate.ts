@@ -120,7 +120,7 @@ const lis = listeningTests.filter((t) => t.id in Object.fromEntries(listeningInv
 const minis = lis.filter((t) => !t.sections?.length).sort((a, b) => LEVEL.indexOf(a.level) - LEVEL.indexOf(b.level)).map((t) => t.id);
 const fulls = lis.filter((t) => t.sections?.length).map((t) => t.id);
 const clips = clipInventory();
-const ORDER: Clip['category'][] = ['lesson-listen', 'listening-skill', 'speaking', 'lesson', 'word', 'shadow'];
+const ORDER: Clip['category'][] = ['lesson-listen', 'listening-skill', 'speaking', 'lesson', 'word', 'shadow', 'lesson-feedback']; // oxirgisi eng ko'p belgi: avval qolgan hammasi
 const queue: (() => Promise<unknown>)[] = [
   ...minis.map((id) => () => doListening(id)),
   ...clips.filter((c) => c.category === 'lesson-listen').map((c) => () => doClip(c)),
