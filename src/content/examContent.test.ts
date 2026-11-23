@@ -34,6 +34,13 @@ const check = (id: string, qs: Question[], groups: { instruction: string; questi
 for (const t of readingTests) check(t.id, t.questions, t.groups, t.minutes, t.paragraphs.join(' '));
 for (const t of listeningTests) check(t.id, t.questions, t.groups, t.minutes, t.script.map((s) => s.text).join(' '));
 assert.deepEqual(problems, [], problems.slice(0, 20).join('\n'));
+// «Fill» javobi matndan olinadi: Reading'da qabul qilinadigan javoblardan kamida bittasi matnda so'zma-so'z bo'lishi shart;
+// Listening'da ham (raqamlardan tashqari — ular skriptda so'z bilan aytiladi: "forty-five", "oh seven seven…").
+const flat = (s: string) => s.toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9£$%.' -]/g, ' ').replace(/\s+/g, ' ').trim();
+const notInText: string[] = [];
+for (const t of readingTests) { const body = flat(t.paragraphs.join(' ')); for (const q of t.questions) if (q.type === 'fill' && !q.answers.some((a) => body.includes(flat(a)))) notInText.push(`${t.id} q${q.id}: ${q.answers.join(' | ')}`); }
+for (const t of listeningTests) { const body = flat(t.script.map((x) => x.text).join(' ')); for (const q of t.questions) if (q.type === 'fill' && !q.answers.some((a) => /\d/.test(a)) && !q.answers.some((a) => body.includes(flat(a)))) notInText.push(`${t.id} q${q.id}: ${q.answers.join(' | ')}`); }
+assert.deepEqual(notInText, [], `javob matnda yo‘q (metodist tekshirsin):\n${notInText.join('\n')}`);
 // Test id lari barcha to'plamlarda noyob
 const all = [...readingTests, ...listeningTests].map((t) => t.id);
 assert.equal(new Set(all).size, all.length, 'test id takrorlangan');
