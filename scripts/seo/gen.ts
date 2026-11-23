@@ -8,7 +8,7 @@ import { UZ_MULTILEVEL } from '../../src/content/examFormats';
 import { part1Topics, part2Cards } from '../../src/content/speaking';
 import { writingPrompts } from '../../src/content/writing';
 
-export const SITE = 'https://sellzen.uz';
+export const SITE = 'https://www.sellzen.uz';
 const ROOT = new URL('../../public/', import.meta.url).pathname;
 
 /** IELTS ↔ CEFR: ielts.org "IELTS and the CEFR" (2026-11-18 da o'qildi). Chegara ballar (5.0, 8.0) — oraliq holat. */

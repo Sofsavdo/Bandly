@@ -36,6 +36,6 @@ for (const f of ['public/favicon.svg', 'public/favicon-16.png', 'public/favicon-
 const m = JSON.parse(readFileSync('public/manifest.webmanifest', 'utf8')) as { name: string; short_name: string; start_url: string; icons: { sizes: string }[] };
 assert.equal(m.short_name, 'Sellzen'); assert.ok(m.icons.some((i) => i.sizes === '192x192') && m.icons.some((i) => i.sizes === '512x512'));
 const html = readFileSync('index.html', 'utf8');
-assert.ok(html.includes('<link rel="canonical" href="https://sellzen.uz/"') && html.includes('og:image') && html.includes('manifest.webmanifest'), 'SEO/OG/manifest');
+assert.ok(html.includes('<link rel="canonical" href="https://www.sellzen.uz/"') /* asosiy domen = PUBLIC_URL (www): Telegram webhook va Mini App shu yerda */ && html.includes('og:image') && html.includes('manifest.webmanifest'), 'SEO/OG/manifest');
 assert.ok(!/railway\.app/.test(html + readFileSync('public/sitemap.xml', 'utf8') + readFileSync('public/robots.txt', 'utf8')), 'eski domen qolmagan');
 console.log('brand.test: OK');
