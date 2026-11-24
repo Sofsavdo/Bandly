@@ -50,9 +50,27 @@ export async function signOut(wipe: boolean): Promise<void> {
 }
 
 // ---------------- Telegram orqali kirish (OD-05) ----------------
-export interface AuthConfig { telegram: { bot: string; host?: string | null } | null } // host — BotFather domeni: vidjet faqat shu manzilda ishlaydi
+export interface AuthConfig { telegram: { bot: string; host?: string | null } | null; phone?: boolean; google?: { clientId: string } | null } // host — BotFather domeni: vidjet faqat shu manzilda ishlaydi
 let cfg: Promise<AuthConfig> | null = null;
 export const authConfig = (): Promise<AuthConfig> => (cfg ??= fetch('/api/auth/config').then((r) => (r.ok ? r.json() as Promise<AuthConfig> : { telegram: null })).catch(() => ({ telegram: null })));
+
+/** Telefon raqam + parol (kirish yoki yangi hisob). Qurilmadagi eski hisob bo'lsa unga bog'lanadi (XP/obuna/progress saqlanadi). */
+export async function phoneAuth(kind: 'login' | 'register', phone: string, password: string, nickname?: string): Promise<Account> {
+  const r = await call<Account>(`/api/auth/phone/${kind}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, password, nickname: nickname || undefined, link: getAccount()?.token, ref: getRef() }) });
+  return finishLogin(r);
+}
+/** Google ID token bilan kirish (token serverda tekshiriladi). */
+export async function googleLogin(credential: string): Promise<Account> {
+  const r = await call<Account>('/api/auth/google', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ credential, link: getAccount()?.token, ref: getRef() }) });
+  return finishLogin(r);
+}
+// `tg: true` — hisob doimiy identifikatorga (Telegram, telefon yoki Google) bog'langan: qayta kirish mumkin, hisob kodi saqlash shart emas.
+async function finishLogin(r: Account): Promise<Account> {
+  setAccount({ token: r.token, nickname: r.nickname, tg: true, photo: r.photo ?? null });
+  await onLogin();
+  void syncNow();
+  return getAccount()!;
+}
 
 /** Telegram ma'lumoti bilan kirish. Qurilmada eski (laqabli) hisob bo'lsa, u Telegram'ga bog'lanadi — XP va obuna saqlanadi. */
 export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown): Promise<Account & { linked: boolean }> {

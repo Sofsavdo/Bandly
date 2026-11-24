@@ -86,8 +86,8 @@ em.it { font-style: italic; font-weight: 500; }
 .eyebrow { background: var(--surface); color: var(--ink-2); border: 1.5px solid var(--line); font-weight: 650; }
 .notice { background: var(--butter-50); border: 0; border-radius: var(--r); padding: 13px 16px; color: var(--ink); }
 .lvl-tag { border-radius: 99px; padding: 2px 9px; }
-input[type=text], input[type=number], select, textarea, .input { border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface); }
-input[type=text]:focus, select:focus, textarea:focus, input[type=number]:focus { border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 16%, transparent); }
+input[type=text], input[type=tel], input[type=password], input[type=number], select, textarea, .input { border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface); }
+input[type=text]:focus, input[type=tel]:focus, input[type=password]:focus, select:focus, textarea:focus, input[type=number]:focus { border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 16%, transparent); }
 input[type=checkbox], input[type=radio] { accent-color: var(--brand); }
 
 /* ---------- Kartalar ---------- */
@@ -553,7 +553,22 @@ html, body { overflow-x: clip; }
 .lang-menu [aria-selected="true"] button { background: var(--surface-2); }
 .lang-menu [aria-selected="true"] button svg:last-child { color: var(--brand); }
 @media (min-width: 980px) { .app-header .lang-pick.compact { width: 100%; } .app-header .lang-pick.compact .lang-btn { width: 100%; justify-content: center; box-shadow: none; background: var(--surface-2); } .app-header .lang-pick.compact .lang-menu { left: 50%; transform: translateX(-50%); } }
-@media (max-width: 979px) { .app-header .lang-pick.compact { display: none; } }
+@media (max-width: 979px) {
+  .app-header .lang-pick.compact { display: none; }
+  /* Mehmon (landing): til tanlash sarlavha qatorida, olov hisoblagichi o'rniga (mehmonda 0 — keraksiz, joy tejaladi) */
+  .app-header.guest .lang-pick.compact { display: inline-flex; margin-left: auto; }
+  .app-header.guest .lang-pick.compact .lang-btn { height: 38px; padding: 0 10px; }
+  .app-header.guest .lang-pick.compact .lang-menu { left: auto; right: 0; }
+  .app-header.guest .header-right { margin-left: 0; }
+  .app-header.guest .header-right .stats { display: none; }
+}
+/* Juda tor ekran (320–360 px): logotip yozuvi va tanlagich ixchamlashadi — menyu tugmasi ekrandan chiqib ketmasin */
+@media (max-width: 379px) {
+  .app-header.guest .container { gap: 8px; }
+  .app-header.guest .logo-word { font-size: .86em; }
+  .app-header.guest .lang-pick.compact .lang-btn { padding: 0 9px; gap: 5px; }
+  .app-header.guest .lang-pick.compact .lang-btn svg:last-child { display: none; }
+}
 
 /* Tarjimalar paneli */
 .tr-cov { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }

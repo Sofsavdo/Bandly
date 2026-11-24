@@ -115,6 +115,12 @@ export function createDb(path = ':memory:'): DatabaseSync {
   if (!cols.includes('role')) db.exec('ALTER TABLE players ADD COLUMN role TEXT');
   if (!cols.includes('photo_url')) db.exec('ALTER TABLE players ADD COLUMN photo_url TEXT'); // Telegram profil rasmi (ixtiyoriy)
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_tg ON players (tg_id) WHERE tg_id IS NOT NULL');
+  // Telefon+parol va Google bilan kirish (2026-11-24): qo'shimcha (additive) ustunlar — mavjud ma'lumotga tegmaydi (server/credentials.ts)
+  if (!cols.includes('phone')) db.exec('ALTER TABLE players ADD COLUMN phone TEXT');
+  if (!cols.includes('pass_hash')) db.exec('ALTER TABLE players ADD COLUMN pass_hash TEXT');
+  if (!cols.includes('google_sub')) db.exec('ALTER TABLE players ADD COLUMN google_sub TEXT');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_phone ON players (phone) WHERE phone IS NOT NULL');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS players_google ON players (google_sub) WHERE google_sub IS NOT NULL');
   // Hisob progressi (2026-11-17): o'quvchining qurilmadagi ma'lumotlari hisobga saqlanadi — boshqa qurilmada kirsa ham ko'rinadi
   // Sessiyalar (2026-11-17): har qurilma — alohida token; bazada faqat SHA-256 xeshi saqlanadi. Eski players.token
   // vaqtincha qoladi (orqaga qaytish xavfsiz bo'lishi uchun) va birinchi ishlatilganda sessiyaga ko'chiriladi.
@@ -231,7 +237,7 @@ export interface Player { id: number; nickname: string; xp: number; streak: numb
 
 export const hashToken = (t: string): string => createHash('sha256').update(t).digest('hex');
 /** players.token ustuniga yoziladigan, hech qachon mijozga berilmaydigan qiymat (ustun NOT NULL UNIQUE). */
-const placeholder = (): string => `s:${randomBytes(18).toString('hex')}`;
+export const placeholder = (): string => `s:${randomBytes(18).toString('hex')}`;
 /** Yangi qurilma sessiyasi: xom token faqat mijozga qaytariladi, bazada xeshi. */
 export function newSession(db: DatabaseSync, playerId: number, now = Date.now()): string {
   const token = randomBytes(24).toString('hex');
