@@ -11,6 +11,9 @@ writeFileSync(join(root, 'assets', 'app-abc12345.js'), '1');
 writeFileSync(join(tmpdir(), 'secret-outside.txt'), 'x');
 
 assert.ok(resolveStatic(root, '/')!.file.endsWith('index.html'));
+// Yashirin yo'llar (botlar tekshiradi): SPA index.html bilan 200 emas, aniq 404; .well-known ochiq qoladi
+for (const hidden of ['/.git/config', '/.svn/entries', '/.hg/requires', '/.env', '/.env.backup', '/a/.git/HEAD', '/.DS_Store']) assert.equal(resolveStatic(root, hidden), null, hidden);
+assert.ok(resolveStatic(root, '/.well-known/security.txt') === null || resolveStatic(root, '/.well-known/security.txt')!.fallback, '.well-known bloklanmaydi (fayl yo‘q bo‘lsa SPA)');
 assert.ok(resolveStatic(root, '/assets/app-abc12345.js')!.file.endsWith('app-abc12345.js'));
 assert.equal(resolveStatic(root, '/assets/app-abc12345.js')!.fallback, false);
 assert.equal(resolveStatic(root, '/yoq/sahifa')!.fallback, true, 'noma’lum yo‘l SPA index.html ga');

@@ -5232,6 +5232,8 @@
  "Telegram orqali, bir bosishda — bepul.": "Telegram аркылуу, бир басуу менен — акысыз.",
  "Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.": "Telegram аркылуу, бир басуу менен. Прогресс, рейтинг жана жазылуу башка түзмөктө да ачылат.",
  "Telegram orqali: {0}": "Telegram аркылуу: {0}",
+ "Telegram tugmasi chiqmadi? Pastdagi tugma orqali kiring.": "Telegram баскычы чыкпадыбы? Төмөндөгү баскыч аркылуу кириңиз.",
+ "Telegram tugmasi faqat bu manzilda ishlaydi:": "Telegram баскычы ушул даректе гана иштейт:",
  "Telegram webhook o‘rnatilmadi (oldingi webhook amal qilishda davom etishi mumkin):": "Telegram webhook орнотулган жок (мурунку webhook иштей бериши мүмкүн):",
  "Telegram webhook: {0} — {1} s dan keyin qayta urinish ({2}/{3})": "Telegram webhook: {0} — {1} с кийин кайра аракет ({2}/{3})",
  "Telegram ✓": "Telegram ✓",

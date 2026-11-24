@@ -13,6 +13,8 @@ export function resolveStatic(root: string, urlPath: string): { file: string; fa
   let p: string;
   try { p = decodeURIComponent(urlPath.split('?')[0]); } catch { return null; }
   if (p.includes('\0')) return null;
+  // .git/.svn/.hg/.env kabi yashirin yo'llar: botlar tekshiradi; SPA index.html bilan 200 emas, aniq 404 (.well-known ruxsat)
+  if (p.split('/').some((x) => x.startsWith('.') && x !== '.well-known' && x !== '.' && x !== '..')) return null;
   const base = resolve(root);
   const target = resolve(join(base, normalize(p)));
   if (target !== base && !target.startsWith(base + sep)) return null; // path traversal
