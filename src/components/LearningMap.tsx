@@ -154,6 +154,15 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
     const r = el.getBoundingClientRect();
     window.scrollTo({ top: Math.max(0, window.scrollY + r.top - window.innerHeight / 2 + r.height / 2), left: 0, behavior: 'instant' });
   }, []);
+  // Sahifa tagiga (footer) yetganda suzuvchi "Davom ettirish" footer matnini yopmasin
+  const [atEnd, setAtEnd] = useState(false);
+  useEffect(() => {
+    const f = document.querySelector('.site-footer');
+    if (!f || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setAtEnd(!!e?.isIntersecting));
+    io.observe(f);
+    return () => io.disconnect();
+  }, []);
   useEffect(() => {
     if (!sel) return;
     const on = (e: KeyboardEvent) => { if (e.key === 'Escape') setSel(null); };
@@ -180,7 +189,7 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
 
       {[...levels].reverse().map((lv) => <Zone key={lv} lv={lv} progress={progress} currentId={currentId} level={level} onPick={setSel} curRef={curRef} />)}
 
-      {currentId && <a className="map-fab" href={`#/learn/${currentId}`}><Play size={18} />  {L('Davom ettirish')}</a>}
+      {currentId && !atEnd && <a className="map-fab" href={`#/learn/${currentId}`}><Play size={18} />  {L('Davom ettirish')}</a>}
 
       {sel && (
         <div className="sheet-backdrop" role="presentation" onClick={() => setSel(null)}>
