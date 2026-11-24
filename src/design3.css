@@ -979,14 +979,8 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 .ai-mark.talking { animation: ai-pulse 1.1s ease-in-out infinite; }
 @keyframes ai-pulse { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--ring, #2DD4BF) 45%, transparent); } }
 .ai-avatar { position: relative; display: inline-grid; place-items: center; }
-.ai-avatar .logo-mark { position: relative; z-index: 1; border-radius: 28%; box-shadow: 0 10px 30px rgba(11, 31, 58, .25); }
-.ai-avatar .ai-ring { position: absolute; inset: 8%; border-radius: 34%; border: 4px solid var(--ring, #2DD4BF); opacity: .85; transition: transform .12s, border-color .3s; }
-.ai-avatar.listening .ai-ring { transform: scale(calc(1 + var(--lvl, 0) * .12)); }
-.ai-avatar.speaking .ai-ring { animation: ai-ring 1s ease-in-out infinite; }
-.ai-avatar.thinking .ai-ring { border-style: dashed; animation: ai-spin 3s linear infinite; }
-@keyframes ai-ring { 50% { transform: scale(1.07); opacity: .5; } }
 @keyframes ai-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .ai-mark.talking, .ai-avatar .ai-ring { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .ai-mark.talking { animation: none !important; } }
 
 /* Sertifikatlar */
 .cert-profile-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
@@ -1064,17 +1058,11 @@ select, input, textarea { max-width: 100%; }
 .tr-blank { margin: 8px 0 0; }
 @media (max-width: 600px) { table.data.wrap td { white-space: normal; min-width: 0; } }
 
-/* ===== Ustoz hissiyotlari (jahl — olov, kulgi, quvonch, hafsala) ===== */
+/* ===== Ustoz hissiyotlari (jahl — qizil nur va silkinish, kulgi, quvonch, qattiq maqtov — yurak, hafsala) ===== */
 .ai-avatar .emo-fx { position: absolute; inset: -14%; pointer-events: none; z-index: 2; overflow: visible; }
 .ai-avatar .emo-fx i { position: absolute; font-style: normal; }
-.ai-avatar.emo-angry .logo-mark { animation: emo-shake .28s ease-in-out infinite; box-shadow: 0 0 0 4px rgba(239, 68, 68, .55), 0 0 42px 12px rgba(239, 68, 68, .6); filter: saturate(1.4) hue-rotate(-18deg); }
-.ai-avatar.emo-angry .ai-ring { border-color: #ef4444; box-shadow: 0 0 30px 6px rgba(239, 68, 68, .55); }
-.fx-laugh { left: calc(18% + var(--i) * 26%); bottom: 62%; font-weight: 800; font-size: 18px; color: #f59e0b; text-shadow: 0 2px 0 #fff; animation: emo-float 1.4s ease-out infinite; animation-delay: calc(var(--i) * .35s); }
-.ai-avatar.emo-laugh .logo-mark { animation: emo-bounce .45s ease-in-out infinite; }
+.fx-laugh { left: calc(6% + var(--i) * 32%); bottom: 62%; font-weight: 800; font-size: 18px; color: #f59e0b; text-shadow: 0 2px 0 #fff; animation: emo-float 1.4s ease-out infinite; animation-delay: calc(var(--i) * .35s); }
 .fx-spark { left: calc(8% + var(--i) * 16%); top: calc(10% + (var(--i) * 37%) - (var(--i) * var(--i) * 6%)); color: #34d399; font-size: 20px; animation: emo-twinkle 1.1s ease-in-out infinite; animation-delay: calc(var(--i) * .18s); }
-.ai-avatar.emo-happy .ai-ring, .ai-avatar.emo-impressed .ai-ring { box-shadow: 0 0 28px 6px rgba(52, 211, 153, .5); }
-.fx-drop { top: 20%; left: calc(28% + var(--i) * 20%); width: 9px; height: 13px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #60a5fa; animation: emo-drop 1.3s ease-in infinite; animation-delay: calc(var(--i) * .4s); }
-.ai-avatar.emo-disappointed .logo-mark { filter: grayscale(.5) brightness(.9); transform: translateY(4px) rotate(-3deg); transition: transform .4s; }
 /* Butun qo'ng'iroq oynasi hissiyotga qarab tusini o'zgartiradi */
 .tutor-call { transition: background .5s ease, box-shadow .5s ease; }
 .tutor-call.emo-angry { background: linear-gradient(180deg, rgba(254, 202, 202, .9), rgba(254, 215, 170, .55) 55%, var(--surface)); box-shadow: inset 0 0 60px rgba(239, 68, 68, .35), var(--shadow-1); }
@@ -1086,8 +1074,7 @@ select, input, textarea { max-width: 100%; }
 @keyframes emo-bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.04); } }
 @keyframes emo-float { 0% { transform: translateY(0) scale(.8); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-46px) scale(1.15); opacity: 0; } }
 @keyframes emo-twinkle { 0%, 100% { transform: scale(.4) rotate(0); opacity: .2; } 50% { transform: scale(1.2) rotate(30deg); opacity: 1; } }
-@keyframes emo-drop { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(70px); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .ai-avatar .emo-fx i, .ai-avatar.emo-angry .logo-mark, .ai-avatar.emo-laugh .logo-mark { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .ai-avatar .emo-fx i, .ai-avatar .ai-face, .ai-avatar .av-blink, .ai-avatar .av-dots circle, .ai-avatar.emo-angry .ai-face, .ai-avatar.emo-laugh .ai-face { animation: none !important; } }
 
 /* Bosh sahifa: tezkor kirish — ixcham qatorli plitkalar */
 .quick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 14px; }
@@ -1450,3 +1437,56 @@ main.container { min-height: 100vh; }
 .tg-join .tg-open { margin-top: 10px; }
 .mission-say { margin: 0 0 4px; padding: 12px 14px; border-radius: 16px; background: var(--lilac-50); font-size: 15px; line-height: 1.45; }
 .mission-say b { color: var(--brand); }
+
+/* ===== Yuzli avatar (AiAvatar): shakl, rang va yuz holatga/hissiyotga qarab silliq o'zgaradi ===== */
+.ai-avatar .ai-face { width: 100%; height: 100%; overflow: visible; --ink: #1c2140; }
+@media (prefers-color-scheme: dark) { .ai-avatar .ai-face { --ink: #e8ecff; } }
+.ai-avatar .av-shadow { fill: rgba(20, 24, 48, .14); transition: rx .3s; }
+.ai-avatar .av-shape { fill: var(--surface, #fff); stroke: var(--ring, #2DD4BF); stroke-width: 7; stroke-linejoin: round; opacity: 0; transition: opacity .35s ease, stroke .35s ease; filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--ring, #2DD4BF) 30%, transparent)); }
+.ai-avatar .av-shape.on { opacity: 1; }
+.ai-avatar .av-face { transition: transform .35s ease; }
+.ai-avatar .av-eye { fill: var(--ink); }
+.ai-avatar .av-eye-arc, .ai-avatar .av-brow, .ai-avatar .av-mouth { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.ai-avatar .av-mouth-open, .ai-avatar .av-mouth-fill { fill: var(--ink); transition: ry .08s linear; }
+.ai-avatar .av-tear { fill: #60a5fa; animation: av-tear 1.6s ease-in infinite; }
+.ai-avatar .av-look-up { transform: translate(5px, -5px); }
+.ai-avatar .av-blink { transform-box: fill-box; transform-origin: center; animation: av-blink 4.2s infinite; }
+.ai-avatar .av-dots circle { animation: av-dot 1s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .18s); fill: var(--ring); }
+.ai-avatar.listening .ai-face { transform: scale(calc(1 + var(--lvl, 0) * .08)); transition: transform .1s; }
+.ai-avatar.speaking .ai-face { animation: av-talk 1s ease-in-out infinite; }
+.ai-avatar.emo-angry.speaking .ai-face { animation: emo-shake .28s ease-in-out infinite; filter: drop-shadow(0 0 22px rgba(239, 68, 68, .6)); }
+.ai-avatar.emo-laugh.speaking .ai-face { animation: emo-bounce .45s ease-in-out infinite; }
+.ai-avatar.emo-impressed.speaking .ai-face { animation: av-beat .8s ease-in-out infinite; }
+.ai-avatar.thinking .ai-face { animation: av-float 2.2s ease-in-out infinite; }
+@keyframes av-talk { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.035); } }
+@keyframes av-beat { 0%, 100% { transform: scale(1); } 30% { transform: scale(1.07); } 55% { transform: scale(.99); } }
+@keyframes av-float { 50% { transform: translateY(-6px); } }
+@keyframes av-blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+@keyframes av-dot { 0%, 100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-4px); } }
+@keyframes av-tear { 0% { transform: translateY(0); opacity: 0; } 25% { opacity: 1; } 100% { transform: translateY(26px); opacity: 0; } }
+.tutor-call.emo-impressed { background: linear-gradient(180deg, rgba(252, 231, 243, .95), var(--surface) 60%); }
+@media (prefers-color-scheme: dark) { .tutor-call.emo-impressed { background: linear-gradient(180deg, rgba(131, 24, 67, .5), var(--surface) 60%); } }
+
+/* ===== Bosib-gapirish (push-to-talk): avatar/tugma — bosiladigan maydon; taymer, matn, tugmalar ===== */
+.ptt-pad, .mic-big.ptt { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.ptt-pad { display: grid; place-items: center; padding: 6px; border: 0; background: transparent; cursor: pointer; border-radius: 50%; color: inherit; transition: transform .15s; }
+.ptt-pad:disabled { cursor: default; opacity: .7; }
+.ptt-pad.on { transform: scale(1.03); }
+.ptt-pad:focus-visible, .mic-big.ptt:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ptt-pad .ai-orb-wrap::after { display: none; }
+.voice-sub { margin: -14px 0 0; color: var(--ink-3, #6b7280); font-size: 14px; text-align: center; max-width: 320px; }
+.voice-top .muted.warn { color: var(--coral, #e5372b); }
+.voice-bar { height: 4px; border-radius: 999px; background: var(--line-2, rgba(0, 0, 0, .08)); overflow: hidden; margin: -4px 0 4px; }
+.voice-bar i { display: block; height: 100%; background: var(--brand); border-radius: inherit; transition: width 1s linear; }
+.voice-bar.warn i { background: var(--coral, #e5372b); }
+.voice-lines { display: grid; gap: 6px; width: min(100%, 420px); font-size: 14.5px; line-height: 1.4; }
+.voice-lines .vl { margin: 0; padding: 8px 12px; border-radius: 14px; background: var(--surface-2); color: var(--ink); max-height: 5.6em; overflow: hidden; }
+.voice-lines .vl.you { background: color-mix(in srgb, var(--brand) 12%, var(--surface)); }
+.voice-lines .vl b { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3, #6b7280); margin-right: 6px; }
+.voice-lessons { align-self: center; }
+.mic-big.ptt.on { background: var(--coral); color: #fff; animation: bm-pulse 1.2s ease-in-out infinite; }
+.mic-bars { display: inline-flex; align-items: center; gap: 4px; height: 44px; }
+.mic-bars i { width: 5px; border-radius: 3px; background: currentColor; transition: height .08s linear; }
+/* Bosib-gapirish ekrani: matn qatorlari va tugma sig'adi (kontent o'sganda tugmalar ustiga chiqib ketmasin) */
+.tutor-call.voice .voice-stage { flex: 1 0 auto; gap: 14px; padding-bottom: 12px; }
+.ai-avatar .av-shape { transition: opacity .25s ease, stroke .25s ease; }
