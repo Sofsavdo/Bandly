@@ -4114,7 +4114,6 @@
  "O‘qilmoqda…": "Окулуп жатат…",
  "O‘qish": "Окуу",
  "O‘qish uchun — school.": "Окуу үчүн — school.",
- "O‘qish — mashq testi 1": "Окуу — көнүгүү тести 1",
  "O‘qituvchi bergan kod": "Мугалим берген код",
  "O‘qituvchi bilan qisqa suhbat yozing: salomlashing, iltimos bilan bir narsa so‘rang, rahmat ayting va xayrlashing.": "Мугалим менен кыска диалог жазыңыз: саламдашыңыз, сылык түрдө бир нерсе сураңыз, ыраазычылык билдириңиз жана коштошуңуз.",
  "O‘qituvchi bizga inshoni qayta yozdirdi.": "Мугалим бизге эссени кайра жаздырды.",
@@ -5714,7 +5713,6 @@
  "Tillar haqida ma’lumot yo‘q → NOT GIVEN.": "Тилдер жөнүндө маалымат жок → NOT GIVEN.",
  "Tillar katta harf bilan: Uzbek, English.": "Тилдер баш тамга менен жазылат: Uzbek, English.",
  "Tinglab tushunish": "Угуп түшүнүү",
- "Tinglab tushunish — mashq testi 1": "Угуп түшүнүү — көнүгүү тести 1",
  "Tinglang va savollarga javob bering.": "Угуп, суроолорго жооп бериңиз.",
  "Tinglang: bu gap nimani anglatadi?": "Угуңуз: бул сүйлөм эмнени билдирет?",
  "Tinglash": "Угуу",
@@ -9709,5 +9707,16 @@
  "IELTS Academic Reading — to‘liq mock 7": "IELTS Academic Reading — толук сынак 7",
  "IELTS Academic Reading — to‘liq mock 8": "IELTS Academic Reading — толук сынак 8",
  "IELTS Academic Reading — to‘liq mock 9": "IELTS Academic Reading — толук сынак 9",
- "IELTS Academic Reading — to‘liq mock 10": "IELTS Academic Reading — толук сынак 10"
+ "IELTS Academic Reading — to‘liq mock 10": "IELTS Academic Reading — толук сынак 10",
+ "CEFR Multilevel uslubida Reading — mashq testi 2": "CEFR Multilevel стилиндеги Reading — машыгуу тести 2",
+ "CEFR Multilevel uslubida Reading — mashq testi 3": "CEFR Multilevel стилиндеги Reading — машыгуу тести 3",
+ "CEFR Multilevel uslubida Reading — mashq testi 4": "CEFR Multilevel стилиндеги Reading — машыгуу тести 4",
+ "CEFR Multilevel uslubida Reading — mashq testi 5": "CEFR Multilevel стилиндеги Reading — машыгуу тести 5",
+ "CEFR Multilevel uslubida Reading — mashq testi 6": "CEFR Multilevel стилиндеги Reading — машыгуу тести 6",
+ "CEFR Multilevel uslubida Reading — mashq testi 7": "CEFR Multilevel стилиндеги Reading — машыгуу тести 7",
+ "CEFR Multilevel uslubida Reading — mashq testi 8": "CEFR Multilevel стилиндеги Reading — машыгуу тести 8",
+ "CEFR Multilevel uslubida Reading — mashq testi 9": "CEFR Multilevel стилиндеги Reading — машыгуу тести 9",
+ "CEFR Multilevel uslubida Reading — mashq testi 10": "CEFR Multilevel стилиндеги Reading — машыгуу тести 10",
+ "O‘qish — mashq testi {0}": "Окуу — көнүгүү тести {0}",
+ "Tinglab tushunish — mashq testi {0}": "Угуп түшүнүү — көнүгүү тести {0}"
 }

@@ -7189,6 +7189,3759 @@
      ]
     }
    ]
+  },
+  {
+   "id": "cefr-reading-2",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 2",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Riverside Sports Centre: The swimming pool will be closed for cleaning from Monday 12 to Wednesday 14 May. The gym and tennis courts will stay open as usual. Members who have booked a swimming lesson on these days will receive a free extra lesson in June.",
+    "2) EMAIL — Dear parents, the school trip to the science museum is now on Thursday, not Tuesday, because the museum is closed for a private event. The bus will leave at 8.30 am. Children need a packed lunch, but they do not need money, as entrance is free for school groups. Mrs Karimova",
+    "3) ADVERTISEMENT — Weekend cooking course for beginners: learn to make bread, soup and three simple desserts in two Saturday mornings. All ingredients are provided. Places are limited to eight people, so early booking is recommended. Bring an apron.",
+    "In many cities, more and more people are choosing to cycle to work. For some, the main reason is money: a bicycle costs far less to run than a car, and there are no parking charges. Others say they cycle because it allows them to exercise without having to find extra time for the gym.",
+    "City councils have responded in different ways. Some have built separate cycle lanes, so that cyclists do not have to share the road with buses and lorries. Where such lanes exist, the number of cyclists usually rises quickly. Other cities have introduced bike-sharing schemes, which let people rent a bicycle for a short journey using a mobile phone.",
+    "Not everyone is enthusiastic, though. Some drivers complain that cycle lanes make the roads narrower and traffic slower. Cyclists, for their part, often say that the biggest problem is not traffic but the weather: in winter, many of them leave their bicycles at home and take public transport instead.",
+    "A. In towns and villages across Central Asia, the choyxona, or tea house, has long been more than a place to drink tea. Traditionally, men gathered there in the late afternoon to talk about the day’s news, discuss family matters and settle small disagreements.",
+    "B. A typical tea house was built near water — a canal, a stream or a pool — and shaded by large trees. Guests sat on wide wooden platforms covered with carpets and cushions, and in summer the cool air from the water made these places especially popular.",
+    "C. Green tea was the usual drink, served in small bowls rather than cups. The host poured a little tea into a bowl and returned it to the pot several times before serving, a custom that is said to help the tea develop its full flavour.",
+    "D. Food also played an important part. On special occasions, a large dish of plov was cooked in a huge pot over an open fire, and preparing it was often the job of an experienced cook who was respected throughout the neighbourhood.",
+    "E. During the twentieth century, as cities grew and lifestyles changed, many traditional tea houses disappeared. Younger people increasingly preferred cafés and restaurants, and the custom of meeting every afternoon became less common.",
+    "F. Recently, however, the tea house has enjoyed something of a revival. Modern versions combine traditional decoration with comfortable furniture and Wi-Fi, and they attract families and tourists as well as the older men who were once their main visitors.",
+    "Teenagers are often described as lazy because they find it hard to get up in the morning. Scientists, however, have discovered that their behaviour has a biological cause. During adolescence, the body begins to produce the sleep hormone melatonin later in the evening, so most teenagers do not feel tired until around eleven o’clock at night.",
+    "Because school usually starts early, many teenagers do not get the eight to ten hours of sleep that doctors recommend. A lack of sleep can affect concentration, memory and mood, and it has been linked to lower marks in subjects such as mathematics.",
+    "Some schools have experimented with a later start to the school day. In several studies, students who began lessons an hour later slept longer, were absent less often and reported feeling less stressed. Teachers also noticed that pupils were more alert in morning lessons.",
+    "Changing the timetable is not always easy, however. Parents may need to change their working hours, and bus companies must adjust their routes. Experts therefore suggest that families can also help by limiting the use of screens in the evening, because the light from phones can delay sleep even further.",
+    "It has become common to hear that the internet is changing the way we remember. Why, the argument goes, should anyone memorise a date, a phone number or a fact when it can be found in seconds? Some researchers have described a tendency to forget information that we expect to be able to look up later, and they have suggested that we now treat the internet as a kind of external memory.",
+    "This is not entirely new. Long before computers, people relied on books, diaries and other people to store information for them. Within families, for example, one person might be responsible for remembering birthdays while another keeps track of money. What has changed is the size and speed of the external store, and the fact that it is available almost everywhere.",
+    "Whether this is a problem depends partly on what we use our memory for. Critics argue that understanding a subject deeply requires knowledge stored in our own heads, because we can only connect ideas that we actually know. A person who must search for every basic fact, they say, will find it hard to think creatively or to notice when information is false.",
+    "Others are more optimistic. They point out that freeing the mind from routine facts may leave more capacity for analysis and judgement. The challenge for schools, in their view, is not to ban search engines but to teach students which knowledge is worth learning by heart and how to evaluate what they find online."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Cycling to work (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: The tea house (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Teenagers and sleep (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Memory in the age of the internet (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Which facility will be closed for three days?",
+     "options": [
+      "The gym",
+      "The tennis courts",
+      "The swimming pool"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "What will members with a booked swimming lesson get?",
+     "options": [
+      "A free extra lesson",
+      "Their money back",
+      "A lesson in the gym"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Why has the date of the school trip changed?",
+     "options": [
+      "The bus is not available.",
+      "The museum has a private event.",
+      "Tuesday is a holiday."
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What should the children take on the trip?",
+     "options": [
+      "Money for tickets",
+      "A packed lunch",
+      "Nothing at all"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "What do people on the cooking course NOT need to bring?",
+     "options": [
+      "Ingredients",
+      "An apron",
+      "Their booking"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "Why should people book early?",
+     "options": [
+      "The price will rise.",
+      "The course starts soon.",
+      "Only eight people can join."
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Running a bicycle is much cheaper than running a car."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Some people cycle so that they do not need extra time for exercise."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Most cyclists are under thirty years old."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "The number of cyclists usually falls after separate lanes are built."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Bike-sharing schemes can be used with a mobile phone."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Bike-sharing is free in most cities."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "All drivers support the building of cycle lanes."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Cyclists say that traffic is their biggest problem."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. A place for conversation and community",
+      "ii. A drink served in a special way",
+      "iii. Why the old buildings were destroyed by law",
+      "iv. A setting chosen for comfort",
+      "v. A tradition that began to fade",
+      "vi. A meal prepared by a respected person",
+      "vii. An old institution with a new look"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. A place for conversation and community",
+      "ii. A drink served in a special way",
+      "iii. Why the old buildings were destroyed by law",
+      "iv. A setting chosen for comfort",
+      "v. A tradition that began to fade",
+      "vi. A meal prepared by a respected person",
+      "vii. An old institution with a new look"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. A place for conversation and community",
+      "ii. A drink served in a special way",
+      "iii. Why the old buildings were destroyed by law",
+      "iv. A setting chosen for comfort",
+      "v. A tradition that began to fade",
+      "vi. A meal prepared by a respected person",
+      "vii. An old institution with a new look"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. A place for conversation and community",
+      "ii. A drink served in a special way",
+      "iii. Why the old buildings were destroyed by law",
+      "iv. A setting chosen for comfort",
+      "v. A tradition that began to fade",
+      "vi. A meal prepared by a respected person",
+      "vii. An old institution with a new look"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. A place for conversation and community",
+      "ii. A drink served in a special way",
+      "iii. Why the old buildings were destroyed by law",
+      "iv. A setting chosen for comfort",
+      "v. A tradition that began to fade",
+      "vi. A meal prepared by a respected person",
+      "vii. An old institution with a new look"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. A place for conversation and community",
+      "ii. A drink served in a special way",
+      "iii. Why the old buildings were destroyed by law",
+      "iv. A setting chosen for comfort",
+      "v. A tradition that began to fade",
+      "vi. A meal prepared by a respected person",
+      "vii. An old institution with a new look"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Teenagers are often described as ______ because they find it hard to get up."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "During adolescence, the body produces ______ later in the evening."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "A lack of sleep can affect concentration, memory and ______."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Lack of sleep has been linked to lower marks in subjects such as ______."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Students who started an hour later were ______ less often."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Teachers noticed that pupils were more ______ in morning lessons."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "______ companies must adjust their routes if the timetable changes."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "The light from ______ can delay sleep even further."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "According to some researchers, people tend to forget information that",
+     "options": [
+      "they read on a screen.",
+      "they expect to be able to look up later.",
+      "is not important to them.",
+      "they learned as children."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "The example of families in paragraph 2 shows that",
+     "options": [
+      "families forget birthdays more often today.",
+      "money is harder to manage than dates.",
+      "people shared the work of remembering before computers.",
+      "diaries are more reliable than the internet."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "What, according to the writer, has changed?",
+     "options": [
+      "The size and speed of the external store",
+      "The number of facts people need",
+      "The way families organise money",
+      "The reliability of books"
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "Critics believe that deep understanding requires",
+     "options": [
+      "fast access to search engines.",
+      "knowledge stored in our own heads.",
+      "help from other people.",
+      "creative teachers."
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "According to critics, a person who must search for every basic fact may find it hard to",
+     "options": [
+      "use a computer.",
+      "remember phone numbers.",
+      "work in a team.",
+      "notice when information is false."
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "Optimists believe that freeing the mind from routine facts may",
+     "options": [
+      "make people lazier.",
+      "leave more capacity for analysis and judgement.",
+      "reduce the need for schools.",
+      "improve memory for dates."
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "In the optimists’ view, what should schools do?",
+     "options": [
+      "Ban search engines in class",
+      "Test students on more facts",
+      "Teach which knowledge to learn by heart and how to evaluate sources",
+      "Replace books with computers"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-3",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 3",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Lost property: A black mobile phone was found in Room 204 on Tuesday afternoon. If it is yours, please collect it from the reception desk on the ground floor. You will need to tell us the colour of the phone case.",
+    "2) MESSAGE — Hi Dilnoza, I can’t meet you at the cinema at 7 because my train is late. Could we see the 9 o’clock film instead? I’ve already bought the tickets online, so you don’t need to queue. See you at the entrance. Kamola",
+    "3) ADVERTISEMENT — City Museum: free entry on the first Sunday of every month. Guided tours in English start at 11 am and 2 pm and last about an hour. Photography is allowed, but please do not use flash in the painting galleries.",
+    "Volunteering means giving your time to help others without being paid. People volunteer in many ways: some help in hospitals or schools, some clean parks and rivers, and others support older people who live alone. In recent years, the number of young volunteers has grown in many countries.",
+    "Volunteers often say that they get as much from the experience as the people they help. They meet new friends, learn practical skills and feel more connected to their community. For students, volunteering can also be useful when applying for a job, because employers value experience of teamwork and responsibility.",
+    "However, organisations that use volunteers face some difficulties. Many people are keen at the start but stop coming after a few weeks. To keep volunteers, successful organisations give them clear tasks, thank them regularly and offer short training sessions. Some also let volunteers choose the hours that suit them best.",
+    "A. Bees are among the most important insects on Earth. By carrying pollen from one flower to another, they help plants to produce fruit and seeds. A large part of the food we eat, from apples to almonds, depends at least partly on this work.",
+    "B. Honeybees live in highly organised colonies. Each colony has a single queen, which lays the eggs, and thousands of female workers, which collect food, build the wax cells and look after the young. Male bees have only one role: to mate with a queen.",
+    "C. When a worker bee finds a good source of food, she returns to the hive and performs a “dance”. The direction and length of the dance tell other bees where the flowers are and how far away they are.",
+    "D. In many parts of the world, the number of bees has fallen sharply. Scientists believe there are several causes, including the loss of wild flowers, the use of certain chemicals on farms, diseases and changes in the climate.",
+    "E. Farmers and governments have started to respond. Some farmers now leave strips of wild flowers at the edges of their fields, and several countries have limited the use of chemicals that are particularly harmful to bees.",
+    "F. Ordinary people can help too. Planting flowers in gardens and on balconies, avoiding garden chemicals and buying honey from local beekeepers are all small steps that, taken together, can make a difference.",
+    "Fast fashion is the name given to clothes that are designed, produced and sold very quickly and at low prices. Instead of two collections a year, some shops now introduce new styles every week, encouraging customers to buy more often.",
+    "The low prices have a hidden cost. Producing clothes uses large amounts of water and energy, and many cheap garments are made from synthetic materials that are produced from oil. When these clothes are washed, tiny plastic fibres can enter rivers and the sea.",
+    "Another problem is waste. Because cheap clothes are often of poor quality, they wear out quickly, and many are thrown away after being worn only a few times. Most of these clothes end up in landfill, where they may take many years to break down.",
+    "Some consumers are changing their habits. Second-hand clothes shops and online platforms for swapping clothes have become more popular, especially among young people. Others are learning to repair their clothes instead of replacing them, and some brands now offer to take back old garments for recycling.",
+    "Does money make people happy? For most of the twentieth century, economists assumed that the answer was simply yes: the more people earned, the better off they were. When researchers began to ask people directly how satisfied they were with their lives, however, the picture turned out to be more complicated.",
+    "Surveys consistently show that, within a country, richer people report higher life satisfaction than poorer people. The effect is strongest at lower incomes, where extra money pays for basic needs such as food, housing and health care. At higher incomes, each additional amount of money seems to bring a smaller increase in satisfaction.",
+    "One explanation is that people judge their situation by comparing themselves with others. If everyone’s income rises at the same rate, nobody feels richer than their neighbours, and satisfaction may change very little. Another explanation is adaptation: people quickly get used to a higher standard of living, so that a new car or a bigger house soon stops giving pleasure.",
+    "Some researchers suggest that how people spend money matters as much as how much they have. Spending on experiences, such as travel or concerts, appears to produce longer-lasting satisfaction than spending on objects, and spending on other people — buying gifts or giving to charity — often makes the giver happier than spending on themselves."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Volunteering (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: Bees (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Fast fashion (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Money and happiness (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Where can the owner collect the phone?",
+     "options": [
+      "In Room 204",
+      "At the reception desk",
+      "At the lost property office"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "What must the owner say to get the phone back?",
+     "options": [
+      "The colour of the case",
+      "The phone number",
+      "The time they lost it"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Why does Kamola want to change the time?",
+     "options": [
+      "The cinema is full.",
+      "She has not bought tickets.",
+      "Her train is late."
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "Why doesn’t Dilnoza need to queue?",
+     "options": [
+      "The tickets were bought online.",
+      "The film starts late.",
+      "The cinema is empty on weekdays."
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "When is entry to the museum free?",
+     "options": [
+      "Every Sunday",
+      "On the first Sunday of the month",
+      "During guided tours"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What is NOT allowed in the painting galleries?",
+     "options": [
+      "Taking photographs",
+      "Joining a tour",
+      "Using flash"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Volunteers are not paid for their work."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "The number of young volunteers has fallen in many countries."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Most volunteers work in hospitals."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Volunteers often feel they gain from the experience."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Employers value experience of teamwork."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Most people continue volunteering for many years."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Successful organisations pay volunteers a small amount of money."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Volunteers who choose their own hours stay longer than other volunteers."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. How information about food is shared",
+      "ii. Action taken by farmers and governments",
+      "iii. Why bees sting",
+      "iv. The value of bees to food production",
+      "v. Simple things everyone can do",
+      "vi. A society with different roles",
+      "vii. Possible reasons for a decline"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. How information about food is shared",
+      "ii. Action taken by farmers and governments",
+      "iii. Why bees sting",
+      "iv. The value of bees to food production",
+      "v. Simple things everyone can do",
+      "vi. A society with different roles",
+      "vii. Possible reasons for a decline"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. How information about food is shared",
+      "ii. Action taken by farmers and governments",
+      "iii. Why bees sting",
+      "iv. The value of bees to food production",
+      "v. Simple things everyone can do",
+      "vi. A society with different roles",
+      "vii. Possible reasons for a decline"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. How information about food is shared",
+      "ii. Action taken by farmers and governments",
+      "iii. Why bees sting",
+      "iv. The value of bees to food production",
+      "v. Simple things everyone can do",
+      "vi. A society with different roles",
+      "vii. Possible reasons for a decline"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. How information about food is shared",
+      "ii. Action taken by farmers and governments",
+      "iii. Why bees sting",
+      "iv. The value of bees to food production",
+      "v. Simple things everyone can do",
+      "vi. A society with different roles",
+      "vii. Possible reasons for a decline"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. How information about food is shared",
+      "ii. Action taken by farmers and governments",
+      "iii. Why bees sting",
+      "iv. The value of bees to food production",
+      "v. Simple things everyone can do",
+      "vi. A society with different roles",
+      "vii. Possible reasons for a decline"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Some shops introduce new styles every ______."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "Producing clothes uses large amounts of water and ______."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "Many synthetic materials are produced from ______."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "When synthetic clothes are washed, tiny plastic ______ can enter rivers."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Cheap clothes are often of poor ______."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Most thrown-away clothes end up in ______."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "Some people are learning to ______ their clothes instead of replacing them."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Some brands take back old garments for ______."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "What did economists assume for most of the twentieth century?",
+     "options": [
+      "Money has no effect on happiness.",
+      "Higher income always makes people better off.",
+      "Happiness cannot be measured.",
+      "Poor people are happier than rich people."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "What happened when researchers asked people directly about their lives?",
+     "options": [
+      "The results confirmed the old view exactly.",
+      "Most people refused to answer.",
+      "The picture became more complicated.",
+      "Economists stopped studying income."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "Where is the effect of money on satisfaction strongest?",
+     "options": [
+      "At lower incomes",
+      "At higher incomes",
+      "In richer countries",
+      "Among older people"
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "If everyone’s income rises at the same rate, satisfaction may",
+     "options": [
+      "fall sharply.",
+      "rise very quickly.",
+      "depend on age.",
+      "change very little."
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "What does “adaptation” mean in paragraph 3?",
+     "options": [
+      "Moving to a richer area",
+      "Getting used to a higher standard of living",
+      "Comparing yourself with neighbours",
+      "Saving money for the future"
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "Which kind of spending appears to give longer-lasting satisfaction?",
+     "options": [
+      "Spending on cars",
+      "Spending on houses",
+      "Spending on experiences",
+      "Spending on clothes"
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "According to the text, spending on other people often",
+     "options": [
+      "makes the giver happier.",
+      "causes financial problems.",
+      "is less satisfying than buying objects.",
+      "is only possible for the rich."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-4",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 4",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Central Pharmacy: From next week we will open on Sundays from 10 am to 4 pm. On weekdays our hours are unchanged. Prescriptions handed in before midday will be ready the same afternoon.",
+    "2) ANNOUNCEMENT — Passengers travelling to Samarkand: the 14.20 train will leave from platform 3 instead of platform 1 today. The train is expected to arrive about fifteen minutes late. Tea and snacks are available in carriage 5.",
+    "3) ADVERTISEMENT — Second-hand bicycle for sale. Two years old, in very good condition, with new tyres and a basket. Suitable for a teenager or a small adult. The price can be discussed. Please send a message — no calls after 9 pm.",
+    "Since 2020, millions of office workers around the world have started working from home for at least part of the week. For many, the biggest benefit is not having to travel. Time that was once spent in traffic or on crowded buses can now be used for sleep, exercise or family.",
+    "Working from home also has disadvantages. Some people find it hard to separate their work from their private life, and they end up answering emails late in the evening. Others miss the informal conversations with colleagues that often lead to new ideas and help new employees to learn.",
+    "As a result, many companies have chosen a “hybrid” model, in which staff spend some days in the office and some at home. Managers say that the office is now used mainly for meetings and teamwork, while tasks that need concentration are done at home. Some firms have reduced the size of their offices to save money.",
+    "A. Chess is one of the oldest board games still played today. Most historians believe that it developed in India around the sixth century, in a form known as chaturanga, and then spread to Persia, where it became known as shatranj.",
+    "B. From Persia, the game travelled west with traders and scholars. By the eleventh century it was known across the Arab world and in parts of Europe, and in the following centuries it became a favourite pastime of kings and nobles.",
+    "C. The game played at that time was slower than modern chess. The piece now called the queen could only move one square diagonally. In the late fifteenth century, players in southern Europe gave the queen much greater power, and the game became faster and more aggressive.",
+    "D. In the nineteenth century, chess became more organised. Clubs were founded in many cities, the first international tournaments were held, and players began to use clocks to limit the time each player could take.",
+    "E. The arrival of computers changed the game again. In 1997, a computer defeated the world champion in a match for the first time. Today, even a mobile phone can run a program that is stronger than any human player.",
+    "F. Rather than destroying interest in chess, computers have helped it grow. Players of all levels use programs to study and practise, and online platforms allow millions of people to play against opponents from other countries at any time of day.",
+    "In many cities, empty spaces between buildings are being turned into community gardens. On rooftops, in old car parks and even on the walls of buildings, residents are growing vegetables, fruit and flowers.",
+    "Supporters say that urban gardens bring several benefits. They provide fresh food for local people, and they make neighbourhoods greener and more attractive. Plants also help to cool the air in summer, which is important in cities where concrete and asphalt store heat.",
+    "Gardens can have social benefits as well. Working together on a shared project gives neighbours a reason to meet and talk, and many gardens organise events where children learn how food is grown. Doctors have also noted that gardening is good for mental health, as it reduces stress.",
+    "There are challenges, however. In some areas, the soil is polluted and must be replaced before anything can be planted. Water can be expensive, and gardens depend on volunteers who may lose interest. Some projects have also had to close when the land was sold for building.",
+    "False information is nothing new, but the speed at which it can now spread is. On social media, a misleading story can reach millions of people within hours, long before anyone has had time to check whether it is true. Studies of online sharing have found that false stories often travel further and faster than accurate ones, perhaps because they tend to be more surprising or emotional.",
+    "One common response has been fact-checking: journalists or independent organisations examine popular claims and publish corrections. Fact-checking can be effective, but it has limits. Corrections usually reach fewer people than the original story, and people who strongly believe a claim may reject a correction that challenges their views.",
+    "Some researchers have therefore turned to a different approach, sometimes called “prebunking”. Instead of correcting false stories after they appear, people are shown in advance the techniques that are often used to mislead, such as using emotional language, presenting false experts or offering only two options when there are more. The idea is similar to a vaccine: a weak exposure is meant to build resistance to the real thing.",
+    "Early results are encouraging, although it is not yet clear how long the effect lasts. Most experts agree that no single method will solve the problem. Platforms, schools, journalists and individual users all have a part to play, and perhaps the most valuable habit of all is simply to pause and check before sharing."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Working from home (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: The history of chess (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Gardens in the city (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Fighting false information (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "What is new at the pharmacy?",
+     "options": [
+      "Longer weekday hours",
+      "Sunday opening",
+      "Free prescriptions"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "When will a prescription be ready the same afternoon?",
+     "options": [
+      "If it is handed in before midday",
+      "Only on Sundays",
+      "If you phone first"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "What has changed for the Samarkand train today?",
+     "options": [
+      "The departure time",
+      "The destination",
+      "The platform"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What is said about the arrival of the train?",
+     "options": [
+      "It will be on time.",
+      "It will be about fifteen minutes late.",
+      "It will arrive early."
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "What is true about the bicycle?",
+     "options": [
+      "It has new tyres.",
+      "It is brand new.",
+      "It is for young children."
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "How should buyers contact the seller?",
+     "options": [
+      "By phone at any time",
+      "By visiting the shop",
+      "By sending a message"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Many workers say not travelling is the biggest benefit of working from home."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "People who work from home earn more money."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Some home workers answer emails late in the evening."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Informal conversations with colleagues help new employees to learn."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "In a hybrid model, staff work only from home."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Managers say tasks that need concentration are mainly done in the office."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Some companies have made their offices smaller to save money."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Most employees prefer the hybrid model to working full-time in the office."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. Changes that made the game faster",
+      "ii. A game that began in Asia",
+      "iii. Machines that beat people",
+      "iv. Why chess was banned in Europe",
+      "v. Spreading through trade and royalty",
+      "vi. Technology that increased popularity",
+      "vii. Rules and organisation"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. Changes that made the game faster",
+      "ii. A game that began in Asia",
+      "iii. Machines that beat people",
+      "iv. Why chess was banned in Europe",
+      "v. Spreading through trade and royalty",
+      "vi. Technology that increased popularity",
+      "vii. Rules and organisation"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. Changes that made the game faster",
+      "ii. A game that began in Asia",
+      "iii. Machines that beat people",
+      "iv. Why chess was banned in Europe",
+      "v. Spreading through trade and royalty",
+      "vi. Technology that increased popularity",
+      "vii. Rules and organisation"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. Changes that made the game faster",
+      "ii. A game that began in Asia",
+      "iii. Machines that beat people",
+      "iv. Why chess was banned in Europe",
+      "v. Spreading through trade and royalty",
+      "vi. Technology that increased popularity",
+      "vii. Rules and organisation"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. Changes that made the game faster",
+      "ii. A game that began in Asia",
+      "iii. Machines that beat people",
+      "iv. Why chess was banned in Europe",
+      "v. Spreading through trade and royalty",
+      "vi. Technology that increased popularity",
+      "vii. Rules and organisation"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. Changes that made the game faster",
+      "ii. A game that began in Asia",
+      "iii. Machines that beat people",
+      "iv. Why chess was banned in Europe",
+      "v. Spreading through trade and royalty",
+      "vi. Technology that increased popularity",
+      "vii. Rules and organisation"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Gardens are being created on rooftops, in old car parks and on the ______ of buildings."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "Urban gardens provide ______ food for local people."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "Plants help to ______ the air in summer."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Concrete and asphalt store ______."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Many gardens organise events where ______ learn how food is grown."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Doctors say gardening reduces ______."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "In some areas the ______ is polluted and must be replaced."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Some gardens closed when the land was sold for ______."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "According to the writer, what is new about false information?",
+     "options": [
+      "Its existence",
+      "The speed at which it spreads",
+      "Its emotional content",
+      "The number of people who believe it"
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "Why might false stories travel further than accurate ones?",
+     "options": [
+      "They are usually shorter.",
+      "They are shared by famous people.",
+      "They tend to be more surprising or emotional.",
+      "They are easier to translate."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "What is one limit of fact-checking?",
+     "options": [
+      "Corrections usually reach fewer people than the original story.",
+      "It is too expensive for most newspapers.",
+      "Journalists are not trained to do it.",
+      "It takes several months."
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "How does “prebunking” differ from fact-checking?",
+     "options": [
+      "It uses only experts.",
+      "It deletes false stories.",
+      "It is done by social media companies.",
+      "It prepares people before they meet false stories."
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "Which of these is given as a technique used to mislead?",
+     "options": [
+      "Quoting official statistics",
+      "Offering only two options when there are more",
+      "Using long sentences",
+      "Publishing at night"
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "Why does the writer compare prebunking to a vaccine?",
+     "options": [
+      "Both are produced by scientists.",
+      "Both last for life.",
+      "A weak exposure is meant to build resistance.",
+      "Both are compulsory."
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "What does the writer suggest at the end?",
+     "options": [
+      "Platforms alone should solve the problem.",
+      "Prebunking will soon replace fact-checking.",
+      "Social media should be closed.",
+      "Users should pause and check before sharing."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-5",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 5",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Dental Clinic: Patients who cannot come to their appointment must tell us at least 24 hours before. If you do not, you may be charged a fee. Appointments can be changed by phone or on our website.",
+    "2) MESSAGE — Hi Jasur, the concert tonight starts at 8, but the doors open at 7. Let’s meet outside the main entrance at 7.15 so we can find good seats. Don’t forget your student card — it gives us a discount at the café inside. Bekzod",
+    "3) ADVERTISEMENT — Flat to rent near the city centre: two bedrooms, a large kitchen and a balcony. The flat is on the fourth floor, but there is a lift. Available from 1 September. A minimum stay of twelve months is required.",
+    "Street food is ready-to-eat food sold in public places such as markets, squares and the sides of busy roads. In many countries it is an important part of everyday life, because it is cheap, quick and often delicious. Millions of people buy their breakfast or lunch from street sellers every day.",
+    "For tourists, street food is often one of the highlights of a trip. It allows visitors to try local dishes and to see how ordinary people eat. Some cities now organise walking tours that take visitors from one food stall to another, with a guide who explains the history of each dish.",
+    "However, some people worry about hygiene. Sellers do not always have running water, and food may be kept outside in hot weather. For this reason, several cities have introduced rules that require street sellers to have a licence and to follow basic safety standards. Many sellers welcome these rules, because they help customers to trust them.",
+    "A. The Kyzylkum, whose name means “red sand”, is one of the largest deserts in Central Asia. It lies between two great rivers, the Amu Darya and the Syr Darya, and covers a large part of Uzbekistan as well as areas of Kazakhstan and Turkmenistan.",
+    "B. Life in the desert is shaped by extremes. Summers are very hot and dry, while winters can be surprisingly cold. Rain falls mainly in spring, and for a few weeks after it the desert is covered with grasses and flowers.",
+    "C. Although the land looks empty, it supports a variety of animals. Lizards, tortoises and snakes are common, and some larger animals, such as gazelles, are able to survive for long periods with very little water.",
+    "D. For centuries, people lived in the desert by moving with their animals in search of grass and water. Wells were extremely valuable, and their location was knowledge that families passed from one generation to the next.",
+    "E. In the twentieth century, the discovery of natural gas, gold and other minerals brought great changes. New towns were built for the workers, together with roads and railways that connected the desert to the rest of the country.",
+    "F. Today the desert also faces new pressures. Water taken from the rivers for farming has reduced the amount that reaches the region, and scientists are studying how changes in the climate may affect its plants and animals in the future.",
+    "Recycling is often presented as the simplest way for ordinary people to protect the environment. Yet in many countries only a small proportion of the plastic that is collected is actually turned into new products. The rest is burned, buried or sent abroad.",
+    "One reason is that there are many different types of plastic, and they cannot all be recycled together. Bottles, food containers and bags are often made from different materials, and if they are mixed, the quality of the recycled plastic falls.",
+    "Another problem is contamination. Containers that still have food or drink in them can spoil a whole load of material. For this reason, recycling centres ask people to rinse containers before putting them in the bin.",
+    "Many experts argue that recycling alone is not enough. They say that the most effective approach is to reduce the amount of plastic we use in the first place, for example by choosing products with less packaging, carrying reusable bags and bottles, and buying food loose rather than wrapped.",
+    "It is widely claimed that anyone can become an expert in almost any field if they practise for about ten thousand hours. The figure became famous through popular books, which drew on research into musicians and other high performers. The message was attractive because it suggested that success depends on effort rather than talent.",
+    "The researchers whose work inspired the claim have pointed out that it is a simplification. In their studies, the most important factor was not simply the number of hours but the type of practice. What they called “deliberate practice” involves working on specific weaknesses, usually with the guidance of a teacher, and receiving immediate feedback. Playing a piece of music that one already knows well does not count.",
+    "Later studies have also suggested that practice explains only part of the difference between people. In some activities, such as games and music, the amount of practice accounts for a considerable share of the variation in performance; in others, its role appears to be smaller. Factors such as the age at which people start, their working memory and even their personality may also matter.",
+    "None of this means that practice is unimportant. For most learners, a sensible conclusion is that how they practise matters at least as much as how long. Short, focused sessions that target particular problems, followed by honest feedback, are likely to be more valuable than many hours of comfortable repetition."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Street food (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: The Kyzylkum desert (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: The limits of recycling (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: The ten-thousand-hour idea (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "What must patients do if they cannot come?",
+     "options": [
+      "Pay a fee immediately",
+      "Tell the clinic at least 24 hours before",
+      "Visit the clinic in person"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "How can appointments be changed?",
+     "options": [
+      "By phone or on the website",
+      "Only at the reception",
+      "By email only"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Why does Bekzod want to meet at 7.15?",
+     "options": [
+      "The concert starts then.",
+      "To buy tickets",
+      "To find good seats"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What does the student card give them?",
+     "options": [
+      "Free entry to the concert",
+      "A discount at the café",
+      "Better seats"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "What is true about the flat?",
+     "options": [
+      "It is on the ground floor.",
+      "It has three bedrooms.",
+      "There is a lift in the building."
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What is required from people who rent the flat?",
+     "options": [
+      "A stay of at least twelve months",
+      "A job in the city centre",
+      "Moving in before September"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Street food is usually expensive."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Millions of people buy meals from street sellers every day."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Street food allows tourists to see how ordinary people eat."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Food walking tours are more expensive than restaurant meals."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "On food tours, a guide explains the history of each dish."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Street sellers always have running water."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Some cities require street sellers to have a licence."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Most sellers are against the new safety rules."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. A changing environment",
+      "ii. A desert between two rivers",
+      "iii. Wealth from under the ground",
+      "iv. Animals adapted to hard conditions",
+      "v. A climate of contrasts",
+      "vi. The building of a great canal",
+      "vii. A traditional way of life"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. A changing environment",
+      "ii. A desert between two rivers",
+      "iii. Wealth from under the ground",
+      "iv. Animals adapted to hard conditions",
+      "v. A climate of contrasts",
+      "vi. The building of a great canal",
+      "vii. A traditional way of life"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. A changing environment",
+      "ii. A desert between two rivers",
+      "iii. Wealth from under the ground",
+      "iv. Animals adapted to hard conditions",
+      "v. A climate of contrasts",
+      "vi. The building of a great canal",
+      "vii. A traditional way of life"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. A changing environment",
+      "ii. A desert between two rivers",
+      "iii. Wealth from under the ground",
+      "iv. Animals adapted to hard conditions",
+      "v. A climate of contrasts",
+      "vi. The building of a great canal",
+      "vii. A traditional way of life"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. A changing environment",
+      "ii. A desert between two rivers",
+      "iii. Wealth from under the ground",
+      "iv. Animals adapted to hard conditions",
+      "v. A climate of contrasts",
+      "vi. The building of a great canal",
+      "vii. A traditional way of life"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. A changing environment",
+      "ii. A desert between two rivers",
+      "iii. Wealth from under the ground",
+      "iv. Animals adapted to hard conditions",
+      "v. A climate of contrasts",
+      "vi. The building of a great canal",
+      "vii. A traditional way of life"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Only a small ______ of collected plastic is turned into new products."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "Plastic that is not recycled may be burned, buried or sent ______."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "If different plastics are mixed, the ______ of the recycled plastic falls."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Another problem for recycling is ______."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Recycling centres ask people to ______ containers first."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Experts say the most effective approach is to ______ the amount of plastic we use."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "People can choose products with less ______."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Food can be bought ______ rather than wrapped."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "Why was the ten-thousand-hour message attractive?",
+     "options": [
+      "It was based on a large survey.",
+      "It suggested success depends on effort rather than talent.",
+      "It applied only to musicians.",
+      "It promised quick results."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "What did the original researchers say about the claim?",
+     "options": [
+      "It is completely correct.",
+      "It was invented by journalists.",
+      "It is a simplification.",
+      "It applies only to sport."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "Which of the following is NOT part of “deliberate practice”?",
+     "options": [
+      "Working on specific weaknesses",
+      "Receiving immediate feedback",
+      "Guidance from a teacher",
+      "Playing a piece one already knows well"
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "What have later studies suggested?",
+     "options": [
+      "Practice explains only part of the difference between people.",
+      "Practice has no effect on performance.",
+      "Talent cannot be measured.",
+      "Older learners practise more."
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "According to paragraph 3, the role of practice",
+     "options": [
+      "is the same in all activities.",
+      "varies between activities.",
+      "is largest in sport.",
+      "decreases with age."
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "Which factor is mentioned as possibly important besides practice?",
+     "options": [
+      "Family income",
+      "The number of teachers",
+      "Working memory",
+      "The weather"
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "What is the writer’s main advice to learners?",
+     "options": [
+      "Practise for as many hours as possible.",
+      "Choose an activity that matches your talent.",
+      "Avoid feedback until you are confident.",
+      "Focus on how you practise, not only how long."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-6",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 6",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Green Park Hotel: Breakfast is served in the garden restaurant from 7 to 10 am. Guests who need to leave before 7 can ask reception for a breakfast bag the evening before. Rooms must be left by 12 noon on the day of departure.",
+    "2) EMAIL — Dear Mr Rakhimov, thank you for your application for the position of sales assistant. We would like to invite you to an interview on Friday at 3 pm. Please bring a copy of your passport and the names of two people who can give you a reference. Regards, Human Resources",
+    "3) ADVERTISEMENT — English conversation club: every Wednesday evening at the city library. All levels are welcome, and the first meeting is free. After that, the club costs a small monthly fee, which pays for tea and materials. No booking is needed — just come along.",
+    "Board games, which many people thought had been replaced by video games, are enjoying a revival. In the last ten years, sales have increased in many countries, and special cafés where customers can play games while they eat and drink have opened in large cities.",
+    "One reason for their popularity is that board games bring people together face to face. Players say that, unlike most video games, board games make them talk, laugh and argue with friends and family around the same table. Some parents also like them because they give children a break from screens.",
+    "Modern board games are often very different from the classic games of the past. Many are cooperative, which means that players work together against the game rather than against each other. Others take several hours to play and have complex rules, so a member of staff in a games café may explain how to play.",
+    "A. Paper was invented in China more than two thousand years ago. Early paper was made from plant fibres, old cloth and fishing nets, which were soaked in water, beaten into a pulp and then spread on a screen to dry.",
+    "B. For several centuries, the method of making paper was known only in East Asia. According to a well-known story, the secret reached Samarkand in the eighth century, and the city soon became famous for producing paper of very high quality.",
+    "C. From Central Asia, papermaking spread to Baghdad, Damascus and Cairo, and later to Spain and Italy. Because paper was much cheaper than parchment made from animal skin, it allowed more books to be copied and more people to learn to read.",
+    "D. The invention of the printing press in Europe in the fifteenth century greatly increased the demand for paper. Mills powered by water were built along rivers, and paper became one of the most important materials of the modern world.",
+    "E. Until the nineteenth century, most paper in Europe was still made from old cloth, which was often in short supply. Inventors then found ways to make paper from wood, which made it far cheaper and allowed the production of newspapers for a mass audience.",
+    "F. Today, digital technology has reduced the use of paper in offices, but total demand remains high, partly because of the growth of online shopping and the cardboard boxes it requires. Recycling and responsibly managed forests have become important ways to limit the environmental impact.",
+    "Electric cars are becoming a common sight in many cities. Unlike traditional cars, they do not burn petrol or diesel, so they produce no exhaust gases while they are being driven. This can improve the air quality in busy streets.",
+    "However, electric cars are not completely clean. Making their batteries requires large amounts of energy and metals such as lithium, which must be mined. In addition, the electricity used to charge the cars may come from power stations that burn coal or gas.",
+    "For many drivers, the main concern is range — the distance a car can travel before its battery needs charging. Although modern cars can travel much further than early models, drivers still worry about finding a charging point on long journeys.",
+    "Governments in many countries are encouraging people to buy electric cars by offering lower taxes and free parking. As the number of charging points increases and battery prices fall, experts expect electric cars to become cheaper than petrol cars to buy as well as to run.",
+    "Most of us believe that we can do several things at once: answer a message while listening to a lecture, or follow a conversation while checking the news. Research on attention suggests that this belief is largely mistaken. Except for very simple or automatic activities, the brain does not truly perform two demanding tasks at the same time; instead, it switches rapidly between them.",
+    "Each switch has a cost. When we move our attention from one task to another, it takes time to remember where we were and what we were trying to do, and errors become more likely. These costs are small for a single switch but can add up to a considerable loss of time and accuracy over a working day.",
+    "Smartphones have made such switching more frequent. Notifications interrupt us many times an hour, and even when we ignore them, the expectation of a message can distract us. In one widely discussed study, students performed worse on tests of attention when their phones were simply on the desk, switched off, than when the phones were in another room — although later attempts to repeat this result have produced mixed findings.",
+    "What can be done? Researchers suggest that people who need to concentrate should group similar tasks together, turn off notifications for set periods and keep their phones out of sight. Some organisations have experimented with “quiet hours” during which meetings and messages are discouraged. The aim is not to reject technology but to use it in a way that protects our limited capacity for attention."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: The return of board games (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: The story of paper (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Electric cars (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: The myth of multitasking (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "What can guests who leave before 7 am do?",
+     "options": [
+      "Eat breakfast in their room",
+      "Ask for a breakfast bag the evening before",
+      "Get a refund for breakfast"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "By what time must guests leave their rooms?",
+     "options": [
+      "10 am",
+      "7 am",
+      "12 noon"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "What is the purpose of the email?",
+     "options": [
+      "To invite Mr Rakhimov to an interview",
+      "To offer Mr Rakhimov a job",
+      "To reject an application"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What should Mr Rakhimov bring?",
+     "options": [
+      "A letter from his school",
+      "Two photographs",
+      "The names of two referees"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "How much does the first club meeting cost?",
+     "options": [
+      "Nothing",
+      "A small fee",
+      "The price of tea"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What do people need to do before going to the club?",
+     "options": [
+      "Book a place",
+      "Nothing — they can just come",
+      "Pass a level test"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Sales of board games have increased in many countries."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Board game cafés can only be found in small towns."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Players say board games make them talk and laugh with others."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Children who play board games do better at school."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Some parents like board games because they give children a break from screens."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "In cooperative games, players compete against each other."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "All modern board games can be learned in a few minutes."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Games cafés charge extra for explaining the rules."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. Cheaper paper for a mass audience",
+      "ii. A new material and how it was made",
+      "iii. The secret reaches Central Asia",
+      "iv. Why paper is no longer needed",
+      "v. A machine that increased demand",
+      "vi. A cheaper material that spread knowledge",
+      "vii. Old demand, new solutions"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. Cheaper paper for a mass audience",
+      "ii. A new material and how it was made",
+      "iii. The secret reaches Central Asia",
+      "iv. Why paper is no longer needed",
+      "v. A machine that increased demand",
+      "vi. A cheaper material that spread knowledge",
+      "vii. Old demand, new solutions"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. Cheaper paper for a mass audience",
+      "ii. A new material and how it was made",
+      "iii. The secret reaches Central Asia",
+      "iv. Why paper is no longer needed",
+      "v. A machine that increased demand",
+      "vi. A cheaper material that spread knowledge",
+      "vii. Old demand, new solutions"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. Cheaper paper for a mass audience",
+      "ii. A new material and how it was made",
+      "iii. The secret reaches Central Asia",
+      "iv. Why paper is no longer needed",
+      "v. A machine that increased demand",
+      "vi. A cheaper material that spread knowledge",
+      "vii. Old demand, new solutions"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. Cheaper paper for a mass audience",
+      "ii. A new material and how it was made",
+      "iii. The secret reaches Central Asia",
+      "iv. Why paper is no longer needed",
+      "v. A machine that increased demand",
+      "vi. A cheaper material that spread knowledge",
+      "vii. Old demand, new solutions"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. Cheaper paper for a mass audience",
+      "ii. A new material and how it was made",
+      "iii. The secret reaches Central Asia",
+      "iv. Why paper is no longer needed",
+      "v. A machine that increased demand",
+      "vi. A cheaper material that spread knowledge",
+      "vii. Old demand, new solutions"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Electric cars produce no exhaust ______ while being driven."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "Electric cars can improve the air ______ in busy streets."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "Making batteries requires large amounts of ______ and metals."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Metals such as ______ must be mined."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "The electricity may come from power stations that burn coal or ______."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "The distance a car can travel before charging is called its ______."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "Governments encourage buyers with lower ______ and free parking."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Experts expect battery ______ to fall."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "What does research suggest about doing two demanding tasks at once?",
+     "options": [
+      "The brain does it easily.",
+      "Only young people can do it.",
+      "It improves memory.",
+      "The brain actually switches between them."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "What is said about the cost of switching?",
+     "options": [
+      "It is large for every single switch.",
+      "It is small for one switch but adds up over a day.",
+      "It only affects accuracy, not time.",
+      "It disappears with practice."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "According to paragraph 3, even ignored notifications",
+     "options": [
+      "improve our focus.",
+      "are quickly forgotten.",
+      "can still distract us through expectation.",
+      "save time later."
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "In the study described, students performed worse when their phones were",
+     "options": [
+      "on the desk and switched off.",
+      "in another room.",
+      "in their pockets and switched on.",
+      "used for the test."
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "What does the writer say about later attempts to repeat the study?",
+     "options": [
+      "They confirmed it completely.",
+      "They have produced mixed findings.",
+      "They were never carried out.",
+      "They found the opposite result."
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "Which piece of advice is given to people who need to concentrate?",
+     "options": [
+      "Answer messages immediately.",
+      "Use two screens.",
+      "Work only at night.",
+      "Group similar tasks together."
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "What is the aim of the suggestions, according to the writer?",
+     "options": [
+      "To reject technology",
+      "To protect our limited capacity for attention",
+      "To reduce working hours",
+      "To ban smartphones at work"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-7",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 7",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — University Library: During the exam period, the library will be open 24 hours a day from 1 to 20 June. Students must show their student card to enter after 10 pm. Food is not allowed in the reading rooms, but drinks in closed bottles are.",
+    "2) MESSAGE — Mum, I’ve gone to Nodira’s house to study for tomorrow’s chemistry test. Her father will drive me home at about 9. I’ve eaten already, so you don’t need to keep dinner for me. My phone battery is low, so call Nodira if you need me. Laylo",
+    "3) ADVERTISEMENT — Lost dog: small, brown, with a white spot on his back. He answers to the name “Bobik” and is very friendly. Last seen near the central market on Saturday morning. A reward is offered for any information.",
+    "Keeping pets has become more popular in many cities in recent years. Cats and dogs are the most common, but some people prefer birds, fish or even reptiles. For many owners, a pet is not just an animal but a member of the family.",
+    "Research suggests that pets can be good for our health. Dog owners, for example, tend to walk more than people without dogs, and spending time with animals may lower stress. Pets can also be good company for people who live alone, especially older people.",
+    "However, owning a pet is a serious responsibility. Animals need food, exercise and visits to the vet, which can be expensive. Animal charities say that some people buy pets without thinking carefully, and later give them away when they realise how much time and money they require. For this reason, charities advise people to consider adopting an animal from a shelter and to find out about its needs first.",
+    "A. The Olympic Games began in ancient Greece more than two and a half thousand years ago. They were held every four years at Olympia in honour of the god Zeus, and athletes came from many Greek cities to compete.",
+    "B. The ancient Games included running, wrestling, boxing, horse and chariot races, and the pentathlon, which combined five different events. Winners did not receive gold medals; instead, they were given a crown made of olive leaves, although they were often richly rewarded when they returned home.",
+    "C. The Games continued for more than a thousand years but finally came to an end in the late fourth century, when the Roman Empire, which by then ruled Greece, stopped supporting such traditional festivals.",
+    "D. The modern Olympic Games were the idea of a French educator, Pierre de Coubertin, who believed that sport could encourage peace and understanding between nations. The first modern Games were held in Athens in 1896.",
+    "E. Since then, the Games have grown enormously. Today thousands of athletes from more than two hundred countries take part, Winter Games have been added, and the Paralympic Games give athletes with disabilities the chance to compete at the highest level.",
+    "F. Hosting the Games, however, has become extremely expensive. Some cities have spent huge sums on stadiums that are rarely used afterwards, and in recent years fewer cities have applied to host the event.",
+    "Around a third of all the food produced in the world is lost or wasted. Some is lost on farms and during transport, but in richer countries a large share is thrown away by shops, restaurants and households.",
+    "At home, food is often wasted because people buy more than they need. Special offers encourage shoppers to buy large quantities, and food is then forgotten at the back of the fridge until it goes bad. Confusion about date labels also plays a part: many people throw away food that is still safe to eat.",
+    "Wasting food is not only a waste of money. When food rots in landfill, it produces methane, a gas that contributes to climate change. In addition, all the water, land and energy used to grow and transport the food are wasted too.",
+    "There are simple ways to reduce waste. Planning meals for the week, making a shopping list and storing food correctly can all help. Some supermarkets now sell “ugly” fruit and vegetables at lower prices, and apps allow restaurants to sell leftover food cheaply at the end of the day.",
+    "For much of history, nostalgia — a longing for the past — was regarded as a kind of illness. In the seventeenth century, a Swiss doctor described it as a condition affecting soldiers who were far from home, and for a long time afterwards it was associated with sadness and an inability to cope with the present.",
+    "In recent decades, however, psychologists have begun to see nostalgia in a more positive light. Studies in which people are asked to recall a meaningful event from their past suggest that nostalgic memories often increase feelings of social connection and give life a sense of meaning. Interestingly, people tend to become more nostalgic when they feel lonely or anxious, which suggests that nostalgia may help them to restore their mood.",
+    "This does not mean that nostalgia is always helpful. When people constantly compare a disappointing present with an idealised past, nostalgia may make them less willing to accept change. Memories are also selective: we tend to remember the good parts of the past and forget the difficulties, so the “good old days” may never have been as good as we think.",
+    "Businesses are well aware of nostalgia’s power. Advertisers frequently use music, images and products from earlier decades to create a warm emotional response, and old brands are regularly brought back in their original packaging. For consumers, recognising this strategy may be the first step towards deciding whether they are buying a product or simply a feeling."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Living with pets (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: The Olympic Games (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Food waste (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Nostalgia (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "What will students need to enter the library after 10 pm?",
+     "options": [
+      "A special permit",
+      "Their student card",
+      "A teacher’s letter"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "What is allowed in the reading rooms?",
+     "options": [
+      "Drinks in closed bottles",
+      "Sandwiches",
+      "Hot meals"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Why is Laylo at Nodira’s house?",
+     "options": [
+      "To have dinner",
+      "To charge her phone",
+      "To study for a test"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "Why should her mother call Nodira?",
+     "options": [
+      "Laylo’s phone battery is low.",
+      "Nodira’s father asked her to.",
+      "Laylo has lost her phone."
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "How can the dog be recognised?",
+     "options": [
+      "It is large and black.",
+      "It wears a red collar.",
+      "It has a white spot on its back."
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "Where was the dog last seen?",
+     "options": [
+      "Near the central market",
+      "In the park",
+      "At the vet"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Cats and dogs are the most common pets."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Many owners see their pet as part of the family."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Dog owners usually walk less than people without dogs."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Older people are more likely to own cats than dogs."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Visits to the vet can be expensive."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Some people give pets away after realising how much they cost."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Charities advise people to buy pets from shops."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Adopting from a shelter is cheaper than buying a pet."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. The end of an ancient tradition",
+      "ii. A festival for a god",
+      "iii. The cost of being a host",
+      "iv. Prizes and competitions in the past",
+      "v. Why women could not compete",
+      "vi. A larger and more varied event",
+      "vii. The rebirth of an old idea"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. The end of an ancient tradition",
+      "ii. A festival for a god",
+      "iii. The cost of being a host",
+      "iv. Prizes and competitions in the past",
+      "v. Why women could not compete",
+      "vi. A larger and more varied event",
+      "vii. The rebirth of an old idea"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. The end of an ancient tradition",
+      "ii. A festival for a god",
+      "iii. The cost of being a host",
+      "iv. Prizes and competitions in the past",
+      "v. Why women could not compete",
+      "vi. A larger and more varied event",
+      "vii. The rebirth of an old idea"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. The end of an ancient tradition",
+      "ii. A festival for a god",
+      "iii. The cost of being a host",
+      "iv. Prizes and competitions in the past",
+      "v. Why women could not compete",
+      "vi. A larger and more varied event",
+      "vii. The rebirth of an old idea"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. The end of an ancient tradition",
+      "ii. A festival for a god",
+      "iii. The cost of being a host",
+      "iv. Prizes and competitions in the past",
+      "v. Why women could not compete",
+      "vi. A larger and more varied event",
+      "vii. The rebirth of an old idea"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. The end of an ancient tradition",
+      "ii. A festival for a god",
+      "iii. The cost of being a host",
+      "iv. Prizes and competitions in the past",
+      "v. Why women could not compete",
+      "vi. A larger and more varied event",
+      "vii. The rebirth of an old idea"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Around a ______ of all food produced is lost or wasted."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "At home, people often buy more food than they ______."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "Special ______ encourage shoppers to buy large quantities."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Confusion about date ______ leads people to throw away safe food."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Rotting food in landfill produces ______."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Planning ______ for the week can reduce waste."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "Some supermarkets sell “______” fruit and vegetables at lower prices."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Apps let restaurants sell ______ food cheaply."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "How was nostalgia regarded for much of history?",
+     "options": [
+      "As a sign of intelligence",
+      "As a kind of illness",
+      "As a pleasant feeling",
+      "As a problem only for the old"
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "Who did the Swiss doctor describe as affected by nostalgia?",
+     "options": [
+      "Children at school",
+      "Sailors at sea",
+      "Soldiers far from home",
+      "Farmers in winter"
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "According to recent studies, nostalgic memories often",
+     "options": [
+      "increase feelings of social connection.",
+      "make people more anxious.",
+      "reduce the sense of meaning in life.",
+      "cause people to forget the present."
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "What does the fact that lonely people become more nostalgic suggest?",
+     "options": [
+      "Nostalgia causes loneliness.",
+      "Lonely people have better memories.",
+      "Nostalgia is a sign of illness.",
+      "Nostalgia may help people restore their mood."
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "When may nostalgia be unhelpful?",
+     "options": [
+      "When people remember difficult times",
+      "When it makes people less willing to accept change",
+      "When it is shared with friends",
+      "When it is used in education"
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "Why may the “good old days” not have been as good as we think?",
+     "options": [
+      "Memories are selective.",
+      "Life was more expensive.",
+      "Old photographs are unreliable.",
+      "People lived shorter lives."
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "What does the writer suggest consumers should do?",
+     "options": [
+      "Avoid old brands completely",
+      "Buy products from earlier decades",
+      "Recognise how advertisers use nostalgia",
+      "Complain about advertising"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-8",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 8",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Bus route 42: Because of road works on Navoi Street, buses will not stop at the theatre from 3 to 17 April. Passengers should use the temporary stop outside the post office, about 200 metres away. Timetables are unchanged.",
+    "2) EMAIL — Hi everyone, just a reminder that our class reunion is on Saturday 20th at the Chinor restaurant. Please let me know by Wednesday if you are coming, so I can tell the restaurant how many people to expect. Partners are welcome too. Shahlo",
+    "3) ADVERTISEMENT — Part-time job: we are looking for a friendly person to work in our bookshop on Saturdays and Sundays. Experience is not necessary, but you must enjoy reading and be good with customers. Some knowledge of English would be useful.",
+    "A gap year is a period, usually of several months to a year, that young people take between finishing school and starting university. During this time, some work to save money, while others travel, volunteer or learn new skills.",
+    "Supporters of gap years say that they help young people to become more independent and confident. Living away from home and dealing with new situations can teach them how to manage money, solve problems and communicate with people from different backgrounds. Some students also say that a gap year helped them to decide what they really wanted to study.",
+    "However, not everyone agrees that a gap year is a good idea. Some parents worry that their children will lose the habit of studying and find it difficult to return to education. Travelling abroad can also be expensive, so gap years are not available to everyone. For this reason, some organisations now offer programmes that combine work and volunteering in the student’s own country.",
+    "A. The Ferghana Valley, surrounded by mountains, is one of the most fertile and densely populated regions of Central Asia. Rivers flowing down from the mountains bring water and rich soil, and for centuries farmers have grown fruit, grain and cotton there.",
+    "B. The valley is divided between three countries — Uzbekistan, Kyrgyzstan and Tajikistan. The borders between them are long and complicated, and in some places villages belonging to one country are surrounded by the territory of another.",
+    "C. The towns of the valley are famous for their crafts. Margilan is known for its silk, Rishtan for its blue and green ceramics, and Kokand, once the capital of a powerful state, for its palaces and mosques.",
+    "D. Water has always been central to life in the valley. An ancient system of canals carries water from the rivers to the fields, and the right to use it was traditionally managed by local communities according to strict rules.",
+    "E. In the twentieth century, the area of land used for growing cotton was greatly increased. This brought income but also problems: large amounts of water were taken from the rivers, and in some areas the soil became salty and less productive.",
+    "F. In recent years, farmers have begun to grow a wider range of crops, including fruit and vegetables for export. At the same time, new roads and border crossings are making it easier for people and goods to move around the valley.",
+    "Noise is one of the most common forms of pollution in modern cities, yet it often receives less attention than polluted air or water. Traffic, aircraft, building work and loud music can all raise noise levels far above what is comfortable.",
+    "Long-term exposure to noise can harm health. It can disturb sleep, increase stress and, according to some studies, raise the risk of heart disease. Children who go to school near busy airports have been found to have more difficulty with reading.",
+    "Cities have tried various ways to reduce noise. Some have introduced lower speed limits at night, built walls along motorways and encouraged the use of quieter road surfaces. Electric buses, which are much quieter than diesel buses, are also helping in some places.",
+    "Trees and parks can help too, although their effect on noise levels is often smaller than people imagine. Perhaps their greatest value is that they offer residents quiet places where they can escape the noise for a while and recover from the stress of city life.",
+    "Public trust in science is often described as being in crisis. Commentators point to disputes over vaccines, climate change and nutrition as evidence that large numbers of people no longer believe what scientists tell them. Surveys, however, present a more nuanced picture: in many countries, scientists remain among the most trusted professional groups, considerably ahead of politicians and journalists.",
+    "Where distrust exists, it is often not a rejection of science as a whole but of particular findings that conflict with a person’s values, identity or interests. Someone may accept the science behind modern medicine while doubting research on climate change, especially if the policies associated with that research threaten their job or way of life.",
+    "Scientists themselves may sometimes contribute to the problem. When early results are presented with too much confidence and are later revised, members of the public may conclude that scientists cannot make up their minds. Yet changing conclusions in the light of new evidence is precisely how science is supposed to work; the difficulty lies in communicating uncertainty honestly without appearing unreliable.",
+    "Researchers who study science communication suggest several ways to build trust. Explaining not only what scientists know but how they know it, being open about uncertainty and listening to people’s concerns rather than simply correcting them all appear to help. Trust, they argue, is built slowly through relationships, and it cannot be demanded."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Taking a gap year (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: The Ferghana Valley (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Noise in the city (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Trust in science (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Why will buses not stop at the theatre?",
+     "options": [
+      "The theatre is closed.",
+      "There are road works.",
+      "The timetable has changed."
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "Where should passengers wait for the bus?",
+     "options": [
+      "Outside the post office",
+      "Opposite the theatre",
+      "At the next street"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Why does Shahlo need answers by Wednesday?",
+     "options": [
+      "The restaurant closes on Thursday.",
+      "She is going away.",
+      "To tell the restaurant how many people are coming"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "Who can come to the reunion?",
+     "options": [
+      "Only former classmates",
+      "Former classmates and their partners",
+      "Anyone who pays"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "When is the bookshop job?",
+     "options": [
+      "At weekends",
+      "Every evening",
+      "On weekdays"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What is necessary for the job?",
+     "options": [
+      "Previous experience",
+      "Good English",
+      "Enjoying reading"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "A gap year is taken between school and university."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "All gap year students travel abroad."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Supporters say gap years can help young people become more independent."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Students who take a gap year get higher marks at university."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Some students decided what to study during their gap year."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Some parents fear their children will lose the habit of studying."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Gap years are available to everyone because they are cheap."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Programmes in the student’s own country are run by universities."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. Water shared by rules",
+      "ii. A region of many crafts",
+      "iii. A green valley between mountains",
+      "iv. New crops and better connections",
+      "v. A crop with hidden costs",
+      "vi. Tourism replaces farming",
+      "vii. Complicated borders"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. Water shared by rules",
+      "ii. A region of many crafts",
+      "iii. A green valley between mountains",
+      "iv. New crops and better connections",
+      "v. A crop with hidden costs",
+      "vi. Tourism replaces farming",
+      "vii. Complicated borders"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. Water shared by rules",
+      "ii. A region of many crafts",
+      "iii. A green valley between mountains",
+      "iv. New crops and better connections",
+      "v. A crop with hidden costs",
+      "vi. Tourism replaces farming",
+      "vii. Complicated borders"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. Water shared by rules",
+      "ii. A region of many crafts",
+      "iii. A green valley between mountains",
+      "iv. New crops and better connections",
+      "v. A crop with hidden costs",
+      "vi. Tourism replaces farming",
+      "vii. Complicated borders"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. Water shared by rules",
+      "ii. A region of many crafts",
+      "iii. A green valley between mountains",
+      "iv. New crops and better connections",
+      "v. A crop with hidden costs",
+      "vi. Tourism replaces farming",
+      "vii. Complicated borders"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. Water shared by rules",
+      "ii. A region of many crafts",
+      "iii. A green valley between mountains",
+      "iv. New crops and better connections",
+      "v. A crop with hidden costs",
+      "vi. Tourism replaces farming",
+      "vii. Complicated borders"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Noise often receives less ______ than polluted air or water."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "Long-term exposure to noise can disturb ______."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "Some studies say noise raises the risk of ______ disease."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Children at schools near busy airports have more difficulty with ______."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Some cities have introduced lower speed ______ at night."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Some cities have built ______ along motorways."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "Electric buses are much ______ than diesel buses."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Parks offer residents quiet places where they can ______ the noise."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "What do surveys show about trust in scientists?",
+     "options": [
+      "Scientists are trusted less than politicians.",
+      "Trust in scientists has disappeared.",
+      "Scientists remain among the most trusted groups.",
+      "Only young people trust scientists."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "According to paragraph 2, distrust is often directed at",
+     "options": [
+      "science as a whole.",
+      "particular findings that conflict with a person’s values.",
+      "modern medicine.",
+      "scientists from other countries."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "Why might someone doubt climate research while accepting medicine?",
+     "options": [
+      "Climate research is newer.",
+      "The related policies may threaten their job or way of life.",
+      "Medicine is easier to understand.",
+      "Doctors are more friendly."
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "How may scientists contribute to the problem?",
+     "options": [
+      "By refusing to speak to journalists",
+      "By presenting early results with too much confidence",
+      "By working too slowly",
+      "By hiding their data"
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "What does the writer say about changing conclusions?",
+     "options": [
+      "It shows science is unreliable.",
+      "It should be avoided.",
+      "It happens only in nutrition.",
+      "It is how science is supposed to work."
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "Which of these is suggested as a way to build trust?",
+     "options": [
+      "Being open about uncertainty",
+      "Correcting people more often",
+      "Publishing fewer studies",
+      "Avoiding difficult topics"
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "What is the main point of the final paragraph?",
+     "options": [
+      "Trust can be created quickly with good advertising.",
+      "Trust is built slowly and cannot be demanded.",
+      "People should trust scientists without question.",
+      "Science communication is not important."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-9",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 9",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Sunrise Language School: Registration for the autumn courses opens on 15 August. Students who registered for a summer course get a 10% discount. New students must take a short placement test before choosing a class.",
+    "2) MESSAGE — Hi Timur, I’ve left the keys to the flat with our neighbour in number 12, because I’m working late tonight. There’s soup in the fridge — just heat it up. Please water the plants on the balcony, as it’s been very hot. Back around 11. Anvar",
+    "3) ADVERTISEMENT — Photography workshop for teenagers aged 13–17. Learn how to take better pictures with your phone. Three sessions on Saturday afternoons in the city park. No special camera is needed. The workshop is free, but places must be reserved online.",
+    "More and more young people are learning to cook, and many of them are learning not from their parents but from short videos online. Recipe videos that last only a minute or two have become extremely popular, and some home cooks have millions of followers.",
+    "People who cook at home say there are many advantages. Home-cooked food is usually healthier than takeaway meals, because the cook can control the amount of salt, sugar and oil. Cooking at home is also much cheaper, especially for students and families who need to manage their money carefully.",
+    "However, learning from videos has its limits. Short videos often skip important steps, and they rarely explain why a recipe works. Cookery teachers say that beginners should start with a few simple dishes and repeat them until they feel confident, rather than trying a new recipe every day. They also recommend cooking with friends, because it makes the process more enjoyable.",
+    "A. In the 1420s, Mirzo Ulugbek, the grandson of Amir Temur and ruler of Samarkand, built one of the greatest observatories of the medieval world. Ulugbek was not only a ruler but also a serious scientist, and he gathered around him some of the best mathematicians and astronomers of his time.",
+    "B. The most impressive part of the observatory was a huge instrument for measuring the position of the Sun, the Moon and the stars. Part of it was built into a deep trench cut into the hill, which helped to keep it stable and allowed very precise measurements.",
+    "C. The scientists working at the observatory produced a famous catalogue of stars, which gave the positions of around a thousand stars. For centuries it was among the most accurate works of its kind, and it was later translated and studied in Europe.",
+    "D. They also calculated the length of the year with remarkable accuracy. Their result differed from the value accepted today by only about a minute, an extraordinary achievement for observers working without telescopes.",
+    "E. After Ulugbek’s death in 1449, the observatory was no longer used, and over time it was destroyed. Its exact location was eventually forgotten, and for several centuries the achievements of the Samarkand astronomers were known mainly from manuscripts.",
+    "F. In 1908, an archaeologist discovered the remains of the observatory, including the underground part of the great instrument. Today the site is a museum, and it reminds visitors of a time when Samarkand was one of the world’s leading centres of science.",
+    "Many people feel more tired and less cheerful in winter, when the days are short. For most of them, this is a mild change in mood. For some, however, the effect is strong enough to affect their work and relationships, and doctors describe it as a form of depression linked to the seasons.",
+    "Light plays an important role in regulating our internal body clock. Exposure to bright light in the morning helps the body to know when to be awake and when to sleep. When days are short and people spend most of their time indoors, this signal becomes weaker.",
+    "One treatment that is often recommended is light therapy. Patients sit near a special lamp, which is much brighter than ordinary indoor lighting, for about half an hour each morning. Many people report that their mood improves within a few weeks.",
+    "There are also simple steps that anyone can take. Going outside during the brightest part of the day, even when it is cloudy, can help. Regular exercise and keeping a fixed time for going to bed and getting up are also recommended, as both support a healthy body clock.",
+    "Every day, each of us makes a large number of decisions, from what to eat for breakfast to how to respond to a difficult email. Some psychologists have proposed that the ability to make good decisions, or to resist temptation, depends on a limited mental resource that is gradually used up during the day. According to this idea, sometimes called “decision fatigue”, people who have made many choices become more likely to take the easy option or to avoid deciding at all.",
+    "The idea quickly became popular outside psychology. Business writers advised readers to make important decisions early in the day, and some well-known executives explained that they wore the same type of clothes every day in order to save their mental energy for more important matters.",
+    "In recent years, however, the theory has faced serious challenges. Several large studies that tried to repeat the original experiments failed to find the same effect, and some researchers have argued that the results may depend partly on what people believe about their own willpower. People who think that their self-control is unlimited, for instance, appear less likely to show signs of fatigue.",
+    "This does not mean that tiredness has no effect on decisions; long working hours, lack of sleep and hunger clearly influence how well we think. What remains uncertain is whether there is a single resource that every decision consumes. For practical purposes, the safest advice may simply be that important choices deserve time and attention, and should not be made when we are exhausted or rushed."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Learning to cook (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: Ulugbek’s observatory (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Winter and mood (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Decision fatigue (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "Who gets a discount on autumn courses?",
+     "options": [
+      "All new students",
+      "Students who took a summer course",
+      "Students who register early"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "What must new students do first?",
+     "options": [
+      "Pay in advance",
+      "Choose a teacher",
+      "Take a placement test"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "Where are the keys?",
+     "options": [
+      "With the neighbour",
+      "Under the door mat",
+      "At Anvar’s work"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What does Anvar ask Timur to do?",
+     "options": [
+      "Cook dinner",
+      "Water the plants",
+      "Call him at 11"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "What do participants need for the workshop?",
+     "options": [
+      "A professional camera",
+      "A phone",
+      "Payment in advance"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What must people do to join the workshop?",
+     "options": [
+      "Reserve a place online",
+      "Pay a small fee",
+      "Show a student card"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "Many young people learn to cook from short online videos."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Most recipe videos last more than ten minutes."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Home cooks can control the amount of salt in their food."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Cooking at home is more expensive than buying takeaway meals."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Short videos often explain why a recipe works."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Teachers advise beginners to repeat a few simple dishes."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Most popular online cooks are trained chefs."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "Cooking with friends is recommended because it is more enjoyable."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. A precise measurement of time",
+      "ii. A scientist ruler and his team",
+      "iii. Rediscovery and a museum",
+      "iv. A record of the night sky",
+      "v. A giant instrument partly underground",
+      "vi. Why Ulugbek left Samarkand",
+      "vii. Decline and loss"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. A precise measurement of time",
+      "ii. A scientist ruler and his team",
+      "iii. Rediscovery and a museum",
+      "iv. A record of the night sky",
+      "v. A giant instrument partly underground",
+      "vi. Why Ulugbek left Samarkand",
+      "vii. Decline and loss"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. A precise measurement of time",
+      "ii. A scientist ruler and his team",
+      "iii. Rediscovery and a museum",
+      "iv. A record of the night sky",
+      "v. A giant instrument partly underground",
+      "vi. Why Ulugbek left Samarkand",
+      "vii. Decline and loss"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. A precise measurement of time",
+      "ii. A scientist ruler and his team",
+      "iii. Rediscovery and a museum",
+      "iv. A record of the night sky",
+      "v. A giant instrument partly underground",
+      "vi. Why Ulugbek left Samarkand",
+      "vii. Decline and loss"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. A precise measurement of time",
+      "ii. A scientist ruler and his team",
+      "iii. Rediscovery and a museum",
+      "iv. A record of the night sky",
+      "v. A giant instrument partly underground",
+      "vi. Why Ulugbek left Samarkand",
+      "vii. Decline and loss"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. A precise measurement of time",
+      "ii. A scientist ruler and his team",
+      "iii. Rediscovery and a museum",
+      "iv. A record of the night sky",
+      "v. A giant instrument partly underground",
+      "vi. Why Ulugbek left Samarkand",
+      "vii. Decline and loss"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Many people feel more tired in winter, when the days are ______."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "For some people, the effect can affect their work and ______."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "Light helps to regulate our internal body ______."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Bright light in the ______ helps the body know when to be awake."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "In light therapy, patients sit near a special ______."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Many patients say their ______ improves within a few weeks."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "Going outside helps even when it is ______."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Regular ______ supports a healthy body clock."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "According to the idea of decision fatigue, people who have made many choices",
+     "options": [
+      "make better decisions.",
+      "are more likely to take the easy option.",
+      "feel more energetic.",
+      "become more creative."
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "Why did some executives wear the same type of clothes every day?",
+     "options": [
+      "To look professional",
+      "To save money",
+      "To save mental energy",
+      "To follow company rules"
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "What happened when large studies tried to repeat the original experiments?",
+     "options": [
+      "They failed to find the same effect.",
+      "They found a stronger effect.",
+      "They were stopped early.",
+      "They confirmed the theory."
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "What may partly influence the results, according to some researchers?",
+     "options": [
+      "The time of year",
+      "What people believe about their own willpower",
+      "The size of the group",
+      "The language of the test"
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "People who think their self-control is unlimited",
+     "options": [
+      "make more decisions.",
+      "are more often tired.",
+      "avoid difficult choices.",
+      "appear less likely to show signs of fatigue."
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "What does the writer say remains uncertain?",
+     "options": [
+      "Whether sleep affects thinking",
+      "Whether a single resource is used by every decision",
+      "Whether hunger matters",
+      "Whether people make many decisions"
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "What practical advice does the writer give?",
+     "options": [
+      "Make all decisions early in the morning.",
+      "Wear the same clothes every day.",
+      "Avoid important choices when exhausted or rushed.",
+      "Make decisions as quickly as possible."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cefr-reading-10",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Reading — mashq testi 10",
+   "minutes": 60,
+   "passageTitle": "Part 1: Short texts",
+   "paragraphs": [
+    "1) NOTICE — Shopping Centre car park: From 1 October, the first two hours of parking will be free for all visitors. After that, the charge is 5,000 sum per hour. Please keep your ticket, as you will need it to leave the car park.",
+    "2) EMAIL — Dear Ms Yusupova, your order of three books has been sent today. Two of the books will arrive by Thursday. The third is temporarily out of stock and will be sent separately next week at no extra cost. Thank you for shopping with us. Customer Service",
+    "3) ADVERTISEMENT — Volunteers wanted for the city marathon on Sunday 5 May. Tasks include giving water to runners, helping at the finish line and giving directions to visitors. Volunteers will receive a free T-shirt and lunch. Minimum age: 16.",
+    "Public libraries were once mainly places where people borrowed books and studied in silence. Today, many libraries are changing. In addition to books, they lend e-books, films and even tools, and they offer free internet access to people who do not have it at home.",
+    "Many libraries also organise activities for different groups. Children can attend story sessions, teenagers can join coding clubs, and older people can take classes on how to use smartphones. Some libraries have special rooms where small businesses can hold meetings.",
+    "Not everyone welcomes these changes. Some regular users complain that libraries have become noisy and that there is less space for books. Librarians reply that they must attract new visitors in order to survive, and that most libraries still have quiet areas for reading and study.",
+    "A. Bridges have been built for thousands of years, from simple logs laid across streams to structures several kilometres long. Whatever their size, they all have the same basic purpose: to carry a load safely across an obstacle such as a river, a valley or a road.",
+    "B. Among the oldest types is the arch bridge. The curved shape of the arch carries the weight of the bridge outwards to the supports at each end. The Romans built many stone arch bridges, and some of them are still in use today, nearly two thousand years later.",
+    "C. The development of iron and later steel in the eighteenth and nineteenth centuries allowed engineers to build much longer bridges. These materials are strong but relatively light, and they made it possible to cross wide rivers and deep valleys that had previously been impossible to bridge.",
+    "D. Suspension bridges, in which the road hangs from huge cables supported by tall towers, can cover the greatest distances. However, early examples showed that they could be dangerous in strong winds, and engineers had to learn how to make them more stable.",
+    "E. Modern engineers use computer models to test how a bridge will behave under different conditions, including heavy traffic, earthquakes and storms. Sensors fixed to the structure can also warn them if parts of a bridge begin to move or crack.",
+    "F. Bridges are not only practical structures; many have become symbols of the cities in which they stand. Some attract tourists from around the world, and their images appear on postcards, coins and banknotes.",
+    "Some companies have started to hold meetings while walking instead of sitting in a meeting room. Supporters say that walking meetings are a simple way to add physical activity to the working day, especially for people who spend many hours at a desk.",
+    "Walking may also help people to think. Several studies have found that people produce more creative ideas while walking than while sitting, and some participants say that conversations feel more relaxed and honest when people walk side by side rather than facing each other across a table.",
+    "Walking meetings are not suitable for every purpose, however. They work best for small groups of two or three people. It is difficult to look at documents or take detailed notes while walking, and noise from traffic can make it hard to hear.",
+    "Managers who use walking meetings suggest planning a route in advance, preferably through a park or a quiet street. They also advise telling participants beforehand so that they can wear comfortable shoes, and writing down the main decisions as soon as the meeting ends.",
+    "Machine translation has improved dramatically over the past decade. Systems based on large neural networks, trained on enormous collections of texts in many languages, now produce translations that are often fluent and, for many everyday purposes, perfectly adequate. For travellers, students and businesses, the ability to understand a text in an unfamiliar language within seconds has become almost taken for granted.",
+    "Yet fluency can be deceptive. Because modern systems are designed to produce natural-sounding sentences, their errors can be harder to spot than the obvious mistakes of earlier programs. A translation may read smoothly while changing the meaning of a sentence, omitting a negative or misunderstanding a technical term. In legal or medical contexts, such errors can have serious consequences.",
+    "Performance also varies greatly between languages. Systems work best for language pairs for which huge amounts of translated text are available, such as English and French. For languages with fewer digital resources, which include many languages spoken by millions of people, the quality is often considerably lower, although it is improving.",
+    "Professional translators have not disappeared, but their work is changing. Many now spend part of their time editing machine output rather than translating from scratch, and they increasingly focus on texts where cultural knowledge, style and accuracy matter most, such as literature, advertising and legal documents. For language learners, meanwhile, the question is no longer whether to use such tools, but how to use them without losing the benefits of working through a text themselves."
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1: Short texts (B1)"
+    },
+    {
+     "at": 3,
+     "title": "Part 2: Libraries today (B1)"
+    },
+    {
+     "at": 6,
+     "title": "Part 3: Bridges (B2)"
+    },
+    {
+     "at": 12,
+     "title": "Part 4: Walking meetings (B2)"
+    },
+    {
+     "at": 16,
+     "title": "Part 5: Machine translation (C1)"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–6: Read the short texts and choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 7–14: Do the statements agree with the text? Choose TRUE, FALSE or NOT GIVEN.",
+     "questionIds": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct heading for each paragraph A–F. There is one extra heading.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Complete the sentences. Write ONE WORD ONLY from the text for each answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Choose the correct answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "How long can visitors park for free?",
+     "options": [
+      "One hour",
+      "Two hours",
+      "All day"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "Why should drivers keep their ticket?",
+     "options": [
+      "To get a discount",
+      "To leave the car park",
+      "To enter the shops"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "How many books will arrive by Thursday?",
+     "options": [
+      "Three",
+      "One",
+      "Two"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "What will happen to the third book?",
+     "options": [
+      "It will be sent next week at no extra cost.",
+      "The order will be cancelled.",
+      "Ms Yusupova must pay for delivery."
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "Which of these is a volunteer task?",
+     "options": [
+      "Running the marathon",
+      "Selling T-shirts",
+      "Giving water to runners"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "What will volunteers receive?",
+     "options": [
+      "A T-shirt and lunch",
+      "Money",
+      "A medal"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "tfng",
+     "text": "In the past, libraries were mainly places for borrowing books and quiet study."
+    },
+    {
+     "id": 8,
+     "type": "tfng",
+     "text": "Some libraries lend tools."
+    },
+    {
+     "id": 9,
+     "type": "tfng",
+     "text": "Internet access in libraries is expensive."
+    },
+    {
+     "id": 10,
+     "type": "tfng",
+     "text": "Older people can learn how to use smartphones at some libraries."
+    },
+    {
+     "id": 11,
+     "type": "tfng",
+     "text": "Coding clubs are the most popular library activity."
+    },
+    {
+     "id": 12,
+     "type": "tfng",
+     "text": "Some regular users complain that libraries have become noisy."
+    },
+    {
+     "id": 13,
+     "type": "tfng",
+     "text": "Librarians say most libraries no longer have quiet areas."
+    },
+    {
+     "id": 14,
+     "type": "tfng",
+     "text": "The number of library visitors has doubled in recent years."
+    },
+    {
+     "id": 15,
+     "type": "match",
+     "text": "Paragraph A",
+     "options": [
+      "i. Using technology to keep bridges safe",
+      "ii. The danger of building in water",
+      "iii. Long distances and a lesson about wind",
+      "iv. More than a way to cross",
+      "v. One purpose, many forms",
+      "vi. New materials, longer spans",
+      "vii. An ancient shape that lasts"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "match",
+     "text": "Paragraph B",
+     "options": [
+      "i. Using technology to keep bridges safe",
+      "ii. The danger of building in water",
+      "iii. Long distances and a lesson about wind",
+      "iv. More than a way to cross",
+      "v. One purpose, many forms",
+      "vi. New materials, longer spans",
+      "vii. An ancient shape that lasts"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "match",
+     "text": "Paragraph C",
+     "options": [
+      "i. Using technology to keep bridges safe",
+      "ii. The danger of building in water",
+      "iii. Long distances and a lesson about wind",
+      "iv. More than a way to cross",
+      "v. One purpose, many forms",
+      "vi. New materials, longer spans",
+      "vii. An ancient shape that lasts"
+     ]
+    },
+    {
+     "id": 18,
+     "type": "match",
+     "text": "Paragraph D",
+     "options": [
+      "i. Using technology to keep bridges safe",
+      "ii. The danger of building in water",
+      "iii. Long distances and a lesson about wind",
+      "iv. More than a way to cross",
+      "v. One purpose, many forms",
+      "vi. New materials, longer spans",
+      "vii. An ancient shape that lasts"
+     ]
+    },
+    {
+     "id": 19,
+     "type": "match",
+     "text": "Paragraph E",
+     "options": [
+      "i. Using technology to keep bridges safe",
+      "ii. The danger of building in water",
+      "iii. Long distances and a lesson about wind",
+      "iv. More than a way to cross",
+      "v. One purpose, many forms",
+      "vi. New materials, longer spans",
+      "vii. An ancient shape that lasts"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "match",
+     "text": "Paragraph F",
+     "options": [
+      "i. Using technology to keep bridges safe",
+      "ii. The danger of building in water",
+      "iii. Long distances and a lesson about wind",
+      "iv. More than a way to cross",
+      "v. One purpose, many forms",
+      "vi. New materials, longer spans",
+      "vii. An ancient shape that lasts"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "fill",
+     "text": "Walking meetings add physical ______ to the working day."
+    },
+    {
+     "id": 22,
+     "type": "fill",
+     "text": "Walking meetings are useful for people who spend many hours at a ______."
+    },
+    {
+     "id": 23,
+     "type": "fill",
+     "text": "People produce more ______ ideas while walking."
+    },
+    {
+     "id": 24,
+     "type": "fill",
+     "text": "Conversations can feel more relaxed and ______ when people walk side by side."
+    },
+    {
+     "id": 25,
+     "type": "fill",
+     "text": "Walking meetings work best for ______ groups."
+    },
+    {
+     "id": 26,
+     "type": "fill",
+     "text": "Noise from ______ can make it hard to hear."
+    },
+    {
+     "id": 27,
+     "type": "fill",
+     "text": "Managers suggest planning a ______ in advance."
+    },
+    {
+     "id": 28,
+     "type": "fill",
+     "text": "Participants should be told beforehand so they can wear comfortable ______."
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "On what are modern translation systems trained?",
+     "options": [
+      "Dictionaries only",
+      "Enormous collections of texts in many languages",
+      "Recordings of speech",
+      "The work of a few translators"
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "Why can errors in modern systems be harder to spot?",
+     "options": [
+      "The translations are very short.",
+      "The errors are hidden in long texts.",
+      "The systems produce natural-sounding sentences.",
+      "Users rarely read the translations."
+     ]
+    },
+    {
+     "id": 31,
+     "type": "mcq",
+     "text": "Which of these errors is mentioned?",
+     "options": [
+      "Omitting a negative",
+      "Using the wrong alphabet",
+      "Translating names",
+      "Adding extra pages"
+     ]
+    },
+    {
+     "id": 32,
+     "type": "mcq",
+     "text": "In which contexts can errors have serious consequences?",
+     "options": [
+      "Tourism and travel",
+      "Legal or medical contexts",
+      "Social media",
+      "Language learning"
+     ]
+    },
+    {
+     "id": 33,
+     "type": "mcq",
+     "text": "Why is quality often lower for some languages?",
+     "options": [
+      "They have more difficult grammar.",
+      "They are spoken by few people.",
+      "Translators refuse to work with them.",
+      "They have fewer digital resources."
+     ]
+    },
+    {
+     "id": 34,
+     "type": "mcq",
+     "text": "How is the work of professional translators changing?",
+     "options": [
+      "They have stopped working with literature.",
+      "Many now edit machine output.",
+      "They only work with English and French.",
+      "They have been completely replaced."
+     ]
+    },
+    {
+     "id": 35,
+     "type": "mcq",
+     "text": "According to the writer, what is the question for language learners now?",
+     "options": [
+      "Whether translation tools are legal",
+      "How to use the tools without losing the benefits of working through a text",
+      "Which tool is the cheapest",
+      "Whether to stop learning languages"
+     ]
+    }
+   ]
   }
  ],
  "listening": [
