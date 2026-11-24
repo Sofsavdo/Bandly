@@ -91,8 +91,8 @@ svg.lucide { flex: none; }
 .notice { background: var(--brand-50); border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent); border-radius: var(--r-sm); padding: 11px 14px; font-size: 14px; }
 .big { font-family: var(--display); font-size: 28px; font-weight: 700; }
 .score { font-family: var(--display); font-size: 44px; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; }
-input[type=text], input[type=number], select, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 11px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
-input[type=text]:focus, select:focus, textarea:focus, input[type=number]:focus { border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 16%, transparent); }
+input[type=text], input[type=tel], input[type=password], input[type=number], select, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 11px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
+input[type=text]:focus, input[type=tel]:focus, input[type=password]:focus, select:focus, textarea:focus, input[type=number]:focus { border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 16%, transparent); }
 input[type=checkbox], input[type=radio] { accent-color: var(--brand); width: 17px; height: 17px; vertical-align: -3px; }
 
 /* ---------- Kartalar ---------- */

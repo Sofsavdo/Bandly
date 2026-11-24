@@ -25,6 +25,8 @@ import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { backupStatus, startAutoBackup } from './autoBackup';
 import { BotLogins } from './botLogin';
+import { AttemptLimiter, hashPassword, loginGoogle, normPhone, passwordProblem, phoneRecord, registerPhone, sessionFor, verifyPassword } from './credentials';
+import { GoogleAuthError, verifyGoogleIdToken } from './google';
 import { PHOTO_MAX, auditLog, audit, claimAll, composeFull, issueFor, myCertificates, profileOf, publicCertificate, recordResult, revokeCertificate, rules as certRules, savePhoto, searchCertificates, setFullName, setRule, setSettings as setCertSettings, settings as certSettings } from './certificates';
 import { gradeRequest } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
@@ -66,6 +68,11 @@ const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 /** Saytga bot orqali kirish kodlari (xotirada, 10 daqiqa, bir martalik). Kod 128 bit tasodifiy; token faqat kodni yaratgan brauzerga beriladi. */
 const botLogins = new BotLogins();
+// Telefon+parol va Google bilan kirish. GOOGLE_CLIENT_ID sozlanmaguncha Google tugmasi ko'rinmaydi va /api/auth/google 503 qaytaradi.
+const GOOGLE_CLIENT_ID = (process.env.GOOGLE_CLIENT_ID ?? '').trim() || null;
+const phoneFails = new AttemptLimiter(5, 15 * 60_000);   // bitta raqamga 15 daqiqada 5 ta xato parol — keyin blok
+const ipFails = new AttemptLimiter(20, 15 * 60_000);     // bitta IP'dan 15 daqiqada 20 ta muvaffaqiyatsiz kirish
+const signupsByIp = new AttemptLimiter(10, 60 * 60_000); // bitta IP'dan soatiga 10 ta yangi hisob (spam hisoblarga qarshi)
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
 ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan ustun)
@@ -189,7 +196,7 @@ const httpServer = createServer(async (req, res) => {
       recordUserEvent(db, pid, b.name);
       res.writeHead(204); return void res.end();
     }
-    if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername, host: bot.publicUrl ? new URL(bot.publicUrl).host : null } : null }); // host — BotFather domeni (PUBLIC_URL): vidjet faqat shu manzilda ishlaydi
+    if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { phone: true, google: GOOGLE_CLIENT_ID ? { clientId: GOOGLE_CLIENT_ID } : null, telegram: bot && botUsername ? { bot: botUsername, host: bot.publicUrl ? new URL(bot.publicUrl).host : null } : null }); // host — BotFather domeni (PUBLIC_URL): vidjet faqat shu manzilda ishlaydi
     if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
       if (!bot) throw new ApiError(503, 'Telegram orqali kirish hali sozlanmagan');
       const b = await readJson(req, 8192);
@@ -202,6 +209,37 @@ const httpServer = createServer(async (req, res) => {
       if (r.created) attachReferral(db, pid, b.ref ?? getBotRef(db, u.id)); // taklif havolasi orqali kelgan bo'lsa (botda /start ref_ ham)
       claimBotPhone(db, u.id, pid); // botda ulashilgan raqam lidga o'tadi
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: u.photo_url ?? null });
+    }
+    // ---- Telefon raqam + parol ----
+    if (req.method === 'POST' && (url.pathname === '/api/auth/phone/register' || url.pathname === '/api/auth/phone/login')) {
+      const b = await readJson(req, 2048);
+      const phone = normPhone(b.phone);
+      if (!phone) throw new ApiError(400, 'Telefon raqam noto‘g‘ri (masalan, +998 90 123 45 67)');
+      const password = typeof b.password === 'string' ? b.password : '';
+      ipFails.check(ip);
+      if (url.pathname.endsWith('/register')) {
+        const bad = passwordProblem(password, phone); if (bad) throw new ApiError(400, bad);
+        signupsByIp.check(ip); signupsByIp.fail(ip);
+        const r = registerPhone(db, phone, await hashPassword(password), b.nickname, typeof b.link === 'string' ? b.link : undefined);
+        if (!r.linked) attachReferral(db, byToken(db, r.token).id, b.ref);
+        return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: !r.linked });
+      }
+      phoneFails.check(phone);
+      const rec = phoneRecord(db, phone);
+      if (!(await verifyPassword(password, rec?.pass_hash)) || !rec) { phoneFails.fail(phone); ipFails.fail(ip); throw new ApiError(401, 'Telefon raqam yoki parol noto‘g‘ri'); }
+      phoneFails.ok(phone);
+      return send(res, 200, { token: sessionFor(db, rec.id), nickname: rec.nickname, linked: false, created: false });
+    }
+    // ---- Google bilan kirish (ID token serverda tekshiriladi) ----
+    if (req.method === 'POST' && url.pathname === '/api/auth/google') {
+      if (!GOOGLE_CLIENT_ID) throw new ApiError(503, 'Google orqali kirish hali sozlanmagan');
+      const b = await readJson(req, 8192);
+      ipFails.check(ip);
+      let g;
+      try { g = await verifyGoogleIdToken(b.credential, GOOGLE_CLIENT_ID); } catch (e) { if (e instanceof GoogleAuthError) { ipFails.fail(ip); throw new ApiError(401, e.message); } throw e; }
+      const r = loginGoogle(db, g.sub, g.name ?? '', typeof b.link === 'string' ? b.link : undefined);
+      if (r.created) attachReferral(db, byToken(db, r.token).id, b.ref);
+      return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: null });
     }
     // ---- Bot orqali kirish (vidjet ishlamaganda: domen, ilova ichidagi brauzer) ----
     if (req.method === 'POST' && url.pathname === '/api/auth/bot/start') {
@@ -688,7 +726,7 @@ const httpServer = createServer(async (req, res) => {
     }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true });
     // Domenlararo 301 yo'naltirish YO'Q: brauzerlar 301 ni doimiy eslab qoladi va qarama-qarshi yo'naltirishlar bilan cheksiz aylanish
-    // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (www.sellzen.uz) ko'rsatiladi.
+    // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (sellzen.uz) ko'rsatiladi.
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {

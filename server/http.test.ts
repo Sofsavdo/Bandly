@@ -168,6 +168,33 @@ try {
   assert.equal((await api('/api/progress', { method: 'PUT', token: 'yoq', body: JSON.stringify({ data: {}, rev: 0 }) })).status, 401);
   assert.equal((await api('/api/health')).status, 200, 'server ishlashda davom etadi');
 
+  // ---- Telefon + parol ----
+  const cfg2 = (await api('/api/auth/config')).json;
+  assert.equal(cfg2.phone, true); assert.equal(cfg2.google, null, 'GOOGLE_CLIENT_ID yo‘q — Google tugmasi chiqmaydi');
+  const ph = (kind: 'register' | 'login', body: Record<string, unknown>) => api(`/api/auth/phone/${kind}`, { method: 'POST', body: JSON.stringify(body) });
+  assert.equal((await ph('register', { phone: '123', password: 'parol12345' })).status, 400, 'noto‘g‘ri raqam');
+  assert.equal((await ph('register', { phone: '+998 90 555 11 22', password: 'qisqa' })).status, 400, 'qisqa parol');
+  const r1 = await ph('register', { phone: '+998 90 555 11 22', password: 'parol12345', nickname: 'Telefon Ali' });
+  assert.equal(r1.status, 200, JSON.stringify(r1.json)); assert.equal(r1.json.created, true); assert.equal(r1.json.nickname, 'Telefon Ali');
+  assert.equal((await api('/api/me', { token: String(r1.json.token) })).status, 200, 'token ishlaydi');
+  assert.equal((await ph('register', { phone: '905551122', password: 'boshqa-parol' })).status, 409, 'bir xil raqam boshqa yozuvda (9 raqam) ham band');
+  const l1 = await ph('login', { phone: '90-555-11-22', password: 'parol12345' });
+  assert.equal(l1.status, 200); assert.equal(l1.json.nickname, 'Telefon Ali'); assert.notEqual(l1.json.token, r1.json.token, 'har kirish — yangi sessiya');
+  // Xato parol va mavjud bo'lmagan raqam — bir xil javob (raqam bor-yo'qligi bilinmasin)
+  const wrong = await ph('login', { phone: '+998905551122', password: 'xato-parol' }), ghost = await ph('login', { phone: '+998900000000', password: 'xato-parol' });
+  assert.equal(wrong.status, 401); assert.equal(ghost.status, 401); assert.equal(wrong.json.error, ghost.json.error);
+  // Brute-force: 5 xato → blok (to'g'ri parol bilan ham)
+  for (let i = 0; i < 4; i++) assert.equal((await ph('login', { phone: '+998905551122', password: `xato${i}` })).status, 401);
+  assert.equal((await ph('login', { phone: '+998905551122', password: 'parol12345' })).status, 429, '5 ta xatodan keyin raqam bloklanadi');
+  assert.equal((await ph('login', { phone: '+998901234500', password: 'parol12345' })).status, 401, 'boshqa raqam ta’sirlanmaydi');
+  // Parol bazada ochiq ko'rinishda emas
+  const raw2 = new DatabaseSync(DB);
+  const row = raw2.prepare("SELECT phone, pass_hash FROM players WHERE phone = '+998905551122'").get() as { phone: string; pass_hash: string };
+  raw2.close();
+  assert.match(row.pass_hash, /^scrypt\$/); assert.ok(!row.pass_hash.includes('parol12345'));
+  // Google: sozlanmagan bo'lsa aniq 503
+  assert.equal((await api('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential: 'a.b.c' }) })).status, 503);
+
   // ---- Bot orqali kirish: bot ulanmagan bo'lsa 503, noma'lum kod 410 ----
   assert.equal((await api('/api/auth/bot/start', { method: 'POST' })).status, 503);
   assert.equal((await api(`/api/auth/bot/${'0'.repeat(32)}`)).status, 410);

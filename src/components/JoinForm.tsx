@@ -1,17 +1,67 @@
 import { Send } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { authConfig, getAccount, joinLeague, pendingBotLogin, startBotLogin, waitBotLogin, type Account, type AuthConfig } from '../lib/account';
+import { authConfig, getAccount, googleLogin, joinLeague, pendingBotLogin, phoneAuth, startBotLogin, waitBotLogin, type Account, type AuthConfig } from '../lib/account';
+import { mountGoogleButton } from '../lib/google';
 import { refreshEntitlements } from '../lib/pay';
 import { inTelegram, mountLoginWidget, retryWebAppLogin } from '../lib/telegram';
 import { track } from '../lib/track';
-import { L } from '../i18n';
+import { L, getLang } from '../i18n';
 
 /** Hisobga kirish. Telegram sozlangan bo'lsa — faqat Telegram orqali (OD-05); aks holda vaqtincha laqab bilan. */
 export function JoinForm({ onJoined, text }: { onJoined: (a: Account) => void; text?: string }) {
   const [conf, setConf] = useState<AuthConfig | null>(null);
   useEffect(() => { void authConfig().then(setConf); }, []);
   if (!conf) return <div className="card"><p className="muted">{L('Yuklanmoqda…')}</p></div>;
-  return conf.telegram ? <TelegramJoin bot={conf.telegram.bot} host={conf.telegram.host} text={text} onJoined={onJoined} /> : <NickJoin text={text} onJoined={onJoined} />;
+  return (
+    <>
+      {conf.telegram ? <TelegramJoin bot={conf.telegram.bot} host={conf.telegram.host} text={text} onJoined={onJoined} /> : <NickJoin text={text} onJoined={onJoined} />}
+      {!inTelegram() && (conf.google || conf.phone) && <AltLogin conf={conf} onJoined={onJoined} />}
+    </>
+  );
+}
+
+/** Boshqa kirish usullari: Google (server GOOGLE_CLIENT_ID bersa) va telefon raqam + parol. Telegram Mini App ichida kerak emas (kirish avtomatik). */
+function AltLogin({ conf, onJoined }: { conf: AuthConfig; onJoined: (a: Account) => void }) {
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [phone, setPhone] = useState('');
+  const [pw, setPw] = useState('');
+  const [nick, setNick] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const gbox = useRef<HTMLDivElement>(null);
+  const joined = useRef(onJoined); joined.current = onJoined;
+  const gid = conf.google?.clientId;
+  const done = (a: Account) => { void refreshEntitlements(); joined.current(a); };
+  useEffect(() => {
+    if (!gid || !gbox.current) return;
+    void mountGoogleButton(gbox.current, gid, getLang(), (cred) => { setErr(''); setBusy(true); googleLogin(cred).then(done, (e: Error) => setErr(e.message)).finally(() => setBusy(false)); });
+  }, [gid]);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setErr(''); setBusy(true);
+    try { done(await phoneAuth(mode, phone, pw, mode === 'register' ? nick : undefined)); } catch (x) { setErr((x as Error).message); } finally { setBusy(false); }
+  };
+  return (
+    <div className="card alt-login">
+      {gid && <div ref={gbox} className="alt-google" style={{ minHeight: 44, display: 'flex', justifyContent: 'center' }} aria-label={L('Google orqali kirish')} />}
+      {conf.phone && (
+        <details className="fold alt-phone">
+          <summary>{L('Telefon raqam va parol bilan')}</summary>
+          <form onSubmit={(e) => void submit(e)} style={{ display: 'grid', gap: 10, marginTop: 10 }}>
+            <div className="row" role="group" aria-label={L('Kirish usuli')}>
+              <button type="button" className={`btn sm ${mode === 'login' ? 'primary' : ''}`} aria-pressed={mode === 'login'} onClick={() => { setMode('login'); setErr(''); }}>{L('Kirish')}</button>
+              <button type="button" className={`btn sm ${mode === 'register' ? 'primary' : ''}`} aria-pressed={mode === 'register'} onClick={() => { setMode('register'); setErr(''); }}>{L('Ro‘yxatdan o‘tish')}</button>
+            </div>
+            <input type="tel" inputMode="tel" autoComplete="tel" value={phone} placeholder="+998 90 123 45 67" aria-label={L('Telefon raqam')} onChange={(e) => setPhone(e.target.value)} />
+            <input type="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} value={pw} minLength={8} maxLength={128} placeholder={mode === 'register' ? L('Parol (kamida 8 belgi)') : L('Parol')} aria-label={L('Parol')} onChange={(e) => setPw(e.target.value)} />
+            {mode === 'register' && <input type="text" autoComplete="nickname" value={nick} maxLength={20} placeholder={L('Ismingiz (ixtiyoriy)')} onChange={(e) => setNick(e.target.value)} />}
+            <button className="btn primary" type="submit" disabled={busy || phone.trim().length < 9 || pw.length < 8}>{busy ? L('Kuting…') : mode === 'login' ? L('Kirish') : L('Ro‘yxatdan o‘tish')}</button>
+            {mode === 'register' && <p className="muted tg-note" style={{ margin: 0 }}>{L('Parolni eslab qoling: uni tiklash hozircha yo‘q.')}</p>}
+          </form>
+        </details>
+      )}
+      {err && <p className="notice" style={{ marginTop: 10 }}>{err}</p>}
+    </div>
+  );
 }
 
 function TelegramJoin({ bot, host, text, onJoined }: { bot: string; host?: string | null; text?: string; onJoined: (a: Account) => void }) {
