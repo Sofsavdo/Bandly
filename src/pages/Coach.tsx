@@ -3,7 +3,7 @@
 // Tugatish: yuqori burchakdagi kichik tugma. Shovqin ustozni bo'lmaydi, ustoz fikrini tugatadi; uni faqat ekranga ataylab tegish to'xtatadi.
 // Nutq serverda (ElevenLabs Scribe) aniq tanadi. Ustoz o'quvchi rejasini biladi, "darsga o't" desa o'tkazadi. Xatolar "Xatolarim"ga jimgina yoziladi.
 import { PhoneOff } from 'lucide-react';
-import { useEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react';
 import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
@@ -106,6 +106,9 @@ export default function Coach() {
   const [liveOn, setLiveOn] = useState(false);
   // Suhbat tarixi (Siz / Sellzen): chat kabi — eski gaplar yuqoriga chiqib ketadi, oxirgilari to'liq ko'rinadi (qisqartirilmaydi)
   const [msgs, setMsgs] = useState<{ id: number; who: 'you' | 'bot'; text: string }[]>([]);
+  // Matn oynasi ixcham (ekranning ~chorak qismi), lekin oxirgi gap har doim to'liq ko'rinadi: oyna kamida oxirgi xabar balandligicha
+  const linesRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => { const el = linesRef.current; const last = el?.lastElementChild as HTMLElement | null; el?.style.setProperty('--last-h', `${last ? last.offsetHeight + 30 : 0}px`); }, [msgs]);
   const [hint, setHint] = useState('');
   const [limitKind, setLimitKind] = useState<'session' | 'quota'>('quota');
   const msgId = useRef(0); const youFresh = useRef(true); const botFresh = useRef(true);
@@ -373,7 +376,7 @@ export default function Coach() {
         <div className={`call-face${talking ? ' on' : ''}`}>{orb}</div>
         <p className="call-status" aria-live="polite">{statusText}</p>
         <p className="call-sub">{subHint}</p>
-        <div className="call-lines" aria-live="polite">
+        <div className="call-lines" aria-live="polite" ref={linesRef}>
           {msgs.map((m) => <p key={m.id} className={`vl ${m.who}`}><b>{m.who === 'you' ? L('Siz') : L('Sellzen')}</b> {m.text}</p>)}
         </div>
         {(err || limitMsg || (liveFailed && !!status?.live)) && (

@@ -19,7 +19,7 @@ const ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const STATE_UZ: Record<NodeState, string> = { locked: L('yopiq'), open: L('ochiq'), current: L('hozirgi dars'), passed: L('tugallangan'), mastered: L('to‘liq o‘zlashtirilgan'), revise: L('takrorlash vaqti keldi') };
 
 // Geometriya: viewBox kengligi 400; x foizda, y pikselda (HTML tugunlar va SVG yo'l bir xil koordinatada).
-const STEP = 128, TOP = 236, BOTTOM = 100, UNIT_GAP = 60;
+const STEP = 128, TOP = 236, BOTTOM = 150, UNIT_GAP = 60;
 const XS = [50, 27, 50, 73];
 
 type Item =

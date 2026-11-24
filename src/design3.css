@@ -938,7 +938,7 @@ ul.plain { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px;
 .login-code input { flex: 1; min-width: 0; }
 .tg-join .tg-note { font-size: 13px; margin: 6px 0 0; }
 .tg-widget { overflow: hidden; max-width: 100%; }
-.tg-widget iframe { max-width: 100%; }
+.tg-widget iframe { max-width: none; transform-origin: left top; }
 
 /* Telefon: ixchamroq bo'sh joylar */
 @media (max-width: 600px) {
@@ -1566,8 +1566,8 @@ table.data.plan-matrix td { white-space: normal; min-width: 0; }
 .limit-savebar > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: 13.5px; }
 /* Qo'ng'iroq ekrani (2026-11-24, egasi): yuz kattaroq va markazda, matn oynasi ixcham — ekranning ~quarter qismi, oxirgi gaplar ko'rinadi */
 .call-stage { --face: clamp(120px, min(46vw, 27vh), 230px); --face: clamp(120px, min(46vw, 27svh), 230px); justify-content: center; padding-top: 0; }
-.call-lines { flex: 0 1 auto; max-height: min(26svh, 220px); font-size: 14px; line-height: 1.35; gap: 6px; margin-top: 10px;
+.call-lines { flex: 0 1 auto; max-height: max(min(26svh, 220px), var(--last-h, 0px)); font-size: 14px; line-height: 1.35; gap: 6px; margin-top: 10px; min-height: min(var(--last-h, 0px), 60svh);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px); mask-image: linear-gradient(to bottom, transparent 0, #000 28px); }
 .call-lines .vl { padding: 6px 10px; border-radius: 12px; }
 .call-lines .vl b { font-size: 10.5px; }
-@media (max-height: 560px) { .call-stage { --face: clamp(80px, 18svh, 130px); } .call-lines { max-height: 22svh; } }
+@media (max-height: 560px) { .call-stage { --face: clamp(80px, 18svh, 130px); } .call-lines { max-height: max(22svh, var(--last-h, 0px)); } }

@@ -59,6 +59,21 @@ export function mountLoginWidget(el: HTMLElement, bot: string, onDone: (err: str
   s.setAttribute('data-request-access', 'write');
   s.setAttribute('data-onauth', 'sellzenTgAuth(user)');
   el.appendChild(s);
+  fitWidget(el);
+}
+
+/** Rasmiy tugma (iframe) "<Ism> sifatida kirish" bo'lganda uzun bo'ladi va tor ekranda kesilib qolardi: sig'masa — mutanosib kichraytiriladi. */
+function fitWidget(el: HTMLElement): void {
+  let k = 1;
+  const fit = () => {
+    const f = el.querySelector('iframe'); if (!f) return;
+    const w = f.offsetWidth, h = f.offsetHeight, max = el.clientWidth;
+    const nk = w > max && max > 0 ? max / w : 1;
+    if (Math.abs(nk - k) < 0.01) return;
+    k = nk; f.style.transform = k < 1 ? `scale(${k})` : ''; el.style.height = k < 1 ? `${Math.ceil(h * k)}px` : '';
+  };
+  if (typeof MutationObserver !== 'undefined') new MutationObserver(fit).observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['width', 'height', 'style'] });
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(fit).observe(el);
 }
 
 export const logout = accountLogout;
