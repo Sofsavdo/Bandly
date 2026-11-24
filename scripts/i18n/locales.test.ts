@@ -1,5 +1,5 @@
 // Tarjimalar to'liqligi va sifati (src/i18n/locales/*.json): 5 til × katalog.
-// Tekshiradi: yo'q/bo'sh/eskirgan kalitlar, o'rinbosarlar ({0}, {n}) mosligi, yozuv tizimi (ru/kk/ky/tg — kirill),
+// Tekshiradi: yo'q/bo'sh/eskirgan kalitlar, o'rinbosarlar ({0}, {n}) va [[belgi]] mosligi, yozuv tizimi (ru/kk/ky/tg — kirill),
 // tarjima qilinmay ko'chirilgan matn, va INGLIZCHA O'QUV MATERIALI tarjimada o'zgarmasligi (qo'shtirnoq ichidagi inglizcha
 // ibora — «I went», 'look forward to' — har bir tilda harfma-harf saqlanadi).
 // Interfeys (catalog-ui.json: ekranlar, server xabarlari, bot) va butun katalog (darslar, izohlar, mashq ko'rsatmalari)
@@ -32,6 +32,7 @@ for (const l of LANGS) {
     if (!catalog.has(src)) { errs.push(`eskirgan kalit (katalogda yo'q): ${src.slice(0, 60)}`); continue; }
     if (typeof tr !== 'string' || !tr.trim()) { errs.push(`bo'sh: ${src.slice(0, 60)}`); continue; }
     if (ph(tr) !== ph(src)) errs.push(`o'rinbosar: ${src.slice(0, 50)} → ${tr.slice(0, 50)}`);
+    if (/\[\[.+?\]\]/.test(src) && !/^[^\[\]]*\[\[[^\[\]]+\]\][^\[\]]*$/.test(tr)) errs.push(`[[belgi]] saqlanmagan (sarlavhadagi sariq qism): ${tr.slice(0, 60)}`);
     if (l !== 'en' && /[A-Za-z]{3}/.test(src) && looksUz(src) && !CYR.test(tr) && !englishOnly(tr)) errs.push(`kirill yo'q: ${tr.slice(0, 60)}`);
     if (tr === src && /[‘’'ʻ]/.test(src) && looksUz(src)) errs.push(`tarjima qilinmagan (manba bilan bir xil): ${src.slice(0, 60)}`);
     for (const q of quotedEnglish(src)) if (!tr.includes(q)) errs.push(`inglizcha o'quv iborasi o'zgargan «${q}»: ${tr.slice(0, 70)}`);

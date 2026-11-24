@@ -35,6 +35,13 @@ const faq: [string, string][] = [
 ];
 
 /** preview=true — #/welcome: yangi foydalanuvchi ko'radigan sahifa (progressdan qat'i nazar; reklama havolasi uchun ham). */
+/** Sarlavha bitta tarjima kaliti: so'z tartibi tilga qarab o'zgaradi, [[...]] — sariq belgilanadigan qism. Belgi bo'lmasa oddiy matn. */
+function HeroTitle({ text }: { text: string }) {
+  const m = /^(.*?)\[\[(.+?)\]\](.*)$/s.exec(text);
+  if (!m) return <>{text}</>;
+  return <>{m[1]}<span className="hl">{m[2]}</span>{m[3]}</>;
+}
+
 export default function Home({ preview = false }: { preview?: boolean }) {
   const p = useProfile();
   const lvl = p.level;
@@ -51,7 +58,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
       <section className="w-hero">
         <div>
           <div className="row"><span className="eyebrow" style={{ whiteSpace: 'nowrap', marginBottom: 0 }}>{L('General English · IELTS · CEFR · SAT')}</span></div>
-          <h1>{L('Ingliz tilini')} <span className="hl">{L('o‘yin kabi')}</span>  {L('o‘rganing')}</h1>
+          <h1><HeroTitle text={L('Ingliz tilini [[o‘yin kabi]] o‘rganing')} /></h1>
           <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
           <div className="cta">
             {!acc ? <>

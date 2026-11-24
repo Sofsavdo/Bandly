@@ -230,6 +230,9 @@ svg.brandmark.talking { animation: bm-pulse 1.4s ease-in-out infinite; }
 .welcome { display: grid; gap: 18px; grid-template-columns: 1fr; margin-bottom: 18px; }
 .w-hero { position: relative; overflow: hidden; border-radius: var(--r-xl); padding: 30px 24px 26px; background: linear-gradient(160deg, var(--lilac-50), color-mix(in srgb, var(--lilac-50) 40%, var(--surface))); }
 .w-hero h1 { margin: 6px 0 14px; max-width: 640px; }
+/* Sariq belgi butun qator balandligini qoplaydi: to'q yozuv qorong'u fonda ham to'liq ko'rinadi (avval faqat pastki 62% edi) */
+.w-hero h1 .hl { padding: 0 .14em; }
+.w-hero h1 .hl::before { top: .04em; bottom: -.04em; height: auto; }
 .w-hero .lead { font-size: 17px; color: var(--ink-2); max-width: 520px; margin-bottom: 0; }
 .w-hero .cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
 .w-art { position: relative; min-height: 250px; display: grid; place-items: center; }
