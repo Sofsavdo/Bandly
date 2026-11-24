@@ -7,7 +7,7 @@ function harness(o: { member?: boolean; phone?: boolean } = {}) {
   const st = { member: o.member ?? false, phones: new Map<number, string>(o.phone ? [[5, '+998901234567']] : []), refs: new Map<number, string>() };
   const d: BotDeps = {
     api: async (m, b) => { calls.push({ m, b }); return true; },
-    publicUrl: 'https://www.sellzen.uz', tr: () => (t) => t,
+    publicUrl: 'https://sellzen.uz', tr: () => (t) => t,
     isMember: async () => st.member, hasPhone: (id) => st.phones.has(id), savePhone: (id, p) => { st.phones.set(id, p); },
     setRef: (id, r) => { st.refs.set(id, r); }, getRef: (id) => st.refs.get(id), setRemind: () => true, channel: '@Sellzen_AI', stats: { lessons: 144, ielts: 36, mocks: 41 },
   };
