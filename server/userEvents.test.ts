@@ -43,6 +43,8 @@ assert.equal(step('payment_done').users, 1);
 assert.equal(step('lesson_done').pct, 66.7);
 assert.equal(r.activated, 1, 'faqat 7 kun ichidagi dars faollashtiradi');
 assert.equal(r.paid, 1); assert.equal(r.renewed, 1); assert.equal(r.renewalPct, 100);
+// Tariflar bo'yicha daromad: faqat muvaffaqiyatli to'lovlar, tarif bo'yicha guruhlangan
+assert.deepEqual(r.period.byPlan, [{ plan: 'exam', payments: 2, revenue: 198000 }]);
 assert.equal(r.activationToPaidPct, 100); assert.equal(r.freeToPaidPct, 33.3);
 assert.equal(r.retention.d1, 33.3); assert.equal(r.retention.d7, 33.3); assert.equal(r.retention.d30, null, '30 kun hali o‘tmagan');
 assert.equal(r.period.activeUsers, 3, 'davr: a, b va eski o‘quvchi');

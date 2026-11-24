@@ -74,13 +74,20 @@ export interface CompleteOpts { maxTokens?: number; timeoutMs?: number; fetchImp
 /** Bitta so'rov: tizim ko'rsatmasi + foydalanuvchi matni → javob matni. */
 /** Vaqtinchalik xato (band 503/500/529/429 yoki javobsiz qolish): darhol keyingi zaxira modelga o'tiladi.
  *  Zaxira bo'lsa, har urinish ko'pi bilan 9 soniya — o'quvchi 20–30 soniya "qotib" kutmasin. */
-const TRANSIENT = new Set([429, 500, 503, 504, 529]);
+// 520 — bizning ichki belgi: provayder 200 qaytardi, lekin javob bo'sh yoki JSON emas (Gemini'da xavfsizlik filtri/o'ylash chegarasi) —
+// keyingi modelda odatda javob bo'ladi, shuning uchun ham vaqtinchalik hisoblanadi.
+export const EMPTY_ANSWER = 520;
+const TRANSIENT = new Set([429, 500, 503, 504, 529, EMPTY_ANSWER]);
 export async function complete(cfg: AiConfig, system: string, user: string, opts: CompleteOpts = {}): Promise<string> {
   const plan: AiConfig[] = [cfg, ...(cfg.fallbackModels ?? []).map((m) => ({ ...cfg, model: m })), ...(cfg.backup ? [cfg.backup] : [])];
   const perTry = plan.length > 1 ? Math.min(opts.timeoutMs ?? 20_000, opts.attemptTimeoutMs ?? 9_000) : opts.timeoutMs;
   let last: unknown;
   for (let i = 0; i < plan.length; i++) {
-    try { return await completeOnce(plan[i]!, system, user, { ...opts, timeoutMs: perTry }); } catch (e) {
+    try {
+      const text = await completeOnce(plan[i]!, system, user, { ...opts, timeoutMs: perTry });
+      if (i > 0) console.log(`[ai] zaxira ${plan[i]!.provider} ${plan[i]!.model} javob berdi (${i}-urinish) — o'quvchi xato ko'rmadi`);
+      return text;
+    } catch (e) {
       last = e;
       const toBackup = !!cfg.backup && i < plan.length - 1 && plan[plan.length - 1] === cfg.backup && e instanceof AiError && !!e.upstream;
       if (!toBackup && (!(e instanceof AiError) || !e.upstream || !TRANSIENT.has(e.upstream))) throw e;
@@ -88,6 +95,7 @@ export async function complete(cfg: AiConfig, system: string, user: string, opts
     }
   }
   const e = last as AiError;
+  if (e.upstream === EMPTY_ANSWER) throw e; // hamma model bo'sh/yaroqsiz javob berdi — 'band' emas, aniq sabab
   throw new AiError(503, e.upstream === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : 'AI ustoz hozir juda band (AI xizmatida navbat). Bir daqiqadan keyin qayta urinib ko‘ring.', e.upstream);
 }
 
@@ -122,10 +130,11 @@ async function completeOnce(cfg: AiConfig, system: string, user: string, opts: C
       console.error(`[ai] ${cfg.provider} ${cfg.model} → HTTP ${res.status}${why ? `: ${why}` : ''}`);
       throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 402 ? 'AI ustoz vaqtincha ishlamayapti: AI xizmati hisobida mablag‘ tugagan. Administratorga xabar berildi.' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`, res.status);
     }
-    const j = (await res.json()) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const j = (await res.json().catch(() => null)) as Record<string, any> | null; // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (!j || typeof j !== 'object') { console.error(`[ai] ${cfg.provider} ${cfg.model} → JSON bo'lmagan javob`); throw new AiError(502, 'AI javobini o‘qib bo‘lmadi', EMPTY_ANSWER); }
     const text = cfg.provider === 'anthropic' ? j.content?.[0]?.text : cfg.provider === 'openai' ? j.choices?.[0]?.message?.content : (j.candidates?.[0]?.content?.parts ?? []).filter((p: { thought?: boolean; text?: string }) => !p.thought && typeof p.text === 'string').map((p: { text: string }) => p.text).join('');
     reportUsage(cfg.provider, cfg.model, parseUsage(cfg.provider, j)); // haqiqiy token soni bo'yicha xarajat (kontekst bo'lsa)
-    if (typeof text !== 'string' || !text.trim()) throw new AiError(502, 'AI bo‘sh javob berdi');
+    if (typeof text !== 'string' || !text.trim()) { console.error(`[ai] ${cfg.provider} ${cfg.model} → bo'sh javob${j.candidates?.[0]?.finishReason ? ` (${j.candidates[0].finishReason})` : ''}`); throw new AiError(502, 'AI bo‘sh javob berdi', EMPTY_ANSWER); }
     return text.trim();
   } catch (e) {
     if (e instanceof AiError) throw e;
@@ -210,7 +219,9 @@ const SPEAKING_DESCRIPTORS = 'Fluency and Coherence — 7: speaks at length with
 export async function evaluateSpeaking(cfg: AiConfig, turns: { q: string; text: string }[], opts?: CompleteOpts, native = NATIVE_DEFAULT): Promise<Evaluation> {
   const system = `You are a certified-style IELTS Speaking examiner. You only have a speech-to-text transcript, so pronunciation cannot be judged: set "pronunciation" to null. Score fluency (Fluency and Coherence), lexical (Lexical Resource), grammar (Grammatical Range and Accuracy) from 0 to 9 in steps of 0.5, applying the public band descriptors strictly. ${SPEAKING_DESCRIPTORS} Very short answers (under ~15 words per question) cannot score above 5 for fluency. Reply with JSON only in this shape: {"fluency":n,"lexical":n,"grammar":n,"pronunciation":null,"strengths":["..."],"improve":["..."],"corrections":[{"said":"exact words the candidate said","better":"corrected version","why":"...","criterion":"grammar|lexical|fluency"}],"focus":"..."}. Write "strengths" and "improve" in ${native}, at most 3 short items each; "corrections" at most 4: "said" copied EXACTLY from the transcript, "better" in English, "why" in ${native} (one short sentence explaining the rule); "focus" in ${native}: ONE or two sentences naming the lowest criterion and the single concrete change that would raise the overall band by 0.5. ${GUARD}`;
   const body = turns.slice(0, 12).map((t, i) => `Q${i + 1}: ${clip(t.q, 200)}\n<candidate>${clip(t.text, 1200)}</candidate>`).join('\n\n');
-  return parseEvaluation(await complete(cfg, system, body, { maxTokens: 900, ...opts }), ['fluency', 'lexical', 'grammar', 'pronunciation'], turns.map((t) => t.text).join('\n'));
+  // Talaffuz matndan baholanmaydi: model raqam qaytarsa ham e'tiborga olinmaydi va umumiy bandga qo'shilmaydi
+  const ev = parseEvaluation(await complete(cfg, system, body, { maxTokens: 900, ...opts }), ['fluency', 'lexical', 'grammar'], turns.map((t) => t.text).join('\n'));
+  return { ...ev, bands: { ...ev.bands, pronunciation: null } };
 }
 
 export async function evaluateWriting(cfg: AiConfig, task: 1 | 2, prompt: string, text: string, opts?: CompleteOpts, native = NATIVE_DEFAULT): Promise<Evaluation> {

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Lesson, Unit } from '../content/lessons/types';
 import { listenRound, pairsRound, reaction, type ListenItem, type PairsRound } from '../lib/lessonGame';
 import { say, stopSpeaking } from '../lib/speech';
+import { ClipButton } from './ClipButton';
+import { useClip } from '../lib/useClip';
 import { sfx } from '../lib/fx';
 import { L } from '../i18n';
 
@@ -60,7 +62,7 @@ export function DiscoverDeck({ lesson, onDone, onAddWords, wordsMsg }: { lesson:
           <h3><Lightbulb size={18} /> {L('Avval misollarga qarang')}</h3>
           <p className="muted">{L('Eshiting: qanday qonuniyat bor?')}</p>
           <ul className="ex-list">{lesson.examples.map((e) => (
-            <li key={e.en}><button type="button" className="icon-btn" aria-label={L('Eshitish: {0}', [e.en])} onClick={() => playEn(e.en, e.audio)}><Volume2 size={16} /></button><span><b>{e.en}</b><small className="muted">{e.uz}</small></span></li>
+            <li key={e.en}><ClipButton className="icon-btn" text={e.en} audio={e.audio} size={16} /><span><b>{e.en}</b><small className="muted">{e.uz}</small></span></li>
           ))}</ul>
         </>)}
         {card.kind === 'rule' && (<>
@@ -128,7 +130,8 @@ export function ListenGame({ items, onDone }: { items: ListenItem[]; onDone: () 
   const [pick, setPick] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const it = items[k];
-  useEffect(() => { if (it) playEn(it.en, it.audio); }, [k]); // eslint-disable-line react-hooks/exhaustive-deps
+  const clip = useClip(it?.en ?? '', it?.audio);
+  useEffect(() => { if (it && clip) playEn(it.en, it.audio); }, [k, clip]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!it) return <div><h3><Headphones size={18} /> {L('Eshit va tanla')}</h3><p className="ok"><CheckCircle2 size={16} /> {L('{0} / {1} to‘g‘ri — quloq ishlayapti!', [score, items.length])}</p></div>;
   const answered = pick !== null;
   const choose = (o: number) => { if (answered) return; setPick(o); const ok = o === it.answer; if (ok) setScore((s) => s + 1); sfx(ok ? 'ok' : 'bad'); };
@@ -136,7 +139,9 @@ export function ListenGame({ items, onDone }: { items: ListenItem[]; onDone: () 
   return (
     <div>
       <h3><Headphones size={18} /> {L('Eshit va tanla')} <small className="muted">{k + 1}/{items.length}</small></h3>
-      <button type="button" className="btn listen-btn" onClick={() => playEn(it.en, it.audio)}><Volume2 size={18} /> {L('Yana eshitish')}</button>
+      {clip === false
+        ? <p className="listen-script"><b>«{it.en}»</b></p> /* ovozi hali tayyor emas — jim o'yin o'rniga matn o'qiladi */
+        : <button type="button" className="btn listen-btn" style={clip ? undefined : { visibility: 'hidden' }} onClick={() => playEn(it.en, it.audio)}><Volume2 size={18} /> {L('Yana eshitish')}</button>}
       <div className="stack" style={{ marginTop: 10 }}>
         {it.options.map((o, i) => <button key={o} type="button" className={`opt ${answered ? (i === it.answer ? 'right' : i === pick ? 'bad' : '') : ''}`} disabled={answered} onClick={() => choose(i)}>{o}</button>)}
       </div>
@@ -153,7 +158,7 @@ export function FeedbackSheet({ ok, n, answer, explain, onNext, xp, sentence }: 
     <div className={`fb-sheet ${ok ? 'ok' : 'bad'}`} role="status">
       <div className="fb-head">{ok ? <CheckCircle2 size={22} /> : <XCircle size={22} />}<b>{reaction(ok, n)}</b>{ok && xp ? <span className="xp-pop">+{xp}  {L('XP')}</span> : null}</div>
       {!ok && !sentence && <p className="fb-answer">{L('To‘g‘ri javob:')} <b>{answer}</b></p>}
-      {sentence && <p className="fb-answer fb-sentence"><button type="button" className="icon-btn sm" aria-label={L('Eshitish: {0}', [sentence])} onClick={() => playEn(sentence)}><Volume2 size={15} /></button><b>{sentence}</b></p>}
+      {sentence && <p className="fb-answer fb-sentence"><ClipButton className="icon-btn sm" text={sentence} size={15} /><b>{sentence}</b></p>}
       <p className="fb-explain">{explain}</p>
       <button ref={btn} className={`btn block ${ok ? 'primary' : 'danger'}`} onClick={onNext}>{L('Davom etish')} <ArrowRight size={14} /></button>
     </div>

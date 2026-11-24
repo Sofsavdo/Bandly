@@ -54,9 +54,11 @@ const saveManifest = () => {
 
 let credits = 0;
 async function refreshCredits(): Promise<number> {
-  const r = await fetch('https://api.elevenlabs.io/v1/user/subscription', { headers: { 'xi-api-key': KEY } });
-  const d = await r.json() as { character_count: number; character_limit: number };
-  credits = d.character_limit - d.character_count;
+  const r = await fetch('https://api.elevenlabs.io/v1/user/subscription', { headers: { 'xi-api-key': KEY } }).catch(() => null);
+  const d = (await r?.json().catch(() => null)) as { character_count?: number; character_limit?: number } | null;
+  // So'rov rad etilsa (rate limit va h.k.) oldingi qoldiq saqlanadi: NaN bo'lib zaxira tekshiruvi o'chib qolmasin
+  if (typeof d?.character_count === 'number' && typeof d.character_limit === 'number') credits = d.character_limit - d.character_count;
+  else if (!Number.isFinite(credits)) credits = 0;
   return credits;
 }
 
@@ -120,7 +122,7 @@ const lis = listeningTests.filter((t) => t.id in Object.fromEntries(listeningInv
 const minis = lis.filter((t) => !t.sections?.length).sort((a, b) => LEVEL.indexOf(a.level) - LEVEL.indexOf(b.level)).map((t) => t.id);
 const fulls = lis.filter((t) => t.sections?.length).map((t) => t.id);
 const clips = clipInventory();
-const ORDER: Clip['category'][] = ['lesson-listen', 'listening-skill', 'speaking', 'lesson', 'word', 'shadow'];
+const ORDER: Clip['category'][] = ['lesson-listen', 'listening-skill', 'speaking', 'lesson', 'word', 'shadow', 'lesson-feedback']; // oxirgisi eng ko'p belgi: avval qolgan hammasi
 const queue: (() => Promise<unknown>)[] = [
   ...minis.map((id) => () => doListening(id)),
   ...clips.filter((c) => c.category === 'lesson-listen').map((c) => () => doClip(c)),

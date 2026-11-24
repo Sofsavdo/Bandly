@@ -73,6 +73,12 @@ for (const provider of ['anthropic', 'openai', 'gemini'] as const) {
   const e = await evaluateSpeaking(cfg, [{ q: 'q1', text: 'I am agree with this idea' }]);
   assert.equal(e.overall, roundBand((6 + 6.5 + 5.5) / 3));
   assert.equal(e.bands.pronunciation, null);
+  // Model talaffuzga raqam qo'ysa ham (transkriptdan baholab bo'lmaydi) — e'tiborsiz, umumiy bandga qo'shilmaydi
+  reply = '{"fluency":6,"lexical":6,"grammar":6,"pronunciation":9,"strengths":[],"improve":[],"corrections":[]}';
+  const e2 = await evaluateSpeaking(cfg, [{ q: 'q1', text: 'I think cities are better for young people' }]);
+  assert.equal(e2.bands.pronunciation, null, 'talaffuz baholanmaydi');
+  assert.equal(e2.overall, 6, 'umumiy band faqat 3 mezondan');
+  assert.deepEqual(Object.keys(e2.bands), ['fluency', 'lexical', 'grammar', 'pronunciation'], 'ko‘rsatish tartibi o‘zgarmadi');
   reply = '{"task_response":6,"coherence":6,"lexical":6.5,"grammar":6,"strengths":[],"improve":["x"],"corrections":[]}';
   const w = await evaluateWriting(cfg, 2, 'Prompt', 'Essay text');
   assert.equal(w.overall, 6);
@@ -211,6 +217,25 @@ assert.equal((await import('./ai')).configFromEnv({ AI_API_KEY: 'AQ.Ab12' }).pro
   assert.equal(await comp(g, 's', 'u', { fetchImpl: fake(401) }), 'backup ok', 'kalit xatosi → to‘g‘ridan-to‘g‘ri zaxira');
   assert.equal(calls.filter((c) => c.includes('googleapis')).length, 1, 'kalit xatosida qolgan Gemini modellari o‘tkazib yuboriladi');
   console.log('ai backup: OK');
+}
+// Bo'sh javob (Gemini xavfsizlik filtri/o'ylash chegarasi) yoki JSON bo'lmagan javob — keyingi modelga; hammasi bo'sh bo'lsa aniq xato
+{
+  const { configFromEnv: cfe, complete: comp, AiError: AE } = await import('./ai');
+  const g = cfe({ AI_PROVIDER: 'gemini', AI_API_KEY: 'AQ.k' });
+  const seen: string[] = [];
+  const emptyThenOk = (async (u: string) => { const m = decodeURIComponent(u.split('/models/')[1]!.split(':')[0]!); seen.push(m); return m === 'gemini-3.8-flash' ? { ok: true, status: 200, json: async () => ({ candidates: [{ finishReason: 'SAFETY', content: { parts: [] } }] }) } : { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }) }; }) as never;
+  assert.equal(await comp(g, 's', 'u', { fetchImpl: emptyThenOk }), 'ok', "bo'sh javob — zaxira modelga");
+  assert.deepEqual(seen, ['gemini-3.8-flash', 'gemini-3.5-flash-lite']);
+  let n = 0;
+  const notJson = (async () => { n++; return { ok: true, status: 200, json: async () => { throw new SyntaxError('Unexpected token <'); } }; }) as never;
+  await assert.rejects(comp(g, 's', 'u', { fetchImpl: notJson }), (e: unknown) => e instanceof AE && e.status === 502 && /o‘qib bo‘lmadi/.test(e.message));
+  assert.equal(n, 3, 'har bir model bir martadan — cheksiz qayta urinish (ortiqcha xarajat) yo‘q');
+  // Bitta modelli sozlamada (zaxirasiz) bo'sh javob bir marta so'raladi
+  n = 0;
+  const empty = (async () => { n++; return { ok: true, status: 200, json: async () => ({ candidates: [] }) }; }) as never;
+  await assert.rejects(comp({ ...g, fallbackModels: [] }, 's', 'u', { fetchImpl: empty }), /bo‘sh javob/);
+  assert.equal(n, 1);
+  console.log('ai empty/invalid: OK');
 }
 // Writing Lab: tuzatish faqat o'quvchi matnida haqiqatan bor iboraga; sabab va mezon saqlanadi; o'zgarishsiz "tuzatish" tashlanadi
 {

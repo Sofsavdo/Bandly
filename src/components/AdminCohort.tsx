@@ -1,5 +1,6 @@
 // Admin → Analitika → O'sish: Analytics 2.0 kohorta hisobotlari (server/userEvents.ts cohortReport).
 // Barcha foizlar noyob o'quvchilar bo'yicha; hodisalar yig'indisi bo'lingan joy yo'q. Shaxsiy ma'lumot ko'rsatilmaydi.
+import { SALE_PLANS } from '../config';
 import { L } from '../i18n';
 
 export interface Cohort2 {
@@ -7,7 +8,7 @@ export interface Cohort2 {
   steps: { key: string; users: number; pct: number | null }[];
   retention: { d1: number | null; d7: number | null; d30: number | null; eligible: { d1: number; d7: number; d30: number } };
   activated: number; activationPct: number | null; paid: number; activationToPaidPct: number | null; freeToPaidPct: number | null; renewed: number; renewalPct: number | null;
-  period: { activeUsers: number; revenue: number; arpu: number | null; aiUsd: number; aiUsdPerActive: number | null; aiEvalUsd: number; aiEvals: number; aiUsdPerEval: number | null };
+  period: { activeUsers: number; revenue: number; arpu: number | null; aiUsd: number; aiUsdPerActive: number | null; aiEvalUsd: number; aiEvals: number; aiUsdPerEval: number | null; byPlan?: { plan: string; payments: number; revenue: number }[] };
   adoption: { feature: string; users: number }[];
 }
 
@@ -55,6 +56,13 @@ export function CohortPanel({ c }: { c: Cohort2 }) {
         <div className="kpi2"><span>{L('Faol o‘quvchiga AI xarajati')}</span><b>{usd(c.period.aiUsdPerActive)}</b><small>{L('jami: {0}', [usd(c.period.aiUsd)])}</small></div>
         <div className="kpi2"><span>{L('Bitta AI baholash narxi')}</span><b>{usd(c.period.aiUsdPerEval)}</b><small>{L('baholashlar: {0}', [c.period.aiEvals])}</small></div>
       </div>
+      {!!c.period.byPlan?.length && <>
+        <h4>{L('Tariflar bo‘yicha daromad')}</h4>
+        <div className="table-scroll"><table className="data wrap">
+          <thead><tr><th>{L('Tarif')}</th><th>{L('To‘lovlar')}</th><th>{L('Daromad')}</th></tr></thead>
+          <tbody>{c.period.byPlan.map((p) => <tr key={p.plan}><td>{SALE_PLANS.find((x) => x.id === p.plan)?.title ?? p.plan}</td><td>{num(p.payments)}</td><td>{num(p.revenue)} {L('so‘m')}</td></tr>)}</tbody>
+        </table></div>
+      </>}
       <h4>{L('Funksiyalardan foydalanish (noyob o‘quvchilar)')}</h4>
       <div className="table-scroll"><table className="data wrap"><tbody>{c.adoption.map((a) => <tr key={a.feature}><td>{FEATURE[a.feature] ?? a.feature}</td><td>{num(a.users)}</td></tr>)}</tbody></table></div>
       <details className="fold" style={{ marginTop: 10 }}><summary>{L('Ta’riflar')}</summary><ul className="muted" style={{ fontSize: 13 }}>{DEFS.map((d) => <li key={d}>{d}</li>)}</ul></details>

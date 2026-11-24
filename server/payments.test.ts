@@ -185,4 +185,23 @@ assert.equal(extend(db, 1, 'exam', 1, T0) > T0, true);
   assert.equal(demoMode({}, false), true, 'lokal ishlab chiqish');
   assert.equal(demoMode({ PAY_DEMO: '0' }, false), false);
 }
+// Atomarlik: obuna yozilmay qolsa (disk/baza xatosi), to'lov ham 'success' bo'lmaydi — qayta urinishda to'liq yetkaziladi
+{
+  const { applyResult: apply, callbackOutcome } = await import('./payments');
+  const d = createDb(':memory:');
+  const u = join(d, 'Atom', T0);
+  const p = await createPayment(d, fake({}).api, u.token, 'all', 30, T0, {});
+  d.exec("CREATE TRIGGER fail_sub BEFORE INSERT ON subscriptions BEGIN SELECT RAISE(ABORT, 'disk full'); END");
+  assert.throws(() => apply(d, p.id, 'paid', { paidAmount: p.pay_amount! }, T0), /disk full/);
+  const st = (d.prepare('SELECT status FROM payments WHERE id = ?').get(p.id) as { status: string }).status;
+  assert.equal(st, 'pending', 'obuna yozilmasa to‘lov holati o‘zgarmaydi');
+  assert.equal((d.prepare('SELECT COUNT(*) AS n FROM subscriptions').get() as { n: number }).n, 0, 'yarim obuna qolmaydi');
+  d.exec('DROP TRIGGER fail_sub');
+  assert.equal(apply(d, p.id, 'paid', { paidAmount: p.pay_amount! }, T0), 'delivered', 'qayta urinish yetkazadi');
+  assert.equal(entitlements(d, u.token, T0).plan, 'all');
+  // Callback statusi: faqat aniq qiymatlar
+  assert.equal(callbackOutcome('paid'), 'paid'); assert.equal(callbackOutcome(' PAID '), 'paid');
+  for (const c of ['cancel', 'canceled', 'cancelled']) assert.equal(callbackOutcome(c), 'cancel');
+  for (const x of ['', undefined, 'pending', 'processing', 'success?', 'error']) assert.equal(callbackOutcome(x), null, String(x));
+}
 console.log('payments.test: OK');

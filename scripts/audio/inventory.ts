@@ -11,6 +11,7 @@ import { roastLines } from '../../src/content/roasts';
 import { SKILL_SETS } from '../../src/content/skillCheck';
 import { TOPICS } from '../../src/lib/silenceGame';
 import { splitSentences } from '../../src/lib/speech';
+import { fullSentence } from '../../src/lib/lessons';
 
 /** Speaking imtihonchisining doimiy gaplari (examiner.ts dagi qoliplar, ikkala variant: oson / odatiy). */
 const EXAMINER_LINES = [
@@ -27,7 +28,7 @@ const EXAMINER_LINES = [
   'The test is finished.',
 ];
 
-export type Category = 'listening' | 'lesson' | 'lesson-listen' | 'listening-skill' | 'word' | 'speaking' | 'shadow';
+export type Category = 'listening' | 'lesson' | 'lesson-listen' | 'lesson-feedback' | 'listening-skill' | 'word' | 'speaking' | 'shadow';
 export interface Clip { key: string; text: string; category: Category }
 export interface ListeningJob { id: string; lines: { speaker: string; text: string }[]; chars: number }
 
@@ -45,6 +46,8 @@ export function clipInventory(): Clip[] {
     for (const e of lesson.examples) if (!e.audio) add(e.en, 'lesson');
     for (const v of lesson.vocab ?? []) add(v.en, 'word');
     for (const it of [...lesson.practice, ...lesson.check]) if (it.kind !== 'order' && it.listen) add(it.listen, 'lesson-listen');
+    // Javobdan keyin ko'rsatiladigan to'liq to'g'ri gap ("Eshitish" tugmasi) — ish vaqtida fullSentence() bilan hosil bo'ladi
+    for (const it of [...lesson.practice, ...lesson.check]) { const fs = fullSentence(it); if (fs) add(fs, 'lesson-feedback'); }
   }
   for (const w of vocab) add(w.word, 'word');
   // Speaking: butun savol + gaplarga bo'lingan qismlar (imtihonchi qolipli gaplarni savol bilan qo'shib aytadi)
