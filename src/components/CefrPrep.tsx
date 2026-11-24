@@ -2,7 +2,9 @@ import { BookOpen, Headphones, Mic, PenLine } from 'lucide-react';
 import { useState } from 'react';
 import { UZ_MULTILEVEL as F } from '../content/examFormats';
 import type { WritingTask } from '../content/lessons/types';
+import { listeningTests, readingTests } from '../content/mockTests';
 import { loadSkills } from '../lib/skillCheck';
+import { loadResults } from '../lib/storage';
 import { useProfile } from '../lib/store';
 import { LessonWrite } from './LessonWrite';
 import { L } from '../i18n';
@@ -12,6 +14,20 @@ const TASKS: { title: string; task: WritingTask }[] = [
   { title: L('1-topshiriq · 100–150 so‘z'), task: { promptUz: L('Do‘stingizga xat yozing: yaqinda borgan bayram yoki tadbir haqida gapirib bering, nima yoqqanini va keyingi safar birga borishni taklif qiling.'), minWords: 100, maxWords: 150, require: [], model: '' } },
   { title: L('2-topshiriq · 200–250 so‘z'), task: { promptUz: L('“Ba’zi odamlar universitetda o‘qish ishga kirish uchun shart emas deb hisoblaydi.” Bu fikrga qanchalik qo‘shilasiz? Sabablar va misollar keltiring.'), minWords: 200, maxWords: 250, require: [{ re: String.raw`\b(because|since|therefore|however|although|for example|for instance|in my opinion|I believe|I think)\b`, labelUz: L('fikrni asoslovchi bog‘lovchi (because, however, for example…)') }], model: '' } },
 ];
+
+/** Barcha CEFR mashq testlari: keyingi topshirilmagani katta tugma, qolganlari raqamli qator (✓ — topshirilgan). */
+function CefrSet({ kind, icon, label, meta }: { kind: 'reading' | 'listening'; icon: React.ReactNode; label: (n: number) => string; meta: string }) {
+  const tests = (kind === 'reading' ? readingTests : listeningTests).filter((t) => t.exam === 'cefr');
+  const done = new Set(loadResults().filter((r) => r.kind === kind).map((r) => r.title));
+  if (!tests.length) return null;
+  const next = Math.max(0, tests.findIndex((t) => !done.has(t.title)));
+  return (
+    <div>
+      <a className="path-step" href={`#/mocks/${kind}/${tests[next]!.id}`}><b>{icon}  {label(next + 1)}</b><span>{meta}</span></a>
+      {tests.length > 1 && <p className="row" style={{ marginTop: 6 }}>{tests.map((t, i) => <a key={t.id} className={`chipbtn ${i === next ? 'on' : ''}`} href={`#/mocks/${kind}/${t.id}`} aria-label={label(i + 1)}>{i + 1}{done.has(t.title) ? ' ✓' : ''}</a>)}</p>}
+    </div>
+  );
+}
 
 /** CEFR Multilevel (Uzbekistan): verified format + preparation tools. No official materials are reproduced and no Multilevel score is invented. */
 export function CefrPrep() {
@@ -49,8 +65,8 @@ export function CefrPrep() {
       <div className="card">
         <h3>{L('Tayyorgarlik')}</h3>
         <div className="stack">
-          <a className="path-step" href="#/mocks/reading/cefr-reading-1"><b><BookOpen size={16} />  {L('O‘qish — mashq testi 1')}</b><span>{L('35 savol · 60 daqiqa · B1→C1 matnlar · bepul')}</span></a>
-          <a className="path-step" href="#/mocks/listening/cefr-listening-1"><b><Headphones size={16} />  {L('Tinglab tushunish — mashq testi 1')}</b><span>{L('35 savol · 45 daqiqa · 5 qism, turli talaffuzlar · bepul')}</span></a>
+          <CefrSet kind="reading" icon={<BookOpen size={16} />} label={(n) => L('O‘qish — mashq testi {0}', [n])} meta={L('35 savol · 60 daqiqa · B1→C1 matnlar · bepul')} />
+          <CefrSet kind="listening" icon={<Headphones size={16} />} label={(n) => L('Tinglab tushunish — mashq testi {0}', [n])} meta={L('35 savol · 45 daqiqa · 5 qism, turli talaffuzlar · bepul')} />
           <a className="path-step" href="#/coach"><b><Mic size={16} />  {L('Gapirish')}</b><span>{L('Sellzen bilan suhbat va “Jim qolma!” — ravon gapirish mashqi')}</span></a>
         </div>
         <h3 style={{ marginTop: 14 }}><PenLine size={16} />  {L('Yozma ish mashqi')}</h3>

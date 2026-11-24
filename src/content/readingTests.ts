@@ -17,6 +17,15 @@ import { readingFull10 } from './readingFull10';
 import { reading7, reading8, reading9, reading10 } from './ladderReading';
 import { reading11, reading12, reading13, reading14, reading15, reading16, reading17, reading18 } from './ladderReading2';
 import { cefrReading1 } from './cefrReading1';
+import { cefrReading2 } from './cefrReading2';
+import { cefrReading3 } from './cefrReading3';
+import { cefrReading4 } from './cefrReading4';
+import { cefrReading5 } from './cefrReading5';
+import { cefrReading6 } from './cefrReading6';
+import { cefrReading7 } from './cefrReading7';
+import { cefrReading8 } from './cefrReading8';
+import { cefrReading9 } from './cefrReading9';
+import { cefrReading10 } from './cefrReading10';
 import type { ReadingTest } from './types';
 
-export const readingTests: ReadingTest[] = [reading5, reading7, reading8, reading11, reading12, reading1, reading6, reading9, reading13, reading14, reading10, reading3, reading4, reading15, reading16, reading2, reading17, reading18, readingFull1, readingFull2, readingFull3, readingFull4, readingFull5, readingFull6, readingFull7, readingFull8, readingFull9, readingFull10, cefrReading1];
+export const readingTests: ReadingTest[] = [reading5, reading7, reading8, reading11, reading12, reading1, reading6, reading9, reading13, reading14, reading10, reading3, reading4, reading15, reading16, reading2, reading17, reading18, readingFull1, readingFull2, readingFull3, readingFull4, readingFull5, readingFull6, readingFull7, readingFull8, readingFull9, readingFull10, cefrReading1, cefrReading2, cefrReading3, cefrReading4, cefrReading5, cefrReading6, cefrReading7, cefrReading8, cefrReading9, cefrReading10];

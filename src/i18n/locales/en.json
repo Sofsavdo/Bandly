@@ -4114,7 +4114,6 @@
  "O‘qilmoqda…": "Reading…",
  "O‘qish": "Reading",
  "O‘qish uchun — school.": "For studying — school.",
- "O‘qish — mashq testi 1": "Reading — practice test 1",
  "O‘qituvchi bergan kod": "Code from your teacher",
  "O‘qituvchi bilan qisqa suhbat yozing: salomlashing, iltimos bilan bir narsa so‘rang, rahmat ayting va xayrlashing.": "Write a short conversation with a teacher: say hello, politely ask for something, say thank you and say goodbye.",
  "O‘qituvchi bizga inshoni qayta yozdirdi.": "The teacher made us rewrite the essay.",
@@ -5714,7 +5713,6 @@
  "Tillar haqida ma’lumot yo‘q → NOT GIVEN.": "No information about languages → NOT GIVEN.",
  "Tillar katta harf bilan: Uzbek, English.": "Languages are written with a capital letter: Uzbek, English.",
  "Tinglab tushunish": "Listening comprehension",
- "Tinglab tushunish — mashq testi 1": "Listening comprehension — practice test 1",
  "Tinglang va savollarga javob bering.": "Listen and answer the questions.",
  "Tinglang: bu gap nimani anglatadi?": "Listen: what does this sentence mean?",
  "Tinglash": "Listening",
@@ -9709,5 +9707,16 @@
  "IELTS Academic Reading — to‘liq mock 7": "IELTS Academic Reading — full mock 7",
  "IELTS Academic Reading — to‘liq mock 8": "IELTS Academic Reading — full mock 8",
  "IELTS Academic Reading — to‘liq mock 9": "IELTS Academic Reading — full mock 9",
- "IELTS Academic Reading — to‘liq mock 10": "IELTS Academic Reading — full mock 10"
+ "IELTS Academic Reading — to‘liq mock 10": "IELTS Academic Reading — full mock 10",
+ "CEFR Multilevel uslubida Reading — mashq testi 2": "CEFR Multilevel-style Reading — practice test 2",
+ "CEFR Multilevel uslubida Reading — mashq testi 3": "CEFR Multilevel-style Reading — practice test 3",
+ "CEFR Multilevel uslubida Reading — mashq testi 4": "CEFR Multilevel-style Reading — practice test 4",
+ "CEFR Multilevel uslubida Reading — mashq testi 5": "CEFR Multilevel-style Reading — practice test 5",
+ "CEFR Multilevel uslubida Reading — mashq testi 6": "CEFR Multilevel-style Reading — practice test 6",
+ "CEFR Multilevel uslubida Reading — mashq testi 7": "CEFR Multilevel-style Reading — practice test 7",
+ "CEFR Multilevel uslubida Reading — mashq testi 8": "CEFR Multilevel-style Reading — practice test 8",
+ "CEFR Multilevel uslubida Reading — mashq testi 9": "CEFR Multilevel-style Reading — practice test 9",
+ "CEFR Multilevel uslubida Reading — mashq testi 10": "CEFR Multilevel-style Reading — practice test 10",
+ "O‘qish — mashq testi {0}": "Reading — practice test {0}",
+ "Tinglab tushunish — mashq testi {0}": "Listening comprehension — practice test {0}"
 }

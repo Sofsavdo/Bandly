@@ -4114,7 +4114,6 @@
  "O‘qilmoqda…": "Хонда мешавад…",
  "O‘qish": "Хондан",
  "O‘qish uchun — school.": "Барои таҳсил — school.",
- "O‘qish — mashq testi 1": "Хониш — тести машқӣ 1",
  "O‘qituvchi bergan kod": "Рамзи додаи муаллим",
  "O‘qituvchi bilan qisqa suhbat yozing: salomlashing, iltimos bilan bir narsa so‘rang, rahmat ayting va xayrlashing.": "Бо муаллим сӯҳбати кӯтоҳ нависед: салом диҳед, бо хоҳиш чизеро пурсед, ташаккур гӯед ва хайрухуш кунед.",
  "O‘qituvchi bizga inshoni qayta yozdirdi.": "Муаллим моро маҷбур кард, ки иншоро аз нав нависем.",
@@ -5714,7 +5713,6 @@
  "Tillar haqida ma’lumot yo‘q → NOT GIVEN.": "Маълумот дар бораи забонҳо нест → NOT GIVEN.",
  "Tillar katta harf bilan: Uzbek, English.": "Забонҳо бо ҳарфи калон навишта мешаванд: Uzbek, English.",
  "Tinglab tushunish": "Фаҳмиши шунавоӣ",
- "Tinglab tushunish — mashq testi 1": "Фаҳмиши шунавоӣ — тести машқии 1",
  "Tinglang va savollarga javob bering.": "Гӯш кунед ва ба саволҳо ҷавоб диҳед.",
  "Tinglang: bu gap nimani anglatadi?": "Гӯш кунед: ин ҷумла чӣ маъно дорад?",
  "Tinglash": "Шунидан",
@@ -9709,5 +9707,16 @@
  "IELTS Academic Reading — to‘liq mock 7": "IELTS Academic Reading — санҷиши пурраи озмоишӣ 7",
  "IELTS Academic Reading — to‘liq mock 8": "IELTS Academic Reading — санҷиши пурраи озмоишӣ 8",
  "IELTS Academic Reading — to‘liq mock 9": "IELTS Academic Reading — санҷиши пурраи озмоишӣ 9",
- "IELTS Academic Reading — to‘liq mock 10": "IELTS Academic Reading — санҷиши пурраи озмоишӣ 10"
+ "IELTS Academic Reading — to‘liq mock 10": "IELTS Academic Reading — санҷиши пурраи озмоишӣ 10",
+ "CEFR Multilevel uslubida Reading — mashq testi 2": "Reading бо услуби CEFR Multilevel — тести машқӣ 2",
+ "CEFR Multilevel uslubida Reading — mashq testi 3": "Reading бо услуби CEFR Multilevel — тести машқӣ 3",
+ "CEFR Multilevel uslubida Reading — mashq testi 4": "Reading бо услуби CEFR Multilevel — тести машқӣ 4",
+ "CEFR Multilevel uslubida Reading — mashq testi 5": "Reading бо услуби CEFR Multilevel — тести машқӣ 5",
+ "CEFR Multilevel uslubida Reading — mashq testi 6": "Reading бо услуби CEFR Multilevel — тести машқӣ 6",
+ "CEFR Multilevel uslubida Reading — mashq testi 7": "Reading бо услуби CEFR Multilevel — тести машқӣ 7",
+ "CEFR Multilevel uslubida Reading — mashq testi 8": "Reading бо услуби CEFR Multilevel — тести машқӣ 8",
+ "CEFR Multilevel uslubida Reading — mashq testi 9": "Reading бо услуби CEFR Multilevel — тести машқӣ 9",
+ "CEFR Multilevel uslubida Reading — mashq testi 10": "Reading бо услуби CEFR Multilevel — тести машқӣ 10",
+ "O‘qish — mashq testi {0}": "Хониш — тести машқӣ {0}",
+ "Tinglab tushunish — mashq testi {0}": "Фаҳмиши шунавоӣ — тести машқии {0}"
 }
