@@ -98,7 +98,9 @@ try {
       if (await nx.count() && await nx.isEnabled()) await nx.click();
     }
     assert.match(await text(p), /Sizning darajangiz: (A1|A2|B1|B2|C1|C2)/, 'natija ko‘rsatildi');
-    await p.getByRole('button', { name: 'Dasturni saqlash' }).click();
+    // 2026-11-24: natija avtomatik saqlanadi ("Dasturni saqlash" tugmasi yo'q — bosilmasa ham daraja yo'qolmaydi)
+    assert.match(await text(p), /Darajangiz saqlandi/, 'natija avtomatik saqlandi');
+    assert.equal(await p.getByRole('button', { name: 'Dasturni saqlash' }).count(), 0, 'saqlash tugmasi yo‘q');
     const level = await p.evaluate(() => JSON.parse(localStorage.getItem('bandly.profile.v1') ?? '{}').level as string);
     assert.ok(level, 'daraja qurilmada saqlandi');
     await p.locator('main a:has-text("Bepul ro‘yxatdan o‘tish")').click();
@@ -333,6 +335,7 @@ try {
     assert.match(await text(a), /oxirgi bosilgan havola/, 'kredit rejimi ko‘rsatiladi');
     // Kredit rejimi — Limitlar bo'limida (admin boshqaradi)
     await a.getByRole('tab', { name: 'Limitlar' }).click();
+    await a.locator('.limit-tabs').getByRole('tab', { name: 'Bonuslar' }).click(); // 2026-11-24: Limitlar bo'limlarga ajratilgan
     await a.getByText('Creator (hamkor) dasturi').waitFor({ timeout: 8000 });
     assert.match(await text(a), /Creator krediti: qaysi havola hisobga olinadi/);
     await a.context().close();
