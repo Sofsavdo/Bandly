@@ -4,6 +4,7 @@ import { refXp, attachReferral, isRefCode, maybeRewardReferral, refCodeOf, refPl
 import { planOf } from './entitle';
 import { awardXp } from './xp';
 import { welcomeMsg } from './botFlow';
+import { ensureCertTables, recordResult } from './certificates';
 
 const db = createDb();
 const T = Date.UTC(2026, 10, 17, 8);
@@ -62,5 +63,26 @@ assert.equal(planOf(db, guest.id, T), null, 'o‘chiq holatda obuna berilmagan')
   assert.equal(planOf(db, c.id, T), 'all', '…lekin taklif qilingan baribir oladi');
   invite(6004, T + 31 * 86_400_000);
   assert.ok(until(boss.id) > T + 31 * 86_400_000, '30 kundan keyin cheklov yangilanadi');
+}
+
+// Mehmon mock → ro'yxat: mazmunli mock ham "haqiqiy mashg'ulot" (kamida yarmiga javob + kamida bittasi to'g'ri); bo'sh/tasodifiy topshirish emas
+{
+  ensureCertTables(db);
+  const h = byToken(db, join(db, 'MockHost', T).token); const hc = refCodeOf(db, h.id);
+  const u = byToken(db, loginTelegram(db, 7001, 'MockDost', undefined, T).token);
+  assert.equal(attachReferral(db, u.id, hc), true);
+  const r = (key: string, correct: number, answered: number) => recordResult(db, u.id, { module: 'ielts-skill', kind: 'reading', testId: 'reading-5', title: 'T', attemptKey: key, correct, total: 10, answered, band: 4, level: 'A2' }, T);
+  r('mock:reading-5:1', 0, 10);
+  assert.equal(maybeRewardReferral(db, u.id, T), false, 'hammasi xato — mukofot yo‘q');
+  r('mock:reading-5:2', 3, 2);
+  assert.equal(maybeRewardReferral(db, u.id, T), false, 'savollarning yarmidan kamiga javob — mukofot yo‘q');
+  const before = xp(h.id);
+  r('mock:reading-5:3', 4, 8);
+  assert.equal(maybeRewardReferral(db, u.id, T), true, 'mazmunli mock — mukofot');
+  assert.equal(xp(h.id) - before, refXp());
+  assert.equal(maybeRewardReferral(db, u.id, T), false, 'takroriy chaqiruv (refresh/callback) — ikkinchi mukofot yo‘q');
+  r('mock:reading-5:4', 9, 10);
+  assert.equal(maybeRewardReferral(db, u.id, T), false, 'yana bir mock mukofotni qayta bermaydi');
+  assert.equal(xp(h.id) - before, refXp());
 }
 console.log('referral: OK');

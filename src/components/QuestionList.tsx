@@ -72,7 +72,7 @@ export function QuestionList({ groups, questions, answers, onChange, submitted, 
                 {g && (
                   <div className="evidence">
                     {ok ? <span className="ok">{L('To‘g‘ri')}</span> : <span className="bad">{L('Noto‘g‘ri')}</span>}  {L('— to‘g‘ri javob:')} <b>{g.answer}</b>
-                    <div>{g.evidence}</div>
+                    {g.evidence && <div>{g.evidence}</div>}
                   </div>
                 )}
               </div>

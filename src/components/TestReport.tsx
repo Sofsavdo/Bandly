@@ -8,7 +8,7 @@ import { L } from '../i18n';
 export interface MockStats { count: number; avgPct?: number; percentile?: number }
 type QType = Question['type'];
 
-const TYPE_UZ: Record<QType, string> = { tfng: 'True / False / Not Given', mcq: L('Test savollari (A/B/C)'), fill: L('Bo‘sh joyni to‘ldirish'), match: L('Moslashtirish (sarlavha, ma’lumot)') };
+export const TYPE_UZ: Record<QType, string> = { tfng: 'True / False / Not Given', mcq: L('Test savollari (A/B/C)'), fill: L('Bo‘sh joyni to‘ldirish'), match: L('Moslashtirish (sarlavha, ma’lumot)') };
 /** Zaif savol turi → IELTS kursidagi shu turni o'rgatadigan dars. */
 const LESSON: Record<'reading' | 'listening', Partial<Record<QType, { id: string; title: string }>>> = {
   reading: { tfng: { id: 'ie-rs-l4', title: L('True / False / Not Given asoslari') }, mcq: { id: 'ie-rc-l3', title: L('Test savollari: chalg‘ituvchi variantlar') }, fill: { id: 'ie-rs-l5', title: L('Gapni to‘ldirish va so‘z chegarasi') }, match: { id: 'ie-rc-l1', title: L('Matching headings: abzats sarlavhasi') } },

@@ -1,4 +1,5 @@
 import { BookOpen, FlaskConical, GraduationCap, Headphones, Target } from 'lucide-react';
+import { GuestMockResume } from '../components/GuestMockResume';
 import { Illo } from '../components/Illo';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { loadResults } from '../lib/storage';
@@ -35,6 +36,7 @@ export default function Mocks() {
         </div>
         <Illo kind="clock" size={128} />
       </div>
+      <GuestMockResume />
       <div className="lrows">
         {rows.map((r) => (
           <a key={r.title} className="lrow" href={r.href} onClick={() => r.tab && openExamTab(r.tab)}>

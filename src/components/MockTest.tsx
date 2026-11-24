@@ -1,4 +1,4 @@
-import { Flag, NotebookPen, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Flag, NotebookPen, Eye, EyeOff, ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Graded, PublicQuestion } from '../content/mockShared';
 import type { Answer } from '../lib/grade';
@@ -8,14 +8,16 @@ import type { Cefr } from '../lib/levels';
 import { BAND_CAP, capBand } from '../lib/progress';
 import { saveResult } from '../lib/storage';
 import { addXp, getProfile } from '../lib/store';
-import { getAccount, myRefCode } from '../lib/account';
+import { getAccount, myRefCode, onAccountChange } from '../lib/account';
 import { renderStory, resultLink, shareCard } from '../lib/shareCard';
 import { track, trackUser } from '../lib/track';
 import { recordTestAnswers } from '../lib/adaptive/record';
-import { clearAttempt, createAttempt, isExpired, loadAttempt, remainingSeconds, saveAttempt, setAnswer, submitAttempt, toggleFlag, unanswered, type ExamAttempt } from '../lib/examAttempt';
+import { clearAttempt, createAttempt, isExpired, loadAttempt, remainingSeconds, saveAttempt, setAnswer, submitAttempt, toggleFlag, unanswered, visibleAttempt, type ExamAttempt } from '../lib/examAttempt';
 import { fmt } from './hooks';
 import { QuestionList } from './QuestionList';
-import { TestReport } from './TestReport';
+import { TestReport, byType } from './TestReport';
+import { MockGate } from './MockGate';
+import { MockPlanCard } from './MockPlanCard';
 import { L } from '../i18n';
 
 const hasFull = (): boolean => { try { return !!localStorage.getItem('bandly.fullexam.v1'); } catch { return false; } };
@@ -51,7 +53,10 @@ function useFocusMode(on: boolean): void {
 
 export function MockTest({ kind, testId, title, minutes, groups, questions, table, level, left, intro, scoring = 'ielts' }: Props) {
   const key = `${kind}:${testId}`;
-  const [attempt, setAttempt] = useState<ExamAttempt | null>(() => loadAttempt(key));
+  // Mehmon (hisobsiz) ham testni oxirigacha topshira oladi: javoblar qurilmada saqlanadi, baholash (kalitlar serverda) hisobga kirgach bajariladi
+  const [hasAcc, setHasAcc] = useState(() => !!getAccount());
+  useEffect(() => onAccountChange(() => setHasAcc(!!getAccount())), []);
+  const [attempt, setAttempt] = useState<ExamAttempt | null>(() => visibleAttempt(loadAttempt(key), !!getAccount()));
   const [now, setNow] = useState(() => Date.now());
   const [confirm, setConfirm] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -79,6 +84,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     const done = submitAttempt(a, Date.now(), auto);
     if (done === a) return a;
     saveAttempt(done);
+    if (done.guest && !getAccount()) track('mock_guest_submit');
     return done;
   }, []);
 
@@ -88,6 +94,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
   const [cert, setCert] = useState<{ issued: { id: string; type: string }[]; missing: string[] } | null>(null);
   useEffect(() => {
     if (!attempt || attempt.status !== 'submitted' || attempt.graded) return;
+    if (!hasAcc) return; // mehmon: javob kalitlari serverda — natija ro'yxatdan o'tgandan keyin hisoblanadi (MockGate)
     let stop = false;
     setGradeErr('');
     fetch('/api/mock/grade', { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': getAccount()?.token ?? '' }, body: JSON.stringify({ kind, testId, answers: attempt.answers, attemptId: String(attempt.startedAt) }) })
@@ -97,6 +104,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
         setCert({ issued: certificates ?? [], missing: certMissing ?? [] });
         update((a) => {
           if (a.graded) return a;
+          if (a.guest && !a.recorded) track('mock_guest_unlocked'); // mehmon topshirgan natija hisobga bog'landi va ochildi (bir marta: recorded)
           if (!a.recorded && !recorded.current) {
             recorded.current = true;
             saveResult({ kind, title, correct, total: questions.length, band: scoring === 'raw' ? undefined : capBand(scaledBand(correct, questions.length, table), level), level });
@@ -108,7 +116,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
       })
       .catch((e: Error) => { if (!stop) setGradeErr(e.message === 'Failed to fetch' ? L('Server bilan aloqa yo‘q') : e.message); });
     return () => { stop = true; };
-  }, [attempt?.status, attempt?.graded, gradeTry, kind, testId, title, questions, table, level, update]);
+  }, [attempt?.status, attempt?.graded, gradeTry, kind, testId, title, questions, table, level, update, hasAcc]);
 
   // Taymer: har soniyada saqlangan muddatdan hisoblanadi; 0 da avtomatik topshiriladi (sahifa yopilgan bo'lsa ham, qaytib kelganda).
   useEffect(() => {
@@ -153,7 +161,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
     return () => window.removeEventListener('keydown', on);
   }, [started, submitted, step, update, attempt?.current, ids]);
 
-  const begin = () => { trackUser('mock_start'); recorded.current = false; const a = createAttempt(key, minutes); saveAttempt(a); setAttempt(a); setNow(Date.now()); };
+  const begin = () => { if (hasAcc) trackUser('mock_start'); else track('mock_guest_start'); recorded.current = false; const a = createAttempt(key, minutes, Date.now(), !hasAcc); saveAttempt(a); setAttempt(a); setNow(Date.now()); };
   const restart = () => { clearAttempt(key); recorded.current = false; setAttempt(null); setConfirm(false); };
 
   if (!attempt) {
@@ -197,7 +205,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
         {!submitted ? (
           <button className="btn primary sm" onClick={() => setConfirm(true)}>{L('Topshirish')}</button>
         ) : (
-          <button className="btn sm" onClick={restart}>{L('Qayta boshlash')}</button>
+          (hasAcc || graded) && <button className="btn sm" onClick={restart}>{L('Qayta boshlash')}</button> // mehmon natijani ochmasdan javoblarini o'chirib yubormasin
         )}
         {!submitted && <span className="saved muted" aria-live="off">{L('Saqlandi ✓')}</span>}
       </div>
@@ -213,17 +221,21 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
         <div className="card">
           {attempt.autoSubmitted && <p className="notice">{L('Vaqt tugadi — javoblaringiz avtomatik topshirildi.')}</p>}
           {hasFull() && <p><a className="btn sm primary" href="#/mocks/full">{L('To‘liq imtihonga qaytish')}</a></p>}
-          {!graded && !gradeErr && <p className="muted" role="status">{L('Natija hisoblanmoqda…')}</p>}
+          {!graded && !hasAcc && <MockGate answered={ids.length - missing.length} total={ids.length} />}
+          {!graded && hasAcc && !gradeErr && <p className="muted" role="status">{L('Natija hisoblanmoqda…')}</p>}
           {!graded && gradeErr && <p className="notice" role="alert">{L('Natijani olib bo‘lmadi:')} {gradeErr}{L('. Javoblaringiz saqlangan.')} <button className="btn sm" onClick={() => setGradeTry((n) => n + 1)}>{L('Qayta urinish')}</button></p>}
+          {graded && attempt.guest && <p className="notice" role="status"><Trophy size={15} />  {L('Natijangiz hisobingizga saqlandi.')}</p>}
           {graded && <><div className="score">{correct} / {questions.length}</div>
           {scoring === 'raw' ? <p>{L('To‘g‘ri javoblar:')} <b>{Math.round((correct / questions.length) * 100)}%</b>.</p> : <div>
             
             {L('Band:')} <b>{band.toFixed(1)}</b>
             {level && rawBand > band && <p className="evidence">{L('Bu test')} {level}  {L('darajali, shuning uchun band')} {BAND_CAP[level].toFixed(1)}  {L('dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.')}</p>}
           </div>}
+          {scoring !== 'raw' && <p className="evidence" style={{ margin: '4px 0' }}>{L('Band taxminiy: rasmiy IELTS bahosi emas va natija kafolatlanmaydi.')}</p>}
           {correct > 0 && <p><button className="btn sm" onClick={() => void shareMock({ kind, correct, total: questions.length, band: scoring === 'raw' ? null : band })}>{L('Natijani ulashish')}</button></p>}
           {cert && <CertNotice issued={cert.issued} missing={cert.missing} />}
-          <TestReport kind={kind} title={title} questions={questions} graded={graded} answers={attempt.answers} startedAt={attempt.startedAt} submittedAt={attempt.submittedAt} minutes={minutes} stats={attempt.stats} /></>}
+          <TestReport kind={kind} title={title} questions={questions} graded={graded} answers={attempt.answers} startedAt={attempt.startedAt} submittedAt={attempt.submittedAt} minutes={minutes} stats={attempt.stats} />
+          <MockPlanCard kind={kind} exam={scoring === 'raw' ? 'cefr' : 'ielts'} rows={byType(questions, graded)} takenTestId={testId} since={attempt.submittedAt ?? attempt.startedAt} /></>}
         </div>
       )}
 

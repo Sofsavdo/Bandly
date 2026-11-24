@@ -1450,3 +1450,10 @@ main.container { min-height: 100vh; }
 .tg-join .tg-open { margin-top: 10px; }
 .mission-say { margin: 0 0 4px; padding: 12px 14px; border-radius: 16px; background: var(--lilac-50); font-size: 15px; line-height: 1.45; }
 .mission-say b { color: var(--brand); }
+
+/* Mehmon mock: natija darvozasi va shaxsiy reja kartasi */
+.mock-gate-list { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+.mock-gate-list li { display: flex; gap: 8px; align-items: flex-start; }
+.mock-gate-list li svg { flex: none; margin-top: 3px; color: var(--brand); }
+.mock-plan .path-step.done { opacity: .72; }
+.guest-resume { border: 1px solid var(--brand); }
