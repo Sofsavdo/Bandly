@@ -31,8 +31,10 @@ export default function Results() {
         <span className="eyebrow"><TrendingUp size={15} />  {L('Natijalar')}</span>
         <div className="myplan-head">
           <div>
-            <div className="bigband">{last ? last.value.toFixed(1) : '—'}</div>
-            <p className="evidence">{last3 ? `${mocks.length}-Mock` : L('Daraja aniqlash')}{delta !== null ? <> · <b className={delta >= 0 ? 'ok' : 'bad'}>{delta >= 0 ? '+' : ''}{delta.toFixed(1)}</b></> : null}</p>
+            {last ? <>
+              <div className="bigband">{last.value.toFixed(1)}</div>
+              <p className="evidence">{last3 ? `${mocks.length}-Mock` : L('Daraja aniqlash')}{delta !== null ? <> · <b className={delta >= 0 ? 'ok' : 'bad'}>{delta >= 0 ? '+' : ''}{delta.toFixed(1)}</b></> : null}</p>
+            </> : <p className="muted" style={{ margin: '10px 0 0' }}>{L('Hozircha natija yo‘q.')}</p>}
           </div>
           <div className="skills res-skills">
             {(['listening', 'reading', 'speaking'] as const).map((k) => <div key={k} className="skill"><span>{KIND[k]}</span><b>{(last3?.[k] ?? sb[k])?.toFixed(1) ?? '—'}</b></div>)}

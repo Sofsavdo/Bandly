@@ -49,7 +49,7 @@ const msg = (text: string, extra: Record<string, unknown> = {}) => ({ message: {
   const kb = JSON.stringify(w.reply_markup);
   for (const r of ['%2F', '%2Fplacement', '%2Fcoach']) assert.match(kb, new RegExp(`r=${r}&ref=abc234`), r);
   assert.ok(w.reply_markup.inline_keyboard.flat().length <= 3, 'welcome: ko‘pi bilan 3 tugma');
-  assert.match(kb, /Ilovani ochish/); assert.match(kb, /Darajamni aniqlash/); assert.match(kb, /AI ustoz/);
+  assert.match(kb, /Ilovani ochish/); assert.match(kb, /Darajamni aniqlash/); assert.match(kb, /Sellzen AI/); assert.doesNotMatch(kb, /ustoz/i);
 }
 // 3) Hammasi bor: /start → darhol xush kelibsiz; /mock → ochish tugmasi; /help; guruh — javob yo'q
 {

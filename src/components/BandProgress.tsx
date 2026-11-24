@@ -58,7 +58,7 @@ export function BandProgress({ compact = false }: { compact?: boolean }) {
       {!baseline ? (
         <>
           <p>{L('Boshlang‘ich bandingizni o‘lchang — o‘sish shundan hisoblanadi.')}</p>
-          <a className="btn primary" href="#/mocks/full"><ClipboardCheck size={16} />  {L('Boshlang‘ich imtihonni topshirish')}</a>
+          <a className="btn primary" href="#/mocks/full"><ClipboardCheck size={16} />  {L('To‘liq imtihon')}</a>
         </>
       ) : (
         <>
