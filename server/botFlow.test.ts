@@ -7,7 +7,7 @@ function harness(o: { member?: boolean; phone?: boolean } = {}) {
   const st = { member: o.member ?? false, phones: new Map<number, string>(o.phone ? [[5, '+998901234567']] : []), refs: new Map<number, string>() };
   const d: BotDeps = {
     api: async (m, b) => { calls.push({ m, b }); return true; },
-    publicUrl: 'https://sellzen.uz', tr: () => (t) => t,
+    publicUrl: 'https://www.sellzen.uz', tr: () => (t) => t,
     isMember: async () => st.member, hasPhone: (id) => st.phones.has(id), savePhone: (id, p) => { st.phones.set(id, p); },
     setRef: (id, r) => { st.refs.set(id, r); }, getRef: (id) => st.refs.get(id), setRemind: () => true, channel: '@Sellzen_AI', stats: { lessons: 144, ielts: 36, mocks: 41 },
   };
@@ -95,23 +95,12 @@ console.error = err;
   assert.ok(JSON.stringify(h2.calls[0]!.b).includes('request_contact'));
 }
 console.log('botFlow: OK');
-// Saytga bot orqali kirish: /start login_<kod> → tasdiq tugmasi → bosilganda confirmLogin, xabar tahrirlanadi; obuna talab qilinmaydi
+// /start login_<kod> endi maxsus emas (botga kirish olib tashlandi): oddiy /start sifatida ishlaydi va hech qanday kirish tasdig'i yubormaydi
 {
-  const h = harness();
-  const code = 'a'.repeat(32);
-  const got: string[] = [];
-  h.d.confirmLogin = (c, from) => { got.push(`${c}:${from.id}`); return c === code; };
-  await handleBot(msg(`/start login_${code}`), h.d);
-  assert.equal(h.calls.length, 1);
-  assert.equal(h.calls[0]!.b.reply_markup.inline_keyboard[0][0].callback_data, `login:${code}`);
-  assert.equal(h.st.refs.size, 0);
+  const h = harness({ member: true, phone: true });
+  await handleBot(msg(`/start login_${'a'.repeat(32)}`), h.d);
+  assert.ok(!JSON.stringify(h.calls).includes('login:'), 'kirish tasdiq tugmasi yo‘q');
   h.calls.length = 0;
-  await handleBot({ callback_query: { id: 'q9', from: { id: 5, first_name: 'Ali' }, data: `login:${code}`, message: { message_id: 3, chat: { id: 5 } } } }, h.d);
-  assert.deepEqual(got, [`${code}:5`]);
-  assert.deepEqual(h.calls.map((c) => c.m), ['answerCallbackQuery', 'editMessageText']);
-  assert.match(h.calls[1]!.b.text, /Saytga kirdingiz/);
-  // eskirgan kod
-  h.calls.length = 0;
-  await handleBot({ callback_query: { id: 'q10', from: { id: 5 }, data: `login:${'b'.repeat(32)}`, message: { message_id: 3, chat: { id: 5 } } } }, h.d);
-  assert.match(h.calls[0]!.b.text, /eskirgan/);
+  await handleBot({ callback_query: { id: 'q9', from: { id: 5, first_name: 'Ali' }, data: `login:${'a'.repeat(32)}`, message: { message_id: 3, chat: { id: 5 } } } }, h.d);
+  assert.deepEqual(h.calls.map((c) => c.m), ['answerCallbackQuery'], 'login: callback e’tiborsiz');
 }

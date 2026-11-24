@@ -84,42 +84,6 @@ export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown)
   return r;
 }
 
-// ---- Bot orqali kirish: 1) kod olinadi va bot ochiladi (/start login_<kod>); 2) foydalanuvchi botda tasdiqlaguncha har 2 s so'raladi.
-// Mobil brauzer Telegram ilovasiga o'tganda sahifani xotiradan chiqarib yuborishi mumkin — shuning uchun maxfiy `poll` kaliti
-// 10 daqiqaga saqlanadi va sahifa qayta ochilganda so'rash davom etadi (pendingBotLogin). Kalit bir martalik, token faqat botda tasdiqlangandan keyin beriladi.
-const BOT_KEY = 'sz.botlogin';
-const BOT_TTL = 10 * 60_000;
-export interface BotPending { poll: string; until: number }
-export const pendingBotLogin = (): BotPending | null => {
-  try { const j = JSON.parse(localStorage.getItem(BOT_KEY) ?? 'null') as BotPending | null; return j && /^[a-f0-9]{32}$/.test(String(j.poll)) && j.until > Date.now() ? j : null; } catch { return null; }
-};
-const clearBotPending = (): void => { try { localStorage.removeItem(BOT_KEY); } catch { /* */ } };
-export async function startBotLogin(): Promise<{ url: string; poll: string }> {
-  const s = await call<{ code: string; poll: string; bot: string }>('/api/auth/bot/start', { method: 'POST' });
-  try { localStorage.setItem(BOT_KEY, JSON.stringify({ poll: s.poll, until: Date.now() + BOT_TTL } satisfies BotPending)); } catch { /* xotira yo'q: faqat shu sahifada davom etadi */ }
-  return { url: `https://t.me/${s.bot}?start=login_${s.code}`, poll: s.poll };
-}
-export async function waitBotLogin(poll: string, signal: { cancelled: boolean }, until = Date.now() + BOT_TTL, everyMs = 2000): Promise<Account> {
-  while (!signal.cancelled && Date.now() < until) {
-    await new Promise((r) => setTimeout(r, everyMs));
-    if (signal.cancelled) break;
-    let r: { pending?: boolean; token?: string; nickname?: string };
-    try { r = await call(`/api/auth/bot/${poll}`); } catch (e) { // poll — havoladagi koddan farqli maxfiy kalit
-      if (/eskirgan|expired|410/i.test((e as Error).message)) { clearBotPending(); throw e; }
-      continue; // tarmoq uzilishi — qayta urinamiz
-    }
-    if (r.token && r.nickname) {
-      clearBotPending();
-      setAccount({ token: r.token, nickname: r.nickname, tg: true });
-      await onLogin();
-      void syncNow();
-      return getAccount()!;
-    }
-  }
-  if (!signal.cancelled) clearBotPending();
-  throw new Error(L('Kirish tasdiqlanmadi — qayta urinib ko‘ring.'));
-}
-
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try { res = await fetch(path, init); } catch { throw new Error(L('Server bilan aloqa yo‘q')); }

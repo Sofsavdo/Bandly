@@ -1,6 +1,6 @@
 import { Send } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { authConfig, getAccount, googleLogin, joinLeague, pendingBotLogin, phoneAuth, startBotLogin, waitBotLogin, type Account, type AuthConfig } from '../lib/account';
+import { authConfig, getAccount, googleLogin, joinLeague, phoneAuth, type Account, type AuthConfig } from '../lib/account';
 import { mountGoogleButton } from '../lib/google';
 import { refreshEntitlements } from '../lib/pay';
 import { inTelegram, mountLoginWidget, retryWebAppLogin } from '../lib/telegram';
@@ -69,13 +69,10 @@ function TelegramJoin({ bot, host, text, onJoined }: { bot: string; host?: strin
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [missing, setMissing] = useState(false);
-  const [botUrl, setBotUrl] = useState('');
-  const sig = useRef({ cancelled: false });
   // onJoined har chizishda yangi funksiya bo'lishi mumkin: vidjet qayta o'rnatilib, jarayondagi kirish buzilmasligi uchun ref orqali
   const joined = useRef(onJoined); joined.current = onJoined;
-  // Telegram vidjeti faqat BotFather'da ko'rsatilgan domenda ishlaydi (boshqasida "Bot domain invalid") — bot orqali kirish hamma manzilda ishlaydi
+  // Telegram vidjeti faqat BotFather'da ko'rsatilgan domenda ishlaydi (boshqasida "Bot domain invalid")
   const widgetHere = !host || location.host === host;
-  const done = (a: Account) => { track('login_bot_done'); void refreshEntitlements(); joined.current(a); };
 
   useEffect(() => {
     if (!widgetHere || !box.current) return;
@@ -83,32 +80,11 @@ function TelegramJoin({ bot, host, text, onJoined }: { bot: string; host?: strin
       if (e) return setErr(e);
       const a = getAccount(); if (a) { void refreshEntitlements(); joined.current(a); }
     });
-    // Vidjet 7 soniyada paydo bo'lmasa (telegram.org ochilmayapti yoki internet sekin) — foydalanuvchi bot yo'lini ko'rsin
+    // Vidjet 7 soniyada paydo bo'lmasa (telegram.org ochilmayapti yoki internet sekin) — foydalanuvchi boshqa usulni ko'rsin
     const t = setTimeout(() => { if (box.current && !box.current.querySelector('iframe')) { setMissing(true); track('login_widget_missing'); } }, 7000);
     return () => clearTimeout(t);
   }, [bot, widgetHere]);
 
-  // Telegram ilovasiga o'tganda brauzer sahifani xotiradan chiqarib yuborgan bo'lsa — qaytganda kutish davom etadi
-  useEffect(() => {
-    const p = pendingBotLogin();
-    if (p && !inTelegram()) {
-      setBusy(true);
-      waitBotLogin(p.poll, sig.current, p.until).then(done, (e: Error) => { if (!sig.current.cancelled) setErr(e.message); }).finally(() => { if (!sig.current.cancelled) setBusy(false); });
-    }
-    return () => { sig.current.cancelled = true; };
-  }, []);
-
-  const viaBot = async () => {
-    setBusy(true); setErr(''); setBotUrl('');
-    sig.current.cancelled = true; sig.current = { cancelled: false }; // oldingi kutish bo'lsa to'xtatiladi
-    const w = window.open('', '_blank'); // bosish paytida ochiladi — keyin ochilsa mobil brauzer bloklaydi
-    try {
-      track('login_bot_start');
-      const { url, poll } = await startBotLogin();
-      setBotUrl(url); if (w) w.location.href = url;
-      done(await waitBotLogin(poll, sig.current));
-    } catch (e) { w?.close(); setErr((e as Error).message); } finally { setBusy(false); setBotUrl(''); }
-  };
   const retry = async () => {
     setBusy(true); setErr('');
     try { await retryWebAppLogin(); const a = getAccount(); if (a) { void refreshEntitlements(); onJoined(a); } } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
@@ -123,10 +99,7 @@ function TelegramJoin({ bot, host, text, onJoined }: { bot: string; host?: strin
             {widgetHere
               ? <div ref={box} className="tg-widget" aria-label={L('Telegram orqali kirish tugmasi')} />
               : <p className="muted tg-note">{L('Telegram tugmasi faqat bu manzilda ishlaydi:')} <a href={`https://${host}/#/login`}>{host}</a></p>}
-            {widgetHere && missing && <p className="muted tg-note">{L('Telegram tugmasi chiqmadi? Pastdagi tugma orqali kiring.')}</p>}
-            {/* Ishonchli yo'l: botda tasdiqlanadi, sahifa o'zi kiradi (domen va telefon raqami so'ralmaydi) */}
-            <button type="button" className="btn primary tg-open" disabled={busy} onClick={() => void viaBot()}>{busy ? L('Botda tasdiqlang…') : L('Telegram bot orqali kirish')}</button>
-            {busy && botUrl && <a className="btn sm" href={botUrl} target="_blank" rel="noreferrer">{L('Botni ochish')}</a>}
+            {widgetHere && missing && <p className="muted tg-note">{L('Telegram tugmasi chiqmadi? Pastdagi boshqa usul bilan kiring.')}</p>}
           </>}
       <p className="muted tg-note">{L('Faqat ismingiz va Telegram ID olinadi.')}</p>
       {err && <p className="notice">{err}</p>}

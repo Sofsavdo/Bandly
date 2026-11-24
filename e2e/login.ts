@@ -1,8 +1,7 @@
 // Kirish E2E (Playwright): Telegram sozlangan server (soxta bot tokeni; Telegram tarmog'iga chiqilmaydi) + qurilgan sayt, 390 px mobil.
 //   H1. Telegram vidjeti (soxta skript imzolangan foydalanuvchini sellzenTgAuth ga uzatadi) → kirildi
-//   H2. Vidjet domeni mos emas (BotFather domeni boshqa manzil) → vidjet ko'rsatilmaydi, asosiy manzilga havola va bot tugmasi bor
-//   H3. Bot orqali kirish: tugma → t.me havolasi → sahifa QAYTA YUKLANADI (brauzer xotiradan chiqargan holat) → botda tasdiqlash → o'zi kiradi
-//   H4. Vidjet skripti yuklanmasa (telegram.org yopiq) → tushunarli xabar + anonim hisoblagich
+//   H2. Vidjet domeni mos emas (BotFather domeni boshqa manzil) → vidjet ko'rsatilmaydi, asosiy manzilga havola bor
+//   H4. Vidjet skripti yuklanmasa (telegram.org yopiq) → tushunarli xabar + anonim hisoblagich (botga kirish yo'li olib tashlangan)
 //   H5. Telefon raqam + parol: ro'yxatdan o'tish → chiqish → qayta kirish; xato parol → xabar
 //   H6. Google: soxta GIS skripti + soxta JWKS (haqiqiy RS256 imzo): kirish; boshqa ilovaga berilgan token rad etiladi
 import assert from 'node:assert/strict';
@@ -37,8 +36,6 @@ const srv = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], { en
 let log = ''; srv.stdout.on('data', (c) => (log += c)); srv.stderr.on('data', (c) => (log += c));
 
 const sign = (u: Record<string, string | number>) => createHmac('sha256', createHash('sha256').update(TOKEN).digest()).update(Object.keys(u).sort().map((k) => `${k}=${u[k]}`).join('\n')).digest('hex');
-const webhookSecret = createHmac('sha256', 'bandly-webhook').update(TOKEN).digest('hex').slice(0, 48);
-const hook = (update: unknown) => fetch(`${base}/api/telegram/webhook`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-telegram-bot-api-secret-token': webhookSecret }, body: JSON.stringify(update) });
 
 const browser = await chromium.launch();
 const problems: string[] = [];
@@ -70,14 +67,14 @@ try {
     await p.route('https://telegram.org/js/telegram-widget.js**', (r) => r.fulfill({ contentType: 'application/javascript', body: `document.currentScript.insertAdjacentHTML('beforebegin','<button id="fake-tg" type="button">Log in with Telegram</button>'); document.addEventListener('click', (e) => { if (e.target && e.target.id === 'fake-tg') window.sellzenTgAuth(${JSON.stringify(user)}); });` }));
     await p.goto(`${base}/#/login`);
     await p.locator('#fake-tg').waitFor({ timeout: 8000 });
-    assert.equal(await p.locator('button:has-text("Telegram bot orqali kirish")').count(), 1, 'bot tugmasi ham bor');
+    assert.equal(await p.locator('button:has-text("Telegram bot orqali kirish")').count(), 0, 'botga kirish tugmasi yo‘q (olib tashlangan)');
     await p.locator('#fake-tg').click();
     await p.waitForURL(/#\/start/, { timeout: 10000 });
     const a = await account(p); assert.ok(a?.token && a.tg === true && a.nickname === 'vidjet_user');
     await ctx.close();
   });
 
-  await step('H2. Vidjet domeni mos emas → vidjet yo‘q, havola va bot tugmasi bor', async () => {
+  await step('H2. Vidjet domeni mos emas → vidjet yo‘q, asosiy manzilga havola bor', async () => {
     const { ctx, p } = await newPage();
     let widgetRequested = false;
     await p.route('https://telegram.org/js/telegram-widget.js**', (r) => { widgetRequested = true; return r.abort(); });
@@ -86,38 +83,13 @@ try {
     assert.equal(widgetRequested, false, 'noto‘g‘ri domenda vidjet yuklanmaydi ("Bot domain invalid" ko‘rsatilmaydi)');
     assert.match(txt, /www\.sellzen\.test/, 'asosiy manzil ko‘rsatiladi');
     assert.equal(await p.locator('a[href="https://www.sellzen.test/#/login"]').count(), 1, 'asosiy manzilga havola');
-    assert.equal(await p.locator('button:has-text("Telegram bot orqali kirish")').isEnabled(), true);
-    await ctx.close();
-  });
-
-  await step('H3. Bot orqali kirish: sahifa qayta yuklansa ham davom etadi', async () => {
-    const { ctx, p } = await newPage();
-    let tme = '';
-    await ctx.route('https://t.me/**', (r) => { tme = r.request().url(); return r.fulfill({ contentType: 'text/html', body: 'tg' }); });
-    await p.goto(`${base}/#/login`);
-    await p.getByRole('button', { name: 'Telegram bot orqali kirish' }).click();
-    for (let i = 0; i < 50 && !tme; i++) await p.waitForTimeout(100);
-    const code = new URL(tme).searchParams.get('start')?.replace(/^login_/, '');
-    assert.match(code ?? '', /^[a-f0-9]{32}$/, `t.me havolasi: ${tme}`);
-    const pending = await p.evaluate(() => JSON.parse(localStorage.getItem('sz.botlogin') ?? 'null') as { poll: string; until: number } | null);
-    assert.ok(pending && pending.poll !== code, 'maxfiy poll kaliti saqlandi va havoladagi koddan farq qiladi');
-    // Android brauzer sahifani xotiradan chiqardi: qayta yuklash
-    await p.reload(); await p.waitForTimeout(1200);
-    assert.ok(/Botda tasdiqlang/.test(await p.evaluate(() => document.querySelector('main')?.innerText ?? '')), 'qaytganda kutish holati tiklandi');
-    // Foydalanuvchi Telegram'da bot xabaridagi «Ha, kirish» ni bosadi
-    const from = { id: 880002, first_name: 'Bot', username: 'bot_user' };
-    assert.equal((await hook({ update_id: 1, message: { message_id: 1, chat: { id: 880002, type: 'private' }, from, text: `/start login_${code}` } })).status, 200);
-    assert.equal((await hook({ update_id: 2, callback_query: { id: 'q1', from, data: `login:${code}`, message: { message_id: 5, chat: { id: 880002 } } } })).status, 200);
-    for (let i = 0; i < 100 && !(await account(p)); i++) await p.waitForTimeout(150);
-    const a = await account(p);
-    assert.ok(a?.token && a.nickname === 'bot_user' && a.tg === true, 'bot orqali kirildi');
-    assert.equal(await p.evaluate(() => localStorage.getItem('sz.botlogin')), null, 'kutish kaliti tozalandi');
+    assert.equal(await p.locator('button:has-text("Telegram bot orqali kirish")').count(), 0);
     await ctx.close();
   });
 
   await step('H4. Vidjet skripti yuklanmasa → xabar va hisoblagich', async () => {
     const { ctx, p } = await newPage();
-    await p.route('**/api/auth/config', (r) => r.fulfill({ json: { telegram: { bot: 'Sellzenbot', host: `127.0.0.1:${PORT}` } } }));
+    await p.route('**/api/auth/config', (r) => r.fulfill({ json: { phone: true, telegram: { bot: 'Sellzenbot', host: `127.0.0.1:${PORT}` } } }));
     await p.route('https://telegram.org/js/telegram-widget.js**', (r) => r.abort());
     let counted = false;
     p.on('request', (r) => { if (r.url().endsWith('/api/event') && /login_widget_missing/.test(r.postData() ?? '')) counted = true; });
@@ -125,7 +97,7 @@ try {
     await p.getByText('Telegram tugmasi chiqmadi?').waitFor({ timeout: 12000 });
     for (let i = 0; i < 20 && !counted; i++) await p.waitForTimeout(100);
     assert.ok(counted, 'login_widget_missing hisoblagichi yuborildi');
-    assert.equal(await p.locator('button:has-text("Telegram bot orqali kirish")').isEnabled(), true);
+    assert.equal(await p.locator('details.alt-phone summary').count(), 1, 'boshqa usul (telefon) mavjud');
     await ctx.close();
   });
 
