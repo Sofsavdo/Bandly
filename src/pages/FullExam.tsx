@@ -50,7 +50,13 @@ export default function FullExam() {
   const results = loadResults();
 
   const start = () => {
-    const s: State = { startedAt: Date.now(), listeningId: (listeningTests.find((t) => t.sections?.length && t.exam !== 'cefr') ?? nearest(listeningTests, p.level ?? 'B1')).id, readingId: (readingTests.find((t) => t.sections?.length && t.exam !== 'cefr') ?? nearest(readingTests, p.level ?? 'B1')).id, writingDone: false };
+    // To'liq IELTS testlaridan o'quvchi hali topshirmagani (natijalar tarixida nomi yo'q); hammasi topshirilgan bo'lsa — eng uzoq vaqt oldin topshirilgani
+    const pick = <T extends { id: string; title: string; exam?: string; sections?: unknown[] }>(list: T[], kind: 'reading' | 'listening'): T | undefined => {
+      const full = list.filter((t) => t.sections?.length && t.exam !== 'cefr');
+      const done = results.filter((r) => r.kind === kind);
+      return full.find((t) => !done.some((r) => r.title === t.title)) ?? [...full].sort((x, y) => Date.parse(done.find((r) => r.title === x.title)?.date ?? '0') - Date.parse(done.find((r) => r.title === y.title)?.date ?? '0'))[0];
+    };
+    const s: State = { startedAt: Date.now(), listeningId: (pick(listeningTests, 'listening') ?? nearest(listeningTests, p.level ?? 'B1')).id, readingId: (pick(readingTests, 'reading') ?? nearest(readingTests, p.level ?? 'B1')).id, writingDone: false };
     saveFull(s); setSt(s);
   };
   const reset = () => { saveFull(null); setSt(null); };
