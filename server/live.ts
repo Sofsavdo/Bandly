@@ -1,7 +1,8 @@
 // Gemini Live — ovozdan-ovozga (speech-to-speech) AI ustoz. Brauzer bizning serverga WebSocket bilan ulanadi, server esa
 // Gemini Live API'ga (BidiGenerateContent): API kalit brauzerga chiqmaydi, daqiqalar va limitlar serverda hisoblanadi.
-// Brauzer → server: ikkilik kadrlar = 16 kHz PCM16 mikrofon ovozi; JSON {type:'end'} — tugatish.
-// Server → brauzer: ikkilik kadrlar = 24 kHz PCM16 Sellzen ovozi; JSON {type:'ready'|'interrupted'|'turn'|'in'|'out'|'error'|'limit'}.
+// Brauzer → server: ikkilik kadrlar = 16 kHz PCM16 mikrofon ovozi; JSON {type:'end'} — tugatish; {type:'activity', on} — bosib-gapirish
+// (?ptt=1): "bosildi"/"qo'yib yuborildi" — Gemini'ga activityStart/activityEnd; shu paytdan tashqari kelgan ovoz Gemini'ga yuborilmaydi.
+// Server → brauzer: ikkilik kadrlar = 24 kHz PCM16 Sellzen ovozi; JSON {type:'ready'|'interrupted'|'turn'|'in'|'out'|'error'|'limit'|'suggest'}.
 import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
 import type { DatabaseSync } from 'node:sqlite';
@@ -18,6 +19,8 @@ export interface LiveConfig {
   silenceMs: number;
   /** Bepul foydalanuvchilar uchun platforma bo'yicha kunlik umumiy chegara (soniya); 0 — chegarasiz. Xarajat nazorati. */
   freeGlobalDailySeconds: number;
+  /** Vaqt tugashidan shuncha soniya oldin ustozga "fikrni tugat, xayrlash" deyiladi (standart 25) */
+  wrapLeadSec?: number;
 }
 
 /** Gemini kaliti bo'lsa — yoqiq (GEMINI_LIVE=0 o'chiradi). */
@@ -66,7 +69,7 @@ export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriber
 }
 
 /** Gemini Live'ga birinchi xabar: model, ovoz, Sellzen ko'rsatmasi, ikkala tomon matn nusxasi. */
-export function setupMessage(cfg: LiveConfig, model: string, systemText: string): Record<string, unknown> {
+export function setupMessage(cfg: LiveConfig, model: string, systemText: string, ptt = false): Record<string, unknown> {
   return {
     setup: {
       model: `models/${model}`,
@@ -74,7 +77,11 @@ export function setupMessage(cfg: LiveConfig, model: string, systemText: string)
       systemInstruction: { parts: [{ text: systemText }] },
       // Navbat almashish: o'quvchilar o'ylab, to'xtab gapiradi — sezgirlik past va ~0.9 s jimlik (0.6 s + yuqori sezgirlik gapni
       // o'rtasida kesib, ustoz "tushunmadim, qattiqroq gapir" deyaverardi — 2026-11-21 shikoyati). LIVE_SILENCE_MS bilan sozlanadi.
-      realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', prefixPaddingMs: 200, silenceDurationMs: cfg.silenceMs } },
+      // Bosib-gapirish (ptt): navbatni o'quvchi o'zi boshqaradi — avtomatik aniqlash o'chiq, shovqin ustozni bo'lmaydi va gap tugamagan joyda
+      // eshitish rejimiga o'tmaydi; ustozni faqat tugmani ataylab bosish (activityStart) to'xtatadi. Qo'lsiz rejim (eski mijozlar) o'zgarmagan.
+      realtimeInputConfig: ptt
+        ? { automaticActivityDetection: { disabled: true }, activityHandling: 'START_OF_ACTIVITY_INTERRUPTS' }
+        : { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', prefixPaddingMs: 200, silenceDurationMs: cfg.silenceMs } },
       inputAudioTranscription: {},
       outputAudioTranscription: {},
     },
@@ -113,12 +120,16 @@ export function wrongLanguage(text: string, nativeCode: string): boolean {
   return false;
 }
 
+/** O'quvchi ingliz tilini o'rganishni so'radimi (darslarga yo'naltirish uchun)? Matn nusxasi bo'yicha, 6 tilda; faqat aniq so'rov. */
+const LESSON_ASK = /(?:ingliz(?:cha)?\w*\s+(?:tilini\s+)?(?:o['‘ʻ’]?rgat|o['‘ʻ’]?rgan|dars)|\bo['‘ʻ’]?rgat\w*|\bdars\w*\s+(?:qil|o['‘ʻ’]?t|boshla)|teach me|learn english|english lesson|a lesson|study english|start a lesson|научи\w*|урок|хочу\s+(?:учить|выучить)|(?:англис|ағылшын)\w*\s+(?:тилин|тілін)?\s*(?:үйрөт|үйрет|омӯз)|сабақ|сабак|дарс\s+(?:бо|гу))/i;
+export function lessonIntent(text: string): boolean { return LESSON_ASK.test(text.normalize('NFC')); }
+
 interface LiveDeps {
   db: DatabaseSync;
   cfg: LiveConfig;
   /** Token → o'quvchi; null — yaroqsiz */
   auth: (token: string) => { id: number; staff: boolean; subscriberLeftSec: number } | null;
-  prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string; style: 0 | 1 | 2 | 3 }) => string;
+  prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string; style: 0 | 1 | 2 | 3; ptt: boolean }) => string;
   /** O'quvchi uchun: birinchi qo'ng'iroqmi va xotira matni (ko'rsatmaga qo'shiladi) */
   context?: (playerId: number) => { firstCall: boolean; memory: string };
   /** Qo'ng'iroq boshidagi ko'rsatma (o'quvchi hali gapirmagan) */
@@ -163,16 +174,20 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   if (!who) { send({ type: 'error', code: 401, message: 'Hisobga kiring' }); client.close(); return; }
   const allowance = liveAllowance(d.cfg, { staff: who.staff, subscriberLeftSec: who.subscriberLeftSec, freeUsedTodaySec: liveUsedToday(d.db, who.id), platformUsedTodaySec: liveUsedTodayAll(d.db) });
   const lang = String(url.searchParams.get('lang') ?? 'uz').slice(0, 2);
-  if (allowance < 5) { send({ type: 'limit', message: (d.tr ?? ((_l: string, t: string) => t))(lang, `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqa.`) }); client.close(); return; }
+  const tr = d.tr ?? ((_l: string, t: string) => t);
+  if (allowance < 5) { send({ type: 'limit', kind: 'quota', message: tr(lang, `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqa.`) }); client.close(); return; }
+  const ptt = url.searchParams.get('ptt') === '1'; // bosib-gapirish rejimi
   const ctx = d.context?.(who.id) ?? { firstCall: false, memory: '' };
   const adult = url.searchParams.get('adult') === '1';
   // Xarakter (profil): 0 Yumshoq, 1 Hazil, 2 Qattiq, 3 Jallod; 2–3 faqat 18+ bilan
   const style = clampStyle(url.searchParams.get('style') ?? (adult ? 2 : 0), adult);
-  const systemText = d.prompt({ adult, native: d.native(lang), level: url.searchParams.get('level'), firstCall: ctx.firstCall, memory: ctx.memory, style });
+  const systemText = d.prompt({ adult, native: d.native(lang), level: url.searchParams.get('level'), firstCall: ctx.firstCall, memory: ctx.memory, style, ptt });
   // Suhbat yozuvi (xotira uchun) va noto'g'ri til himoyasi
   const turns: { who: 'learner' | 'coach'; text: string }[] = [];
   const addText = (who: 'learner' | 'coach', t: string) => { const last = turns[turns.length - 1]; if (last && last.who === who) last.text = `${last.text}${t}`.slice(-600); else turns.push({ who, text: t.slice(0, 600) }); if (turns.length > 80) turns.shift(); };
-  let turnOut = '', muted = false, wrongCount = 0, emo: LiveEmotion = 'neutral';
+  let turnOut = '', muted = false, wrongCount = 0, emo: LiveEmotion = 'neutral', learnerBuf = '', suggested = false;
+  // Bosib-gapirish: Gemini'ga faqat tugma bosilib turgan paytdagi ovoz boradi (navbatni o'quvchi boshqaradi)
+  let inAct = false, actTimer: NodeJS.Timeout | null = null, actMsgs = 0;
   const started = Date.now();
   let upstream: WebSocket | null = null;
   let setupTimer: NodeJS.Timeout | null = null; // Gemini sozlash muddati (connect ichida)
@@ -183,7 +198,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const finish = (why: string) => {
     if (closed) return;
     closed = true;
-    clearTimeout(cap); if (setupTimer) clearTimeout(setupTimer);
+    clearTimeout(cap); if (wrapTimer) clearTimeout(wrapTimer); if (actTimer) clearTimeout(actTimer); if (setupTimer) clearTimeout(setupTimer);
     try { upstream?.close(); } catch { /* */ }
     try { client.close(); } catch { /* */ }
     const secs = ready ? (Date.now() - started) / 1000 : 0;
@@ -191,7 +206,13 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (turns.filter((t) => t.who === 'learner').length >= 3) { try { d.onTranscript?.(who.id, turns, lang); } catch { /* xotira ixtiyoriy */ } }
     log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why})${wrongCount ? ` til-xato:${wrongCount}` : ''}`);
   };
-  const cap = setTimeout(() => { send({ type: 'limit', message: 'Ovozli suhbat vaqti tugadi.' }); finish('limit'); }, allowance * 1000);
+  // Chegara: sessiya cheklovi (10 daqiqa) yoki kunlik/oylik daqiqa tugashi — mijozga turi aytiladi (sessiya tugasa — obuna taklif qilinmaydi)
+  const capKind = allowance >= d.cfg.maxSessionSec ? 'session' : 'quota';
+  const cap = setTimeout(() => { send({ type: 'limit', kind: capKind, message: capKind === 'session' ? tr(lang, 'Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : tr(lang, 'Ovozli suhbat vaqti tugadi.') }); finish('limit'); }, allowance * 1000);
+  // Vaqt tugashidan 25 soniya oldin ustozga xabar: fikrini tugatib, xayrlashsin (suhbat o'rtasida to'satdan uzilmasin)
+  const wrapLead = d.cfg.wrapLeadSec ?? 25;
+  const wrapTimer = allowance > wrapLead + 1 ? setTimeout(() => { if (ready && !closed && upstream?.readyState === WebSocket.OPEN) upstream.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: the call ends in about ${wrapLead} seconds. Finish your current thought, give ONE short useful tip and say a warm goodbye — do not start a new topic.)` }] }], turnComplete: true } })); }, (allowance - wrapLead) * 1000) : null;
+  wrapTimer?.unref?.();
 
   // Gemini sozlashni (setupComplete) shuncha vaqtda tugatmasa — zaxira model, u ham bo'lmasa xato (foydalanuvchi "o'ylayapman"da qolib ketmasin)
   const connect = () => {
@@ -207,13 +228,13 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       finish('setup-timeout');
     }, d.cfg.setupTimeoutMs ?? 8000);
     setupTimer.unref?.();
-    ws.on('open', () => ws.send(JSON.stringify(setupMessage(d.cfg, model, systemText))));
+    ws.on('open', () => ws.send(JSON.stringify(setupMessage(d.cfg, model, systemText, ptt))));
     ws.on('message', (raw: RawData) => {
       let m: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
       try { m = JSON.parse(raw.toString()); } catch { return; }
       if (m.setupComplete) {
         ready = true; if (setupTimer) clearTimeout(setupTimer);
-        send({ type: 'ready' });
+        send({ type: 'ready', capSec: Math.floor(allowance), ptt });
         // Sellzen suhbatni o'zi boshlaydi
         const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory }) ?? '(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)';
         ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: kick }] }], turnComplete: true } }));
@@ -240,9 +261,14 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
           }
         }
         if (!muted) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
-        if (sc.inputTranscription?.text) { const t = String(sc.inputTranscription.text); send({ type: 'in', text: t }); addText('learner', t); }
+        if (sc.inputTranscription?.text) {
+          const t = String(sc.inputTranscription.text); send({ type: 'in', text: t }); addText('learner', t);
+          // O'quvchi ingliz tilini o'rganishni so'radi — ekranda "Darslarga o'tish" tugmasi (qo'ng'iroqda bir marta)
+          learnerBuf = (learnerBuf + t).slice(-300);
+          if (!suggested && lessonIntent(learnerBuf)) { suggested = true; send({ type: 'suggest', kind: 'lessons' }); }
+        }
         if (sc.interrupted) { send({ type: 'interrupted' }); turnOut = ''; muted = false; }
-        if (sc.turnComplete) { send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; }
+        if (sc.turnComplete) { send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; }
       }
       if (m.goAway) { send({ type: 'error', code: 503, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
     });
@@ -262,14 +288,27 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (upstream?.readyState !== WebSocket.OPEN) return;
     upstream.send(JSON.stringify({ realtimeInput: { audio: { data: b.toString('base64'), mimeType: 'audio/pcm;rate=16000' } } }));
   };
+  // Bosib-gapirish: "bosildi" → activityStart (ustozni to'xtatadi), "qo'yib yuborildi" → activityEnd (ustoz javob beradi). 60 soniyadan keyin o'zi tugaydi.
+  const setActivity = (on: boolean) => {
+    if (!ptt || !ready || upstream?.readyState !== WebSocket.OPEN || on === inAct || ++actMsgs > 400) return;
+    inAct = on;
+    if (actTimer) { clearTimeout(actTimer); actTimer = null; }
+    upstream.send(JSON.stringify({ realtimeInput: on ? { activityStart: {} } : { activityEnd: {} } }));
+    if (on) { actTimer = setTimeout(() => setActivity(false), 60_000); actTimer.unref?.(); }
+  };
 
   client.on('message', (data: RawData, isBinary: boolean) => {
     if (isBinary) {
       const b = Buffer.isBuffer(data) ? data : Buffer.from(data as ArrayBuffer);
+      if (ptt) { if (inAct) forward(b); return; } // tugma bosilmagan paytdagi ovoz tashlab yuboriladi (shovqin Gemini'ga bormaydi)
       if (ready) forward(b); else if (pending.length < 50) pending.push(b);
       return;
     }
-    try { if ((JSON.parse(data.toString()) as { type?: string }).type === 'end') finish('client'); } catch { /* */ }
+    try {
+      const m = JSON.parse(data.toString()) as { type?: string; on?: unknown };
+      if (m.type === 'end') finish('client');
+      else if (m.type === 'activity') setActivity(m.on === true);
+    } catch { /* */ }
   });
   client.on('close', () => finish('client-close'));
   client.on('error', () => finish('client-error'));

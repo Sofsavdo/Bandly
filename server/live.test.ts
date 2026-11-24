@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
-import { attachLive, tokenFromProtocols, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, lessonIntent, tokenFromProtocols, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
@@ -218,5 +218,90 @@ http.close(); upstream.close();
   assert.equal(liveAllowance(capped, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 0, platformUsedTodaySec: 7000 }), 0, 'byudjet tugadi — bepulga Live yo‘q');
   assert.ok(liveAllowance(capped, { staff: false, subscriberLeftSec: 600, freeUsedTodaySec: 0, platformUsedTodaySec: 7000 }) > 0, 'obunachiga ta’sir qilmaydi');
   assert.equal(liveConfigFromEnv('k', {} as never)!.freeGlobalDailySeconds, 0, 'standart — chegarasiz (avvalgidek)');
+}
+// ---- Bosib-gapirish (push-to-talk): navbatni o'quvchi boshqaradi ----
+{
+  // Sozlama: avtomatik aniqlash o'chiq, ustozni faqat ataylab bosish bo'ladi; qo'lsiz rejim (eski mijozlar) o'zgarmagan
+  const p = setupMessage(cfg0, 'm', 'SYS', true) as { setup: { realtimeInputConfig: Record<string, unknown> } };
+  assert.deepEqual(p.setup.realtimeInputConfig, { automaticActivityDetection: { disabled: true }, activityHandling: 'START_OF_ACTIVITY_INTERRUPTS' });
+  assert.equal((setupMessage(cfg0, 'm', 'SYS') as { setup: { realtimeInputConfig: { automaticActivityDetection: { silenceDurationMs: number } } } }).setup.realtimeInputConfig.automaticActivityDetection.silenceDurationMs, 900);
+
+  // Darsga yo'naltirish: aniq "o'rgat/dars/learn/teach/урок" so'rovlari; oddiy suhbat — yo'q
+  for (const t of ["menga ingliz tilini o'rgat", 'ingliz tilini o‘rgatib bering', 'I want to learn English', 'Can you teach me English?', 'start a lesson please', 'научи меня английскому', 'хочу выучить английский', 'dars boshlaymiz']) assert.equal(lessonIntent(t), true, t);
+  for (const t of ['I went to the market yesterday', 'bugun ob-havo yaxshi', 'what is your favourite film', 'I love my teacher', 'meni kechiring']) assert.equal(lessonIntent(t), false, t);
+
+  const up = new WebSocketServer({ port: 0 });
+  const seen: Record<string, unknown>[] = [];
+  up.on('connection', (ws) => {
+    ws.on('message', (raw) => {
+      const m = JSON.parse(raw.toString()); seen.push(m);
+      if (m.setup) { ws.send(JSON.stringify({ setupComplete: {} })); return; }
+      if (m.realtimeInput?.activityEnd) {
+        ws.send(JSON.stringify({ serverContent: { inputTranscription: { text: "teach me English please" } } }));
+        ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Sure!' }, modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] }, turnComplete: true } }));
+      }
+    });
+  });
+  await new Promise((r) => up.once('listening', r));
+  const prompts: boolean[] = [];
+  const h = createServer((_q, s) => { s.end(); });
+  attachLive(h, {
+    db, cfg: { ...cfg0, url: `ws://127.0.0.1:${(up.address() as { port: number }).port}`, wrapLeadSec: 4 },
+    auth: (t) => (t === 'p' ? { id: 21, staff: true, subscriberLeftSec: 0 } : null),
+    prompt: (o) => { prompts.push(o.ptt); return 'SYS'; },
+    native: () => 'Uzbek (Latin script)', tr: (_l, t) => `[tr] ${t}`,
+    onEnd: () => undefined, log: () => undefined,
+  });
+  await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
+  const hp = (h.address() as { port: number }).port;
+  const ws = new WebSocket(`ws://127.0.0.1:${hp}/api/ai/live?lang=uz&ptt=1`, ['sellzen.v1', 'tk.p']);
+  const msgs: { type: string; [k: string]: unknown }[] = [];
+  ws.on('message', (d, bin) => { if (!bin) msgs.push(JSON.parse(d.toString())); });
+  await new Promise<void>((r) => { const t = setInterval(() => { if (msgs.some((m) => m.type === 'ready')) { clearInterval(t); r(); } }, 10); });
+  const ready = msgs.find((m) => m.type === 'ready')!;
+  assert.equal(ready.ptt, true); assert.equal(ready.capSec, 600, 'ruxsat etilgan soniyalar mijozga aytiladi (10:00 taymer)');
+  assert.deepEqual(prompts, [true], 'ko‘rsatma bosib-gapirish rejimini biladi');
+  const audioMsgs = () => seen.filter((m) => (m as { realtimeInput?: { audio?: unknown } }).realtimeInput?.audio).length;
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  ws.send(Buffer.alloc(640), { binary: true }); await wait(60);
+  assert.equal(audioMsgs(), 0, 'tugma bosilmagan paytdagi ovoz (shovqin) Gemini’ga bormaydi');
+  ws.send(JSON.stringify({ type: 'activity', on: false })); await wait(40);
+  assert.equal(seen.some((m) => (m as { realtimeInput?: { activityEnd?: unknown } }).realtimeInput?.activityEnd), false, 'bosilmagan — "qo‘yib yuborildi" e’tiborsiz');
+  ws.send(JSON.stringify({ type: 'activity', on: true })); ws.send(JSON.stringify({ type: 'activity', on: true }));
+  ws.send(Buffer.alloc(640), { binary: true }); ws.send(Buffer.alloc(640), { binary: true }); await wait(80);
+  assert.equal(audioMsgs(), 2, 'bosib turilganda ovoz yuboriladi');
+  assert.equal(seen.filter((m) => (m as { realtimeInput?: { activityStart?: unknown } }).realtimeInput?.activityStart).length, 1, 'takroriy "bosildi" bitta activityStart');
+  ws.send(JSON.stringify({ type: 'activity', on: false }));
+  await new Promise<void>((r) => { const t = setInterval(() => { if (msgs.some((m) => m.type === 'turn')) { clearInterval(t); r(); } }, 10); });
+  assert.ok(seen.some((m) => (m as { realtimeInput?: { activityEnd?: unknown } }).realtimeInput?.activityEnd), 'qo‘yib yuborildi → activityEnd');
+  assert.ok(msgs.some((m) => m.type === 'suggest' && m.kind === 'lessons'), 'ingliz tilini o‘rganishni so‘radi — darslarga tugma');
+  assert.equal(msgs.filter((m) => m.type === 'suggest').length, 1, 'bir qo‘ng‘iroqda bir marta');
+  ws.send(Buffer.alloc(640), { binary: true }); await wait(60);
+  assert.equal(audioMsgs(), 2, 'qo‘yib yuborilgandan keyin ovoz yana yuborilmaydi');
+  ws.send(JSON.stringify({ type: 'end' })); await new Promise((r) => ws.on('close', r));
+  h.close(); up.close();
+}
+// Vaqt tugashi: ustozga oldindan "fikrni tugat, xayrlash" deyiladi; chegara turi (sessiya / kvota) mijozga aytiladi
+{
+  const up = new WebSocketServer({ port: 0 });
+  const toModel: string[] = [];
+  up.on('connection', (ws) => ws.on('message', (raw) => { const m = JSON.parse(raw.toString()); if (m.setup) ws.send(JSON.stringify({ setupComplete: {} })); else if (m.clientContent) toModel.push(m.clientContent.turns[0].parts[0].text); }));
+  await new Promise((r) => up.once('listening', r));
+  const h = createServer((_q, s) => { s.end(); });
+  attachLive(h, {
+    db, cfg: { ...cfg0, url: `ws://127.0.0.1:${(up.address() as { port: number }).port}`, wrapLeadSec: 3, get maxSessionSec() { return 6; } },
+    auth: () => ({ id: 22, staff: true, subscriberLeftSec: 0 }),
+    prompt: () => 'SYS', native: () => 'Uzbek (Latin script)', tr: (_l, t) => `[tr] ${t}`,
+    onEnd: () => undefined, log: () => undefined,
+  });
+  await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
+  const ws = new WebSocket(`ws://127.0.0.1:${(h.address() as { port: number }).port}/api/ai/live?lang=uz`, ['sellzen.v1', 'tk.x']);
+  const msgs: { type: string; [k: string]: unknown }[] = [];
+  ws.on('message', (d, bin) => { if (!bin) msgs.push(JSON.parse(d.toString())); });
+  await new Promise((r) => ws.on('close', r));
+  assert.ok(toModel.some((t) => /call ends in about 3 seconds/.test(t)), 'ustozga tugashdan oldin eslatma yuborildi');
+  const lim = msgs.find((m) => m.type === 'limit')!;
+  assert.equal(lim.kind, 'session'); assert.match(String(lim.message), /^\[tr\] Suhbat vaqti tugadi/, 'sessiya tugashi — obuna taklif qilinmaydi, xabar tarjima qilinadi');
+  h.close(); up.close();
 }
 console.log('live: OK');

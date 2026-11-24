@@ -38,8 +38,11 @@ for (const t of [first, again]) {
   assert.ok(t.includes('Your name is "Sellzen" — never add "AI" to it') && !/Sellzen AI/.test(t), 'ism: Sellzen, "AI" so‘zisiz');
   assert.ok(/Accented or broken English is NORMAL/.test(t) && /Never ask them to speak louder or repeat just because of an accent/.test(t), 'aksent uchun qayta so‘ramaydi');
   assert.ok(/Never do this twice in a row/.test(t), 'qayta so‘rash ketma-ket emas');
-  assert.ok(/at most 2 short spoken sentences/.test(t), 'qisqa javob');
-  assert.ok(/Mixing English and Uzbek inside one turn is fine/.test(t), 'izoh ona tilida, faqat inglizcha emas');
+  // 2026-11-24 (egasi, Preppy tahlili): ustoz fikrni oxirigacha aytishi kerak — avvalgi "2 ta qisqa gap" qoidasi o'rniga "to'liq fikr (2–5 gap)"
+  assert.ok(/COMPLETE THOUGHTS/.test(t) && /ALWAYS finish your thought/.test(t) && !/at most 2 short spoken sentences/.test(t), 'to‘liq fikr, kesilmaydi');
+  // Til: suhbat tiliga ergashadi, fikrni bitta tilda tugatadi; almashtirish — ataylab va e'lon qilib; tuzatish izohi ona tilida to'liq gap bilan
+  assert.ok(/FOLLOW THE CONVERSATION/.test(t) && /for the WHOLE thought/.test(t) && /Never switch language in the middle of a sentence or a thought/.test(t), 'tilni o‘rtada almashtirmaydi');
+  assert.ok(/explain why in Uzbek in one complete sentence/.test(t), 'izoh ona tilida, faqat inglizcha emas');
   assert.ok(!/ONE language per reply/.test(t), 'eski "bitta til" qoidasi ovozli suhbatda yo‘q');
 }
 assert.ok(first.includes('introduce yourself once') && first.includes('MEMORY from previous calls') && first.includes('beginner'));

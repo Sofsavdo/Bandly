@@ -108,3 +108,29 @@ console.log('coach.test: OK');
   assert.ok(/Men Sellzen/.test(uz) && /tentak/.test(uz) && !/NOT Uzbek/.test(uz), "o'zbek o'quvchi uchun o'zbekcha namunalar saqlanadi");
   console.log('coach native prompts: OK');
 }
+
+// Ovozli ustoz ko'rsatmasi (Preppy tahlili asosida): suhbat tiliga ergashadi, fikrni oxirigacha aytadi, o'rganishni so'rasa — mini-dars
+{
+  const { buildLivePrompt: blp, emotionOf: eo } = await import('./coach');
+  const base = { adult: false, native: 'Uzbek (Latin script)', level: 'A2', firstCall: false } as const;
+  const p = blp({ ...base, style: 1, ptt: true });
+  assert.match(p, /FOLLOW THE CONVERSATION/); assert.match(p, /Never switch language in the middle of a sentence or a thought/);
+  assert.match(p, /COMPLETE THOUGHTS/); assert.match(p, /ALWAYS finish your thought/);
+  assert.doesNotMatch(p, /SHORT TURNS|at most 2 short spoken sentences/, 'fikrni qisqartiruvchi eski qoida yo‘q');
+  assert.match(p, /LESSON MODE/); assert.match(p, /teach me English/);
+  assert.match(p, /push-to-talk/, 'bosib-gapirish rejimida ustoz buni biladi');
+  assert.match(p, /never ask them to speak louder/i);
+  assert.doesNotMatch(blp({ ...base, style: 1 }), /push-to-talk/, 'qo‘lsiz rejimda bu qoida yo‘q');
+  assert.match(p, /at most about 10 minutes/);
+  assert.doesNotMatch(blp({ ...base, native: 'English', style: 1 }), /FOLLOW THE CONVERSATION/, 'ona tili inglizcha bo‘lsa til almashtirish qoidasi kerak emas');
+  assert.match(blp({ ...base, adult: true, style: 2 }), /Complete turns/);
+  assert.doesNotMatch(blp({ ...base, adult: true, style: 2 }), /Very short turns/);
+  // Ona tili o'zbek emas — qoida shu tilda (o'zbekcha so'z/namuna yo'q)
+  const ru = blp({ ...base, native: 'Russian', style: 0, ptt: true });
+  assert.match(ru, /talk Russian for the WHOLE thought/); assert.doesNotMatch(ru.replace('NOT Uzbek: never say a single Uzbek word', ''), /Uzbek/, 'o‘zbekcha ko‘rsatma faqat taqiq sifatida');
+  // Hissiyot: qattiq maqtov — yurak (impressed), oddiy tasdiq — happy, kulgi/jahl o'zgarmagan
+  assert.equal(eo('Barakalla! Zo\'r gapirding'), 'happy'); assert.equal(eo('Nice, correct!'), 'happy'); assert.equal(eo('Perfect, well done!'), 'happy');
+  assert.equal(eo('I am so proud of you, wonderful!'), 'impressed', 'iliq maqtov — yurak'); assert.equal(eo('Qoyil! Juda yaxshi'), 'impressed');
+  assert.equal(eo('Hahaha! no way'), 'laugh'); assert.equal(eo('What the hell, again?!'), 'angry'); assert.equal(eo('okay then'), 'neutral');
+  console.log('coach live prompt (til siyosati, to‘liq fikr, mini-dars): OK');
+}
