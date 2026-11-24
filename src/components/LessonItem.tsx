@@ -9,7 +9,7 @@ import { L } from '../i18n';
 /** Renders one deterministic exercise item (choice / gap / order) with optional reveal of the answer. Shared by lessons and mistake review. */
 export function ItemView({ item, value, onChange, revealed, quiet = false }: { item: Item; value: ItemAnswer; onChange: (v: ItemAnswer) => void; revealed: boolean; /** o'yin rejimi: izoh pastki panelda ko'rsatiladi */ quiet?: boolean }) {
   const ok = revealed && checkItem(item, value);
-  const listen = item.kind !== 'order' ? item.listen : undefined;
+  const listen = item.kind === 'choice' || item.kind === 'gap' ? item.listen : undefined;
   return (
     <div className="q">
       {listen && <ListenClip key={listen} text={listen} revealed={revealed} />}
@@ -21,10 +21,23 @@ export function ItemView({ item, value, onChange, revealed, quiet = false }: { i
           ))}
         </div>
       )}
+      {item.kind === 'multi' && (() => {
+        const sel = Array.isArray(value) ? (value as number[]) : [];
+        const toggle = (i: number) => { if (revealed) return; const n = sel.includes(i) ? sel.filter((x) => x !== i) : [...sel, i].sort((a, b) => a - b); onChange(n.length ? n : undefined); };
+        return (
+          <div className="stack" role="group" aria-label={L('Bir nechta to‘g‘ri javob bor')}>
+            <small className="muted">{L('Bir nechta to‘g‘ri javob bor')}</small>
+            {item.options.map((o, i) => {
+              const right = item.answers.includes(i), on = sel.includes(i);
+              return <button key={o} type="button" role="checkbox" aria-checked={on} className={`opt multi ${revealed ? (right ? 'right' : on ? 'bad' : '') : on ? 'sel' : ''}`} disabled={revealed} onClick={() => toggle(i)}><span className="mbox" aria-hidden="true">{on ? '✓' : ''}</span>{o}</button>;
+            })}
+          </div>
+        );
+      })()}
       {item.kind === 'gap' && (
         <input type="text" autoComplete="off" disabled={revealed} value={typeof value === 'string' ? value : ''} placeholder={L('Javobni yozing')} onChange={(e) => onChange(e.target.value)} />
       )}
-      {item.kind === 'order' && <OrderInput key={item.answer} item={item} value={Array.isArray(value) ? value : []} onChange={onChange} disabled={revealed} />}
+      {item.kind === 'order' && <OrderInput key={item.answer} item={item} value={(Array.isArray(value) ? value : []) as string[]} onChange={onChange} disabled={revealed} />}
       {revealed && !quiet && (
         <p style={{ marginTop: 8 }}>
           {ok ? <span className="ok"><CheckCircle2 size={16} />  {L('To‘g‘ri.')} </span> : <span className="bad"><XCircle size={16} />  {L('Noto‘g‘ri. To‘g‘ri javob: «')}{correctAnswerText(item)}». </span>}

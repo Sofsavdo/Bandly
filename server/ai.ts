@@ -162,6 +162,37 @@ export async function followUp(cfg: AiConfig, question: string, answer: string, 
   return cleanQuestion(await complete(cfg, system, user, { maxTokens: 60, ...opts }));
 }
 
+/** Dars ichidagi qisqa yozma topshiriq uchun AI fikri (Sellzen): bitta-ikki gaplik izoh o'quvchi tilida + "yaxshilangan variant" + taxminiy daraja. Ball emas. */
+export interface LessonFeedback { feedback: string; better: string; level: string | null }
+const LEVELS_SET = new Set(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+
+export function lessonFeedbackPrompt(target: string, text: string, native: string, lessonLevel: string | null): { system: string; user: string } {
+  const uz = /^uzbek/i.test(native) ? ' If the language is Uzbek, write standard literary Uzbek, as on national TV news, in short, simple, grammatical sentences — no dialect, no Turkish, Kazakh, Tajik or Russian words, never invent words.' : '';
+  const system = `You are Sellzen, a kind and honest English tutor. A learner${lessonLevel ? ` (lesson level ${lessonLevel})` : ''} did a short writing task inside a lesson. Reply with ONLY one JSON object: {"feedback": string, "better": string, "level": string}. ` +
+    `"feedback": at most 2 short sentences in ${native}: first one thing that is good, then the single most useful correction (name the word or phrase). Never insult, never give a score. ` +
+    `"better": the learner's OWN idea rewritten as 1–2 correct, natural English sentences (maximum 30 words); keep their meaning and do not add new facts. "level": the CEFR level of the learner's text (A1, A2, B1, B2, C1 or C2). ` +
+    `If the text is empty, copied from the task or unrelated, say so politely in "feedback" and give a short model sentence in "better".${uz} ${GUARD}`;
+  const user = `Task shown to the learner: ${clip(target, 300)}\n<candidate>${clip(text, 600)}</candidate>`;
+  return { system, user };
+}
+
+export function parseLessonFeedback(raw: string): LessonFeedback {
+  const m = raw.match(/\{[\s\S]*\}/);
+  if (!m) throw new AiError(502, 'AI javobi noto‘g‘ri formatda');
+  let j: Record<string, unknown>;
+  try { j = JSON.parse(m[0].replace(/[\r\n\t]+/g, ' ')) as Record<string, unknown>; } catch { throw new AiError(502, 'AI javobi noto‘g‘ri formatda'); } // modellar ba'zan satr ichiga haqiqiy yangi qator qo'yadi
+  const feedback = typeof j.feedback === 'string' ? j.feedback.replace(/\s+/g, ' ').trim().slice(0, 360) : '';
+  const better = typeof j.better === 'string' ? j.better.replace(/\s+/g, ' ').trim().slice(0, 240) : '';
+  if (!feedback) throw new AiError(502, 'AI fikri bo‘sh');
+  const lv = typeof j.level === 'string' ? j.level.trim().toUpperCase() : '';
+  return { feedback, better, level: LEVELS_SET.has(lv) ? lv : null };
+}
+
+export async function lessonFeedback(cfg: AiConfig, target: string, text: string, native: string, lessonLevel: string | null, opts?: CompleteOpts): Promise<LessonFeedback> {
+  const { system, user } = lessonFeedbackPrompt(target, text, native, lessonLevel);
+  return parseLessonFeedback(await complete(cfg, system, user, { maxTokens: 400, timeoutMs: 15_000, ...opts }));
+}
+
 export interface Evaluation {
   bands: Record<string, number | null>;
   overall: number;

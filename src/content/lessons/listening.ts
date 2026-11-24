@@ -7,7 +7,7 @@ import { L } from '../../i18n';
 export const LISTEN_PROMPT = L('Tinglang: bu gap nimani anglatadi?');
 
 export function listeningFromExamples(l: Lesson, take = 2): Item[] {
-  if (l.practice.filter((it) => it.kind !== 'order' && it.listen).length >= take) return []; // darsning o'z audio mashqlari bor
+  if (l.practice.filter((it) => (it.kind === 'choice' || it.kind === 'gap') && it.listen).length >= take) return []; // darsning o'z audio mashqlari bor
   const ex = l.examples.filter((e) => e.en.trim() && e.uz.trim());
   if (ex.length < 3) return [];
   const picks = [...new Set([0, Math.min(2, ex.length - 1)])].slice(0, take);

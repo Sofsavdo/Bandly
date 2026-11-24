@@ -1,5 +1,9 @@
 import type { Unit } from './types';
+import type { Item } from './types';
 import { ch, gap, ord } from './helpers';
+
+/** "Barcha to‘g‘ri gaplarni tanlang": to‘g‘ri variantlarning aynan o‘zi tanlanishi kerak. */
+const multi = (prompt: string, options: string[], answers: number[], explainUz: string): Item => ({ kind: 'multi', prompt, options, answers, explainUz });
 
 // A1: "Mening oilam va do'stlarim" — kunlik tanishuv mavzusi: oila a'zolari + egalik sifatlari, odamlarni tanishtirish, oila haqida qisqa hikoya.
 // "Oila va odamlar" (a1-u4: ko'plik, to'ldiruvchi olmoshlar, savol so'zlari) dan keyin keladi; present simple va to be ustiga quriladi. Original kontent, status 'pilot'.
@@ -36,6 +40,7 @@ export const A1_U11: Unit = {
         ch('We have a big family. ___ house is in Tashkent.', ['Our', 'Their', 'Her'], 0, 'We (biz) → our (bizning).'),
         gap('They love ___ grandmother very much. (they)', ['their'], 'They (ular) → their (ularning).'),
         ord(['father', 'is', 'My', 'a', 'driver'], 'My father is a driver', 'My + ot + is + a + kasb.'),
+        multi('Choose ALL the correct sentences.', ['My mother is a teacher.', 'Her name are Dilnoza.', 'His brother is ten years old.', 'Our grandmother live in Samarkand.', 'Their father is a driver.'], [0, 2, 4], 'To‘g‘ri gaplar: “My mother is a teacher.”, “His brother is ten years old.”, “Their father is a driver.” Xatolar: “Her name are” emas, “Her name is” (name — bitta); “Our grandmother live” emas, “lives” (grandmother — bitta).'),
       ],
       check: [
         ch('I live with ___ parents.', ['my', 'me', 'I'], 0, 'I (men) → my (mening).'),
@@ -79,6 +84,7 @@ export const A1_U11: Unit = {
         ch('My sister is a doctor. ___ twenty-five.', ['She’s', 'They’re', 'He’s'], 0, 'Sister — bitta qiz yoki ayol: she’s.'),
         gap('My parents are teachers. ___ (they are) very kind.', ['they’re', 'they are'], 'Bir nechta odam — they’re (they are).'),
         ord(['my', 'This', 'is', 'brother'], 'This is my brother', 'This is + my + ot.'),
+        multi('Choose ALL the correct sentences.', ['This is my friend Aziz.', 'These is my parents.', 'She’s a nurse.', 'They’s from Bukhara.', 'He’s twenty years old.'], [0, 2, 4], 'To‘g‘ri gaplar: “This is my friend Aziz.”, “She’s a nurse.”, “He’s twenty years old.” Xatolar: “These is” emas, “These are”; “They’s” emas, “They’re”.'),
       ],
       check: [
         ch('___ are my grandparents.', ['This', 'These', 'She’s'], 1, 'Bir nechta odam — These are…'),
@@ -122,6 +128,7 @@ export const A1_U11: Unit = {
         ch('Dilnoza is ___ engineer.', ['a', 'an', 'the'], 1, 'Engineer unli tovush bilan boshlanadi — an.'),
         gap('We ___ in Samarkand. (live)', ['live'], 'We bilan live (fe’lga -s qo‘shilmaydi).'),
         ord(['with', 'I', 'my', 'parents', 'live'], 'I live with my parents', 'I + live + with + my parents.'),
+        multi('Choose ALL the correct sentences.', ['I live with my parents.', 'My father is a engineer.', 'We live on Tashkent.', 'My sister is a student.', 'My mother is forty years old.'], [0, 3, 4], 'To‘g‘ri gaplar: “I live with my parents.”, “My sister is a student.”, “My mother is forty years old.” Xatolar: “a engineer” emas, “an engineer”; “on Tashkent” emas, “in Tashkent”.'),
       ],
       check: [
         ch('My brother ___ twenty years old.', ['is', 'are', 'has'], 0, 'Yosh haqida: is + son.'),

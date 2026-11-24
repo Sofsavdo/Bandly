@@ -2,6 +2,7 @@
 //   ? Savol matni | variant | *to'g'ri variant | variant | izoh
 //   _ Gap ___ bilan | javob1; javob2 | izoh
 //   = To'g'ri tartibdagi gap | izoh          (so'zlar avtomatik aralashtiriladi)
+//   + Savol matni | *to'g'ri | variant | *to'g'ri | izoh   (bir nechta to'g'ri variant: barchasini tanlash kerak)
 // Izoh (oxirgi qism) — o'quvchi javobdan keyin ko'radigan tushuntirish.
 import type { Item } from '../content/lessons/types';
 import { L } from '../i18n';
@@ -28,6 +29,13 @@ export function parseItems(text: string): { items: Item[]; errors: DslError[] } 
       if (answer < 0) return err(L('To‘g‘ri variant oldiga * qo‘ying'));
       if (parts.filter((p) => p.startsWith('*')).length > 1) return err(L('Faqat bitta to‘g‘ri variant bo‘lishi kerak'));
       items.push({ kind: 'choice', prompt, options: parts.map((p) => p.replace(/^\*/, '').trim()), answer, explainUz });
+    } else if (kind === '+') {
+      if (parts.length < 5) return err(L('Ko‘p tanlovli savolda kamida: savol | 3 ta variant | izoh'));
+      const explainUz = parts.pop()!; const prompt = parts.shift()!;
+      const answers = parts.map((p, k) => (p.startsWith('*') ? k : -1)).filter((k) => k >= 0);
+      if (!answers.length) return err(L('To‘g‘ri variantlar oldiga * qo‘ying'));
+      if (answers.length >= parts.length) return err(L('Kamida bitta noto‘g‘ri variant bo‘lishi kerak'));
+      items.push({ kind: 'multi', prompt, options: parts.map((p) => p.replace(/^\*/, '').trim()), answers, explainUz });
     } else if (kind === '_') {
       if (parts.length < 3) return err(L('Bo‘sh joy savolida: gap ___ bilan | javob(lar) | izoh'));
       if (!parts[0]!.includes('___')) return err(L('Gapda ___ (uchta pastki chiziq) bo‘lishi kerak'));
@@ -39,7 +47,7 @@ export function parseItems(text: string): { items: Item[]; errors: DslError[] } 
       const answer = parts[0]!.replace(/[.!?]+$/, '');
       if (answer.split(/\s+/).length < 3) return err(L('Gapda kamida 3 ta so‘z bo‘lsin'));
       items.push({ kind: 'order', words: shuffleWords(answer), answer, explainUz: parts[1]! });
-    } else err(L('Qator ?, _ yoki = bilan boshlanishi kerak'));
+    } else err(L('Qator ?, +, _ yoki = bilan boshlanishi kerak'));
   });
   return { items, errors };
 }
@@ -47,6 +55,7 @@ export function parseItems(text: string): { items: Item[]; errors: DslError[] } 
 export function formatItems(items: Item[]): string {
   return items.map((it) => {
     if (it.kind === 'choice') return `? ${it.prompt} | ${it.options.map((o, i) => (i === it.answer ? `*${o}` : o)).join(' | ')} | ${it.explainUz}`;
+    if (it.kind === 'multi') return `+ ${it.prompt} | ${it.options.map((o, i) => (it.answers.includes(i) ? `*${o}` : o)).join(' | ')} | ${it.explainUz}`;
     if (it.kind === 'gap') return `_ ${it.prompt} | ${it.accept.join('; ')} | ${it.explainUz}`;
     return `= ${it.answer} | ${it.explainUz}`;
   }).join('\n');

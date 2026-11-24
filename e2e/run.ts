@@ -142,6 +142,13 @@ try {
     const keys = Object.keys(g.data ?? {});
     assert.ok(keys.includes('bandly.profile.v1'), 'profil saqlandi');
     assert.ok(!keys.some((k) => /content\.v|i18n\./.test(k)), `kesh kalitlari yuborilmadi: ${keys.join(',')}`);
+    // Xarita: har zonada "can-do" qatori; "Yo'l tanlang" oynasi (General English ⇄ IELTS ⇄ Imtihon)
+    await p.goto(`${base}/#/learn`); await p.waitForTimeout(1500);
+    assert.ok((await p.locator('.zone-cando').count()) >= 6, 'har daraja zonasida can-do sarlavha');
+    await p.locator('.chip-route').first().click();
+    await p.getByRole('dialog').waitFor({ timeout: 5000 });
+    assert.deepEqual(await p.locator('.route-item').evaluateAll((els) => els.map((e) => e.getAttribute('href'))), ['#/learn', '#/ielts', '#/exam'], 'yo‘l tanlash havolalari');
+    await p.getByRole('button', { name: 'Yopish' }).first().click();
     await p.context().close();
   });
 

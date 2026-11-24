@@ -41,3 +41,7 @@ export async function aiFollowup(question: string, answer: string, level = 0): P
 }
 export const aiEvaluateSpeaking = (turns: { q: string; text: string }[]): Promise<Evaluation> => post('/api/ai/speaking', { turns }, 30_000);
 export const aiEvaluateWriting = (task: 1 | 2, prompt: string, text: string): Promise<Evaluation> => post('/api/ai/writing', { task, prompt, text }, 30_000);
+
+export interface LessonFeedback { feedback: string; better: string; level: string | null; left: number }
+/** Dars ichidagi yozma topshiriq uchun Sellzen fikri: bitta qisqa so'rov (server kunlik chegarasi bilan). Xatoda xabar bilan tashlaydi. */
+export const aiLessonFeedback = (target: string, text: string, level?: string | null): Promise<LessonFeedback> => post('/api/ai/lesson', { target, text, level: level ?? undefined }, 20_000);

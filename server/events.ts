@@ -10,7 +10,7 @@ import { tzDay } from './day';
 
 export const EVENT_NAMES = [
   'landing_view', 'signup_start', 'pricing_view', 'checkout_start',
-  'placement_start', 'placement_done', 'share_placement_tg', 'share_placement_img', 'duel_guest_view', 'duel_share', 'share_mock', 'seo_cta',
+  'placement_start', 'placement_done', 'share_placement_tg', 'share_placement_img', 'share_streak', 'duel_guest_view', 'duel_share', 'share_mock', 'seo_cta',
   'login_widget_missing', // kirish oynasi: Telegram vidjeti chiqmadi (anonim hisoblagich)
   // Mehmon mock voronkasi: boshladi → topshirdi → ro'yxatdan o'tish tugmasini bosdi → hisobga kirgach natijasi ochildi (anonim, hisobga bog'lanmaydi)
   'mock_guest_start', 'mock_guest_submit', 'mock_guest_signup_click', 'mock_guest_unlocked',

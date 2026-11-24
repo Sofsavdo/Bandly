@@ -5,6 +5,8 @@ import { checkWriting, wordCount, type WritingCheck } from '../lib/lessons';
 import { logErrors } from '../lib/adaptive/store';
 import { addMistake } from '../lib/mistakes';
 import type { TaxonomyId } from '../lib/adaptive/taxonomy';
+import { AiFeedback } from './AiFeedback';
+import { getProfile } from '../lib/store';
 import { L } from '../i18n';
 
 // grammarCheck rule id → error type (only where the mapping is clear)
@@ -39,6 +41,7 @@ export function LessonWrite({ task, onDone }: { task: WritingTask; onDone?: () =
           <p className={res.passed ? 'ok' : 'bad'}>{res.passed ? L('Topshiriq talablari bajarildi.') : L('Yuqoridagilarni tuzatib, qayta tekshiring.')}</p>
           {task.model && <p><b>{L('Namuna javob:')}</b> <span className="muted">{task.model}</span></p>}
           <p className="muted" style={{ fontSize: 13 }}>{L('Qoidaviy tekshiruv: asosiy xatolarni topadi.')}</p>
+          <AiFeedback target={task.promptUz} text={text} level={getProfile().level} />
         </div>
       )}
     </div>

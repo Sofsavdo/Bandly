@@ -15,6 +15,10 @@ import { answer, checkXp, lessonXpDay, markLessonXp, MAX_HEARTS, newPace, newPla
 import { localDayKey } from '../lib/adaptive/store';
 import { saveResult } from '../lib/storage';
 import { LessonSpeak } from '../components/LessonSpeak';
+import { ResultTiles, StreakCard } from '../components/ResultTiles';
+import { accuracyPct, addTally, emptyTally, type Tally } from '../lib/lessonStats';
+import { dayKey, displayStreak } from '../lib/game';
+import { myRefCode } from '../lib/account';
 import { LessonWrite } from '../components/LessonWrite';
 import { Illo } from '../components/Illo';
 import { PRing } from '../components/PRing';
@@ -52,6 +56,12 @@ export default function LessonPage({ id }: { id: string }) {
   const [rAns, setRAns] = useState<Record<number, ItemAnswer>>({});
   const [rShown, setRShown] = useState<Record<number, boolean>>({});
   const [gained, setGained] = useState(0);
+  // Dars yakuni ko'rsatkichlari: aniqlik (mashq + nazorat), vaqt (boshlangandan natijagacha)
+  const tally = useRef<Tally>(emptyTally());
+  const startedAt = useRef(0);
+  const [stats, setStats] = useState({ accuracy: 0, ms: 0 });
+  const [refCode, setRefCode] = useState<string | null>(null);
+  useEffect(() => { void myRefCode().then(setRefCode); }, []);
   const [cShown, setCShown] = useState<boolean[]>([]);
   // Shoshilinch javoblarga XP berilmaydi (mastery baribir yoziladi)
   const paceRef = useRef<Pace>(newPace(Date.now()));
@@ -93,6 +103,7 @@ export default function LessonPage({ id }: { id: string }) {
     saveResult({ kind: 'grammar', title: L('Dars: {0}', [lesson.titleUz]), correct: r.correct, total: r.total });
     addXp(xp, 'lesson', `${lesson.id}:check:${today}`); markLessonXp(lesson.id, today); setGained((g) => g + xp);
     if (r.passed) addToReview(lessonWordIds(lesson.id), now); // lesson words join the spaced-repetition deck
+    setStats({ accuracy: accuracyPct(tally.current), ms: Date.now() - startedAt.current });
     setResult(r); setStep('result');
   };
   const retry = () => { setCAns([]); setCShown([]); setCCur(0); setCFb(null); setSuppressedCheck(new Set()); setResult(null); setRound((x) => x + 1); setPlay((p) => ({ ...p, hearts: Math.max(p.hearts, 3) })); setStep('check'); };
@@ -101,6 +112,7 @@ export default function LessonPage({ id }: { id: string }) {
     const i = pQueue[0]!;
     const ok = checkItem(lesson.practice[i]!, pVal);
     const slow = paced(lesson.practice[i]!, pVal);
+    tally.current = addTally(tally.current, ok);
     const a = answer(play, ok); // bitta bosish — bitta hodisa; yon ta'sirlar holat yangilovchisidan tashqarida
     const np = slow || pRetried.has(i) ? { ...a, xp: play.xp } : a; // qaytgan topshiriqqa XP yo'q
     setPlay(np);
@@ -120,6 +132,7 @@ export default function LessonPage({ id }: { id: string }) {
   const revealCheck = (i: number) => {
     const ok = checkItem(lesson.check[i]!, cAns[i]);
     setCShown((x) => { const n = [...x]; n[i] = true; return n; });
+    tally.current = addTally(tally.current, ok);
     setCFb(ok); sfx(ok ? 'ok' : 'bad');
     if (paced(lesson.check[i]!, cAns[i])) setSuppressedCheck((x) => new Set(x).add(i));
     const np = { ...answer(play, ok), xp: play.xp }; // tekshiruv XP'si yakunda checkXp bilan hisoblanadi
@@ -164,7 +177,7 @@ export default function LessonPage({ id }: { id: string }) {
       ) : !started ? (
         <MissionIntro unit={unit} lesson={lesson} steps={steps.map((st) => STEP_UZ[st])} onStart={() => {
           // Bepul tarif: o'tilgan dars — takrorlash bepul; yangi dars — kunlik kvotadan (obunachiga cheklov yo'q)
-          trackUser('lesson_start');
+          trackUser('lesson_start'); startedAt.current = Date.now(); tally.current = emptyTally();
           if (loadProgress()[lesson.id]?.passedAt) { setStarted(true); return; }
           void requestUnlock(ielts ? 'ielts' : 'ge', lesson.id).then((r) => { if (r.ok) setStarted(true); else setLimitAt(r.resetAt); });
         }} />
@@ -253,6 +266,8 @@ export default function LessonPage({ id }: { id: string }) {
               {!result.passed && <p className="muted" style={{ margin: '4px 0 0' }}>{L('Xatolar «Xatolarim» bo‘limiga tushdi. Qoidani yana bir ko‘rib, qayta jang qiling.')}</p>}</div>
             {result.passed && <Illo kind="trophy" size={96} />}
           </div>
+          <ResultTiles stars={lessonStars(result.rate, result.passed)} xp={gained} accuracy={stats.accuracy} ms={stats.ms} lessonIds={unit.lessons.map((l) => l.id)} passed={(lid) => !!loadProgress()[lid]?.passedAt} currentId={result.passed ? lesson.id : ''} />
+          {result.passed && getProfile().lastActiveDay === dayKey() && displayStreak(getProfile(), dayKey()) >= 1 && <StreakCard streak={displayStreak(getProfile(), dayKey())} lastActiveDay={getProfile().lastActiveDay} refCode={refCode} />}
           {play.maxCombo >= 2 && <p className="row"><span className="pill"><Flame size={13} />  {L('eng uzun combo ×')}{play.maxCombo}</span></p>}
           {/* Esda tuting: darsning asosiy g'oyasi va 3 ta namuna gap — mustahkamlash uchun (takrorlash ro'yxatiga ham tushadi) */}
           <div className="takeaway">
