@@ -51,7 +51,7 @@ export function CefrPrep() {
         <div className="stack">
           <a className="path-step" href="#/mocks/reading/cefr-reading-1"><b><BookOpen size={16} />  {L('O‘qish — mashq testi 1')}</b><span>{L('35 savol · 60 daqiqa · B1→C1 matnlar · bepul')}</span></a>
           <a className="path-step" href="#/mocks/listening/cefr-listening-1"><b><Headphones size={16} />  {L('Tinglab tushunish — mashq testi 1')}</b><span>{L('35 savol · 45 daqiqa · 5 qism, turli talaffuzlar · bepul')}</span></a>
-          <a className="path-step" href="#/coach"><b><Mic size={16} />  {L('Gapirish')}</b><span>{L('AI ustoz bilan suhbat va “Jim qolma!” — ravon gapirish mashqi')}</span></a>
+          <a className="path-step" href="#/coach"><b><Mic size={16} />  {L('Gapirish')}</b><span>{L('Sellzen AI bilan suhbat va “Jim qolma!” — ravon gapirish mashqi')}</span></a>
         </div>
         <h3 style={{ marginTop: 14 }}><PenLine size={16} />  {L('Yozma ish mashqi')}</h3>
         <p className="row">{TASKS.map((t, i) => <button key={t.title} type="button" className={`chipbtn ${w === i ? 'on' : ''}`} onClick={() => setW(i)}>{t.title}</button>)}</p>

@@ -34,7 +34,7 @@ export function bestVoice(prefix: string): SpeechSynthesisVoice | undefined {
   return [...pool].sort((a, b) => score(b) - score(a))[0];
 }
 
-/** AI ustoz uchun bitta doimiy (erkak) ovoz: bir suhbatda ovoz almashmasin — ingliz ovozlari ichidan erkak ovozi afzal. */
+/** Sellzen AI uchun bitta doimiy (erkak) ovoz: bir suhbatda ovoz almashmasin — ingliz ovozlari ichidan erkak ovozi afzal. */
 const MALE = /(\bmale\b|daniel|david|guy|ryan|alex\b|fred|george|james|mark|thomas|oliver|arthur|aaron|rishi|christopher|eric|roger|brian)/i;
 const FEMALE = /(female|samantha|serena|karen|moira|libby|sonia|jenny|aria|zira|susan|hazel|victoria|tessa|fiona|kate|emma|amy|joanna|salli|kimberly|ivy|linda|heera|catherine)/i;
 export function tutorVoice(): SpeechSynthesisVoice | undefined {

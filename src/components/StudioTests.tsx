@@ -36,9 +36,9 @@ export function StudioTests() {
               <div className="studio-actions">
                 <button className="btn sm" onClick={() => setEdit({ id: t.id, source: t.source })}><Pencil size={14} />  {L('Tahrirlash')}</button>
                 {t.status === 'published' && <a className="btn sm" href={`#/mocks/${t.kind === 'listening' ? 'listening' : 'reading'}/${t.id}`}><ExternalLink size={14} />  {L('Ko‘rish')}</a>}
-                {(t.status !== 'published' || t.dirty) && t.status !== 'archived' && <button className="btn sm primary" disabled={busy || t.errors.length > 0} onClick={() => void act(() => studio('POST', L('tests/{0}/publish', [t.id])), L('Test e’lon qilindi. O‘quvchilar ilovani qayta ochganda ko‘radi.'))}><Send size={14} />  {L('E’lon')}</button>}
-                {t.status === 'archived' ? <button className="btn sm" disabled={busy} onClick={() => void act(() => studio('POST', L('tests/{0}/restore', [t.id])), L('Test tiklandi (qoralama).'))}><RotateCcw size={14} />  {L('Tiklash')}</button>
-                  : <button className="btn sm danger" disabled={busy} onClick={() => { if (confirm(L('Testni arxivlaysizmi? O‘quvchilardan yashiriladi.'))) void act(() => studio('POST', L('tests/{0}/archive', [t.id])), L('Test arxivlandi.')); }}><Archive size={14} />  {L('Arxiv')}</button>}
+                {(t.status !== 'published' || t.dirty) && t.status !== 'archived' && <button className="btn sm primary" disabled={busy || t.errors.length > 0} onClick={() => void act(() => studio('POST', ['tests', t.id, 'publish'].join('/')), L('Test e’lon qilindi. O‘quvchilar ilovani qayta ochganda ko‘radi.'))}><Send size={14} />  {L('E’lon')}</button>}
+                {t.status === 'archived' ? <button className="btn sm" disabled={busy} onClick={() => void act(() => studio('POST', ['tests', t.id, 'restore'].join('/')), L('Test tiklandi (qoralama).'))}><RotateCcw size={14} />  {L('Tiklash')}</button>
+                  : <button className="btn sm danger" disabled={busy} onClick={() => { if (confirm(L('Testni arxivlaysizmi? O‘quvchilardan yashiriladi.'))) void act(() => studio('POST', ['tests', t.id, 'archive'].join('/')), L('Test arxivlandi.')); }}><Archive size={14} />  {L('Arxiv')}</button>}
               </div>
             </li>
           ))}
@@ -57,7 +57,7 @@ function TestEditor({ initial, onClose, onSaved }: { initial: { id: string | nul
   const save = async () => {
     setBusy(true); setErr('');
     try {
-      const r = await studio<{ id: string; errors: unknown[] }>(initial.id ? 'PUT' : 'POST', initial.id ? L('tests/{0}', [initial.id]) : 'tests', { source: src });
+      const r = await studio<{ id: string; errors: unknown[] }>(initial.id ? 'PUT' : 'POST', initial.id ? ['tests', initial.id].join('/') : 'tests', { source: src });
       onSaved(r.errors.length ? L('Qoralama saqlandi, lekin {0} ta xato bor — e’lon qilishdan oldin tuzating.', [r.errors.length]) : L('Saqlandi (qoralama). Endi “E’lon” tugmasini bosing.'));
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };

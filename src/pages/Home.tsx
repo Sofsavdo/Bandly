@@ -59,7 +59,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         <div>
           <div className="row"><span className="eyebrow" style={{ whiteSpace: 'nowrap', marginBottom: 0 }}>{L('General English · IELTS · CEFR · SAT')}</span></div>
           <h1><HeroTitle text={L('Ingliz tilini [[o‘yin kabi]] o‘rganing')} /></h1>
-          <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
+          <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan Sellzen AI.')}</p>
           <div className="cta">
             {!acc ? <>
               {/* Mehmon faqat landingni ko'radi: ro'yxatdan o'tish → maqsad va reja → daraja testi (natija darhol hisobda) */}
@@ -91,7 +91,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
         <a className="course c-butter" href="#/exam" onClick={() => openExamTab('ielts')}><h3>{L('IELTS')}</h3><p>{L('4 ko‘nikma, AI baho')}</p><span className="go"><ArrowRight size={17} /></span><Illo kind="target" /></a>
         <a className="course c-mint" href="#/exam" onClick={() => openExamTab('cefr')}><h3>{L('CEFR')}</h3><p>{L('Multilevel')}</p><span className="go"><ArrowRight size={17} /></span><Illo kind="cap" /></a>
         <a className="course c-sky" href="#/exam" onClick={() => openExamTab('sat')}><h3>{L('SAT')}</h3><p>{L('Reading & Writing')}</p><span className="go"><ArrowRight size={17} /></span><Illo kind="pencil" /></a>
-        <a className="course c-pink" href="#/coach"><h3>{L('AI ustoz')}</h3><p>{L('Ovozli suhbat')}</p><span className="go"><ArrowRight size={17} /></span><Illo kind="chat" /></a>
+        <a className="course c-pink" href="#/coach"><h3>{L('Sellzen AI')}</h3><p>{L('Ovozli suhbat')}</p><span className="go"><ArrowRight size={17} /></span><Illo kind="chat" /></a>
         <a className="course c-lilac wide" href="#/mocks"><h3>{L('Mock Arena')}</h3><p>{tests}  {L('ta test, taymer va izohlar')}</p><span className="go"><ArrowRight size={17} /></span><span className="tag">{L('Bepul')}</span><Illo kind="clock" /></a>
       </div>
 
@@ -101,7 +101,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <ol className="how-steps">
             <li><b>1</b><div><h3>{L('Ro‘yxatdan o‘ting')}</h3><p>{L('Telegram orqali, bir bosishda — bepul.')}</p></div></li>
             <li><b>2</b><div><h3>{L('Maqsad va daraja')}</h3><p>{L('Maqsadingizni tanlaysiz, 3 daqiqalik test darajangizni aniqlaydi.')}</p></div></li>
-            <li><b>3</b><div><h3>{L('O‘rganing va sinang')}</h3><p>{L('Darslar, AI ustoz va mock testlar — bitta joyda, natija hisobingizda.')}</p></div></li>
+            <li><b>3</b><div><h3>{L('O‘rganing va sinang')}</h3><p>{L('Darslar, Sellzen AI va mock testlar — bitta joyda, natija hisobingizda.')}</p></div></li>
           </ol>
           <div className="section-title"><h2>{L('Narxlar')}</h2></div>
           <div className="land-prices">

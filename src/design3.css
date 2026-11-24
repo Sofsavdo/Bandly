@@ -198,8 +198,8 @@ svg.brandmark.talking { animation: bm-pulse 1.4s ease-in-out infinite; }
 .price-tabs { flex-wrap: nowrap; }
 .price-tabs button { white-space: nowrap; }
 @media (max-width: 520px) { .row.pills-row { flex-wrap: nowrap; overflow-x: auto; } }
-.row:has(> .pill + .pill + .pill) { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px; }
-.row:has(> .pill + .pill + .pill) > .pill { justify-content: center; text-align: center; }
+.row:has(> .pill + .pill + .pill) { flex-wrap: wrap; gap: 8px; }
+.row > .pill { white-space: nowrap; }
 .pricing-head .note { font-size: 13px; margin: 8px 0 0; display: flex; gap: 6px; align-items: center; }
 
 /* Gorizontal chiplar (Beginners / Intermediate ... kabi) */
@@ -847,7 +847,7 @@ body.has-planrun main.container { padding-bottom: 96px; }
 .band-kpis .up b { color: var(--green); }
 .band-table td, .band-table th { text-align: center; }
 .band-table td:first-child { text-align: left; font-weight: 650; }
-.official { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 4px; }
+.official { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 12px; }
 .official-form .row { flex-wrap: wrap; gap: 8px; }
 .field-sm { display: grid; gap: 4px; font-size: 13px; font-weight: 650; }
 .field-sm select, .field-sm input { min-width: 84px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
@@ -1514,3 +1514,20 @@ main.container { min-height: 100vh; }
 .tutor-call.call { isolation: isolate; }
 .tutor-call.call::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--bg, #fff); }
 @media (max-width: 360px) { .call-lines { font-size: 14px; } }
+
+/* UI sayqal (2026-11-24): tugmalar bir qatorda, yig'iladigan kartalarda strelka, narx davri, keyingi test bloki */
+.quest .btn.sm { flex: none; white-space: nowrap; }
+.plan-head .linkbtn { min-height: 36px; padding: 6px 8px; margin-right: -8px; }
+.price .evidence { font-family: var(--body); font-size: 14px; font-weight: 600; letter-spacing: 0; color: var(--muted); margin-left: 2px; }
+details.card > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+details.card > summary::after { content: ''; flex: none; width: 9px; height: 9px; margin-right: 4px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-3px) rotate(45deg); transition: transform .2s; }
+details.card[open] > summary::after { transform: translateY(2px) rotate(-135deg); }
+.ladder-next { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface-2); }
+.ladder-next > span { grid-column: 1; font-size: 12.5px; }
+.ladder-next > b { grid-column: 1; font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; }
+.ladder-next > .btn { grid-column: 2; grid-row: 1 / span 2; white-space: nowrap; }
+.stage-center .rules { text-align: left; max-width: 560px; margin-left: auto; margin-right: auto; }
+.btn { text-wrap: balance; }
+.map-fab { white-space: nowrap; }
+.toasts { width: min(calc(100vw - 32px), 440px); align-items: center; }
+.toast { max-width: 100%; text-align: center; border-radius: 18px; line-height: 1.35; }

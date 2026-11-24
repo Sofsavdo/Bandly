@@ -20,10 +20,10 @@ export interface SalePlan {
 }
 // Limit raqamlari (ovozli daqiqa, AI baholash soni) va narx admin panelda o'zgaradi: ilova ochilganda serverdan olinadi
 // (applyServerLimits) va "features" matni shu raqamlardan quriladi — e'lon qilingan va haqiqiy limit doim bir xil.
-const voiceLine = (n: number) => L('AI ustoz bilan ovozli suhbat: {0} daqiqa / oy', [n]);
+const voiceLine = (n: number) => L('Sellzen AI bilan ovozli suhbat: {0} daqiqa / oy', [n]);
 export const SALE_PLANS: SalePlan[] = [
   {
-    id: 'general', title: 'General English', short: L('A1–C2 darslar, grammar va AI ustoz bilan ovozli suhbat.'), monthlyUzs: 69_000, usd: '$5.99',
+    id: 'general', title: 'General English', short: L('A1–C2 darslar, grammar va Sellzen AI bilan ovozli suhbat.'), monthlyUzs: 69_000, usd: '$5.99',
     tracks: ['grammar', 'mocks'], voiceMin: 60, writing: 0, speaking: 0,
     get features() { return [L('A1–C2 darslar — kunlik cheklovsiz'), L('Grammar: barcha mavzular, o‘zbekcha izohlar'), voiceLine(this.voiceMin), L('Darslar, xatolar ustida ishlash va kunlik reja')].concat(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : [], this.speaking > 0 ? [L('AI Speaking baholash: {0} ta / oy', [this.speaking])] : []); },
   },
@@ -35,7 +35,7 @@ export const SALE_PLANS: SalePlan[] = [
   {
     id: 'all', title: 'All Access', short: L('Hammasi bitta obunada: General English + imtihon tayyorgarligi.'), monthlyUzs: 129_000, usd: '$9.99',
     tracks: ['exam', 'grammar', 'mocks'], voiceMin: 60, writing: 20, speaking: 20, recommended: true,
-    get features() { return [L('General English va Exam Preparation’dagi hamma narsa'), ...(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : []), ...(this.speaking > 0 ? [L('AI Speaking baholash: {0} ta / oy', [this.speaking])] : []), voiceLine(this.voiceMin), L('Barcha AI ustoz xarakterlari')]; },
+    get features() { return [L('General English va Exam Preparation’dagi hamma narsa'), ...(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : []), ...(this.speaking > 0 ? [L('AI Speaking baholash: {0} ta / oy', [this.speaking])] : []), voiceLine(this.voiceMin), L('Barcha Sellzen AI xarakterlari')]; },
   },
 ];
 /** Bepul tarif raqamlari (landing va ogohlantirishlarda ko'rsatiladi). Server qiymati bilan yangilanadi. */

@@ -20,7 +20,7 @@ function planFor(level: Cefr): { title: string; text: string; href: string }[] {
     { title: L('Har kuni so‘z o‘yini'), text: low ? L('Eng kerakli A1–A2 so‘zlar bilan boshlaysiz.') : L('Darajangizga mos IELTS so‘zlari takrorlanadi.'), href: '#/games' },
     { title: low ? 'Grammar asoslari' : L('Grammar: zaif joylar'), text: low ? L('Zamonlar va artikllarni noldan mustahkamlaysiz.') : L('Xatolaringiz bo‘yicha mavzular tavsiya etiladi.'), href: '#/grammar' },
     { title: low ? L('Oson Reading va Listening') : L('IELTS Reading va Listening'), text: low ? L('Avval qisqa va oddiy matnlar, keyin imtihon formati.') : L('To‘liq imtihon formatidagi testlar.'), href: '#/exam' },
-    { title: 'Speaking', text: low ? L('Ustoz sodda savollar beradi va sekin gapiradi.') : L('IELTS Part 1–3, darajangizga mos savollar.'), href: '#/exam/speaking' },
+    { title: 'Speaking', text: low ? L('Sellzen AI sodda savollar beradi va sekin gapiradi.') : L('IELTS Part 1–3, darajangizga mos savollar.'), href: '#/exam/speaking' },
   ];
 }
 

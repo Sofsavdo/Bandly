@@ -5,6 +5,6 @@ export const BRAND = {
   ai: 'Sellzen', // ustozning nomi: "Sellzen" ("AI" qo'shilmaydi — egasi qarori 2026-11-21)
   domain: 'sellzen.uz',
   url: 'https://sellzen.uz',
-  tagline: L('Ingliz tili, imtihonlar va AI ustoz — bir joyda'),
+  tagline: L('Ingliz tili, imtihonlar va Sellzen AI — bir joyda'),
   contact: 'hello@example.com',
 };

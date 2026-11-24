@@ -83,7 +83,7 @@ export default function FullExam() {
     { name: 'Listening', sub: L('{0} · {1} daqiqa', [LT.title.replace(/^Listening mini-test \d+: /, ''), LT.minutes]), res: rl, href: `#/mocks/listening/${LT.id}`, done: !!rl },
     { name: 'Reading', sub: L('{0} · {1} daqiqa', [R.title.replace(/^Reading mini-test \d+: /, ''), R.minutes]), res: rr, href: `#/mocks/reading/${R.id}`, done: !!rr },
     { name: 'Writing', sub: L('Task 2 insho: yozing va “AI baholash”ni bosing — 4 mezon bo‘yicha band chiqadi'), res: rw, href: '#/exam/writing', done: st.writingDone || !!rw },
-    { name: 'Speaking', sub: L('Ustoz bilan jonli suhbat (Part 1–3)'), res: rs, href: '#/exam/speaking', done: !!rs },
+    { name: 'Speaking', sub: L('Sellzen AI bilan jonli suhbat (Part 1–3)'), res: rs, href: '#/exam/speaking', done: !!rs },
   ];
   const bands = [rl?.band, rr?.band, rw?.band, rs?.band].filter((b): b is number => typeof b === 'number');
   const doneN = parts.filter((x) => x.done).length;
