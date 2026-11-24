@@ -1616,3 +1616,8 @@ table.data.plan-matrix td { white-space: normal; min-width: 0; }
 .ai-fb-card p { margin: 8px 0; line-height: 1.45; }
 .ai-fb-better { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; } .ai-fb-better small { color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 11px; }
 .ai-fb-better p { margin: 4px 0 0; display: flex; align-items: center; gap: 6px; }
+
+/* Dars ichidagi gapirish: jonli ovoz ko'rsatkichi (mikrofon eshitayotganini ko'rsatadi) */
+.mic-live { margin-top: 8px; display: grid; gap: 6px; }
+.mic-meter { display: block; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden; max-width: 280px; }
+.mic-meter i { display: block; height: 100%; width: calc(var(--lvl, 0) * 100%); min-width: 3px; border-radius: 999px; background: var(--brand); transition: width .08s linear; }

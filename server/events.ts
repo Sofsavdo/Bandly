@@ -14,6 +14,7 @@ export const EVENT_NAMES = [
   'login_widget_missing', // kirish oynasi: Telegram vidjeti chiqmadi (anonim hisoblagich)
   // Mehmon mock voronkasi: boshladi → topshirdi → ro'yxatdan o'tish tugmasini bosdi → hisobga kirgach natijasi ochildi (anonim, hisobga bog'lanmaydi)
   'mock_guest_start', 'mock_guest_submit', 'mock_guest_signup_click', 'mock_guest_unlocked',
+  'mic_silent', // dars ichidagi gapirish: mikrofon umuman ovoz olmadi (anonim hisoblagich — qurilma muammosini kuzatish uchun)
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];
 export const isEventName = (x: unknown): x is EventName => (EVENT_NAMES as readonly unknown[]).includes(x);

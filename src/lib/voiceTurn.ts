@@ -22,24 +22,29 @@ export function pickMime(): string {
 async function openMic(): Promise<Mic> {
   if (mic && mic.stream.getAudioTracks().some((t) => t.readyState === 'live')) {
     mic.stream.getAudioTracks().forEach((t) => { t.enabled = true; });
-    if (mic.ctx.state === 'suspended') await mic.ctx.resume().catch(() => undefined);
+    if (mic.ctx.state === 'suspended') await Promise.race([mic.ctx.resume().catch(() => undefined), new Promise<void>((r) => setTimeout(r, 800))]);
     return mic;
   }
+  // AudioContext bosish (user gesture) ichida yaratiladi: iOS/Telegram'da getUserMedia'dan keyin yaratilsa "suspended" qolib, ovoz darajasi doim 0 chiqadi
+  let ctx: AudioContext | null = null;
+  try { ctx = new AudioContext(); void ctx.resume().catch(() => undefined); } catch { ctx = null; }
   let stream: MediaStream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
   } catch (e) {
+    void ctx?.close().catch(() => undefined);
     const n = (e as DOMException).name;
     if (n === 'NotAllowedError' || n === 'SecurityError') throw new SpeechError('denied', L('Mikrofonga ruxsat berilmagan.'));
     if (n === 'NotFoundError' || n === 'OverconstrainedError') throw new SpeechError('nomic', L('Mikrofon topilmadi.'));
     throw new SpeechError('unstable', L('Mikrofonni ochib bo‘lmadi.'));
   }
-  const ctx = new AudioContext();
+  ctx ??= new AudioContext();
   const an = ctx.createAnalyser();
   an.fftSize = 1024;
   ctx.createMediaStreamSource(stream).connect(an);
-  if (ctx.state === 'suspended') await ctx.resume().catch(() => undefined);
-  mic = { stream, ctx, an, buf: new Float32Array(an.fftSize), floor: 0.008 };
+  // resume() ba'zi qurilmalarda hech qachon tugamaydi: ko'pi bilan 0,8 s kutamiz (aks holda "Tinglayapman…" qotib qoladi)
+  if (ctx.state === 'suspended') await Promise.race([ctx.resume().catch(() => undefined), new Promise<void>((r) => setTimeout(r, 800))]);
+  mic = { stream, ctx, an, buf: new Float32Array(an.fftSize), floor: 0.004 };
   return mic;
 }
 
@@ -66,8 +71,11 @@ function level(m: Mic): number {
   return Math.sqrt(s / m.buf.length);
 }
 
-/** Nutq chegarasi: shovqin darajasidan yuqori (xonadagi shovqinga moslashadi). */
-export const speechThreshold = (floor: number, strict = false): number => Math.max(strict ? 0.045 : 0.024, floor * (strict ? 6 : 3.2));
+/** Nutq chegarasi: shovqin darajasidan yuqori (xonadagi shovqinga moslashadi). Past chegara 0,014: ba'zi telefonlarda (avtomatik kuchaytirish o'chiq)
+ *  odatiy ovoz 0,02 atrofida — avvalgi 0,024 chegara bunday ovozni "jim" deb hisoblardi. */
+export const speechThreshold = (floor: number, strict = false): number => Math.max(strict ? 0.045 : 0.014, floor * (strict ? 6 : 3.2));
+/** Bu darajadan past ovoz — mikrofon umuman ovoz olmayapti (o'chiq, yopiq yoki boshqa ilova band qilgan). */
+export const HEARD_RMS = 0.006;
 /** Shovqin darajasini sekin kuzatadi: faqat jim paytlarda yangilanadi. */
 export const nextFloor = (floor: number, v: number): number => (v < floor * 2.5 ? floor * 0.95 + v * 0.05 : floor);
 
@@ -80,7 +88,14 @@ export interface RecordOptions {
   endRef: { current: (() => void) | null }; // "Tugatdim" tugmasi
   signal: { cancelled: boolean };
 }
-export interface Recording { blob: Blob | null; mime: string; speechMs: number }
+/** Yozuv serverga yuboriladimi: gap aniqlangan (0,4 s dan uzun — qisqasi yo'tal/shovqin) yoki o'quvchi o'zi "Tugatdim" bosgan va mikrofon ovoz olgan. */
+export function shouldSend(d: { cancelled: boolean; speechAt: number; speechMs: number; manual: boolean; recMs: number; peak: number }): boolean {
+  if (d.cancelled) return false;
+  if (d.speechAt > 0) return d.speechMs >= 400;
+  return d.manual && d.recMs >= 900 && d.peak >= 0.004;
+}
+
+export interface Recording { blob: Blob | null; mime: string; speechMs: number; /** eng baland ovoz (RMS) */ peak: number; /** mikrofon biror ovoz oldimi */ heard: boolean }
 
 /** Bitta navbatni yozadi: gap boshlanishini va tugashini o'zi sezadi. Gapirilmasa blob = null. */
 export async function recordTurn(o: RecordOptions): Promise<Recording> {
@@ -90,25 +105,31 @@ export async function recordTurn(o: RecordOptions): Promise<Recording> {
   const parts: Blob[] = [];
   rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
   const start = performance.now();
-  let speechAt = 0, lastVoice = 0, loud = 0;
+  let speechAt = 0, lastVoice = 0, loud = 0, peak = 0;
   return new Promise<Recording>((resolve, reject) => {
     let done = false;
-    const finish = () => {
+    const finish = (manual = false) => {
       if (done) return;
       done = true;
       clearInterval(t);
       o.endRef.current = null;
+      const recMs = performance.now() - start;
       const speechMs = speechAt ? lastVoice - speechAt : 0;
-      // juda qisqa (0.4 s dan kam) — shovqin yoki yo'tal: serverga yuborilmaydi
-      rec.onstop = () => resolve({ blob: speechAt && speechMs >= 400 && !o.signal.cancelled ? new Blob(parts, { type: rec.mimeType || mime || 'audio/webm' }) : null, mime: (rec.mimeType || mime || 'audio/webm'), speechMs });
-      try { rec.state !== 'inactive' ? rec.stop() : rec.onstop(new Event('stop')); } catch { resolve({ blob: null, mime, speechMs: 0 }); }
+      // Avtomatik aniqlash gapni sezmagan, lekin o'quvchi o'zi "Tugatdim" bosgan va mikrofon ovoz olgan: baribir yuboramiz
+      // (past ovozli telefonlarda shu yo'l "gapirsam eshitmayapti" muammosini yo'qotadi). Mikrofon butunlay jim bo'lsa — yuborilmaydi.
+      const trusted = !speechAt && shouldSend({ cancelled: o.signal.cancelled, speechAt, speechMs, manual, recMs, peak });
+      const send = shouldSend({ cancelled: o.signal.cancelled, speechAt, speechMs, manual, recMs, peak });
+      const mt = rec.mimeType || mime || 'audio/webm';
+      rec.onstop = () => resolve({ blob: send ? new Blob(parts, { type: mt }) : null, mime: mt, speechMs: speechAt ? speechMs : trusted ? recMs : 0, peak, heard: peak >= HEARD_RMS });
+      try { rec.state !== 'inactive' ? rec.stop() : rec.onstop(new Event('stop')); } catch { resolve({ blob: null, mime, speechMs: 0, peak, heard: peak >= HEARD_RMS }); }
     };
-    o.endRef.current = finish;
+    o.endRef.current = () => finish(true);
     rec.onerror = () => { if (!done) { done = true; clearInterval(t); o.endRef.current = null; reject(new SpeechError('unstable', L('Ovozni yozib bo‘lmadi.'))); } };
     try { rec.start(250); } catch { reject(new SpeechError('unstable', L('Ovozni yozib bo‘lmadi.'))); return; }
     const t = setInterval(() => {
       if (o.signal.cancelled) { finish(); return; }
       const now = performance.now(), v = level(m);
+      if (v > peak) peak = v;
       o.onLevel?.(Math.min(1, v * 12));
       const th = speechThreshold(m.floor);
       if (v > th) {
@@ -172,14 +193,14 @@ export const serverSttReady = (): boolean => serverOk === true && recorderSuppor
 export async function serverTurn(o: TurnOptions): Promise<TurnResult> {
   const start = performance.now();
   o.onStatus?.('starting');
-  const r = await recordTurn({ silenceMs: o.silenceMs, maxMs: o.maxMs, noSpeechMs: o.noSpeechMs ?? 12_000, endRef: o.endRef, signal: o.signal, onSpeech: () => o.onStatus?.('speech') });
+  const r = await recordTurn({ silenceMs: o.silenceMs, maxMs: o.maxMs, noSpeechMs: o.noSpeechMs ?? 12_000, endRef: o.endRef, signal: o.signal, onSpeech: () => o.onStatus?.('speech'), ...(o.onLevel ? { onLevel: o.onLevel } : {}) });
   o.onStatus?.('mic');
-  if (!r.blob) return { text: '', seconds: 0, latencyMs: performance.now() - start };
+  if (!r.blob) return { text: '', seconds: 0, latencyMs: performance.now() - start, heard: r.heard };
   o.onInterim('…');
   try {
     // Mashqlar inglizcha: aksentli inglizchani server o'zbekcha deb aniqlab, ma'nosiz matn qaytarardi — endi faqat ingliz tilida taniladi
     const t = await transcribeTurn(r, o.mixed ? 'any' : 'en');
-    return { text: t.text, seconds: r.speechMs / 1000, latencyMs: performance.now() - start };
+    return { text: t.text, seconds: r.speechMs / 1000, latencyMs: performance.now() - start, heard: true };
   } catch (e) {
     if (e instanceof SttError && (e.status === 429 || e.status === 503)) serverOk = false;
     throw e instanceof SttError ? new SpeechError(e.status === 0 ? 'network' : 'unstable', e.message) : e;
