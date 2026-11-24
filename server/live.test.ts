@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
-import { attachLive, lessonIntent, tokenFromProtocols, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, ctxPrompt, navIntent, navRoute, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
@@ -226,9 +226,22 @@ http.close(); upstream.close();
   assert.deepEqual(p.setup.realtimeInputConfig, { automaticActivityDetection: { disabled: true }, activityHandling: 'START_OF_ACTIVITY_INTERRUPTS' });
   assert.equal((setupMessage(cfg0, 'm', 'SYS') as { setup: { realtimeInputConfig: { automaticActivityDetection: { silenceDurationMs: number } } } }).setup.realtimeInputConfig.automaticActivityDetection.silenceDurationMs, 900);
 
-  // Darsga yo'naltirish: aniq "o'rgat/dars/learn/teach/урок" so'rovlari; oddiy suhbat — yo'q
-  for (const t of ["menga ingliz tilini o'rgat", 'ingliz tilini o‘rgatib bering', 'I want to learn English', 'Can you teach me English?', 'start a lesson please', 'научи меня английскому', 'хочу выучить английский', 'dars boshlaymiz']) assert.equal(lessonIntent(t), true, t);
-  for (const t of ['I went to the market yesterday', 'bugun ob-havo yaxshi', 'what is your favourite film', 'I love my teacher', 'meni kechiring']) assert.equal(lessonIntent(t), false, t);
+  // Navigatsiya: faqat ochishni aniq buyurganda ("darsga o't"); "menga o'rgat" yoki dars haqida savol — suhbat davom etadi
+  for (const t of ["darsga o't", 'darsga o‘tamiz', "darsni och", 'darsga kiraylik', 'Go to the lesson', 'open my lesson please', 'start the next lesson', 'перейдём к уроку', 'открой урок', 'сабаққа өтейік', 'сабакка өтөлү']) assert.equal(navIntent(t), 'lesson', t);
+  assert.equal(navIntent("rejani och"), 'plan'); assert.equal(navIntent('show me my plan'), 'plan');
+  assert.equal(navIntent("xatolarimni och"), 'mistakes'); assert.equal(navIntent('open my mistakes'), 'mistakes');
+  assert.equal(navIntent("o'yinlarga o't"), 'games'); assert.equal(navIntent('open games'), 'games');
+  for (const t of ["menga ingliz tilini o'rgat", 'Can you teach me English?', 'I want to learn English', 'bu darsda nima bor?', 'dars qiziq edi', 'what is the lesson about?', 'I went to the market yesterday', 'bugun ob-havo yaxshi', 'научи меня английскому', 'meni kechiring']) assert.equal(navIntent(t), null, t);
+  // Kontekst: kesiladi, begona yo'nalish rad etiladi, ko'rsatma matni tuziladi
+  const cx = sanitizeCtx({ level: 'B1', goal: 'IELTS', minutes: 20, examDays: 23, today: [{ title: 'Present perfect <b>', minutes: 12, why: 'repeated error: tenses', route: '#/learn/b1-u3-l2' }, { title: 'Evil', route: 'javascript:alert(1)' }], weak: ['tenses', 'articles'], mistakesDue: 6, done: ['Past simple'] })!;
+  assert.equal(cx.today[0]!.route, '#/learn/b1-u3-l2'); assert.equal(cx.today[1]!.route, '', 'ruxsat etilmagan yo‘nalish olib tashlandi'); assert.ok(!/[<>]/.test(cx.today[0]!.title));
+  const cp = ctxPrompt(cx); assert.match(cp, /LEARNER CONTEXT/); assert.match(cp, /level B1; goal: IELTS; 20 min\/day; exam in 23 days/); assert.match(cp, /1\) "Present perfect b"/); assert.match(cp, /6 saved mistakes/);
+  assert.equal(ctxPrompt(null), ''); assert.equal(ctxPrompt(sanitizeCtx({})), ''); assert.equal(sanitizeCtx('x'), null);
+  assert.equal(navRoute('lesson', cx), '#/learn/b1-u3-l2'); assert.equal(navRoute('lesson', null), '#/learn'); assert.equal(navRoute('plan', cx), '#/'); assert.equal(navRoute('mistakes', cx), '#/mistakes');
+  // WAV: sarlavha to'g'ri; PCM balandligi
+  const wav = pcmToWav(Buffer.alloc(3200)); assert.equal(wav.length, 3244); assert.equal(wav.subarray(0, 4).toString(), 'RIFF'); assert.equal(wav.readUInt32LE(24), 16000); assert.equal(wav.readUInt32LE(40), 3200);
+  const loud = Buffer.alloc(3200); for (let i = 0; i < 1600; i++) loud.writeInt16LE(i % 2 ? 16000 : -16000, i * 2);
+  assert.ok(pcmRms(loud) > 0.4 && pcmRms(Buffer.alloc(3200)) === 0);
 
   const up = new WebSocketServer({ port: 0 });
   const seen: Record<string, unknown>[] = [];
@@ -237,7 +250,7 @@ http.close(); upstream.close();
       const m = JSON.parse(raw.toString()); seen.push(m);
       if (m.setup) { ws.send(JSON.stringify({ setupComplete: {} })); return; }
       if (m.realtimeInput?.activityEnd) {
-        ws.send(JSON.stringify({ serverContent: { inputTranscription: { text: "teach me English please" } } }));
+        ws.send(JSON.stringify({ serverContent: { inputTranscription: { text: "darsga o'tamiz" } } }));
         ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Sure!' }, modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] }, turnComplete: true } }));
       }
     });
@@ -254,7 +267,8 @@ http.close(); upstream.close();
   });
   await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
   const hp = (h.address() as { port: number }).port;
-  const ws = new WebSocket(`ws://127.0.0.1:${hp}/api/ai/live?lang=uz&ptt=1`, ['sellzen.v1', 'tk.p']);
+  const ws = new WebSocket(`ws://127.0.0.1:${hp}/api/ai/live?lang=uz&ptt=1&ctx=1`, ['sellzen.v1', 'tk.p']);
+  ws.on('open', () => ws.send(JSON.stringify({ type: 'ctx', ctx: { level: 'B1', today: [{ title: 'Present perfect', minutes: 12, why: 'weak skill', route: '#/learn/b1-u3-l2' }] } })));
   const msgs: { type: string; [k: string]: unknown }[] = [];
   ws.on('message', (d, bin) => { if (!bin) msgs.push(JSON.parse(d.toString())); });
   await new Promise<void>((r) => { const t = setInterval(() => { if (msgs.some((m) => m.type === 'ready')) { clearInterval(t); r(); } }, 10); });
@@ -274,10 +288,87 @@ http.close(); upstream.close();
   ws.send(JSON.stringify({ type: 'activity', on: false }));
   await new Promise<void>((r) => { const t = setInterval(() => { if (msgs.some((m) => m.type === 'turn')) { clearInterval(t); r(); } }, 10); });
   assert.ok(seen.some((m) => (m as { realtimeInput?: { activityEnd?: unknown } }).realtimeInput?.activityEnd), 'qo‘yib yuborildi → activityEnd');
-  assert.ok(msgs.some((m) => m.type === 'suggest' && m.kind === 'lessons'), 'ingliz tilini o‘rganishni so‘radi — darslarga tugma');
-  assert.equal(msgs.filter((m) => m.type === 'suggest').length, 1, 'bir qo‘ng‘iroqda bir marta');
+  const nv = msgs.filter((m) => m.type === 'navigate');
+  assert.equal(nv.length, 1, '"darsga o‘tamiz" — tugma emas, mijoz o‘zi o‘tadi (qo‘ng‘iroqda bir marta)'); assert.equal(nv[0]!.route, '#/learn/b1-u3-l2', 'bugungi rejadagi dars');
+  assert.ok(!msgs.some((m) => m.type === 'suggest'), 'eski "Darslarga o‘tish" tugmasi xabari yo‘q');
+  assert.match(JSON.stringify(seen.find((m) => (m as { clientContent?: unknown }).clientContent)), /LEARNER CONTEXT.*level B1.*Present perfect/, 'ustozga o‘quvchi konteksti (reja) berildi');
   ws.send(Buffer.alloc(640), { binary: true }); await wait(60);
   assert.equal(audioMsgs(), 2, 'qo‘yib yuborilgandan keyin ovoz yana yuborilmaydi');
+  ws.send(JSON.stringify({ type: 'end' })); await new Promise((r) => ws.on('close', r));
+  h.close(); up.close();
+}
+// ---- Tanish (Scribe) rejimi: ovoz serverda yig'iladi → matn → Gemini; xato bo'lsa — ovoz Gemini'ga ----
+{
+  const up = new WebSocketServer({ port: 0 });
+  const seen: Record<string, any>[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
+  let upWs: import('ws').WebSocket | null = null;
+  up.on('connection', (ws) => {
+    upWs = ws;
+    ws.on('message', (raw) => {
+      const m = JSON.parse(raw.toString()); seen.push(m);
+      if (m.setup) { ws.send(JSON.stringify({ setupComplete: {} })); return; }
+      const t = m.clientContent?.turns?.[0]?.parts?.[0]?.text as string | undefined;
+      if (t && /^\(The learner/.test(t)) { // salomlashish: uzoq gapiradigan (turnComplete yo'q) ustoz
+        ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Salom! ' }, modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] } } }));
+        return;
+      }
+      if (t) { ws.send(JSON.stringify({ serverContent: { interrupted: true } })); ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: 'Javob: ' + t }, modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] }, turnComplete: true } })); }
+      if (m.realtimeInput?.activityEnd) ws.send(JSON.stringify({ serverContent: { inputTranscription: { text: 'gemini eshitdi' }, outputTranscription: { text: 'ok' }, turnComplete: true } }));
+    });
+  });
+  await new Promise((r) => up.once('listening', r));
+  const asrCalls: { wavBytes: number; lang: string }[] = []; const prompts: { ptt: boolean; asr: boolean }[] = [];
+  let asrMode: 'text' | 'empty' | 'fail' | 'nav' = 'text';
+  const h = createServer((_q, s2) => { s2.end(); });
+  attachLive(h, {
+    db, cfg: { ...cfg0, url: `ws://127.0.0.1:${(up.address() as { port: number }).port}` },
+    auth: () => ({ id: 31, staff: true, subscriberLeftSec: 0 }),
+    prompt: (o) => { prompts.push({ ptt: o.ptt, asr: o.asr }); return 'SYS'; },
+    native: () => 'Uzbek (Latin script)',
+    asr: async (_pid, wav, lang) => { asrCalls.push({ wavBytes: wav.length, lang }); if (asrMode === 'fail') throw new Error('limit'); if (asrMode === 'empty') return { text: '', lang: null }; return { text: asrMode === 'nav' ? "darsga o'tamiz" : 'I go to school yesterday', lang: 'eng' }; },
+    onEnd: () => undefined, log: () => undefined,
+  });
+  await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
+  const ws = new WebSocket(`ws://127.0.0.1:${(h.address() as { port: number }).port}/api/ai/live?lang=uz&ptt=1`, ['sellzen.v1', 'tk.x']);
+  const msgs: { type: string; [k: string]: unknown }[] = []; let audioIn = 0;
+  ws.on('message', (d, bin) => { if (bin) audioIn++; else msgs.push(JSON.parse(d.toString())); });
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const until = async (f: () => boolean, ms = 3000) => { for (let i = 0; i < ms / 10; i++) { if (f()) return; await wait(10); } assert.fail('kutilgan holat bo‘lmadi'); };
+  await until(() => msgs.some((m) => m.type === 'ready'));
+  assert.equal(msgs.find((m) => m.type === 'ready')!.asr, true, 'mijozga tanish rejimi aytiladi'); assert.deepEqual(prompts, [{ ptt: true, asr: true }], 'ko‘rsatma tanish rejimini biladi');
+  await until(() => audioIn >= 1); // ustoz salomlashmoqda (hali tugamagan)
+  const press = async (frames: number, hold = 40) => { ws.send(JSON.stringify({ type: 'activity', on: true })); for (let i = 0; i < frames; i++) ws.send(Buffer.alloc(3200), { binary: true }); await wait(hold); ws.send(JSON.stringify({ type: 'activity', on: false })); };
+  const upCount = (f: (m: Record<string, any>) => boolean) => seen.filter(f).length; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  // 1) Ustoz gapirayotganda bosildi: "interrupted", eski javobning qolgan ovozi tashlanadi; gap Scribe → matn → Gemini; Gemini'ga ovoz bormaydi
+  const a0 = audioIn;
+  ws.send(JSON.stringify({ type: 'activity', on: true }));
+  await until(() => msgs.some((m) => m.type === 'interrupted'));
+  upWs!.send(JSON.stringify({ serverContent: { modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] } } })); await wait(80);
+  assert.equal(audioIn, a0, 'bosilgandan keyin eski javobning ovozi tashlandi');
+  for (let i = 0; i < 10; i++) ws.send(Buffer.alloc(3200), { binary: true });
+  ws.send(JSON.stringify({ type: 'activity', on: false }));
+  await until(() => msgs.some((m) => m.type === 'in'));
+  assert.deepEqual(asrCalls.map((c) => c.lang), ['uz']); assert.equal(asrCalls[0]!.wavBytes, 44 + 10 * 3200, 'Scribe\'ga yig‘ilgan ovoz WAV bo‘lib bordi');
+  assert.equal(msgs.find((m) => m.type === 'in')!.text, 'I go to school yesterday');
+  await until(() => audioIn > a0); // yangi javob eshitiladi
+  assert.equal(upCount((m) => !!m.realtimeInput), 0, 'tanish ishladi — Gemini\'ga ovoz ham, activity ham yuborilmadi');
+  assert.equal(upCount((m) => m.clientContent?.turns?.[0]?.parts?.[0]?.text === 'I go to school yesterday'), 1, 'Gemini\'ga matn bordi');
+
+  // 2) Juda qisqa navbat — Scribe chaqirilmaydi; bo'sh matn — "noVoice", Gemini'ga hech narsa bormaydi
+  const n0 = asrCalls.length, c0 = upCount((m) => !!m.clientContent);
+  await press(1); await until(() => msgs.filter((m) => m.type === 'noVoice').length >= 1); assert.equal(asrCalls.length, n0, 'qisqa navbat Scribe\'ga yuborilmaydi');
+  asrMode = 'empty'; await press(10); await until(() => msgs.filter((m) => m.type === 'noVoice').length >= 2); assert.equal(asrCalls.length, n0 + 1);
+  assert.equal(upCount((m) => !!m.clientContent), c0, 'bo‘sh matn Gemini\'ga yuborilmadi');
+
+  // 3) Tanish ishlamadi (limit/xato) — navbat ovozi Gemini'ga yuboriladi (activityStart → ovoz → activityEnd); Gemini'ning o'z matni ko'rsatiladi
+  asrMode = 'fail'; const r0 = upCount((m) => !!m.realtimeInput?.audio);
+  await press(10); await until(() => msgs.some((m) => m.type === 'in' && m.text === 'gemini eshitdi'));
+  assert.ok(upCount((m) => !!m.realtimeInput?.audio) - r0 >= 10, 'ovoz Gemini\'ga yuborildi'); assert.equal(upCount((m) => !!m.realtimeInput?.activityStart), 1); assert.equal(upCount((m) => !!m.realtimeInput?.activityEnd), 1);
+
+  // 4) "darsga o'tamiz" — tanilgan matn bo'yicha navigatsiya (bir marta)
+  asrMode = 'nav'; await press(10); await until(() => msgs.some((m) => m.type === 'navigate'));
+  assert.equal(msgs.find((m) => m.type === 'navigate')!.route, '#/learn');
   ws.send(JSON.stringify({ type: 'end' })); await new Promise((r) => ws.on('close', r));
   h.close(); up.close();
 }

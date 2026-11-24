@@ -40,7 +40,8 @@ const SHAPES: Record<AvatarShape, { d: string; fy: number }> = {
   egg: { d: 'M100 32 C150 32 168 80 164 112 C160 146 132 168 100 168 C68 168 40 146 36 112 C32 80 50 32 100 32 Z', fy: 104 },
 };
 
-export function AiAvatar({ phase, emotion = 'neutral', level = 0, size = 200, look = 0 }: { phase: AiPhase; emotion?: CoachEmotion; level?: number; size?: number; look?: number }) {
+/** size — piksel yoki CSS qiymati (masalan, "min(58vw, 34dvh)": ekranga qarab o'zgaradigan o'lcham) */
+export function AiAvatar({ phase, emotion = 'neutral', level = 0, size = 200, look = 0 }: { phase: AiPhase; emotion?: CoachEmotion; level?: number; size?: number | string; look?: number }) {
   const lk = avatarLook(phase, emotion);
   const lvl = Math.min(1, Math.max(0, level));
   const style = { width: size, height: size, ['--ring' as string]: lk.color, ['--lvl' as string]: String(lvl) } as CSSProperties;

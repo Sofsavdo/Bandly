@@ -8,8 +8,9 @@ export const MAX_TALK_MS = 60_000;
 export const TAIL_MS = 250;
 /** Navbat sifatida yuborish uchun kamida shuncha ovozli vaqt kerak; undan kam bo'lsa — "eshitilmadi" (bo'sh navbat yuborilmaydi). */
 export const MIN_VOICED_MS = 200;
-/** "Ovozli kadr" chegarasi (RMS): ataylab bosilgan navbatda faqat butunlay jim (o'chirilgan/bloklangan) mikrofonni ajratish uchun — shuning uchun past. */
-export const VOICED_RMS = 0.012;
+/** "Ovozli kadr" chegarasi (RMS) — faqat Gemini ovozni o'zi eshitadigan rejimda: butunlay jim (o'chirilgan/bloklangan) mikrofonni ajratadi, shuning uchun juda past.
+ *  Server tanishida (asr) chegara umuman ishlatilmaydi. */
+export const QUIET_RMS = 0.004;
 
 export type PttMode = 'idle' | 'hold' | 'latched';
 export interface PttState { mode: PttMode; downAt: number }

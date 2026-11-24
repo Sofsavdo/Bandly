@@ -1,10 +1,13 @@
-// Ovozli ustoz E2E (Playwright): haqiqiy server + qurilgan sayt + SOXTA Gemini Live serveri + soxta mikrofon (fayldan), 390 px mobil.
+// Ovozli ustoz E2E (Playwright): haqiqiy server + qurilgan sayt + SOXTA Gemini Live serveri + SOXTA Scribe (ElevenLabs) + fayldan soxta mikrofon.
 // Haqiqiy AI xarajati, haqiqiy foydalanuvchi ma'lumoti ishlatilmaydi.
-//   J1. Qo'ng'iroq ochiladi: taymer "0:xx / 5:00"; tugma bosilmaguncha Gemini'ga hech narsa (ovoz ham) bormaydi
-//   J2. Avatarni bosib turish: activityStart → ovoz → qo'yib yuborish → activityEnd; ustoz javobi ekranda, hissiyot (yurak) va "Siz/Sellzen" matni
-//   J3. Probel (Space) bosib turish — desktopdagi kabi; ustoz gapirayotganda bosish — ustozni to'xtatadi (ataylab)
-//   J4. Qisqa tegish — qulf: yozuv davom etadi, yana tegish tugatadi
-//   J5. Ovoz yo'q (jim mikrofon): bo'sh navbat yuborilmaydi, "Ovoz eshitilmadi" xabari
+//   J1. Sellzen yuziga tegish — qo'ng'iroq boshlanadi; taymer "0:xx / 5:00"; tegilmaguncha Gemini'ga va Scribe'ga ovoz bormaydi
+//   J2. Ekranga tegib turish → ovoz serverga → qo'yib yuborish → Scribe matni "Siz" qatorida, Gemini'ga MATN boradi (ovoz emas); ustoz javobi, hissiyot (yurak)
+//   J3. Ustoz gapirayotganda ataylab tegish ustozni to'xtatadi (eski ovoz tashlanadi); Probel (Space) ham shunday; ustoz fikrini tugatadi
+//   J4. Qisqa tegish — qulf; yana tegish tugatadi
+//   J5. Scribe bo'sh matn qaytardi (jim/tushunarsiz navbat) — "Ovoz eshitilmadi", Gemini'ga hech narsa bormaydi
+//   J6. "Darsga o'tamiz" desa — tugma emas, ilova o'zi dars sahifasini ochadi (qo'ng'iroq tugaydi)
+//   J7. Ekran: 6 xil o'lchamda sahifa skrol qilinmaydi, tugatish tugmasi ko'rinadi, holatlar almashganda yuz joyidan siljimaydi
+//   J8. Sensorli ekran: ekranning istalgan joyiga (yuqori burchak ham) tegib gapirish; tugatish tugmasi gapirishni boshlamaydi
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
@@ -36,8 +39,23 @@ const wav = (name: string, loud: boolean): string => {
 };
 const LOUD = wav('talk.wav', true), QUIET = wav('quiet.wav', false);
 
+// ---- Soxta Scribe (ElevenLabs STT): navbat WAV'i jim bo'lsa — bo'sh matn; aks holda stsenariy bo'yicha matn ----
+let scribeText = 'teach me English, I go to school yesterday';
+const scribeCalls: { bytes: number; loud: boolean }[] = [];
+const scribe = createServer((req, res) => {
+  const chunks: Buffer[] = []; req.on('data', (c) => chunks.push(c)); req.on('end', () => {
+    const body = Buffer.concat(chunks); const at = body.indexOf('RIFF'); const pcm = at >= 0 ? body.subarray(at + 44) : Buffer.alloc(0);
+    let s = 0, c = 0; for (let i = 0; i + 1 < pcm.length; i += 8) { const v = pcm.readInt16LE(i) / 32768; s += v * v; c++; }
+    const loud = Math.sqrt(s / Math.max(1, c)) > 0.015; scribeCalls.push({ bytes: pcm.length, loud });
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify(loud && scribeText ? { text: scribeText, language_code: 'eng', words: [{ end: pcm.length / 32000, type: 'word' }] } : { text: '', language_code: 'eng', words: [] }));
+  });
+});
+await new Promise<void>((r) => scribe.listen(0, '127.0.0.1', () => r()));
+const scribePort = (scribe.address() as { port: number }).port;
+
 // ---- Soxta Gemini Live ----
-const seen: { t: number; kind: string; setup?: Record<string, any> }[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
+const seen: { t: number; kind: string; setup?: Record<string, any>; text?: string }[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
 const T0 = Date.now();
 let speakingTimer: ReturnType<typeof setInterval> | null = null;
 const tone = (ms: number): string => { const n = Math.round(24 * ms); const b = Buffer.alloc(n * 2); for (let i = 0; i < n; i++) b.writeInt16LE(Math.round(Math.sin(i / 9) * 9000), i * 2); return b.toString('base64'); };
@@ -55,15 +73,18 @@ up.on('connection', (ws) => {
   ws.on('message', (raw) => {
     const m = JSON.parse(raw.toString());
     if (m.setup) { seen.push({ t: Date.now() - T0, kind: 'setup', setup: m.setup }); ws.send(JSON.stringify({ setupComplete: {} })); return; }
-    if (m.clientContent) { seen.push({ t: Date.now() - T0, kind: 'kickoff' }); say('Salom! Bugun nima haqida gaplashamiz?', 2); return; }
+    const text = m.clientContent?.turns?.[0]?.parts?.[0]?.text as string | undefined;
+    if (text && /^\(The learner/.test(text)) { seen.push({ t: Date.now() - T0, kind: 'kickoff', text }); say('Salom! Bugun nima haqida gaplashamiz?', 2); return; }
+    if (text) { // o'quvchi gapi (Scribe matni): eski javob to'xtaydi, yangisi boshlanadi
+      seen.push({ t: Date.now() - T0, kind: 'text', text });
+      if (speakingTimer) { clearInterval(speakingTimer); speakingTimer = null; ws.send(JSON.stringify({ serverContent: { interrupted: true } })); }
+      setTimeout(() => say(/darsga/i.test(text) ? 'Mayli, hozir ochamiz!' : 'Qoyil! Juda zo‘r gapirdingiz, endi shu gapni to‘liq ayting.', /darsga/i.test(text) ? 2 : 9), 150); // uzun javob (~3.4 s): gapirayotganda bosib to'xtatish mumkin
+      return;
+    }
     const ri = m.realtimeInput;
     if (ri?.audio) { seen.push({ t: Date.now() - T0, kind: 'audio' }); return; }
-    if (ri?.activityStart) { seen.push({ t: Date.now() - T0, kind: 'start' }); if (speakingTimer) { clearInterval(speakingTimer); speakingTimer = null; ws.send(JSON.stringify({ serverContent: { interrupted: true } })); } return; }
-    if (ri?.activityEnd) {
-      seen.push({ t: Date.now() - T0, kind: 'end' });
-      ws.send(JSON.stringify({ serverContent: { inputTranscription: { text: 'teach me English, I go to school yesterday' } } }));
-      setTimeout(() => say('Qoyil! Juda zo‘r gapirdingiz, endi shu gapni to‘liq ayting.', 9), 200); // uzun javob (~3.4 s): gapirayotganda bosib to'xtatish mumkin
-    }
+    if (ri?.activityStart) { seen.push({ t: Date.now() - T0, kind: 'start' }); return; }
+    if (ri?.activityEnd) seen.push({ t: Date.now() - T0, kind: 'end' });
   });
 });
 await new Promise((r) => up.once('listening', r));
@@ -77,45 +98,48 @@ const aiPort = (ai.address() as { port: number }).port;
 const PORT = 38000 + Math.floor(Math.random() * 2000);
 const base = `http://127.0.0.1:${PORT}`;
 const env: NodeJS.ProcessEnv = {};
-for (const [k, v] of Object.entries(process.env)) if (!/KEY|TOKEN|SECRET|HAMYON|TELEGRAM|^AI_|GEMINI|ELEVEN|S3|ADMIN|PUBLIC_URL|PRICE|PAY_DEMO/i.test(k)) env[k] = v;
+for (const [k, v] of Object.entries(process.env)) if (!/KEY|TOKEN|SECRET|HAMYON|TELEGRAM|^AI_|GEMINI|ELEVEN|S3|ADMIN|PUBLIC_URL|PRICE|PAY_DEMO|^STT_|^LIVE_/i.test(k)) env[k] = v;
 Object.assign(env, {
   PORT: String(PORT), HOST: '127.0.0.1', DB_PATH: join(dir, 'v.sqlite'), BACKUP_DISABLED: '1', NODE_ENV: 'test',
   AI_PROVIDER: 'openai', AI_API_KEY: 'sk-e2e-not-real', AI_MODEL: 'e2e-model', AI_FALLBACK_MODEL: ' ', AI_BASE_URL: `http://127.0.0.1:${aiPort}`, AI_GLOBAL_DAILY_CALLS: '100',
   GEMINI_LIVE_KEY: 'e2e-fake-live-key', GEMINI_LIVE_URL: `ws://127.0.0.1:${upPort}`, GEMINI_LIVE_MODEL: 'e2e-live', GEMINI_LIVE_FALLBACK_MODEL: ' ',
+  ELEVENLABS_API_KEY: 'e2e-fake-eleven-key', STT_BASE_URL: `http://127.0.0.1:${scribePort}`, // soxta Scribe
 });
 const srv = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
 let log = ''; srv.stdout.on('data', (c) => (log += c)); srv.stderr.on('data', (c) => (log += c));
 
 const problems: string[] = [];
 let scenario = '';
-const step = async (name: string, fn: () => Promise<void>) => { scenario = name; const t0 = Date.now(); await fn(); console.log(`  ✓ ${name} (${Date.now() - t0} ms)`); };
+const step = async (name: string, fn: () => Promise<void>) => { if (process.env.E2E_ONLY && !process.env.E2E_ONLY.split(',').some((x) => name.startsWith(x))) return; scenario = name; const t0 = Date.now(); await fn(); console.log(`  ✓ ${name} (${Date.now() - t0} ms)`); };
 const kinds = (from = 0) => seen.filter((s) => s.t >= from && s.kind !== 'setup').map((s) => s.kind);
 const count = (kind: string, from = 0) => seen.filter((s) => s.kind === kind && s.t >= from).length;
 const now = () => Date.now() - T0;
-const waitCount = async (kind: string, n: number, from: number, ms = 4000) => { for (let i = 0; i < ms / 50; i++) { if (count(kind, from) >= n) return; await wait(50); } assert.fail(`${kind} ${n} marta kelmadi (${count(kind, from)}): ${kinds(from).join(',')}`); };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const waitCount = async (kind: string, n: number, from: number, ms = 5000) => { for (let i = 0; i < ms / 50; i++) { if (count(kind, from) >= n) return; await wait(50); } assert.fail(`${kind} ${n} marta kelmadi (${count(kind, from)}): ${kinds(from).join(',')}`); };
 const args = (f: string) => ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', `--use-file-for-fake-audio-capture=${f}`, '--autoplay-policy=no-user-gesture-required'];
 const browsers: import('playwright').Browser[] = [];
+type Page = import('playwright').Page;
 
-async function openCall(f: string, token: string) {
+async function openCall(f: string, token: string, viewport = { width: 390, height: 800 }, touch = false) {
   const b = await chromium.launch({ args: args(f) }); browsers.push(b);
-  const ctx = await b.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: false, permissions: ['microphone'], deviceScaleFactor: 1 });
+  const ctx = await b.newContext({ viewport, isMobile: touch, hasTouch: touch, permissions: ['microphone'], deviceScaleFactor: 1 });
   await ctx.addInitScript(([t]) => { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('bandly.account.v1', JSON.stringify({ token: t, nickname: 'Voice E2E' })); localStorage.setItem('bandly.onboard.v1', JSON.stringify({ goal: 'ielts', minutes: 20 })); localStorage.setItem('bandly.profile.v1', JSON.stringify({ level: 'B1', xp: 0, adult: false })); } }, [token]);
   const p = await ctx.newPage();
   p.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
   p.on('response', (r) => { if (r.url().startsWith(base) && r.status() >= 500) problems.push(`${scenario}: HTTP ${r.status()} ${r.url().slice(base.length)}`); });
   await p.goto(`${base}/#/coach`);
-  const start = p.getByRole('button', { name: /Qo‘ng‘iroqni boshlash/ });
-  await start.waitFor({ timeout: 15000 });
-  for (let i = 0; i < 50 && await start.isDisabled(); i++) await wait(100);
-  await start.click();
-  await p.locator('.ptt-pad').waitFor({ timeout: 15000 });
+  const face = p.locator('.start-face');
+  await face.waitFor({ timeout: 15000 });
+  for (let i = 0; i < 50 && await face.isDisabled(); i++) await wait(100);
+  await shot(p, `start-${viewport.width}`);
+  await face.click({ force: true }); // Sellzen yuziga tegish — qo'ng'iroq boshlanadi (yuz doim "nafas oladi" — barqaror emas)
+  await p.locator('.call').waitFor({ timeout: 15000 });
   return p;
 }
-const statusText = (p: import('playwright').Page) => p.locator('.voice-status').innerText();
-const waitStatus = async (p: import('playwright').Page, re: RegExp, ms = 6000) => { for (let i = 0; i < ms / 50; i++) { if (re.test(await statusText(p))) return; await wait(50); } assert.fail(`holat ${re} bo'lmadi: «${await statusText(p)}»`); };
-const padBox = async (p: import('playwright').Page) => { const b = (await p.locator('.ptt-pad').boundingBox())!; return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
-const shot = (p: import('playwright').Page, name: string) => process.env.E2E_SHOTS ? p.screenshot({ path: join(process.env.E2E_SHOTS, `${name}.png`) }) : Promise.resolve();
+const statusText = (p: Page) => p.locator('.call-status').innerText();
+const waitStatus = async (p: Page, re: RegExp, ms = 6000) => { for (let i = 0; i < ms / 50; i++) { if (re.test(await statusText(p))) return; await wait(50); } assert.fail(`holat ${re} bo'lmadi: «${await statusText(p)}»`); };
+const faceCenter = async (p: Page) => { const b = (await p.locator('.call-face').boundingBox())!; return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
+const shot = (p: Page, name: string) => process.env.E2E_SHOTS ? p.screenshot({ path: join(process.env.E2E_SHOTS, `${name}.png`) }) : Promise.resolve();
 
 try {
   for (let i = 0; ; i++) {
@@ -126,74 +150,137 @@ try {
   const token = (await (await fetch(`${base}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nickname: 'VoiceE2E' }) })).json() as { token: string }).token;
   assert.ok(token);
 
-  let p!: import('playwright').Page;
-  await step('J1. Qo‘ng‘iroq ochiladi, tugma bosilmaguncha hech narsa yuborilmaydi', async () => {
+  let p!: Page;
+  await step('J1. Sellzen yuziga tegish — qo‘ng‘iroq; tegilmaguncha hech narsa yuborilmaydi', async () => {
     p = await openCall(LOUD, token);
     await waitStatus(p, /Sellzen gapiryapti|Navbat sizda/);
-    assert.match(await p.locator('.voice-top .muted').innerText(), /\/ 5:00/, 'taymer: o‘tgan / ruxsat etilgan vaqt');
+    assert.match(await p.locator('.call-time').innerText(), /\/ 5:00/, 'taymer: o‘tgan / ruxsat etilgan vaqt');
     const setup = seen.find((s) => s.kind === 'setup')!.setup!;
     assert.equal(setup.realtimeInputConfig.automaticActivityDetection.disabled, true, 'bosib-gapirish: avtomatik aniqlash o‘chiq');
+    assert.match(seen.find((s) => s.kind === 'kickoff')!.text!, /LEARNER CONTEXT.*level B1/, 'ustozga o‘quvchi konteksti (daraja, reja) berildi');
     await waitStatus(p, /Navbat sizda/, 8000);
-    const t = now(); await wait(1500);
-    assert.equal(count('audio', t) + count('start', t), 0, 'tugma bosilmagan — mikrofon ovozi Gemini’ga bormaydi (shovqin ustozni bo‘lmaydi)');
-    assert.match(await p.locator('.voice-sub').innerText(), /bosib turib gapiring/, 'ko‘rsatma');
+    const t = now(), s0 = scribeCalls.length; await wait(1500);
+    assert.equal(count('audio', t) + count('start', t) + (scribeCalls.length - s0), 0, 'tegilmagan — mikrofon ovozi Gemini’ga ham, Scribe’ga ham bormaydi');
+    assert.match(await p.locator('.call-sub').innerText(), /tegib turib gapiring|Space/, 'ko‘rsatma');
+    assert.equal(await p.locator('button:has-text("Qo‘ng‘iroqni boshlash")').count(), 0, 'alohida "boshlash" tugmasi yo‘q');
+    assert.equal(await p.locator('.mic-big, .ptt-pad').count(), 0, 'alohida mikrofon tugmasi yo‘q');
     await shot(p, 'j1-idle');
   });
 
-  await step('J2. Avatarni bosib turish → gapirish → qo‘yib yuborish → ustoz javobi', async () => {
-    const c = await padBox(p); const t = now();
+  await step('J2. Tegib turish → Scribe matni → Gemini’ga matn → ustoz javobi', async () => {
+    const c = await faceCenter(p); const t = now(), s0 = scribeCalls.length;
     await p.mouse.move(c.x, c.y); await p.mouse.down();
     await waitStatus(p, /Tinglayapman/, 3000);
     await wait(1600); await shot(p, 'j2-listening');
     await p.mouse.up();
-    await waitStatus(p, /O‘ylayapman|Sellzen gapiryapti/, 3000);
+    await p.locator('.vl.you').waitFor({ timeout: 8000 });
+    assert.match(await p.locator('.vl.you').innerText(), /teach me English/, 'Scribe matni "Siz" qatorida');
+    assert.ok(scribeCalls.length - s0 >= 1, 'Scribe chaqirildi (til aniqlash + inglizcha qayta tanish: 1–2 so‘rov)'); assert.ok(scribeCalls.at(-1)!.loud && scribeCalls.at(-1)!.bytes > 16000, 'Scribe’ga navbat ovozi bordi (WAV)');
     await waitStatus(p, /Sellzen gapiryapti/, 6000);
     const k = kinds(t);
-    assert.equal(k[0], 'start', 'avval activityStart'); assert.ok(count('audio', t) > 5, 'bosib turilganda ovoz yuborildi');
-    assert.equal(k.filter((x) => x === 'end').length, 1); assert.ok(k.lastIndexOf('audio') < k.indexOf('end'), 'ovoz activityEnd’dan oldin tugadi');
-    assert.match(await p.locator('.vl.you').innerText(), /teach me English/, 'o‘quvchi gapi (Siz)');
+    assert.ok(!k.includes('audio') && !k.includes('start') && !k.includes('end'), `Gemini’ga ovoz/activity bormadi: ${k.join(',')}`);
+    assert.equal(count('text', t), 1, 'Gemini’ga o‘quvchi gapi MATN bo‘lib bordi');
+    assert.match(seen.filter((s) => s.kind === 'text').at(-1)!.text!, /teach me English/);
     await p.locator('.vl.bot').waitFor();
     assert.match(await p.locator('.vl.bot').innerText(), /Qoyil/, 'ustoz gapi (Sellzen)');
     assert.equal(await p.locator('.ai-avatar.mood-love').count(), 1, 'iliq maqtov — yurak shaklidagi avatar');
-    await p.locator('a.voice-lessons').waitFor({ timeout: 3000 }); // "ingliz tilini o'rgat" — darslarga yo'naltirish
-    assert.equal(await p.locator('a.voice-lessons').getAttribute('href'), '#/learn');
+    assert.equal(await p.locator('a:has-text("Darslarga o‘tish")').count(), 0, '"Darslarga o‘tish" tugmasi yo‘q (ustoz o‘zi yo‘naltiradi)');
     await shot(p, 'j2-speaking-heart');
   });
 
-  await step('J3. Ustoz gapirayotganda ataylab bosish ustozni to‘xtatadi; Probel (Space) ham shunday', async () => {
+  await step('J3. Ustoz gapirayotganda ataylab tegish ustozni to‘xtatadi; Probel; ustoz fikrini tugatadi', async () => {
     await waitStatus(p, /Sellzen gapiryapti/, 3000);
-    const t = now();
+    const t = now(), s0 = scribeCalls.length;
     await p.keyboard.down('Space');
     await waitStatus(p, /Tinglayapman/, 3000);
     await wait(1400);
     await p.keyboard.up('Space');
-    await waitCount('end', 1, t);
-    const k = kinds(t);
-    assert.equal(k[0], 'start', 'Space → activityStart (ustoz to‘xtadi)'); assert.equal(k.filter((x) => x === 'end').length, 1);
+    for (let i = 0; i < 100 && scribeCalls.length === s0; i++) await wait(50);
+    assert.ok(scribeCalls.length - s0 >= 1, 'Space → Scribe');
+    await waitCount('text', 1, t, 6000);
     await waitStatus(p, /Sellzen gapiryapti/, 6000);
     await waitStatus(p, /Navbat sizda/, 12000); // ustoz fikrini oxirigacha aytdi (ustidan kesilmadi)
   });
 
   await step('J4. Qisqa tegish — qulf; yana tegish tugatadi', async () => {
-    const c = await padBox(p); const t = now();
+    const c = await faceCenter(p); const s0 = scribeCalls.length;
     await p.mouse.move(c.x, c.y); await p.mouse.down(); await wait(90); await p.mouse.up();
     await waitStatus(p, /Tinglayapman/, 2000);
-    assert.match(await p.locator('.voice-sub').innerText(), /yana bosing/, 'qulflangan: yana bosing');
+    assert.match(await p.locator('.call-sub').innerText(), /yana tegining/, 'qulflangan: yana tegining');
     await wait(1500);
-    assert.equal(count('end', t), 0, 'qulflangan yozuv o‘zi tugamaydi');
+    assert.equal(scribeCalls.length, s0, 'qulflangan yozuv o‘zi tugamaydi');
     await p.mouse.down(); await wait(60); await p.mouse.up();
-    await waitCount('end', 1, t);
-    assert.equal(count('end', t), 1); assert.ok(count('audio', t) > 5);
+    for (let i = 0; i < 100 && scribeCalls.length === s0; i++) await wait(50);
+    assert.ok(scribeCalls.length - s0 >= 1);
+    await waitStatus(p, /Sellzen gapiryapti/, 6000); await waitStatus(p, /Navbat sizda/, 12000);
   });
 
-  await step('J5. Jim mikrofon: bo‘sh navbat yuborilmaydi, tushunarli xabar', async () => {
+  await step('J7. Ekran: skrol yo‘q, tugatish tugmasi ko‘rinadi, yuz siljimaydi (6 xil o‘lcham)', async () => {
+    for (const vp of [{ width: 320, height: 568 }, { width: 360, height: 640 }, { width: 390, height: 844 }, { width: 412, height: 915 }, { width: 768, height: 1024 }, { width: 1280, height: 720 }]) {
+      await p.setViewportSize(vp); await wait(250);
+      const m = await p.evaluate(() => {
+        const end = document.querySelector('.call-end')!.getBoundingClientRect(), face = document.querySelector('.call-face')!.getBoundingClientRect(), call = document.querySelector('.call')!.getBoundingClientRect();
+        return { sh: document.documentElement.scrollHeight, sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight, call: { w: call.width, h: call.height, x: call.x, y: call.y }, end: { x: end.x, y: end.y, w: end.width, h: end.height }, faceTop: face.top, faceW: face.width, bodyOverflow: document.body.style.overflow, callScroll: document.querySelector('.call')!.scrollHeight - document.querySelector('.call')!.clientHeight, noteOverflow: document.querySelector('.call-stage')!.scrollHeight - document.querySelector('.call-stage')!.clientHeight };
+      });
+      const tag = `${vp.width}×${vp.height}`;
+      await shot(p, `j7-${vp.width}x${vp.height}`);
+      assert.ok(m.sw <= m.iw + 1, `${tag}: gorizontal siljish bor (${m.sw}/${m.iw})`);
+      assert.ok(Math.abs(m.call.w - m.iw) <= 1 && Math.abs(m.call.h - m.ih) <= 1 && m.call.x === 0 && m.call.y === 0, `${tag}: qo‘ng‘iroq butun ekranni egallamaydi`);
+      assert.ok(m.end.x >= 0 && m.end.y >= 0 && m.end.x + m.end.w <= m.iw && m.end.y + m.end.h <= m.ih && m.end.w >= 40, `${tag}: tugatish tugmasi ko‘rinmaydi/kichik`);
+      assert.ok(m.callScroll <= 1 && m.noteOverflow <= 1, `${tag}: ichki kontent sig‘maydi (${m.callScroll}, ${m.noteOverflow})`);
+      assert.equal(m.bodyOverflow, 'hidden', 'sahifa orqada siljimaydi');
+      await p.mouse.wheel(0, 900); await wait(120); assert.equal(await p.evaluate(() => Math.round(scrollY)), 0, `${tag}: g‘ildirak/skrol sahifani siljitdi`);
+      assert.ok(m.faceW >= 90, `${tag}: yuz juda kichik ${m.faceW}`);
+    }
+    await p.setViewportSize({ width: 390, height: 800 }); await wait(250);
+    // Holatlar almashganda yuz va tugatish tugmasi joyidan siljimaydi (hint/matn o'zgarsa ham)
+    // (yuz bosilganda biroz kattalashadi — bu transform, tartibni siljitmaydi; shuning uchun yuzdan pastdagi/yuqoridagi qotirilgan elementlar o'lchanadi)
+    const pos = () => p.evaluate(() => ({ status: Math.round(document.querySelector('.call-status')!.getBoundingClientRect().top), lines: Math.round(document.querySelector('.call-lines')!.getBoundingClientRect().top), end: Math.round(document.querySelector('.call-end')!.getBoundingClientRect().top), faceBox: Math.round(document.querySelector('.call-face')!.getBoundingClientRect().height) > 0 }));
+    const base0 = await pos(); const c = await faceCenter(p);
+    await p.mouse.move(c.x, c.y); await p.mouse.down(); await wait(500); assert.deepEqual(await pos(), base0, 'tinglayotganda siljimadi');
+    await p.mouse.up(); await waitStatus(p, /Sellzen gapiryapti|O‘ylayapman/, 6000); await wait(800); assert.deepEqual(await pos(), base0, 'gapirayotganda/matn chiqqanda siljimadi');
+    await shot(p, 'j7-fit');
+    await waitStatus(p, /Navbat sizda/, 14000);
+  });
+
+  await step('J6. "Darsga o‘tamiz" — tugma emas, ilova dars sahifasini ochadi', async () => {
+    scribeText = "darsga o'tamiz";
+    const c = await faceCenter(p);
+    await p.mouse.move(c.x, c.y); await p.mouse.down(); await wait(1500); await p.mouse.up();
+    await p.waitForFunction(() => /^#\/learn/.test(location.hash), null, { timeout: 15000 });
+    assert.match(await p.evaluate(() => location.hash), /^#\/learn\/[a-z0-9-]+$/i, 'bugungi rejadagi dars ochildi');
+    assert.equal(await p.locator('.call').count(), 0, 'qo‘ng‘iroq yakunlandi');
+    scribeText = 'teach me English, I go to school yesterday';
+  });
+
+  await step('J5. Jim mikrofon: bo‘sh matn — "Ovoz eshitilmadi", Gemini’ga hech narsa bormaydi', async () => {
+    // Scribe jim/tushunarsiz navbatga bo'sh matn qaytaradi (haqiqiy jim mikrofonni Chromium'ning shovqin bostirgichi/AGC bilan aniq simulyatsiya qilib bo'lmaydi — shuning uchun javob stsenariyi)
+    scribeText = '';
     const q = await openCall(QUIET, token);
     await waitStatus(q, /Navbat sizda/, 12000);
-    const c = await padBox(q); const t = now();
+    const c = await faceCenter(q); const t = now(), n0 = count('text', t);
     await q.mouse.move(c.x, c.y); await q.mouse.down(); await wait(1500); await q.mouse.up();
-    await waitStatus(q, /Ovoz eshitilmadi/, 3000);
-    assert.equal(count('start', t) + count('end', t) + count('audio', t), 0, 'ovoz yo‘q — Gemini’ga hech narsa yuborilmadi');
+    await waitStatus(q, /Ovoz eshitilmadi/, 6000);
+    assert.equal(count('text', t) - n0 + count('start', t) + count('audio', t), 0, 'ovoz yo‘q — Gemini’ga hech narsa yuborilmadi');
     await shot(q, 'j5-no-voice');
+    scribeText = 'teach me English, I go to school yesterday';
+  });
+
+  await step('J8. Sensorli ekran: istalgan joyga tegib gapirish; tugatish tugmasi gapirtirmaydi', async () => {
+    const t0 = await openCall(LOUD, token, { width: 390, height: 800 }, true);
+    await waitStatus(t0, /Navbat sizda/, 12000);
+    const touch = (type: string, x: number, y: number) => t0.evaluate(([ty, xx, yy]) => { const el = document.elementFromPoint(xx as number, yy as number)!; el.dispatchEvent(new PointerEvent(ty as string, { pointerType: 'touch', pointerId: 7, isPrimary: true, bubbles: true, cancelable: true, clientX: xx as number, clientY: yy as number, button: 0 })); }, [type, x, y] as const);
+    const s0 = scribeCalls.length;
+    await touch('pointerdown', 30, 30); // yuqori burchak (yuzdan uzoq) — baribir gapirish boshlanadi
+    await waitStatus(t0, /Tinglayapman/, 3000); await wait(1400); await touch('pointerup', 30, 30);
+    for (let i = 0; i < 100 && scribeCalls.length === s0; i++) await wait(50);
+    assert.ok(scribeCalls.length - s0 >= 1, 'yuqori burchakka tegish ham gapirishni boshladi');
+    await waitStatus(t0, /Sellzen gapiryapti/, 6000);
+    // Tugatish tugmasiga tegish — gapirishni boshlamaydi
+    const end = (await t0.locator('.call-end').boundingBox())!;
+    await touch('pointerdown', end.x + end.width / 2, end.y + end.height / 2); await touch('pointerup', end.x + end.width / 2, end.y + end.height / 2);
+    await wait(300); assert.ok(!/Tinglayapman/.test(await statusText(t0)), 'tugatish tugmasi gapirishni boshlamadi');
+    await t0.locator('.call-end').click(); await t0.locator('.start-face').waitFor({ timeout: 5000 });
   });
 
   assert.deepEqual(problems, [], 'brauzerda JS xatosi yoki 5xx bo‘lmasligi kerak');
@@ -203,6 +290,6 @@ try {
   process.exitCode = 1;
 } finally {
   for (const b of browsers) await b.close();
-  srv.kill(); up.close(); ai.close();
+  srv.kill(); up.close(); ai.close(); scribe.close();
   rmSync(dir, { recursive: true, force: true });
 }
