@@ -2,6 +2,8 @@
 import { Copy, Megaphone, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
+import { CreatorLinks } from '../components/CreatorLinks';
+import { CreatorPosts } from '../components/CreatorPosts';
 import { fmtSum } from '../lib/pay';
 import { L } from '../i18n';
 
@@ -29,6 +31,8 @@ export default function Creator() {
         </div>
         {msg && <p className="evidence">{msg}</p>}
       </section>
+      <CreatorLinks bot={d.bot} />
+      <CreatorPosts />
       <div className="kpis">
         <div className="kpi2"><span>{L('Kelganlar')}</span><b>{m.invited}</b><small>{L('30 kun: {0}', [m.invited30])}</small></div>
         <div className="kpi2"><span>{L('Faollashgan')}</span><b>{m.activated}</b><small>{L('birinchi darsni tugatgan')}</small></div>

@@ -5,6 +5,7 @@ import { ensureXpTables } from './xp';
 import { ensureReminderColumns } from './reminders';
 import { ensureI18nTables } from './i18n';
 import { ensureReferralColumns } from './referral';
+import { ensureCreatorTables } from './creatorSchema';
 import { ensureGroupTables } from './groups';
 import { ensureLeagueNotifyColumn } from './leagueNotify';
 import { ensureSttTable } from './stt';
@@ -130,6 +131,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   ensureReminderColumns(db);
   ensureI18nTables(db);
   ensureReferralColumns(db);
+  ensureCreatorTables(db); // Creator Growth: faqat yangi jadvallar
   ensureGroupTables(db);
   ensureLeagueNotifyColumn(db);
   ensureSttTable(db);

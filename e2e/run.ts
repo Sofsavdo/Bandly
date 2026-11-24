@@ -49,6 +49,8 @@ for (const [k, v] of Object.entries(process.env)) if (!/KEY|TOKEN|SECRET|HAMYON|
 Object.assign(env, {
   PORT: String(PORT), HOST: '127.0.0.1', DB_PATH: DB, BACKUP_DISABLED: '1', NODE_ENV: 'test',
   HAMYON_SHOP_ID: SHOP.shopId, HAMYON_SHOP_KEY: SHOP.shopKey, HAMYON_BASE_URL: `http://127.0.0.1:${hamyonPort}`,
+  API_RATE_PER_MIN: '5000', // barcha ssenariylar bitta IP'dan: umumiy tezlik cheklovi (productionda 120/daq) sinovni to'sib qo'ymasin
+  ADMIN_NICKNAMES: 'E2E Admin',
   AI_PROVIDER: 'openai', AI_API_KEY: 'sk-e2e-not-real', AI_MODEL: 'e2e-model', AI_FALLBACK_MODEL: ' ', AI_BASE_URL: `http://127.0.0.1:${aiPort}`, AI_GLOBAL_DAILY_CALLS: '100',
 });
 const srv = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -204,6 +206,40 @@ try {
     await p.goto(`${base}/#/pricing`); await p.waitForTimeout(1500);
     assert.doesNotMatch(await text(p), /Faol obuna|amal qiladi:/i, 'tariflar sahifasida faol obuna ko‘rsatilmaydi');
     await p.context().close();
+  });
+
+  await step('I. Creator linki → bridge sahifa → veb → ro‘yxat → creator kabinetida voronka', async () => {
+    const mk = async (nickname: string) => String((await api('/api/join', { method: 'POST', body: JSON.stringify({ nickname }) })).json.token);
+    const adminT = await mk('E2E Admin'), crT = await mk('E2E Creator');
+    assert.equal((await api('/api/staff/role', { method: 'POST', token: adminT, body: JSON.stringify({ nickname: 'E2E Creator', role: 'creator' }) })).status, 200);
+    const link = (await api('/api/creator/links', { method: 'POST', token: crT, body: JSON.stringify({ kind: 'reel', label: 'E2E Reel', lang: 'ru' }) })).json.link as { code: string };
+    // Haqiqiy mobil brauzer UA (HeadlessChrome — bot sifatida filtrlanadi: bu ham to'g'ri xulq)
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' });
+    const p = await ctx.newPage();
+    p.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
+    await p.goto(`${base}/r/${link.code}`);
+    assert.match(await p.evaluate(() => document.documentElement.lang), /ru/, 'bridge sahifa link tilida');
+    assert.ok(await p.locator('#web').count(), 'veb-saytda davom etish tugmasi');
+    assert.equal(await p.locator('a[href^="https://t.me/"]').count(), 0, 'bot sozlanmagan — Telegram tugmasi yo‘q');
+    await p.locator('#web').click();
+    await p.waitForURL(/\/\?ref=[a-z2-9]+&cid=[a-f0-9]{16}#\//);
+    await p.waitForSelector('.w-hero', { timeout: 10000 });
+    const ls = await p.evaluate(() => ({ ref: localStorage.getItem('bandly.ref'), first: localStorage.getItem('bandly.ref.first'), cid: localStorage.getItem('bandly.cid') }));
+    assert.ok(ls.ref?.includes(link.code) && ls.first?.includes(link.code) && /[a-f0-9]{16}/.test(ls.cid ?? ''), 'ref, first-touch va click identifikatori saqlandi');
+    await p.locator('.w-hero a.btn.primary').first().click();   // signup_start (click bilan bog'lanadi); sahifa link tilida (ru), shuning uchun matn emas, element bo'yicha
+    await p.waitForURL(/#\/login/); await p.waitForTimeout(500);
+    const nick = p.locator('input[type=text][maxlength="20"]').first(); await nick.fill('E2E Talaba'); await nick.press('Enter'); // til (ru) va matndan mustaqil
+    await p.waitForURL(/#\/start/);
+    const ov = (await api('/api/creator/overview?days=30', { token: crT })).json;
+    assert.equal(ov.funnel.signups, 1, 'ro‘yxatdan o‘tish creator voronkasida'); assert.equal(ov.funnel.uniqueClicks, 1); assert.equal(ov.funnel.landingViews, 1, 'bridge JS ko‘rishi'); assert.equal(ov.funnel.signupStarts, 1, 'signup_start click bilan bog‘landi');
+    assert.equal(ov.links[0].signups, 1);
+    // Creator kabineti (brauzerda): link va voronka ko'rinadi, o'quvchi ma'lumoti yo'q
+    const c = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: crT, nickname: 'E2E Creator' }) });
+    await c.goto(`${base}/#/creator`); await c.getByText('Tracking linklar').waitFor({ timeout: 10000 });
+    await c.getByText('E2E Reel').first().waitFor({ timeout: 8000 });
+    assert.match(await text(c), /Voronka/); assert.match(await text(c), new RegExp(`/r/${link.code}`), 'qisqa havola ko‘rsatiladi');
+    assert.doesNotMatch(await text(c), /E2E Talaba/, 'creator o‘quvchi laqabini ko‘rmaydi');
+    await p.context().close(); await c.context().close();
   });
 
   assert.deepEqual(problems, [], 'brauzerda JS xatosi yoki 5xx bo‘lmasligi kerak');
