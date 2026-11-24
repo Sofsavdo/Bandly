@@ -98,7 +98,7 @@ export const readingFull10: ReadingTest = {
     { id: 31, type: 'tfng', text: 'Most boredom experiments were carried out with young children.', answer: 'False', evidence: 'P3 E: they were "carried out with adults rather than children".' },
     { id: 32, type: 'fill', text: 'Boredom acts as a ______ that an activity is not rewarding.', answers: ['signal'], evidence: 'P3 B: "it acts as a signal".' },
     { id: 33, type: 'fill', text: 'It has been compared with hunger or ______.', answers: ['pain'], evidence: 'P3 B: "it has been compared with hunger or pain".' },
-    { id: 34, type: 'fill', text: 'In the experiment, participants listed uses for plastic ______.', answers: ['cups'], evidence: 'P3 C: "uses for a pair of plastic cups".' },
+    { id: 34, type: 'fill', text: 'In the experiment, participants listed uses for plastic ______.', answers: ['cups'], evidence: 'P3 C: "as many uses as possible for a pair of plastic cups".' },
     { id: 35, type: 'fill', text: 'Researchers think boredom causes the mind to ______.', answers: ['wander'], evidence: 'P3 D: "boredom leads the mind to wander".' },
     { id: 36, type: 'fill', text: '______ can produce unexpected connections between ideas.', answers: ['daydreaming'], evidence: 'P3 D: "daydreaming can produce unexpected connections between ideas".' },
     { id: 37, type: 'mcq', text: 'What happened when the first task was even more boring?', options: ['Participants gave up.', 'The effect on creativity was stronger.', 'Participants produced fewer ideas.', 'There was no difference.'], answer: 1, evidence: 'P3 C: "the effect was stronger when the first task was even more boring".' },
