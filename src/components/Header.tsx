@@ -51,15 +51,16 @@ export function Header({ hash }: { hash: string }) {
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
   return (
     <>
-      <header className="app-header">
+      <header className={`app-header${acc ? '' : ' guest'}`}>
         <div className="container">
           <a className="logo" href="#/" aria-label={BRAND.name}><Logo size={36} /></a>
+          {/* Til tanlash sahifaning eng yuqorisida: telefonda sarlavha qatorida (mehmon uchun), kompyuterda logotip ostida */}
+          <LangPicker compact />
           <nav className="nav" aria-label={t('nav.main')}>
             {SECTIONS.map((sc) => <a key={sc.id} href={sc.item.href} className={here === sc.id ? 'active' : ''} aria-current={here === sc.id ? 'page' : undefined}><sc.item.icon size={16} />{t(sc.item.label)}</a>)}
             {extra.map((x) => <a key={x.href} href={x.href} className={isActive(hash, x.href) ? 'active' : ''}><x.icon size={16} />{x.label}</a>)}
           </nav>
           <div className="header-right">
-            <LangPicker compact />
             <Stats />
             <a className="btn primary sm header-cta" href="#/pricing">{t('cta.plans')}</a>
             <a className="icon-btn desk-only" href={PROFILE.href} aria-label={t('nav.profile')}><User size={18} /></a>

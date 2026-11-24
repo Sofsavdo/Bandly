@@ -12,7 +12,6 @@ import { QuestsCard } from '../components/QuestsCard';
 import { Illo } from '../components/Illo';
 import { PRing } from '../components/PRing';
 import { WeekBars } from '../components/WeekBars';
-import { LangPicker } from '../components/LangPicker';
 import { listeningTests, readingTests } from '../content/mockTests';
 import { vocab } from '../content/vocab';
 import { useProfile } from '../lib/store';
@@ -51,7 +50,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
     <div>
       <section className="w-hero">
         <div>
-          <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}><span className="eyebrow" style={{ whiteSpace: 'nowrap', marginBottom: 0 }}>{L('General English · IELTS · CEFR · SAT')}</span><LangPicker /></div>
+          <div className="row"><span className="eyebrow" style={{ whiteSpace: 'nowrap', marginBottom: 0 }}>{L('General English · IELTS · CEFR · SAT')}</span></div>
           <h1>{L('Ingliz tilini')} <span className="hl">{L('o‘yin kabi')}</span>  {L('o‘rganing')}</h1>
           <p className="lead">{L('A1–C2 darslar, bepul mock testlar va o‘zbekcha tushuntiradigan AI ustoz.')}</p>
           <div className="cta">
