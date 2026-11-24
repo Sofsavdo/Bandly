@@ -7,6 +7,9 @@ const g = (word: string, pos: string, uz: string, def: string, example: string, 
 
 export const lessonWords: Word[] = [
   g('name', 'n', 'ism', 'the word that a person is called by', 'My name is Aziz.', 'A1'),
+  g('mother', 'n', 'ona', 'a woman who has a child', 'My mother cooks very well.', 'A1'),
+  g('father', 'n', 'ota', 'a man who has a child', 'My father works in a bank.', 'A1'),
+  g('cousin', 'n', 'amakivachcha / xolavachcha', 'the child of your uncle or aunt', 'My cousin lives in Bukhara.', 'A1'),
   g('student', 'n', 'talaba', 'a person who is studying at a school or university', 'She is a student at Tashkent State University.', 'A1'),
   g('from', 'prep', '…dan (joy)', 'used to say where someone was born or lives', 'I am from Namangan.', 'A1'),
   g('engineer', 'n', 'muhandis', 'a person who designs or builds machines, roads or buildings', 'My father is an engineer.', 'A1'),
