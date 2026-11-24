@@ -11,8 +11,15 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   if (!r.ok) throw new Error((j as { error?: string }).error ?? L('Xato {0}', [r.status]));
   return j as T;
 }
+const ROLE_UZ: Record<string, string> = { admin: 'admin', methodologist: L('metodist'), creator: L('hamkor (bloger)'), teacher: L('o‘qituvchi'), sales: L('operator (sotuv)') };
 const TRACK_UZ: Record<string, string> = { exam: L('Imtihon'), grammar: 'General English', mocks: L('Mock'), general: 'General English', all: 'All Access' };
 const STATUS_UZ: Record<string, string> = { success: L('to‘langan'), pending: L('kutilmoqda'), prepared: L('kutilmoqda'), cancel: L('bekor'), cancelled: L('bekor'), expired: L('muddati o‘tgan'), error: L('xato') };
+/** All Access = barcha yo'llar bir xil muddatgacha: bitta qator bo'lib ko'rinadi. */
+function groupSubs(subs: { track: string; until: number }[]): { track: string; until: number }[] {
+  const tracks = new Set(subs.map((s) => s.track));
+  if (['exam', 'grammar', 'mocks'].every((t) => tracks.has(t)) && new Set(subs.map((s) => Math.round(s.until / 864e5))).size === 1) return [{ track: 'all', until: subs[0]!.until }];
+  return subs;
+}
 const inputStyle = { padding: 8, borderRadius: 10, border: '1.5px solid var(--line)', minWidth: 0 } as const;
 
 interface User { id: number; nickname: string; xp: number; streak: number; role: string | null; createdAt: number; updatedAt: number; subs: { track: string; until: number }[]; paidCount: number; paidSum: number; lastPaidAt: number | null }
@@ -24,11 +31,11 @@ export function UsersPanel() {
   const [msg, setMsg] = useState('');
   const [plan, setPlan] = useState('all');
   const [days, setDays] = useState(30);
-  const search = async () => { try { setUsers((await call<{ users: User[] }>(`/api/staff/users?q=${encodeURIComponent(q.trim())}`)).users); setMsg(''); } catch (e) { setMsg((e as Error).message); } };
+  const search = async (keepMsg = false) => { try { setUsers((await call<{ users: User[] }>(`/api/staff/users?q=${encodeURIComponent(q.trim())}`)).users); if (!keepMsg) setMsg(''); } catch (e) { setMsg((e as Error).message); } };
   useEffect(() => { void search(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const give = async (nickname: string) => {
     if (!window.confirm(L('{0} ga {1} — {2} kun obuna berilsinmi?', [nickname, TRACK_UZ[plan]!, days]))) return;
-    try { const r = await call<{ until: number }>('/api/staff/grant', { method: 'POST', body: JSON.stringify({ nickname, track: plan, days }) }); setMsg(L('{0}: obuna {1} gacha.', [nickname, fmtDate(r.until)])); await search(); } catch (e) { setMsg((e as Error).message); }
+    try { const r = await call<{ until: number }>('/api/staff/grant', { method: 'POST', body: JSON.stringify({ nickname, track: plan, days }) }); setMsg(L('{0}: obuna {1} gacha.', [nickname, fmtDate(r.until)])); await search(true); } catch (e) { setMsg((e as Error).message); }
   };
   const now = Date.now();
   return (
@@ -45,17 +52,16 @@ export function UsersPanel() {
       </div>
       {msg && <p className="notice" role="status">{msg}</p>}
       {users && (users.length === 0 ? <p className="muted">{L('Topilmadi.')}</p> : (
-        <div className="table-scroll"><table className="data"><thead><tr><th>{L('Laqab')}</th><th>{L('XP')}</th><th>{L('Obuna')}</th><th>{L('To‘lovlar')}</th><th>{L('Oxirgi faollik')}</th><th /></tr></thead>
+        <div className="table-scroll"><table className="data"><thead><tr><th>{L('Laqab')}</th><th>{L('XP')}</th><th>{L('Obuna')}</th><th>{L('To‘lovlar')}</th><th>{L('Oxirgi faollik')}</th></tr></thead>
           <tbody>{users.map((u) => {
-            const active = u.subs.filter((s) => s.until > now);
+            const active = groupSubs(u.subs.filter((s) => s.until > now));
             return (
               <tr key={u.id}>
-                <td><b>{u.nickname}</b>{u.role && <small className="muted"> · {u.role}</small>}<br /><small className="muted">{fmtDate(u.createdAt)}</small></td>
+                <td><b>{u.nickname}</b>{u.role && <small className="muted"> · {ROLE_UZ[u.role] ?? u.role}</small>}<br /><small className="muted">{fmtDate(u.createdAt)}</small><br /><button className="btn sm" style={{ marginTop: 6 }} onClick={() => void give(u.nickname)}>{L('Obuna berish')}</button></td>
                 <td>{u.xp}<br /><small className="muted">🔥 {u.streak}</small></td>
                 <td>{active.length ? active.map((s) => <div key={s.track}><small>{TRACK_UZ[s.track] ?? s.track}: {fmtDate(s.until)}</small></div>) : <small className="muted">{L('Bepul')}</small>}</td>
                 <td>{u.paidCount ? <>{u.paidCount} · {fmtSum(u.paidSum)}</> : '—'}</td>
                 <td><small>{fmtDate(u.updatedAt)}</small></td>
-                <td><button className="btn sm" onClick={() => void give(u.nickname)}>{L('Obuna berish')}</button></td>
               </tr>
             );
           })}</tbody></table></div>
@@ -86,7 +92,6 @@ export function PaymentsPanel() {
 }
 
 /** Xodimlar: metodist, hamkor (bloger), o'qituvchi rollarini laqab bo'yicha berish / olib tashlash. */
-const ROLE_UZ: Record<string, string> = { admin: 'admin', methodologist: L('metodist'), creator: L('hamkor (bloger)'), teacher: L('o‘qituvchi'), sales: L('operator (sotuv)') };
 export function StaffPanel() {
   const [list, setList] = useState<{ nickname: string; role: string }[]>([]);
   const [nick, setNick] = useState('');
@@ -100,6 +105,7 @@ export function StaffPanel() {
       <h3 style={{ marginTop: 0 }}>{L('Xodimlar')}</h3>
       <p className="muted" style={{ fontSize: 13 }}>{L('Xodim avval saytda hisob ochadi, so‘ng rolni tanlab, laqabini yozing. Metodist — darslar, hamkor — referal, o‘qituvchi — guruhlar, operator — lidlar.')}</p>
       <div className="row"><select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} aria-label={L('Rol')}>{(['methodologist', 'creator', 'teacher', 'sales'] as const).map((r) => <option key={r} value={r}>{ROLE_UZ[r]}</option>)}</select><input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={L('Laqab')} aria-label={L('Laqab')} style={inputStyle} /><button className="btn sm primary" disabled={nick.trim().length < 2} onClick={() => void setRole(nick.trim(), true)}>{L('Rol berish')}</button></div>
+      {list.length === 0 && <p className="muted">{L('Hali xodim yo‘q.')}</p>}
       <ul>{list.map((x) => <li key={x.nickname}>{x.nickname} — {ROLE_UZ[x.role] ?? x.role} {x.role !== 'admin' && <button className="btn sm" onClick={() => void setRole(x.nickname, false)}>{L('Olib tashlash')}</button>}</li>)}</ul>
       {msg && <p className="notice">{msg}</p>}
     </section>
@@ -146,6 +152,38 @@ export function LeadsPanel() {
               <td><input defaultValue={l.note ?? ''} placeholder={L('Izoh')} onBlur={(e) => { if (e.target.value !== (l.note ?? '')) void set(l, { note: e.target.value }); }} style={{ ...inputStyle, width: '100%' }} /></td>
             </tr>
           ))}</tbody></table></div>
+      ))}
+    </section>
+  );
+}
+
+interface AuditRow { id: number; ts: number; action: string; target: string | null; actor: string | null }
+const ACTION_UZ: Record<string, string> = {
+  'settings.update': L('Limit yoki narx o‘zgartirildi'), 'subscription.grant': L('Qo‘lda obuna berildi'), 'role.set': L('Rol o‘zgartirildi'),
+  'cert.revoke': L('Sertifikat bekor qilindi'), 'cert.rule.update': L('Sertifikat mezoni o‘zgartirildi'), 'cert.settings.update': L('Sertifikat dizayni o‘zgartirildi'),
+  'campaign.create': L('Kampaniya yaratildi'), 'campaign.update': L('Kampaniya o‘zgartirildi'), 'creator.post.review': L('Hamkor posti tekshirildi'),
+  'creator.flag.resolve': L('Gumonli holat yopildi'), 'creator.ledger.manual': L('Mukofot daftariga qo‘lda yozuv'), 'creator.ledger.paid': L('Hamkorga to‘lov belgilandi'),
+  'creator.refund': L('Qaytarish qayd etildi'), 'creator.profile': L('Hamkor profili o‘zgartirildi'), 'creator.export': L('Hamkorlar CSV yuklab olindi'),
+  'reward.rule.create': L('Mukofot qoidasi yaratildi'), 'reward.rule.update': L('Mukofot qoidasi o‘zgartirildi'), 'reward.rule.enable': L('Mukofot qoidasi yoqildi'), 'reward.rule.disable': L('Mukofot qoidasi o‘chirildi'),
+};
+
+/** Kim, qachon, nimani o'zgartirdi — barcha admin amallari (limitlar, obuna, rollar, sertifikatlar, hamkorlar). */
+export function AuditPanel() {
+  const [rows, setRows] = useState<AuditRow[] | null>(null);
+  const [msg, setMsg] = useState('');
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  useEffect(() => {
+    void call<{ audit: AuditRow[] }>('/api/certadmin/audit?limit=100').then((j) => setRows(j.audit)).catch((e: Error) => setMsg(e.message));
+    void call<{ items: { key: string; label: string }[] }>('/api/admin/settings').then((j) => setLabels(Object.fromEntries(j.items.map((x) => [x.key, L(x.label)])))).catch(() => undefined);
+  }, []);
+  const target = (a: AuditRow) => (a.action === 'settings.update' && a.target ? a.target.split(',').map((k) => labels[k] ?? k).join('; ') : a.target);
+  return (
+    <section className="card">
+      <h3 style={{ marginTop: 0 }}>{L('Amallar jurnali')}</h3>
+      {msg && <p className="notice">{msg}</p>}
+      {rows && (rows.length === 0 ? <p className="muted">{L('Hali yozuv yo‘q.')}</p> : (
+        <div className="table-scroll"><table className="data wrap"><thead><tr><th>{L('Vaqt')}</th><th>{L('Kim')}</th><th>{L('Amal')}</th></tr></thead>
+          <tbody>{rows.map((a) => <tr key={a.id}><td><small>{new Date(a.ts).toLocaleString('ru-RU')}</small></td><td>{a.actor ?? L('tizim')}</td><td>{ACTION_UZ[a.action] ?? a.action}{a.target && <><br /><small className="muted">{target(a)}</small></>}</td></tr>)}</tbody></table></div>
       ))}
     </section>
   );
