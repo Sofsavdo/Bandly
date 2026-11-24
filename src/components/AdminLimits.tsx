@@ -5,7 +5,7 @@ import { getAccount } from '../lib/account';
 import { fmtDate } from '../lib/pay';
 import { L } from '../i18n';
 
-type Group = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety' | 'bot';
+type Group = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety' | 'bot' | 'creator';
 interface Item { key: string; group: Group; label: string; hint?: string; def: number; min: number; max: number; unit?: string; value: number; source: 'admin' | 'env' | 'default'; updatedAt: number | null }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -20,6 +20,7 @@ const GROUPS: { id: Group; title: string; note: string }[] = [
   { id: 'plans', title: L('Obuna tariflari'), note: L('Tariflar sahifasidagi raqamlar shu qiymatlardan avtomatik yangilanadi.') },
   { id: 'coach', title: L('AI ustoz'), note: L('Hamma o‘quvchilar uchun.') },
   { id: 'referral', title: L('Taklif (referal) bonuslari'), note: L('Taklif qilingan o‘quvchi birinchi dars yoki daraja testini tugatganda ikkala tomonga beriladi.') },
+  { id: 'creator', title: L('Creator (hamkor) dasturi'), note: L('Mukofot qoidalari (summa, foiz, byudjet, kutish muddati) «Hamkorlar → Mukofot daftari» bo‘limida sozlanadi. Bu yerda — umumiy qoida.') },
   { id: 'prices', title: L('Narxlar'), note: L('Oylik narx; 3 oylik (−10%) va 12 oylik (10 oy narxi) shundan hisoblanadi. Yangi to‘lovlarga qo‘llanadi.') },
   { id: 'bot', title: L('Telegram bot'), note: L('O‘chiq bo‘lsa, /start bosilganda darhol xush kelibsiz xabari keladi (reklama tarmoqlari talabi uchun).') },
   { id: 'safety', title: L('Xarajat himoyasi'), note: L('AI xarajati keskin oshib ketmasligi uchun umumiy chegaralar.') },

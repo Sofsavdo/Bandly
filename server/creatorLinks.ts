@@ -19,7 +19,12 @@ export type LinkKind = (typeof LINK_KINDS)[number];
 export const LANGS = ['uz', 'en', 'ru', 'tg', 'ky', 'kk'] as const;
 const ALPH = 'abcdefghjkmnpqrstuvwxyz23456789';
 const MAX_LINKS_PER_CREATOR = 50;
-export const creditMode = (env: NodeJS.ProcessEnv = process.env): 'first' | 'last' => (env.CREATOR_ATTRIBUTION === 'first' ? 'first' : 'last');
+/** Kredit rejimi: admin paneldagi sozlama (CREATOR_CREDIT_FIRST: 1 — birinchi havola, 0 — oxirgi) > eski Railway o'zgaruvchisi CREATOR_ATTRIBUTION > oxirgi havola. */
+export const creditMode = (env: NodeJS.ProcessEnv = process.env): 'first' | 'last' => {
+  const v = env.CREATOR_CREDIT_FIRST;
+  if (v !== undefined && v !== '') return Number(v) === 1 ? 'first' : 'last';
+  return env.CREATOR_ATTRIBUTION === 'first' ? 'first' : 'last';
+};
 
 // ---------------- Linklar ----------------
 export interface CreatorLink { code: string; creatorId: number; kind: LinkKind; label: string; campaignId: number | null; postRef: string | null; lang: string | null; active: boolean; createdAt: number }

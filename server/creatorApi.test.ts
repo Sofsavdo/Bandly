@@ -98,6 +98,15 @@ try {
   assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: aT, body: { confirmOwnerApproved: true } })).status, 403, 'creator qoidani yoqa olmaydi');
   assert.equal((await api('/api/creator/rewards', { token: aT })).json.enabled, false, 'qoida yoqilmaguncha creator "yoqilmagan" ko‘radi');
   assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: adminT, body: { confirmOwnerApproved: true } })).json.rule.enabled, true);
+  // Yoqilgan qoidaning shartlari jimgina o'zgarmaydi: tahrirlash uchun avval o'chiriladi; so'ng yangi shartlar bilan qayta yoqiladi (admin paneldagi "Tahrirlash" oqimi)
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}`, { token: adminT, body: { amountMinor: 7_000_000 } })).status, 409, 'yoqilgan qoidani o‘zgartirib bo‘lmaydi');
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/disable`, { token: adminT, body: {} })).json.rule.enabled, false);
+  const ed = (await api(`/api/creatoradmin/rules/${rule.id}`, { token: adminT, body: { name: 'Faollashgan boshiga (yangi)', amountMinor: 7_000_000, holdDays: 3, windowDays: 90, capPerCreatorMinor: null, budgetMinor: 30_000_000, startsAt: '2030-01-01', endsAt: '2030-12-31' } })).json.rule;
+  assert.equal(ed.amountMinor, 7_000_000); assert.equal(ed.holdDays, 3); assert.equal(ed.windowDays, 90); assert.equal(ed.capPerCreatorMinor, null, 'chegara bo‘sh qoldirilsa — olib tashlanadi'); assert.ok(ed.startsAt && ed.endsAt);
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: adminT, body: { confirmOwnerApproved: true } })).status, 409, 'creator chegarasi olib tashlangan — qayta yoqilmaydi');
+  await api(`/api/creatoradmin/rules/${rule.id}`, { token: adminT, body: { capPerCreatorMinor: 10_000_000, startsAt: null, endsAt: null } });
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: adminT, body: { confirmOwnerApproved: true } })).json.rule.enabled, true, 'tahrirlangan qoida qayta yoqildi');
+  assert.equal((await api('/api/creatoradmin/ledger', { token: adminT })).json.attribution, 'last', 'kredit rejimi panelga aytiladi');
   const rw = (await api('/api/creator/rewards', { token: aT })).json; assert.equal(rw.enabled, true); assert.equal(rw.terms[0].kind, 'activated_flat'); assert.ok(!JSON.stringify(rw).match(/budget|capPer/i), 'creator byudjetni ko‘rmaydi'); assert.ok(rw.inHoldMinor >= 0);
   const man = (await api('/api/creatoradmin/manual', { token: adminT, body: { nickname: 'Bloger A', amountMinor: 1_000_000, note: 'Reel uchun bonus' } })).json.entry; assert.equal(man.status, 'pending');
   assert.equal((await api('/api/creatoradmin/manual', { token: aT, body: { nickname: 'Bloger A', amountMinor: 1_000_000, note: 'o‘zimga bonus' } })).status, 403, 'creator o‘ziga summa kirita olmaydi');

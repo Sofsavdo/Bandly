@@ -446,7 +446,7 @@ const httpServer = createServer(async (req, res) => {
       }
       if (sub === 'costs' && req.method === 'GET') return send(res, 200, { costs: creatorCosts(db), rules: ruleUsage(db), balances: balances(db) });
       if (sub === 'manual' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: addManualEntry(db, adm.id, b) }); }
-      if (sub === 'ledger' && req.method === 'GET') return send(res, 200, { entries: adminLedger(db, url.searchParams.get('status') || undefined), balances: balances(db), rules: listRules(db) });
+      if (sub === 'ledger' && req.method === 'GET') return send(res, 200, { entries: adminLedger(db, url.searchParams.get('status') || undefined), balances: balances(db), rules: listRules(db), attribution: creditMode() });
       const dm = sub.match(/^ledger\/(\d+)\/(decision|paid|history)$/);
       if (dm && req.method === 'GET' && dm[2] === 'history') return send(res, 200, { history: ledgerHistory(db, Number(dm[1])) });
       if (dm && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: dm[2] === 'paid' ? markPaid(db, adm.id, Number(dm[1]), b.ref) : decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note) }); }

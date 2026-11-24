@@ -8,6 +8,7 @@ import { callMonthSeconds } from './callMinutes';
 import { refXp, refPlanDays } from './referral';
 import { liveConfigFromEnv, liveAllowance } from './live';
 import { monthlyPrice } from './pricing';
+import { creditMode } from './creatorLinks';
 
 const db = createDb(':memory:');
 const env = process.env;
@@ -63,6 +64,16 @@ assert.equal(settingValue('FREE_LESSONS_PER_DAY'), 2, 'Railway qiymati qaytdi');
 assert.equal(refPlanDays(), 0);
 assert.equal(Object.fromEntries(listSettings(db).map((s) => [s.key, s.source])).FREE_LESSONS_PER_DAY, 'env');
 
+// Creator krediti (birinchi/oxirgi havola) — admin paneldan; admin > eski Railway o'zgaruvchisi > oxirgi havola
+{
+  assert.equal(settingValue('CREATOR_CREDIT_FIRST'), 0, 'standart — oxirgi havola'); assert.equal(creditMode(), 'last');
+  updateSettings(db, { CREATOR_CREDIT_FIRST: 1 }, admin); assert.equal(creditMode(), 'first', 'admin birinchi havolani tanladi — darhol kuchga kirdi');
+  assert.throws(() => updateSettings(db, { CREATOR_CREDIT_FIRST: 2 }, admin), ApiError, '0 yoki 1');
+  updateSettings(db, { CREATOR_CREDIT_FIRST: null }, admin); assert.equal(creditMode(), 'last', 'admin qiymati o‘chirilsa — standart');
+  assert.equal(creditMode({ CREATOR_ATTRIBUTION: 'first' } as NodeJS.ProcessEnv), 'first', 'eski Railway o‘zgaruvchisi hamon ishlaydi');
+  assert.equal(creditMode({ CREATOR_ATTRIBUTION: 'first', CREATOR_CREDIT_FIRST: '0' } as NodeJS.ProcessEnv), 'last', 'admin sozlamasi Railway’dan ustun');
+  assert.ok(listSettings(db).some((s) => s.key === 'CREATOR_CREDIT_FIRST' && s.group === 'creator'));
+}
 // Audit yozuvi
 const audit = db.prepare("SELECT COUNT(*) AS n FROM admin_audit WHERE action = 'settings.update'").get() as { n: number };
 assert.ok(audit.n >= 3);

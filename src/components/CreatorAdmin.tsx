@@ -15,7 +15,7 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
 interface Fun { uniqueClicks: number; signups: number; activated: number; d7: { active: number }; paid: number; netRevenue: number; refundedSum: number; rates: { clickToSignup: number | null; signupToActivation: number | null; activationToPaid: number | null; refundRate: number | null } }
 interface Creator { id: number; nickname: string; status: string; locale: string | null; country: string | null; platforms: string | null; note: string | null; links: number; funnel: Fun; openFlags: number; posts: Record<string, number> }
 interface Camp { id: number; name: string; brief: string; status: string; requiresVideo: boolean; endsAt: number | null }
-interface Rule { id: number; name: string; kind: string; campaignId: number | null; pct: number | null; amountMinor: number | null; holdDays: number; windowDays: number; capPerCreatorMinor: number | null; budgetMinor: number | null; capPerItemMinor: number | null; enabled: boolean; spentMinor: number; remainingMinor: number | null }
+interface Rule { id: number; name: string; kind: string; campaignId: number | null; pct: number | null; amountMinor: number | null; holdDays: number; windowDays: number; capPerCreatorMinor: number | null; budgetMinor: number | null; capPerItemMinor: number | null; startsAt: number | null; endsAt: number | null; enabled: boolean; spentMinor: number; remainingMinor: number | null }
 interface Cost { creatorId: number; nickname: string; pending: number; approved: number; paid: number; total: number }
 interface Kpis { funnel: Fun & { clicks: number }; rewardCostMinor: number; cacPerActivatedMinor: number | null; cacPerPayerMinor: number | null }
 interface LedgerRow { id: number; creator?: string; kind: string; amountMinor: number; status: string; createdAt: number; paymentId?: string | null; note: string | null; basis: { pct?: number; capped?: boolean } | null }
@@ -164,15 +164,23 @@ function Flags({ run }: { run: Run }) {
   );
 }
 
+const RULE_HELP = (): Record<string, string> => ({
+  paid_pct: L('Hamkor orqali kelgan o‘quvchi to‘lov qilganda — to‘lov summasining foizi. Pul qaytarilsa, mukofot ham qaytariladi.'),
+  activated_flat: L('Hamkor orqali kelib, mazmunli faollik (dars yoki mock) qilgan har bir o‘quvchi uchun belgilangan summa. Faqat ro‘yxatdan o‘tgani uchun mukofot yo‘q.'),
+  first_paid_flat: L('Hamkor orqali kelgan o‘quvchi birinchi marta to‘lov qilganda belgilangan summa.'),
+  verified_views_per_1k: L('Siz tasdiqlagan har 1000 ko‘rish uchun belgilangan summa (har bir post uchun chegara bilan). Hamkorning o‘zi yozgan ko‘rishlar hisobga olinmaydi.'),
+});
+const ymd = (ts: number | null): string => (ts === null ? '' : new Date(ts).toISOString().slice(0, 10));
 function terms(r: Rule): string {
   const v = r.kind === 'paid_pct' ? `${r.pct}%` : r.amountMinor === null ? '—' : minorToSom(r.amountMinor);
-  return `${RULE_KIND()[r.kind] ?? r.kind}: ${v} · ${L('kutish {0} kun', [r.holdDays])}`;
+  const extra = [r.capPerCreatorMinor !== null ? L('hamkorga ≤ {0}', [minorToSom(r.capPerCreatorMinor)]) : '', r.capPerItemMinor !== null ? L('postga ≤ {0}', [minorToSom(r.capPerItemMinor)]) : '', r.startsAt || r.endsAt ? `${ymd(r.startsAt) || '…'} → ${ymd(r.endsAt) || '…'}` : ''].filter(Boolean).join(' · ');
+  return `${RULE_KIND()[r.kind] ?? r.kind}: ${v} · ${L('kutish {0} kun', [r.holdDays])} · ${L('muddat {0} kun', [r.windowDays])}${extra ? ` · ${extra}` : ''}`;
 }
 function Ledger({ run }: { run: Run }) {
-  const [d, setD] = useState<{ entries: LedgerRow[]; balances: { pending: number; approved: number; paid: number }; rules: Rule[] } | null>(null);
+  const [d, setD] = useState<{ entries: LedgerRow[]; balances: { pending: number; approved: number; paid: number }; rules: Rule[]; attribution?: 'first' | 'last' } | null>(null);
   const [costs, setCosts] = useState<Cost[]>([]); const [camps, setCamps] = useState<Camp[]>([]);
-  const blank = { name: '', kind: 'activated_flat', pct: '', amount: '', hold: '7', window: '180', cap: '', budget: '', item: '', campaignId: '' };
-  const [rf, setRf] = useState(blank); const [confirm, setConfirm] = useState(false);
+  const blank = { name: '', kind: 'activated_flat', pct: '', amount: '', hold: '7', window: '180', cap: '', budget: '', item: '', campaignId: '', starts: '', ends: '' };
+  const [rf, setRf] = useState(blank); const [editId, setEditId] = useState<number | null>(null); const [confirm, setConfirm] = useState(false);
   const [refund, setRefund] = useState({ paymentId: '', amount: '', note: '' }); const [man, setMan] = useState({ nickname: '', amount: '', note: '', ruleId: '' });
   const load = useCallback(() => void run(async () => { setD(await call('/api/creatoradmin/ledger')); setCosts((await call<{ costs: Cost[] }>('/api/creatoradmin/costs')).costs); setCamps((await call<{ campaigns: Camp[] }>('/api/creatoradmin/campaigns')).campaigns); }), [run]);
   useEffect(load, [load]);
@@ -180,32 +188,51 @@ function Ledger({ run }: { run: Run }) {
   const loadRules = useCallback(() => void run(async () => setRules((await call<{ rules: Rule[] }>('/api/creatoradmin/rules')).rules)), [run]);
   useEffect(loadRules, [loadRules]);
   const st = LEDGER_STATUS(); const kinds = LEDGER_KIND();
-  const num = (x: string): number | undefined => (x === '' ? undefined : Number(x));
-  const create = () => void run(async () => { await call('/api/creatoradmin/rules', { name: rf.name, kind: rf.kind, pct: num(rf.pct), amountMinor: num(rf.amount), holdDays: num(rf.hold), windowDays: num(rf.window), capPerCreatorMinor: num(rf.cap), budgetMinor: num(rf.budget), capPerItemMinor: num(rf.item), campaignId: rf.campaignId === '' ? null : Number(rf.campaignId) }); setRf(blank); loadRules(); }, L('Qoida qoralama (o‘chiq) sifatida yaratildi'));
+  // Summalar so'mda kiritiladi (tizim tiyinda saqlaydi); bo'sh — chegara/qiymat yo'q
+  const som = (x: string): number | null => (x.trim() === '' ? null : Math.round(Number(x.replace(/\s/g, '')) * 100));
+  const fromMinor = (m: number | null): string => (m === null ? '' : String(m / 100));
+  const body = () => ({ name: rf.name, pct: rf.kind === 'paid_pct' && rf.pct.trim() !== '' ? Number(rf.pct) : undefined, amountMinor: rf.kind === 'paid_pct' ? undefined : som(rf.amount), holdDays: Number(rf.hold), windowDays: Number(rf.window), capPerCreatorMinor: som(rf.cap), budgetMinor: som(rf.budget), capPerItemMinor: rf.kind === 'verified_views_per_1k' ? som(rf.item) : null, campaignId: rf.campaignId === '' ? null : Number(rf.campaignId), startsAt: rf.starts || null, endsAt: rf.ends || null });
+  const save = () => void run(async () => {
+    if (editId === null) await call('/api/creatoradmin/rules', { kind: rf.kind, ...body() }); else await call(`/api/creatoradmin/rules/${editId}`, body());
+    setRf(blank); setEditId(null); loadRules();
+  }, editId === null ? L('Qoida qoralama (o‘chiq) sifatida yaratildi') : L('Qoida yangilandi — yoqish uchun «Yoqish» tugmasini bosing'));
+  const startEdit = (r: Rule) => { setEditId(r.id); setRf({ name: r.name, kind: r.kind, pct: r.pct === null ? '' : String(r.pct), amount: fromMinor(r.amountMinor), hold: String(r.holdDays), window: String(r.windowDays), cap: fromMinor(r.capPerCreatorMinor), budget: fromMinor(r.budgetMinor), item: fromMinor(r.capPerItemMinor), campaignId: r.campaignId === null ? '' : String(r.campaignId), starts: ymd(r.startsAt), ends: ymd(r.endsAt) }); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); };
   return (
     <>
       <div className="card">
         <b>{L('Mukofot qoidalari')}</b>
-        <p className="muted" style={{ fontSize: 13 }}>{L('Mukofot turi va summasi shu yerda sozlanadi — keyinchalik o‘zgartirish uchun kod o‘zgarmaydi. Ro‘yxatdan o‘tganlik va tasdiqlanmagan ko‘rishlar uchun mukofot yo‘q. Standart — o‘chiq: yoqish uchun summa/foiz, creator chegarasi va umumiy byudjet kerak (tiyinda, 1 so‘m = 100 tiyin). Yoqilgan qoidani o‘zgartirib bo‘lmaydi — avval o‘chiring. Hisoblash avtomatik (har 6 soatda), yozuvlar «kutilmoqda» bo‘lib turadi; to‘lov faqat qo‘lda belgilanadi.')}</p>
+        <p className="muted" style={{ fontSize: 13 }}>{L('Mukofot turi, summasi va shartlari to‘liq shu yerda sozlanadi — kod o‘zgarmaydi. Ro‘yxatdan o‘tganlik va tasdiqlanmagan ko‘rishlar uchun mukofot yo‘q. Qoida avval o‘chiq (qoralama) bo‘ladi; yoqish uchun summa/foiz, hamkor chegarasi va umumiy byudjet kerak. Summalar so‘mda kiritiladi.')}</p>
+        <ol className="muted" style={{ fontSize: 13, margin: '0 0 10px 18px', padding: 0 }}>
+          <li>{L('Qoida yarating va shartlarini kiriting.')}</li>
+          <li>{L('«Egasi tasdiqlagan» ni belgilab, «Yoqish» ni bosing.')}</li>
+          <li>{L('Mukofotlar «Kutilmoqda» bo‘lib hisoblanadi (har 6 soatda yoki «Hozir hisoblash»); kutish muddatidan keyin «Tasdiqlash», tashqarida to‘lab «To‘langan deb belgilash» ni bosing.')}</li>
+          <li>{L('Shartlarni o‘zgartirish: qoidani o‘chiring → «Tahrirlash» → saqlang → qayta yoqing. Eski yozuvlar o‘zgarmaydi.')}</li>
+        </ol>
+        <p className="muted" style={{ fontSize: 13 }}><b>{L('Hamkor krediti')}:</b> {d?.attribution === 'first' ? L('birinchi bosilgan havola') : L('oxirgi bosilgan havola')} — {L('o‘zgartirish: «Limitlar» → «Creator (hamkor) dasturi». Faqat yangi hisob-kitoblarga ta’sir qiladi.')}</p>
         <div className="table-scroll"><table className="data"><thead><tr><th>{L('Qoida')}</th><th>{L('Shartlar')}</th><th>{L('Sarflandi / byudjet')}</th><th /></tr></thead><tbody>
-          {rules.map((r) => <tr key={r.id}><td><b>{r.name}</b><small className="muted"> · {r.campaignId === null ? L('kampaniyasiz') : camps.find((c) => c.id === r.campaignId)?.name ?? r.campaignId}</small></td><td>{terms(r)}</td>
+          {rules.map((r) => <tr key={r.id}><td><b>{r.name}</b><small className="muted"> · {r.campaignId === null ? L('kampaniyasiz') : camps.find((c) => c.id === r.campaignId)?.name ?? r.campaignId}</small>{r.enabled && <small className="muted"> · {L('yoqilgan')}</small>}</td><td>{terms(r)}</td>
             <td>{minorToSom(r.spentMinor)} / {r.budgetMinor === null ? '—' : minorToSom(r.budgetMinor)}</td>
             <td>{r.enabled ? <button className="btn sm" onClick={() => void run(async () => { await call(`/api/creatoradmin/rules/${r.id}/disable`, {}); loadRules(); load(); }, L('Qoida o‘chirildi'))}>{L('O‘chirish')}</button>
-              : <button className="btn primary sm" onClick={() => void run(async () => { await call(`/api/creatoradmin/rules/${r.id}/enable`, { confirmOwnerApproved: confirm }); loadRules(); load(); }, L('Qoida yoqildi'))}>{L('Yoqish')}</button>}</td></tr>)}
+              : <><button className="btn sm" onClick={() => startEdit(r)}>{L('Tahrirlash')}</button> <button className="btn primary sm" onClick={() => void run(async () => { await call(`/api/creatoradmin/rules/${r.id}/enable`, { confirmOwnerApproved: confirm }); loadRules(); load(); }, L('Qoida yoqildi'))}>{L('Yoqish')}</button></>}</td></tr>)}
         </tbody></table></div>
+        {rules.length === 0 && <p className="muted">{L('Hali qoida yo‘q. Quyida birinchi qoidani yarating.')}</p>}
         <label className="evidence"><input type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} /> {L('Egasi tasdiqlagan (yoqish uchun belgilang)')}</label>
-        <h4 className="list-h">{L('Yangi qoida')}</h4>
+        <h4 className="list-h">{editId === null ? L('Yangi qoida') : L('Qoidani tahrirlash')}</h4>
+        <p className="muted" style={{ fontSize: 13 }}>{RULE_HELP()[rf.kind]}</p>
         <div className="row">
-          <input className="input" value={rf.name} placeholder={L('Qoida nomi')} onChange={(e) => setRf({ ...rf, name: e.target.value })} />
-          <select value={rf.kind} onChange={(e) => setRf({ ...rf, kind: e.target.value })} aria-label={L('Mukofot turi')}>{Object.entries(RULE_KIND()).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-          {rf.kind === 'paid_pct' ? <input className="input" value={rf.pct} placeholder={L('Foiz (masalan 10)')} onChange={(e) => setRf({ ...rf, pct: e.target.value })} /> : <input className="input" value={rf.amount} placeholder={L('Summa (tiyin)')} onChange={(e) => setRf({ ...rf, amount: e.target.value })} />}
-          <input className="input" value={rf.hold} placeholder={L('Kutish (kun)')} onChange={(e) => setRf({ ...rf, hold: e.target.value })} />
-          <input className="input" value={rf.window} placeholder={L('Muddat (kun)')} onChange={(e) => setRf({ ...rf, window: e.target.value })} />
-          <input className="input" value={rf.cap} placeholder={L('Creator chegarasi (tiyin)')} onChange={(e) => setRf({ ...rf, cap: e.target.value })} />
-          <input className="input" value={rf.budget} placeholder={L('Umumiy byudjet (tiyin)')} onChange={(e) => setRf({ ...rf, budget: e.target.value })} />
-          {rf.kind === 'verified_views_per_1k' && <input className="input" value={rf.item} placeholder={L('Post chegarasi (tiyin)')} onChange={(e) => setRf({ ...rf, item: e.target.value })} />}
+          <input className="input" value={rf.name} placeholder={L('Qoida nomi')} aria-label={L('Qoida nomi')} onChange={(e) => setRf({ ...rf, name: e.target.value })} />
+          <select value={rf.kind} disabled={editId !== null} onChange={(e) => setRf({ ...rf, kind: e.target.value })} aria-label={L('Mukofot turi')}>{Object.entries(RULE_KIND()).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+          {rf.kind === 'paid_pct' ? <input className="input" inputMode="decimal" value={rf.pct} placeholder={L('Foiz, % (masalan 10)')} aria-label={L('Foiz, %')} onChange={(e) => setRf({ ...rf, pct: e.target.value })} /> : <input className="input" inputMode="numeric" value={rf.amount} placeholder={L('Summa, so‘m')} aria-label={L('Summa, so‘m')} onChange={(e) => setRf({ ...rf, amount: e.target.value })} />}
+          <input className="input" inputMode="numeric" value={rf.hold} placeholder={L('Kutish, kun')} aria-label={L('Kutish, kun')} onChange={(e) => setRf({ ...rf, hold: e.target.value })} />
+          <input className="input" inputMode="numeric" value={rf.window} placeholder={L('Muddat, kun')} aria-label={L('Muddat, kun')} onChange={(e) => setRf({ ...rf, window: e.target.value })} />
+          <input className="input" inputMode="numeric" value={rf.cap} placeholder={L('Hamkor chegarasi, so‘m')} aria-label={L('Hamkor chegarasi, so‘m')} onChange={(e) => setRf({ ...rf, cap: e.target.value })} />
+          <input className="input" inputMode="numeric" value={rf.budget} placeholder={L('Umumiy byudjet, so‘m')} aria-label={L('Umumiy byudjet, so‘m')} onChange={(e) => setRf({ ...rf, budget: e.target.value })} />
+          {rf.kind === 'verified_views_per_1k' && <input className="input" inputMode="numeric" value={rf.item} placeholder={L('Post chegarasi, so‘m')} aria-label={L('Post chegarasi, so‘m')} onChange={(e) => setRf({ ...rf, item: e.target.value })} />}
+          <label className="muted" style={{ fontSize: 13 }}>{L('Boshlanishi')} <input className="input" type="date" value={rf.starts} onChange={(e) => setRf({ ...rf, starts: e.target.value })} /></label>
+          <label className="muted" style={{ fontSize: 13 }}>{L('Tugashi')} <input className="input" type="date" value={rf.ends} onChange={(e) => setRf({ ...rf, ends: e.target.value })} /></label>
           <select value={rf.campaignId} onChange={(e) => setRf({ ...rf, campaignId: e.target.value })} aria-label={L('Kampaniya')}><option value="">{L('Kampaniyasiz')}</option>{camps.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-          <button className="btn sm" onClick={create}>{L('Qoida yaratish')}</button>
+          <button className="btn sm primary" onClick={save}>{editId === null ? L('Qoida yaratish') : L('Saqlash')}</button>
+          {editId !== null && <button className="btn sm" onClick={() => { setEditId(null); setRf(blank); }}>{L('Bekor qilish')}</button>}
           <button className="btn sm" onClick={() => void run(async () => { const r = await call<{ created: number; disabled: boolean }>('/api/creatoradmin/accrue', {}); load(); alert(r.disabled ? L('Yoqilgan qoida yo‘q') : L('Yangi yozuvlar: {0}', [r.created])); })}>{L('Hozir hisoblash')}</button>
         </div>
       </div>
