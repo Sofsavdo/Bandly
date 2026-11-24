@@ -46,7 +46,7 @@ for (const t of [first, again]) {
   assert.ok(!/ONE language per reply/.test(t), 'eski "bitta til" qoidasi ovozli suhbatda yo‘q');
 }
 assert.ok(first.includes('introduce yourself once') && first.includes('MEMORY from previous calls') && first.includes('beginner'));
-assert.ok(again.includes('do NOT introduce yourself') && again.includes('Aniqroq gapir'), '18+ standart: Qattiq uslub');
+assert.ok(again.includes('do NOT introduce yourself') && again.includes("Qulog'im chalg'ibdi") && !again.includes('Aniqroq gapir'), '18+ standart: Qattiq uslub — tushunmaganda o‘quvchini ayblamaydi (2026-11-24 skrinshot: «g‘o‘ldirayapsan»)');
 // Xarakter tanlovi Live'da ham ishlaydi: 0 yumshoq, 1 hazil, 2 qattiq, 3 jallod; 18+ bo'lmasa 2–3 → 1
 assert.equal(clampStyle(3, false), 1);
 assert.equal(clampStyle(0, true), 0);
@@ -55,9 +55,9 @@ assert.equal(clampStyle(9, true), 3);
 const soft = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 0 });
 assert.ok(soft.includes('Kechirasiz, tushunmadim') && soft.includes('correct it kindly') && !/swearing/.test(soft), 'yumshoq: so‘kinmaydi');
 const fun = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 1 });
-assert.ok(fun.includes('Yana bir marta ayt-chi') && !/swearing is allowed/.test(fun), 'hazil: so‘kinishsiz');
+assert.ok(fun.includes('yana bir marta ayt-chi') && !/swearing is allowed/.test(fun), 'hazil: so‘kinishsiz');
 const jallod = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 3 });
-assert.ok(jallod.includes("g'o'ldirayapsan"), 'jallod: qo‘pol qayta so‘rash');
+assert.ok(jallod.includes('Eshitolmadim! Yana bir bor ayting') && !jallod.includes("g'o'ldirayapsan"), 'jallod: qayta so‘rash bor, lekin o‘quvchini ayblamaydi (tanish xatosi ustoz tomonida)');
 assert.ok(!buildLivePrompt({ adult: false, native: 'Uzbek (Latin script)', style: 3 }).includes("g'o'ldirayapsan"), '18+ emas — jallod ishlamaydi');
 // Hissiyot (ekrandagi olov/kulgi)
 assert.equal(emotionOf('Hahaha, you said what?'), 'laugh');
