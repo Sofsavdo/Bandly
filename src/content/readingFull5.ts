@@ -44,10 +44,10 @@ export const readingFull5: ReadingTest = {
   level: 'C1',
   title: 'IELTS Academic Reading — to‘liq mock 5',
   minutes: 60,
-  passageTitle: 'Reading Passage 1: The Qanats of the Desert',
+  passageTitle: 'Reading Passage 1: Underground Water Channels of the Desert',
   paragraphs: [...P1, ...P2, ...P3],
   sections: [
-    { at: 0, title: 'Reading Passage 1: The Qanats of the Desert' },
+    { at: 0, title: 'Reading Passage 1: Underground Water Channels of the Desert' },
     { at: P1.length, title: 'Reading Passage 2: How Animals Sleep' },
     { at: P1.length + P2.length, title: 'Reading Passage 3: The Power of the Placebo' },
   ],

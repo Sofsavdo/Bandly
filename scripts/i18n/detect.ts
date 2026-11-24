@@ -40,6 +40,8 @@ export function isUzContent(key: string, s: string): boolean {
   if (t.length < 2 || !/[A-Za-z]/.test(t)) return false;
   if (/^(en|text|sentence|sentences|q|question|options|answer|answers|correct|example|model|title|transcript|script|passage|word|words|ipa|audio|url|id|kind|level|pos|accept)$/i.test(key)) return /uz$/i.test(key) || (key === 'title' && (/[og][‘ʻ]|[a-z][‘ʻ][a-z]|\b(va|bilan|uchun)\b/i.test(t) || UZ_EXTRA.test(t)));
   if (/uz$/i.test(key)) return true;
+  // Mock testlarning inglizcha matnlari va izohlari ("qanat", "global" kabi so'zlar evristikani adashtirmasin): faqat aniq o'zbekcha bo'lsa
+  if (/^(paragraphs|evidence)$/.test(key)) return /[og][‘ʻ]|[a-z][‘ʻ][a-z]|\b(va|bilan|uchun|emas|kerak|matnda|haqida|ham|yo‘q)\b/i.test(t);
   if (/^(topic|name|label|tag|group|category|labelUz|nameUz)$/i.test(key) && /[A-Za-z]{3,}/.test(t) && t.length < 60) return true; // ko'rinadigan nomlar (mavzu, xarakter, guruh)
   if (/[a-z][‘ʻ][a-z]|\b[og]'[a-z]/i.test(t)) return true;
   if (/^[A-Z][a-z]+( [a-z]+)* [a-z]+[.?!]$/.test(t) && !/[og][‘ʻ]/.test(t)) return false; // inglizcha gap
