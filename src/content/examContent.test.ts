@@ -41,6 +41,25 @@ const notInText: string[] = [];
 for (const t of readingTests) { const body = flat(t.paragraphs.join(' ')); for (const q of t.questions) if (q.type === 'fill' && !q.answers.some((a) => body.includes(flat(a)))) notInText.push(`${t.id} q${q.id}: ${q.answers.join(' | ')}`); }
 for (const t of listeningTests) { const body = flat(t.script.map((x) => x.text).join(' ')); for (const q of t.questions) if (q.type === 'fill' && !q.answers.some((a) => /\d/.test(a)) && !q.answers.some((a) => body.includes(flat(a)))) notInText.push(`${t.id} q${q.id}: ${q.answers.join(' | ')}`); }
 assert.deepEqual(notInText, [], `javob matnda yo‘q (metodist tekshirsin):\n${notInText.join('\n')}`);
+// Izohdagi iqtibos ("...") matnda/skriptda so'zma-so'z bo'lishi shart — javob kaliti haqiqatan matnga tayanishi tekshiriladi
+// ("…" — tushirib qoldirilgan joy; tinish belgilari va katta-kichik harf hisobga olinmaydi).
+const flatQ = (s: string) => s.toLowerCase().replace(/[’‘']/g, "'").replace(/[^a-z0-9£$%' ]/g, ' ').replace(/\s+/g, ' ').trim();
+const badQuote: string[] = [];
+const quotes = (id: string, body: string, qs: Question[]) => {
+  const b = flatQ(body);
+  for (const q of qs) for (const m of (q.evidence ?? '').matchAll(/["“]([^"”]{4,})["”]/g)) for (const seg of m[1]!.split(/…|\.\.\./)) { const s = flatQ(seg); if (s.length >= 4 && !b.includes(s)) badQuote.push(`${id} q${q.id}: ${s.slice(0, 70)}`); }
+};
+for (const t of readingTests) quotes(t.id, t.paragraphs.join(' '), t.questions);
+for (const t of listeningTests) quotes(t.id, t.script.map((x) => x.text).join(' '), t.questions);
+assert.deepEqual(badQuote, [], `izohdagi iqtibos matnda yo‘q:\n${badQuote.join('\n')}`);
+// «Fill» javobi ko'rsatmadagi so'z chegarasiga mos (masalan, "ONE WORD ONLY" — asosiy javob bitta so'z)
+const limitOf = (ins: string): number | null => (/ONE WORD ONLY|ONE WORD AND\/OR A NUMBER/i.test(ins) ? 1 : /NO MORE THAN TWO WORDS/i.test(ins) ? 2 : /NO MORE THAN THREE WORDS/i.test(ins) ? 3 : null);
+const overLimit: string[] = [];
+for (const t of [...readingTests, ...listeningTests]) for (const g of t.groups) {
+  const lim = limitOf(g.instruction); if (!lim) continue;
+  for (const id of g.questionIds) { const q = t.questions.find((x) => x.id === id); if (q?.type === 'fill' && !q.answers.some((a) => a.trim().split(/\s+/).filter((w) => !/^[\d.,:£$%]+$/.test(w)).length <= lim)) overLimit.push(`${t.id} q${id}: ${q.answers[0]} (chegara ${lim})`); }
+}
+assert.deepEqual(overLimit, [], `javob so'z chegarasidan uzun:\n${overLimit.join('\n')}`);
 // Test id lari barcha to'plamlarda noyob
 const all = [...readingTests, ...listeningTests].map((t) => t.id);
 assert.equal(new Set(all).size, all.length, 'test id takrorlangan');
