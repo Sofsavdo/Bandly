@@ -127,16 +127,16 @@ export async function setupBot(cfg: BotConfig, f: Fetch = fetch, opts: { onUsern
 
 /** Bot (@Sellzenbot) nomi va tavsiflari. Faqat farq qilsa yoziladi — setMyName/setMyDescription Telegram'da qattiq cheklangan. */
 export const BOT_PROFILE = {
-  name: 'Sellzen — ingliz tili va Sellzen AI',
-  short: 'Ingliz tili A1–C2, IELTS, CEFR va SAT — o‘zbek tilida tushuntiradigan Sellzen AI. Bepul mock testlar.',
-  description: 'Sellzen bilan ingliz tilini o‘rganing:\n\n📚 A1–C2 darslar va grammatika\n🎙 Sellzen AI bilan ovozli suhbat — xatolaringizni o‘zbekcha tushuntiradi\n⏱ Bepul IELTS mock testlar (Listening, Reading)\n✍️ Writing va Speaking AI bahosi\n🎮 So‘z o‘yinlari, duellar va reyting\n\nBoshlash uchun «Start» tugmasini bosing.',
+  name: 'Sellzen — ingliz tili',
+  short: 'Ingliz tili A1–C2, IELTS, CEFR va SAT — o‘zbek tilida tushuntiradigan Sellzen. Bepul mock testlar.',
+  description: 'Sellzen bilan ingliz tilini o‘rganing:\n\n📚 A1–C2 darslar va grammatika\n🎙 Sellzen bilan ovozli suhbat — xatolaringizni o‘zbekcha tushuntiradi\n⏱ Bepul IELTS mock testlar (Listening, Reading)\n✍️ Writing va Speaking AI bahosi\n🎮 So‘z o‘yinlari, duellar va reyting\n\nBoshlash uchun «Start» tugmasini bosing.',
 } as const;
 export const BOT_COMMANDS = [
   { command: 'start', description: 'Boshlash' },
   { command: 'app', description: 'Ilovani ochish' },
   { command: 'level', description: 'Darajamni aniqlash' },
   { command: 'mock', description: 'Bepul mock test' },
-  { command: 'coach', description: 'Sellzen AI bilan suhbat' },
+  { command: 'coach', description: 'Sellzen bilan suhbat' },
   { command: 'help', description: 'Yordam' },
   { command: 'remind', description: 'Kunlik eslatmani yoqish' },
   { command: 'stop', description: 'Eslatmani o‘chirish' },

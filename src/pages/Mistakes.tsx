@@ -11,7 +11,7 @@ import { addXp } from '../lib/store';
 import { Illo } from '../components/Illo';
 import { L } from '../i18n';
 
-const SOURCE_UZ: Record<Mistake['source'], string> = { lesson: L('Dars'), grammar: 'Grammar', writing: L('Yozish'), coach: L('Sellzen AI') };
+const SOURCE_UZ: Record<Mistake['source'], string> = { lesson: L('Dars'), grammar: 'Grammar', writing: L('Yozish'), coach: L('Sellzen') };
 
 /** One review card. Returns the verdict to the parent; the parent stores it. */
 function Card({ m, onDone }: { m: Mistake; onDone: (correct: boolean) => void }) {
@@ -99,7 +99,7 @@ export default function Mistakes() {
         </section>
       ) : (
         <section className="card">
-          <p>{queue.length ? L('Bugungi takrorlash tugadi. Zo‘r!') : open.length ? L('Hozircha takrorlanadigan xato yo‘q.') : L('Hali saqlangan xato yo‘q. Dars, Grammar yoki Sellzen AI bilan mashq qiling.')}</p>
+          <p>{queue.length ? L('Bugungi takrorlash tugadi. Zo‘r!') : open.length ? L('Hozircha takrorlanadigan xato yo‘q.') : L('Hali saqlangan xato yo‘q. Dars, Grammar yoki Sellzen bilan mashq qiling.')}</p>
           <div className="row"><button className="btn" onClick={() => { setRound((r) => r + 1); setIdx(0); setAnswered(false); }}><RotateCcw size={14} />  {L('Yangilash')}</button><a className="btn" href="#/">{L('Bosh sahifa')}</a></div>
         </section>
       )}

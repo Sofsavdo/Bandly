@@ -77,7 +77,7 @@ export function tier(r: RoundResult): Tier {
   return r.linkers >= 5 ? 'master' : 'solid';
 }
 
-/** Reaksiyalar: odatiy — mehribon; 18+ tasdiqlaganlarga — keskin (Sellzen AI bilan bir xil qoida). Faqat tilga, hech qachon shaxsga. */
+/** Reaksiyalar: odatiy — mehribon; 18+ tasdiqlaganlarga — keskin (Sellzen bilan bir xil qoida). Faqat tilga, hech qachon shaxsga. */
 const REACT: Record<Tier, { kind: string; savage: string }> = {
   silent: { kind: L('Minora endi poydevor qo‘ydi. Keyingi safar birinchi gapni oldindan o‘ylab qo‘ying va to‘xtamang!'), savage: L('Bu minora emas, bitta g‘isht-ku! Qaytadan, bu safar jiddiy!') },
   shaky: { kind: L('Yaxshi qurdingiz, lekin jim qolganda qavatlar quladi. “Well…”, “Let me think…” bilan vaqt yuting.'), savage: L('Qurding-u, o‘zing buzding! Jim turgandan ko‘ra “Well, actually…” de!') },

@@ -1,4 +1,4 @@
-// Sellzen AI bilan ovozli suhbat daqiqalari (tariflarda: "60 daqiqa / oy"). Hisobga o'quvchining gapi (nutqni tanish soniyalari)
+// Sellzen bilan ovozli suhbat daqiqalari (tariflarda: "60 daqiqa / oy"). Hisobga o'quvchining gapi (nutqni tanish soniyalari)
 // va ustozning neyron ovozi (taxminan 15 belgi = 1 soniya) kiradi. Obunachi uchun oylik daqiqa tugaguncha ustoz ovozi
 // kunlik 5 ta javob chegarasiga bog'lanmaydi; tugagach (yoki obuna bo'lmasa) — umumiy kunlik chegara amal qiladi.
 import type { DatabaseSync } from 'node:sqlite';

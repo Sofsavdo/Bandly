@@ -1,4 +1,4 @@
-// Nutqni matnga aylantirish (Sellzen AI uchun): ElevenLabs Scribe. Brauzerdagi bepul tanish o'zbekcha va o'zbekcha
+// Nutqni matnga aylantirish (Sellzen uchun): ElevenLabs Scribe. Brauzerdagi bepul tanish o'zbekcha va o'zbekcha
 // talaffuzli inglizchani yomon tushunadi; Scribe esa aralash gapni (inglizcha + ona tili) xatolari bilan — so'zma-so'z yozadi,
 // shu bilan ustoz grammatik xatoni ko'ra oladi. Ovoz serverda saqlanmaydi: faqat tanilgan matn qaytadi.
 import type { DatabaseSync } from 'node:sqlite';

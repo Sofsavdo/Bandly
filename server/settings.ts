@@ -14,7 +14,7 @@ export const SETTINGS: SettingDef[] = [
   { key: 'FREE_FIRST_DAY_LESSONS', group: 'free', label: 'Birinchi kuni bepul darslar (har bir kurs)', def: 3, min: 0, max: 50 },
   { key: 'FREE_WRITING_PER_WEEK', group: 'free', label: 'Haftasiga bepul AI Writing baholash', def: 1, min: 0, max: 50 },
   { key: 'FREE_SPEAKING_PER_WEEK', group: 'free', label: 'Haftasiga bepul AI Speaking baholash', def: 1, min: 0, max: 50 },
-  { key: 'LIVE_FREE_DAILY_MINUTES', group: 'free', label: 'Kuniga bepul ovozli suhbat (Sellzen AI)', def: 5, min: 0, max: 120, unit: 'min' },
+  { key: 'LIVE_FREE_DAILY_MINUTES', group: 'free', label: 'Kuniga bepul ovozli suhbat (Sellzen)', def: 5, min: 0, max: 120, unit: 'min' },
   { key: 'COACH_FREE_DAILY_ANSWERS', group: 'free', label: 'Kuniga bepul ovozli javoblar (matnli suhbatda)', def: 5, min: 0, max: 500 },
   // Obuna tariflari
   { key: 'COACH_CALL_MONTH_MINUTES', group: 'plans', label: 'Obunachilar: ovozli suhbat, oyiga', hint: 'Barcha tariflar uchun', def: 60, min: 0, max: 3000, unit: 'min' },
@@ -24,8 +24,8 @@ export const SETTINGS: SettingDef[] = [
   { key: 'PLAN_EXAM_SPEAKING', group: 'plans', label: 'Exam Preparation: AI Speaking baholash, oyiga', def: 10, min: 0, max: 500 },
   { key: 'PLAN_ALL_WRITING', group: 'plans', label: 'All Access: AI Writing baholash, oyiga', def: 20, min: 0, max: 500 },
   { key: 'PLAN_ALL_SPEAKING', group: 'plans', label: 'All Access: AI Speaking baholash, oyiga', def: 20, min: 0, max: 500 },
-  // Sellzen AI (hamma uchun)
-  { key: 'AI_COACH_DAILY_LIMIT', group: 'coach', label: 'Kuniga Sellzen AI matnli xabarlari (bitta o‘quvchi)', def: 30, min: 0, max: 2000 },
+  // Sellzen (hamma uchun)
+  { key: 'AI_COACH_DAILY_LIMIT', group: 'coach', label: 'Kuniga Sellzen matnli xabarlari (bitta o‘quvchi)', def: 30, min: 0, max: 2000 },
   { key: 'LIVE_MAX_SESSION_MINUTES', group: 'coach', label: 'Bitta ovozli qo‘ng‘iroqning eng uzun davomi', def: 10, min: 1, max: 60, unit: 'min' },
   // Taklif (referal)
   { key: 'BOT_REQUIRE_SUBSCRIBE', group: 'bot', label: 'Botda kanalga majburiy obuna', def: 0, min: 0, max: 1 },

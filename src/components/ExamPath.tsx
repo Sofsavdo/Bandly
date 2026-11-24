@@ -21,7 +21,7 @@ export function ExamPath({ exam }: { exam: Exam }) {
     { href: '#/grammar', icon: Puzzle, title: L('3. Grammatika'), text: L('Imtihonda ko‘p uchraydigan mavzular, o‘zbekcha izohlar bilan.') },
     { href: '#/ielts', icon: GraduationCap, title: L('4. O‘qish va tinglash strategiyalari'), text: L('IELTS kursidagi Reading/Listening strategiya darslari Multilevel uchun ham ishlaydi (asosiy g‘oya, kalit so‘zlar, vaqtni boshqarish).') },
     { href: '#/mocks', icon: Timer, title: L('5. Mashq testlari'), text: L('Reading va Listening — rasmiy hajm va vaqt bilan. Xatolar izohi bilan.') },
-    { href: '#/coach', icon: Mic, title: L('6. Gapirish va yozish'), text: L('Sellzen AI bilan har kuni suhbat; quyida yozma ish mashqi va AI baho.') },
+    { href: '#/coach', icon: Mic, title: L('6. Gapirish va yozish'), text: L('Sellzen bilan har kuni suhbat; quyida yozma ish mashqi va AI baho.') },
   ] : [
     { href: '#/placement', icon: Compass, title: L('1. Darajangizni biling'), text: lvl ? L('Hozirgi daraja: {0}. SAT Reading & Writing uchun B2–C1 so‘z boyligi kerak.', [lvl]) : L('3 daqiqalik test — yo‘l shu natijaga qarab tuziladi.'), done: !!lvl },
     { href: '#/learn', icon: BookOpenCheck, title: L('2. B2–C1 darslar'), text: L('Akademik so‘zlar, murakkab gaplar, matn tuzilishi.') },

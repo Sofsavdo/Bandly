@@ -203,6 +203,6 @@ export function summarize(turns: TurnStat[], timed: boolean): Summary {
   if (avgLatencySec !== null && avgLatencySec > 4) notes.push(L('Javob berishdan oldin uzoq o‘ylayapsiz. Qisqa "Well, ..." bilan boshlab vaqt yutish mumkin.'));
   if (wpm !== null && wpm < 70) notes.push(L('Nutq tezligi past. Fikrni to‘xtamasdan davom ettirishga harakat qiling.'));
   if (lexicalRatio < 0.47 && tokens.length >= 30) notes.push(L('So‘zlar takrorlanyapti. Sinonimlar va aniqroq so‘zlar ishlating.'));
-  if (!notes.length) notes.push(L('Yaxshi tezlik va xilma-xillik. Endi grammatika va talaffuzni Sellzen AI bilan sinash vaqti.'));
+  if (!notes.length) notes.push(L('Yaxshi tezlik va xilma-xillik. Endi grammatika va talaffuzni Sellzen bilan sinash vaqti.'));
   return { answers: real.length, words, avgWords, wpm, fillerPer100, avgLatencySec, lexicalRatio, fluencyBand: clamp(fluency, 4, 7.5), lexicalBand: lexical, notes };
 }
