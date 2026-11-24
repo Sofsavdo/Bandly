@@ -195,9 +195,9 @@ try {
   // Google: sozlanmagan bo'lsa aniq 503
   assert.equal((await api('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential: 'a.b.c' }) })).status, 503);
 
-  // ---- Bot orqali kirish: bot ulanmagan bo'lsa 503, noma'lum kod 410 ----
-  assert.equal((await api('/api/auth/bot/start', { method: 'POST' })).status, 503);
-  assert.equal((await api(`/api/auth/bot/${'0'.repeat(32)}`)).status, 410);
+  // ---- Bot orqali kirish endpointlari olib tashlangan ----
+  assert.equal((await api('/api/auth/bot/start', { method: 'POST' })).status, 404, 'bot orqali kirish olib tashlandi');
+  assert.equal((await api(`/api/auth/bot/${'0'.repeat(32)}`)).status, 404);
   console.log('http.test: OK');
 } finally {
   srv.kill(); fakeHamyon.close(); fakeAi.close();

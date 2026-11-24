@@ -24,7 +24,6 @@ import { listStudioTests, publicStudioTests, publishedStudioTests, saveStudioTes
 import { attachLive, liveConfigFromEnv, recordLive } from './live';
 import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCostUsd, isCached, isEmotion, synthesize, ttsConfigFromEnv } from './tts';
 import { backupStatus, startAutoBackup } from './autoBackup';
-import { BotLogins } from './botLogin';
 import { AttemptLimiter, hashPassword, loginGoogle, normPhone, passwordProblem, phoneRecord, registerPhone, sessionFor, verifyPassword } from './credentials';
 import { GoogleAuthError, verifyGoogleIdToken } from './google';
 import { PHOTO_MAX, auditLog, audit, claimAll, composeFull, issueFor, myCertificates, profileOf, publicCertificate, recordResult, revokeCertificate, rules as certRules, savePhoto, searchCertificates, setFullName, setRule, setSettings as setCertSettings, settings as certSettings } from './certificates';
@@ -67,7 +66,6 @@ const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 /** Saytga bot orqali kirish kodlari (xotirada, 10 daqiqa, bir martalik). Kod 128 bit tasodifiy; token faqat kodni yaratgan brauzerga beriladi. */
-const botLogins = new BotLogins();
 // Telefon+parol va Google bilan kirish. GOOGLE_CLIENT_ID sozlanmaguncha Google tugmasi ko'rinmaydi va /api/auth/google 503 qaytaradi.
 const GOOGLE_CLIENT_ID = (process.env.GOOGLE_CLIENT_ID ?? '').trim() || null;
 const phoneFails = new AttemptLimiter(5, 15 * 60_000);   // bitta raqamga 15 daqiqada 5 ta xato parol — keyin blok
@@ -241,20 +239,6 @@ const httpServer = createServer(async (req, res) => {
       if (r.created) attachReferral(db, byToken(db, r.token).id, b.ref);
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: null });
     }
-    // ---- Bot orqali kirish (vidjet ishlamaganda: domen, ilova ichidagi brauzer) ----
-    if (req.method === 'POST' && url.pathname === '/api/auth/bot/start') {
-      if (!bot || !botUsername) throw new ApiError(503, 'Telegram orqali kirish hali sozlanmagan');
-      const st = botLogins.start();
-      if (!st) throw new ApiError(429, 'Juda ko‘p so‘rov');
-      return send(res, 200, { code: st.code, poll: st.poll, bot: botUsername });
-    }
-    const bl = url.pathname.match(/^\/api\/auth\/bot\/([a-f0-9]{32})$/);
-    if (req.method === 'GET' && bl) {
-      const r = botLogins.poll(bl[1]!);
-      if (r === 'gone') return send(res, 410, { error: trServer(db, reqLang(req), 'Kod eskirgan — qayta urinib ko‘ring') });
-      if (r === 'pending') return send(res, 200, { pending: true });
-      return send(res, 200, r);
-    }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
       revokeSession(db, String(req.headers['x-token'] ?? '')); // shu qurilma tokeni endi ishlamaydi
       return send(res, 200, { ok: true });
@@ -274,13 +258,6 @@ const httpServer = createServer(async (req, res) => {
         hasPhone: (id) => hasBotPhone(db, id) || (() => { const p = db.prepare('SELECT id FROM players WHERE tg_id = ?').get(id) as { id: number } | undefined; return !!p && hasLead(db, p.id); })(),
         savePhone: (id, phone) => saveBotPhone(db, id, phone),
         setRef: (id, ref) => setBotRef(db, id, ref), getRef: (id) => getBotRef(db, id),
-        confirmLogin: (code, from) => botLogins.confirm(code, () => {
-          const r = loginTelegram(db, from.id, nickFrom(from));
-          const pid = byToken(db, r.token).id;
-          if (r.created) attachReferral(db, pid, getBotRef(db, from.id));
-          claimBotPhone(db, from.id, pid);
-          return { token: r.token, nickname: r.nickname };
-        }),
         setRemind: (id, on) => setRemind(db, id, on),
         stats: BOT_STATS, sendPhoto: (msg) => sendWelcomePhoto(bot.token, msg),
       }).catch((e) => console.error('[bot]', (e as Error).message));
@@ -726,7 +703,7 @@ const httpServer = createServer(async (req, res) => {
     }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true });
     // Domenlararo 301 yo'naltirish YO'Q: brauzerlar 301 ni doimiy eslab qoladi va qarama-qarshi yo'naltirishlar bilan cheksiz aylanish
-    // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (sellzen.uz) ko'rsatiladi.
+    // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (www.sellzen.uz) ko'rsatiladi.
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
