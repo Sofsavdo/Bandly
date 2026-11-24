@@ -6,7 +6,7 @@ import { checkItem } from '../lib/lessons';
 const domains = new Set(DIGITAL_SAT.domains.map((d) => d.name));
 for (const { domain, item } of [...SAT_RW, ...SAT_MATH]) {
   assert.ok(domains.has(domain), `known domain ${domain}`);
-  const key = item.kind === 'choice' ? item.answer : item.kind === 'gap' ? item.accept[0]! : item.answer.split(' ');
+  const key = item.kind === 'choice' ? item.answer : item.kind === 'gap' ? item.accept[0]! : item.kind === 'multi' ? item.answers : item.answer.split(' ');
   assert.ok(checkItem(item, key), 'answer key passes');
   if (item.kind === 'choice') assert.equal(new Set(item.options).size, item.options.length);
 }

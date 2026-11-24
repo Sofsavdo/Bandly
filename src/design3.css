@@ -1571,3 +1571,48 @@ table.data.plan-matrix td { white-space: normal; min-width: 0; }
 .call-lines .vl { padding: 6px 10px; border-radius: 12px; }
 .call-lines .vl b { font-size: 10.5px; }
 @media (max-height: 560px) { .call-stage { --face: clamp(80px, 18svh, 130px); } .call-lines { max-height: max(22svh, var(--last-h, 0px)); } }
+
+/* Dars yakuni: 4 ta ko'rsatkich plitkasi, bo'lim nuqtalari va kunlik seriya kartochkasi */
+.res-wrap { margin: 14px 0 6px; }
+.res-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.res-tile { border-radius: 16px; padding: 8px 6px 10px; text-align: center; background: var(--surface-2); border: 1px solid var(--line); min-width: 0; }
+.res-tile span { display: block; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.res-tile b { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; font-family: var(--display); font-size: 19px; font-variant-numeric: tabular-nums; }
+.res-tile.t-star b svg { color: #f5a524; fill: #f5a524; }
+.res-tile.t-xp { background: color-mix(in srgb, #7c5cff 12%, var(--surface)); } .res-tile.t-acc { background: color-mix(in srgb, #2d8cff 12%, var(--surface)); } .res-tile.t-time { background: color-mix(in srgb, #2ecc71 14%, var(--surface)); }
+.unit-dots { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+.unit-dots i { flex: 1; height: 8px; border-radius: 99px; background: var(--line); max-width: 56px; }
+.unit-dots i.done { background: #ff9f1c; } .unit-dots i.now { background: #ff9f1c; box-shadow: 0 0 0 3px color-mix(in srgb, #ff9f1c 30%, transparent); }
+.unit-dots small { margin-left: auto; color: var(--muted); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+.streak-card { margin: 12px 0 4px; padding: 14px; border-radius: 20px; background: linear-gradient(160deg, color-mix(in srgb, #ff9f1c 16%, var(--surface)), var(--surface)); border: 1px solid color-mix(in srgb, #ff9f1c 30%, var(--line)); }
+.sc-head { display: flex; align-items: center; gap: 12px; }
+.sc-num { display: inline-flex; align-items: center; gap: 4px; font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1; color: #f27f0c; }
+.sc-head b { display: block; font-size: 16px; } .sc-head small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.week-dots { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin: 12px 0; }
+.wd { display: grid; justify-items: center; gap: 4px; min-width: 0; } .wd small { font-size: 11px; font-weight: 700; color: var(--muted); }
+.wd i { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--line); font-style: normal; font-weight: 800; font-size: 14px; color: #fff; }
+.wd.done i { background: #ff9f1c; border-color: #ff9f1c; } .wd.today i { border-color: #ff9f1c; }
+@media (max-width: 360px) { .res-tile b { font-size: 16px; } .wd i { width: 24px; height: 24px; } }
+
+/* Xarita: zona "can-do" qatori va "Yo'l tanlang" oynasi */
+.zone-cando { font-size: 12px; font-style: italic; color: var(--muted); margin-top: 2px; }
+.chip-route { border: 0; cursor: pointer; font-family: inherit; color: inherit; }
+.route-list { display: grid; gap: 10px; margin-top: 12px; }
+.route-item { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; border: 2px solid var(--line); background: var(--surface); color: inherit; text-decoration: none; }
+.route-item span { flex: 1; min-width: 0; } .route-item b { display: block; font-size: 16px; } .route-item small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.route-item.on { border-color: #7c5cff; background: color-mix(in srgb, #7c5cff 8%, var(--surface)); } .route-item.on svg { color: #7c5cff; }
+.route-item svg.rot { transform: rotate(-90deg); color: var(--muted); }
+
+/* Ko'p tanlovli mashq: katakcha */
+.opt.multi { display: flex; align-items: center; gap: 12px; text-align: left; }
+.opt.multi .mbox { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--line); font-weight: 800; font-size: 15px; color: #fff; background: var(--surface); }
+.opt.multi.sel .mbox { background: #7c5cff; border-color: #7c5cff; }
+.opt.multi.right .mbox { background: #2ecc71; border-color: #2ecc71; } .opt.multi.bad .mbox { background: #ff5a5f; border-color: #ff5a5f; }
+
+/* Dars ichidagi Sellzen fikri */
+.ai-fb { margin: 12px 0 0; }
+.ai-fb-card { padding: 14px; border-radius: 18px; background: color-mix(in srgb, #7c5cff 8%, var(--surface)); border: 1px solid color-mix(in srgb, #7c5cff 28%, var(--line)); }
+.ai-fb-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; } .ai-fb-head b { display: inline-flex; align-items: center; gap: 4px; }
+.ai-fb-card p { margin: 8px 0; line-height: 1.45; }
+.ai-fb-better { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; } .ai-fb-better small { color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 11px; }
+.ai-fb-better p { margin: 4px 0 0; display: flex; align-items: center; gap: 6px; }

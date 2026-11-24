@@ -73,3 +73,20 @@ Ilova nomi skrinshotda ko'rinmaydi. Bu General English'ga yo'naltirilgan, Duolin
 - Gemini sig'imi: 503/«vaqt tugadi» takrorlanadi; zaxira model zanjiri ishlaydi, lekin 2026-11-24 13:17 (UTC) da uchala model ham javob bermagan holat bo'lgan. Ikkinchi provayder kaliti tavsiya etiladi.
 - Ovozni matnga o'girish: haqiqiy foydalanuvchi talaffuzida ishonch past (-0.2…-0.4) — kuzatish kerak; past ishonchli matn endi ustozga «ishonchsiz» deb yuboriladi.
 - Hajmli servis: har deploy 3–15 soniyalik uzilish — `docs/runbooks/railway-deploys.md`.
+
+## 8. Kodga kiritilganlar (shu hujjat takliflaridan)
+
+| Taklif | Holat | Qayerda |
+|---|---|---|
+| Missiya yakuni plitkalari (yulduz, XP, aniqlik, vaqt + bo'lim nuqtalari) | **Bajarildi** | `src/components/ResultTiles.tsx`, `src/lib/lessonStats.ts` |
+| Kunlik seriya kartochkasi (haftalik nuqtalar + ulashish) | **Bajarildi** (dars yakunida, kunlik maqsad bajarilganda) | `StreakCard`, `weekDots` |
+| «Can-do» sarlavhalar (har daraja zonasida) | **Bajarildi** (inglizcha, tarjima kerak emas) | `CAN_DO` — `mapArt.tsx` |
+| «Yo'l tanlang» oynasi (General English ⇄ IELTS ⇄ Imtihon) | **Bajarildi** | `LearningMap.tsx` |
+| «Barcha to'g'ri javobni tanlang» (`multi` mashq turi) | **Bajarildi**: tur, tekshiruv, metodist formati (`+` qator), 3 ta mashq | `types.ts`, `lessons.ts`, `LessonItem.tsx`, `lessonDsl.ts` |
+| Dars ichida AI fikr (yozma topshiriq) | **Bajarildi**: `/api/ai/lesson`, kuniga 5 ta (admin: Limitlar → Sellzen), xatoda chegara qaytariladi | `server/ai.ts`, `AiFeedback.tsx` |
+| Kontent chuqurligi «pol» testi | **Bajarildi** | `src/content/depth.test.ts` |
+| Dars ichida **speaking** uchun AI fikr | Keyingi bosqich (dars speaking'i hozir shadowing — erkin gapirish topshirig'i kerak) | — |
+| Gapni bosib belgilash («tap-to-mark») mashqi | Keyingi bosqich | — |
+| A1 ga yana 3 bo'lim (maktab/ish kuni, uy va xonalar, hobbi) | Keyingi bosqich (har dars ~30 matn × 5 til) | — |
+| Kunlik streak — to'liq ekranli bayram | Keyingi bosqich (hozir natija ekranida kartochka) | — |
+| PWA / offline darslar | Keyingi bosqich | — |

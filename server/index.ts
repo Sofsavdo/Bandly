@@ -53,7 +53,7 @@ import { adminCreators, adminSetProfile, createCampaign, creatorsCsv, listCampai
 import { attachAttribution, clientFingerprint, creditMode, createLink, creatorFunnel, linksOf, noteCreatorDevice, purgeCreatorData, recordClick, recordClickEvent, scanClickBursts, setLinkActive, isClickId } from './creatorLinks';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
 import { coverage, dictFor, isTarget, langReady, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
-import { complete, AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
+import { complete, AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, lessonFeedback, nativeOf } from './ai';
 
 const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
@@ -679,6 +679,23 @@ const httpServer = createServer(async (req, res) => {
           if (lv === 0) return send(res, 200, { question: await withAiCtx(ctx, () => followUp(ai, String(b.question ?? ''), String(b.answer ?? ''))), reaction: null });
           return send(res, 200, await withAiCtx(ctx, () => followUpPersona(ai, String(b.question ?? ''), String(b.answer ?? ''), lv as 1 | 2 | 3, undefined, nativeOf(req.headers['x-lang']))));
         } catch (e) { refundAi(db, player.id, '', now); refundGlobalAi(db, now); throw e; }
+      }
+      if (url.pathname === '/api/ai/lesson') {
+        // Dars ichidagi qisqa yozma topshiriq: bitta qisqa AI so'rovi (tezkor model). Kiritishni pul sarflashdan OLDIN tekshiramiz.
+        const player = byToken(db, token);
+        const text = String(b.text ?? '').trim().slice(0, 600);
+        const target = String(b.target ?? '').trim().slice(0, 300);
+        if (text.split(/\s+/).filter(Boolean).length < 2) throw new ApiError(400, 'Fikr olish uchun kamida bitta gap yozing');
+        const limit = settingValue('LESSON_FEEDBACK_DAILY');
+        if (limit <= 0) throw new ApiError(503, 'Dars fikri hozir o‘chirilgan');
+        useGlobalAi(db, COACH_GLOBAL_DAILY(), now);
+        let used = 0;
+        try { used = useAi(db, token, now, limit, 'lessonfb', 'Bugungi Sellzen fikrlari limiti tugadi. Yangi limit ertaga 00:00 da (Toshkent).'); } catch (e) { refundGlobalAi(db, now); throw e; }
+        try {
+          const lv = /^(A1|A2|B1|B2|C1|C2)$/.test(String(b.level ?? '')) ? String(b.level) : null;
+          const r = await withAiCtx({ playerId: player.id, feature: 'lesson_feedback' }, () => lessonFeedback(coachAi, target, text, nativeOf(req.headers['x-lang']), lv));
+          return send(res, 200, { ...r, left: Math.max(0, limit - used) });
+        } catch (e) { refundAi(db, player.id, 'lessonfb', now); refundGlobalAi(db, now); throw e; }
       }
       if (url.pathname === '/api/ai/speaking' || url.pathname === '/api/ai/writing') {
         const kind = url.pathname.endsWith('writing') ? 'writing' : 'speaking';

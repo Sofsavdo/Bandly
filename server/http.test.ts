@@ -36,10 +36,11 @@ await new Promise<void>((r) => fakeHamyon.listen(0, '127.0.0.1', r));
 const hamyonPort = (fakeHamyon.address() as { port: number }).port;
 
 // ---- Soxta AI provayder (OpenAI formati): 503 / JSON emas / bo'sh — haqiqiy AI va xarajat yo'q ----
-const aiMode = { mode: '503' as '503' | 'garbage' | 'empty', calls: 0 };
+const aiMode = { mode: '503' as '503' | 'garbage' | 'empty' | 'feedback', calls: 0 };
 const fakeAi = createServer(async (req, res) => {
   await body(req); aiMode.calls++;
   if (aiMode.mode === '503') { res.statusCode = 503; res.setHeader('content-type', 'application/json'); return res.end(JSON.stringify({ error: { message: 'overloaded' } })); }
+  if (aiMode.mode === 'feedback') { res.setHeader('content-type', 'application/json'); return res.end(JSON.stringify({ choices: [{ message: { content: '{"feedback":"Yaxshi boshladingiz. “student” oldidan a kerak.","better":"I am a student.","level":"A1"}' } }] })); }
   if (aiMode.mode === 'garbage') { res.setHeader('content-type', 'text/html'); return res.end('<html>gateway</html>'); }
   res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ choices: [{ message: { content: '' } }] }));
 });
@@ -132,6 +133,20 @@ try {
     assert.ok(typeof w.json.error === 'string' && w.json.error.length > 5 && !/stack|Error:/.test(w.json.error), `${mode}: tushunarli xabar`);
     assert.equal(aiMode.calls, 1, `${mode}: bitta model sozlamasida bir marta so'raladi (ortiqcha xarajat yo'q)`);
     assert.equal((await me()).ai.writing.used, usedBefore, `${mode}: AI javob bermasa kvota sarflanmaydi`);
+  }
+  // ---- Dars ichidagi Sellzen fikri (/api/ai/lesson): qisqa JSON, kunlik chegara, xatoda chegara qaytariladi ----
+  {
+    const fb = (text: string) => api('/api/ai/lesson', { method: 'POST', body: JSON.stringify({ token, text, target: 'Write one sentence about your family.', level: 'A1' }) });
+    aiMode.mode = 'feedback'; aiMode.calls = 0;
+    assert.equal((await fb('student')).status, 400, 'bir so‘z — so‘rovsiz rad etiladi'); assert.equal(aiMode.calls, 0, 'qisqa matn uchun AI chaqirilmaydi');
+    const r1 = await fb('I am student');
+    assert.equal(r1.status, 200); assert.deepEqual([r1.json.better, r1.json.level, r1.json.left], ['I am a student.', 'A1', 4], 'standart chegara kuniga 5 ta');
+    aiMode.mode = '503';
+    const bad = await fb('I am student'); assert.ok(bad.status === 503 || bad.status === 502, `AI band: ${bad.status}`);
+    aiMode.mode = 'feedback';
+    assert.equal((await fb('I am student')).json.left, 3, 'xato urinish chegarani sarflamadi');
+    for (let i = 0; i < 3; i++) assert.equal((await fb('I am student')).status, 200);
+    const over = await fb('I am student'); assert.equal(over.status, 429, 'chegaradan keyin — 429'); assert.match(String(over.json.error), /limiti tugadi/);
   }
   assert.equal((await api('/api/health')).status, 200);
   assert.equal((await api('/api/pay/config')).status, 200, 'AI ishlamasa ham boshqa API ishlaydi');

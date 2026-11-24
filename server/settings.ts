@@ -27,6 +27,7 @@ export const SETTINGS: SettingDef[] = [
   // Sellzen (hamma uchun)
   { key: 'AI_COACH_DAILY_LIMIT', group: 'coach', label: 'Kuniga Sellzen matnli xabarlari (bitta o‘quvchi)', def: 30, min: 0, max: 2000 },
   { key: 'LIVE_MAX_SESSION_MINUTES', group: 'coach', label: 'Bitta ovozli qo‘ng‘iroqning eng uzun davomi', def: 10, min: 1, max: 60, unit: 'min' },
+  { key: 'LESSON_FEEDBACK_DAILY', group: 'coach', label: 'Dars ichidagi yozma topshiriqqa Sellzen fikri: kuniga bitta o‘quvchiga', hint: '0 — o‘chiq. Har fikr bitta qisqa AI so‘rovi', def: 5, min: 0, max: 100 },
   // Taklif (referal)
   { key: 'BOT_REQUIRE_SUBSCRIBE', group: 'bot', label: 'Botda kanalga majburiy obuna', def: 0, min: 0, max: 1 },
   { key: 'BOT_REQUIRE_PHONE', group: 'bot', label: 'Botda telefon raqamini so‘rash', def: 0, min: 0, max: 1 },

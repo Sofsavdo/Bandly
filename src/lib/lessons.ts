@@ -9,7 +9,7 @@ export const PASS_RATE = 0.8; // mastery check pass mark (hypothesis; reviewed w
 export const normalize = (s: string): string =>
   s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '').trim();
 
-export type ItemAnswer = number | string | string[] | undefined;
+export type ItemAnswer = number | string | string[] | number[] | undefined;
 
 export function checkItem(item: Item, a: ItemAnswer): boolean {
   if (a === undefined) return false;
@@ -17,10 +17,17 @@ export function checkItem(item: Item, a: ItemAnswer): boolean {
     case 'choice': return a === item.answer;
     case 'gap': return typeof a === 'string' && item.accept.some((x) => normalize(x) === normalize(a));
     case 'order': return normalize(Array.isArray(a) ? a.join(' ') : String(a)) === normalize(item.answer);
+    case 'multi': { // to'g'ri variantlarning aynan o'zi tanlangan bo'lsin (ortiqcha yoki yetishmayotgani xato)
+      if (!Array.isArray(a)) return false;
+      const sel = [...new Set((a as unknown[]).map(Number))].sort((x, y) => x - y);
+      const key = [...item.answers].sort((x, y) => x - y);
+      return sel.length === key.length && sel.every((v, i) => v === key[i]);
+    }
   }
 }
 
 export function correctAnswerText(item: Item): string {
+  if (item.kind === 'multi') return item.answers.map((i) => item.options[i]!).join(' · ');
   return item.kind === 'choice' ? item.options[item.answer]! : item.kind === 'gap' ? item.accept[0]! : item.answer;
 }
 
@@ -28,6 +35,7 @@ export function correctAnswerText(item: Item): string {
  *  yordamchi so'z olib tashlanadi. Bo'shliqsiz savollarda (masalan "Choose the correct sentence") — tanlangan variantning o'zi. */
 export function fullSentence(item: Item): string | null {
   if (item.kind === 'choice' && item.meaning) return item.listen ?? null; // eshitilgan ingliz gapi (variantlar — o'zbekcha ma'no)
+  if (item.kind === 'multi') return null;
   const ans = correctAnswerText(item);
   if (item.kind === 'order') return ans;
   const p = item.prompt;
@@ -62,6 +70,11 @@ export function validateLesson(l: Lesson): string[] {
   for (const [i, it] of [...l.practice, ...l.check].entries()) {
     if (!it.explainUz.trim()) p.push(`${l.id} item ${i}: no explanation`);
     if (it.kind === 'choice') { if (it.answer < 0 || it.answer >= it.options.length) p.push(`${l.id} item ${i}: answer index out of range`); if (new Set(it.options).size !== it.options.length) p.push(`${l.id} item ${i}: duplicate options`); }
+    if (it.kind === 'multi') {
+      if (!it.answers.length || it.answers.some((x) => x < 0 || x >= it.options.length) || new Set(it.answers).size !== it.answers.length) p.push(`${l.id} item ${i}: multi answers invalid`);
+      if (it.options.length < 3 || it.answers.length >= it.options.length) p.push(`${l.id} item ${i}: multi needs ≥ 3 options and at least one wrong`);
+      if (new Set(it.options).size !== it.options.length) p.push(`${l.id} item ${i}: duplicate options`);
+    }
     if (it.kind === 'gap') { if (!it.prompt.includes('___')) p.push(L('{0} item {1}: gap prompt lacks ___', [l.id, i])); if (!it.accept.length) p.push(`${l.id} item ${i}: no accepted answer`); }
     if (it.kind === 'order') { const w = normalize(it.words.join(' ')).split(' ').sort().join(' '); const a = normalize(it.answer).split(' ').sort().join(' '); if (w !== a) p.push(`${l.id} item ${i}: words do not form the answer`); }
   }

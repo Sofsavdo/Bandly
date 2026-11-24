@@ -60,7 +60,7 @@ export function selectBossItems(unit: Unit, units: Unit[], progress: ProgressMap
 
 // ---------------- Natijalar va davom ettirish (qurilmada) ----------------
 export interface BossRecord { attempts: number; best: number; passedAt: number | null }
-export interface BossRun { unitId: string; seed: string; refs: BossRef[]; answers: (number | string | string[] | undefined)[]; shown: boolean[]; hearts: number; startedAt: number; done: 'won' | 'lost' | null; before: Record<string, number>; suppressed: number }
+export interface BossRun { unitId: string; seed: string; refs: BossRef[]; answers: (number | string | string[] | number[] | undefined)[]; shown: boolean[]; hearts: number; startedAt: number; done: 'won' | 'lost' | null; before: Record<string, number>; suppressed: number }
 const RKEY = 'bandly.boss.v1';
 const PKEY = 'bandly.bossrun.v1';
 export const RESUME_MS = 24 * 3_600_000;

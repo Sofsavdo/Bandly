@@ -1,5 +1,5 @@
 import { lessonStars } from '../lib/lessonGame';
-import { Check, Flame, Lock, Play, RotateCcw, Star, Swords, Trophy, X } from 'lucide-react';
+import { Check, ChevronDown, Flame, Lock, Play, RotateCcw, Route, Star, Swords, Trophy, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { UNITS, lessonNodeId } from '../content/lessons';
 import type { Lesson, Unit } from '../content/lessons/types';
@@ -10,7 +10,7 @@ import { nodeState, type NodeState } from '../lib/gamify';
 import { isUnlocked, type ProgressMap } from '../lib/lessons';
 import { loadBoss } from '../lib/boss';
 import { useProfile } from '../lib/store';
-import { ZONES, ZONE_ILLO, type ZoneTheme } from './mapArt';
+import { ZONES, ZONE_ILLO, type ZoneTheme, CAN_DO } from './mapArt';
 import { Illo } from './Illo';
 import { L } from '../i18n';
 
@@ -96,6 +96,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
         <div className="grow">
           <h3 id={`zone-${lv}`}>{t.name} <span>· {LEVEL_NAME[lv]}</span></h3>
           <p>{t.sub}{assumed ? L(' · o‘tilgan deb hisoblangan') : ''}{level === lv ? L(' · sizning darajangiz') : ''}</p>
+          {CAN_DO[lv] && <p className="zone-cando">“{CAN_DO[lv]}”</p>}
         </div>
         <svg className="zone-ring" viewBox="0 0 56 56" aria-label={L('{0} / {1} dars', [passedN, lessons.length])} role="img">
           <circle cx="28" cy="28" r={R} fill="none" stroke="currentColor" strokeOpacity=".15" strokeWidth="6" />
@@ -156,6 +157,7 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
   }, []);
   // Sahifa tagiga (footer) yetganda suzuvchi "Davom ettirish" footer matnini yopmasin
   const [atEnd, setAtEnd] = useState(false);
+  const [routes, setRoutes] = useState(false);
   useEffect(() => {
     const f = document.querySelector('.site-footer');
     if (!f || typeof IntersectionObserver === 'undefined') return;
@@ -184,12 +186,28 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
         <div className="hud-chips">
           <span className="chip-stat"><Flame size={16} /> {displayStreak(p, dayKey())}  {L('kun')}</span>{p.freezes > 0 && <span className="chip-stat" title={L('Seriya muzlatishlari: o‘tkazib yuborilgan kunni yopadi')}>❄ {p.freezes}</span>}
           <span className="chip-stat"><Star size={16} /> {today}/{p.dailyGoal}  {L('XP')}</span>
+          <button type="button" className="chip-stat chip-route" onClick={() => setRoutes(true)} aria-haspopup="dialog"><Route size={16} /> {L('General English')} <ChevronDown size={14} /></button>
         </div>
       </div>
 
       {[...levels].reverse().map((lv) => <Zone key={lv} lv={lv} progress={progress} currentId={currentId} level={level} onPick={setSel} curRef={curRef} />)}
 
       {currentId && !atEnd && <a className="map-fab" href={`#/learn/${currentId}`}><Play size={18} />  {L('Davom ettirish')}</a>}
+
+      {routes && (
+        <div className="sheet-backdrop" role="presentation" onClick={() => setRoutes(false)}>
+          <div className="sheet card route-sheet" role="dialog" aria-modal="true" aria-labelledby="route-title" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="icon-btn sm sheet-x" onClick={() => setRoutes(false)} aria-label={L('Yopish')}><X size={16} /></button>
+            <h3 id="route-title">{L('Yo‘l tanlang')}</h3>
+            <p className="muted">{L('Qaysi yo‘lda davom etasiz?')}</p>
+            <div className="route-list">
+              <a className="route-item on" href="#/learn" onClick={() => setRoutes(false)}><span><b>{L('General English')}</b><small>{L('Noldan A1 dan C2 gacha, bo‘lim-bo‘lim')}</small></span><Check size={18} /></a>
+              <a className="route-item" href="#/ielts"><span><b>{L('IELTS kursi')}</b><small>{L('Reading, Listening, Writing va Speaking strategiyalari')}</small></span><ChevronDown size={18} className="rot" /></a>
+              <a className="route-item" href="#/exam"><span><b>{L('Imtihon tayyorgarligi')}</b><small>{L('Mock testlar, CEFR va SAT')}</small></span><ChevronDown size={18} className="rot" /></a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {sel && (
         <div className="sheet-backdrop" role="presentation" onClick={() => setSel(null)}>

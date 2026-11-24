@@ -20,6 +20,12 @@ export const ZONES: Record<string, ZoneTheme> = {
   C2: { name: L('Cho‘qqi'), sub: L('Mukammallik'), sky: ['#fffbea', '#fff4cf'], hill: ['#ffd65c', '#ffe9a6'], road: '#ffffff', roadEdge: '#ffe9a6', accent: '#e9a300', accentDark: '#b47d00', props: ['peak', 'stars', 'cloud', 'peak', 'flag', 'cloud'] },
 };
 
+/** Har daraja uchun "men nima qila olaman" (can-do) — o'quvchiga shu zonadan nimani olib chiqishi aytiladi. Inglizcha: o'quvchi maqsad tilining o'zida ko'radi. */
+export const CAN_DO: Record<string, string> = {
+  A1: 'I can introduce myself and my family.', A2: 'I can handle everyday situations.', B1: 'I can talk about my experience and plans.',
+  B2: 'I can discuss complex topics and give opinions.', C1: 'I can express myself fluently and precisely.', C2: 'I can use English with natural nuance and style.',
+};
+
 /** Xarita bezaklari: Sellzen 3.0 tasvirlari (bosh sahifadagi bilan bir uslub), har daraja o'z mavzusida. */
 export const ZONE_ILLO: Record<string, IlloKind[]> = {
   A1: ['books', 'chat', 'star', 'pencil'], A2: ['headphones', 'map', 'chat', 'clock'], B1: ['mic', 'books', 'target', 'headphones'],

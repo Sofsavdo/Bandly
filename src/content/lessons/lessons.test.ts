@@ -10,7 +10,7 @@ assert.equal(new Set(ALL_LESSONS.map((x) => x.lesson.id)).size, ALL_LESSONS.leng
 assert.ok(UNITS.every((u) => u.status === 'pilot'), 'new lessons are pilot (visible with review-pending label), never claimed as reviewed');
 // every item's stated correct answer passes its own checker (no broken keys)
 for (const { lesson } of ALL_LESSONS) for (const it of [...lesson.practice, ...lesson.check]) {
-  const ans = it.kind === 'choice' ? it.answer : it.kind === 'gap' ? it.accept[0]! : it.answer.split(' ');
+  const ans = it.kind === 'choice' ? it.answer : it.kind === 'gap' ? it.accept[0]! : it.kind === 'multi' ? it.answers : it.answer.split(' ');
   assert.ok(checkItem(it, ans), `${lesson.id}: key fails "${correctAnswerText(it)}"`);
 }
 // graph: lessons form one A1-rooted path and the whole curriculum stays valid
@@ -23,9 +23,18 @@ assert.ok(checkItem({ kind: 'gap', prompt: 'x ___', accept: ['aren’t', 'are no
 assert.ok(!checkItem({ kind: 'gap', prompt: 'x ___', accept: ['is'], explainUz: '.' }, 'are'));
 assert.ok(checkItem({ kind: 'order', words: ['b', 'a'], answer: 'a b', explainUz: '.' }, ['a', 'b']));
 assert.ok(!checkItem({ kind: 'choice', prompt: 'p', options: ['x', 'y'], answer: 1, explainUz: '.' }, undefined), 'unanswered is wrong');
+// ko'p tanlovli mashq: to'g'ri variantlarning aynan o'zi tanlangan bo'lsagina to'g'ri
+{
+  const m = { kind: 'multi' as const, prompt: 'Choose ALL the correct sentences.', options: ['a', 'b', 'c', 'd'], answers: [0, 2], explainUz: '.' };
+  assert.ok(checkItem(m, [0, 2]) && checkItem(m, [2, 0]), 'tartibdan qat’i nazar');
+  assert.ok(!checkItem(m, [0]) && !checkItem(m, [0, 2, 3]) && !checkItem(m, [1, 3]) && !checkItem(m, []) && !checkItem(m, undefined), 'yetishmaydi, ortiqcha yoki xato — noto‘g‘ri');
+  assert.equal(correctAnswerText(m), 'a · c');
+  assert.equal(validateLesson({ ...lessonById('a1-u11-l1')!.lesson, practice: [...lessonById('a1-u11-l1')!.lesson.practice, { ...m, answers: [0, 1, 2, 3] }] }).length, 1, 'hamma variant to‘g‘ri bo‘lishi mumkin emas');
+  assert.ok(ALL_LESSONS.some((x) => x.lesson.practice.some((it) => it.kind === 'multi')), 'kontentda ko‘p tanlovli mashq bor');
+}
 // scoring and pass mark
 const items = lessonById('a1-u1-l1')!.lesson.check;
-const keys = items.map((it) => (it.kind === 'choice' ? it.answer : it.kind === 'gap' ? it.accept[0]! : it.answer.split(' ')));
+const keys = items.map((it) => (it.kind === 'choice' ? it.answer : it.kind === 'gap' ? it.accept[0]! : it.kind === 'multi' ? it.answers : it.answer.split(' ')));
 assert.equal(scoreCheck(items, keys).passed, true);
 const oneWrong = [...keys]; oneWrong[0] = 99; assert.equal(scoreCheck(items, oneWrong).correct, items.length - 1);
 assert.equal(scoreCheck(items, oneWrong).passed, (items.length - 1) / items.length >= PASS_RATE);
@@ -72,7 +81,7 @@ for (const { lesson } of IELTS_LESSONS) {
   assert.deepEqual(validateLesson(lesson), [], lesson.id);
   assert.ok(isIeltsLesson(lesson.id), `${lesson.id}: id ie- bilan boshlanadi`);
   for (const it of [...lesson.practice, ...lesson.check]) {
-    const ans = it.kind === 'choice' ? it.answer : it.kind === 'gap' ? it.accept[0]! : it.answer.split(' ');
+    const ans = it.kind === 'choice' ? it.answer : it.kind === 'gap' ? it.accept[0]! : it.kind === 'multi' ? it.answers : it.answer.split(' ');
     assert.ok(checkItem(it, ans), `${lesson.id}: key fails "${correctAnswerText(it)}"`);
   }
   assert.equal(lessonWordIds(lesson.id).length, (lesson.vocab ?? []).length, `${lesson.id}: so'zlar umumiy ro'yxatda bor`);
@@ -83,7 +92,7 @@ const allIds = [...ALL_LESSONS, ...IELTS_LESSONS].map((x) => x.lesson.id);
 assert.equal(new Set(allIds).size, allIds.length, 'GE va IELTS dars id lari takrorlanmaydi');
 assert.ok(IELTS_UNITS.every((u) => u.status === 'pilot'));
 // prompt bir dars ichida takrorlanmasin
-for (const { lesson } of IELTS_LESSONS) { const pr = [...lesson.practice, ...lesson.check].map((it) => it.kind === 'order' ? it.answer : `${it.listen ?? ''}|${it.prompt}`); assert.equal(new Set(pr).size, pr.length, `${lesson.id}: takror savol`); }
+for (const { lesson } of IELTS_LESSONS) { const pr = [...lesson.practice, ...lesson.check].map((it) => it.kind === 'order' ? it.answer : `${it.kind === 'multi' ? '' : it.listen ?? ''}|${it.prompt}`); assert.equal(new Set(pr).size, pr.length, `${lesson.id}: takror savol`); }
 const rt = IELTS_TRACKS[0]!;
 const passAll = Object.fromEntries(rt.start.lessons.map((l) => [l.id, { attempts: 1, best: 1, passedAt: 1 }]));
 assert.ok(ieltsUnlocked(rt.start, 0, {}, 'A2'), 'Start doim ochiq');
