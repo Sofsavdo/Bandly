@@ -113,6 +113,8 @@ if (bot) setupBot(bot, fetch, { onUsername: (u) => { botUsername = u; } }).then(
 }).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
 const tts = ttsConfigFromEnv(process.env.TTS_CACHE_DIR ?? `${dirname(DB_FILE)}/tts-cache`);
 
+let shuttingDown = false; // SIGTERM kelgach true (salomatlik tekshiruvi 503 qaytaradi)
+
 // Oddiy so'rov tezligi cheklovi (IP bo'yicha; standart daqiqada 120 ta). Admin panel → "Xarajat himoyasi" yoki API_RATE_PER_MIN orqali o'zgaradi
 const hits = new Map<string, { n: number; reset: number }>();
 function limited(ip: string): boolean {
@@ -817,7 +819,12 @@ const httpServer = createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': type, 'content-length': size, 'accept-ranges': 'bytes', 'cache-control': 'public, max-age=86400' });
       return createReadStream(full).pipe(res);
     }
-    if (url.pathname === '/api/health') return send(res, 200, { ok: true });
+    if (url.pathname === '/api/health') {
+      // O'chirilayotganda 503 (yangi so'rovlar boshqa nusxaga o'tsin); aks holda baza javob berishini ham tekshiramiz
+      if (shuttingDown) return send(res, 503, { ok: false, shuttingDown: true });
+      try { db.prepare('SELECT 1').get(); } catch { return send(res, 503, { ok: false, db: false }); }
+      return send(res, 200, { ok: true });
+    }
     // Domenlararo 301 yo'naltirish YO'Q: brauzerlar 301 ni doimiy eslab qoladi va qarama-qarshi yo'naltirishlar bilan cheksiz aylanish
     // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (sellzen.uz) ko'rsatiladi.
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
@@ -873,7 +880,7 @@ if (live) attachLive(httpServer, {
     recordStt(db, pid, secs);
     console.log(`[stt] live ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} ishonch=${r.score === null || r.score === undefined ? '?' : r.score.toFixed(2)} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
     recordAiCost(db, { playerId: pid, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
-    return { text: r.text, lang: r.lang };
+    return { text: r.text, lang: r.lang, score: r.score ?? null };
   } : undefined,
   onTranscript: (pid, turns, lang) => {
     if (ai.provider === 'none') return;
@@ -904,7 +911,12 @@ if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) 
 // Railway yangi versiyani ishga tushirganda eskisiga SIGTERM yuboradi: so'rovlarni tugatib, bazani yopib, toza chiqamiz
 for (const sig of ['SIGTERM', 'SIGINT'] as const) {
   process.on(sig, () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`[shutdown] ${sig}: draining (no new connections)`);
     httpServer.close(() => { try { db.close(); } catch { /* allaqachon yopilgan */ } process.exit(0); });
-    setTimeout(() => process.exit(0), 8000).unref();
+    httpServer.closeIdleConnections(); // bo'sh keep-alive ulanishlar darhol yopiladi (aks holda yopilish 5 soniyagacha cho'zilardi)
+    setTimeout(() => httpServer.closeAllConnections(), 5000).unref(); // uzoq (WebSocket, AI) ulanishlar 5 soniyadan keyin uziladi
+    setTimeout(() => process.exit(0), 8000).unref(); // Railway: RAILWAY_DEPLOYMENT_DRAINING_SECONDS=10 dan oldin tugaydi
   });
 }

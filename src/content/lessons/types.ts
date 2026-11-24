@@ -3,7 +3,7 @@ import type { TaxonomyId } from '../../lib/adaptive/taxonomy';
 
 /** Exercise items. All answers are checked deterministically (no AI). */
 export type Item =
-  | { kind: 'choice'; prompt: string; options: string[]; answer: number; explainUz: string; listen?: string }
+  | { kind: 'choice'; prompt: string; options: string[]; answer: number; explainUz: string; listen?: string; /** variantlar o'zbekcha ma'no (ingliz gapi emas): to'liq gap sifatida o'qilmaydi */ meaning?: boolean }
   | { kind: 'gap'; prompt: string; accept: string[]; explainUz: string; listen?: string }    // prompt contains "___"
   | { kind: 'order'; words: string[]; answer: string; explainUz: string };   // arrange words into the answer sentence
 

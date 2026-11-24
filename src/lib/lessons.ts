@@ -27,6 +27,7 @@ export function correctAnswerText(item: Item): string {
 /** Javob qo'yilgan to'liq inglizcha gap (fikr-mulohazada ko'rsatish va eshittirish uchun): bo'shliq to'ldiriladi, qavsdagi
  *  yordamchi so'z olib tashlanadi. Bo'shliqsiz savollarda (masalan "Choose the correct sentence") — tanlangan variantning o'zi. */
 export function fullSentence(item: Item): string | null {
+  if (item.kind === 'choice' && item.meaning) return item.listen ?? null; // eshitilgan ingliz gapi (variantlar — o'zbekcha ma'no)
   const ans = correctAnswerText(item);
   if (item.kind === 'order') return ans;
   const p = item.prompt;

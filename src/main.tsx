@@ -7,6 +7,8 @@ import './styles.css';
 import './design3.css'; // Design 3.0 qatlami: pastel ranglar, qora pill tugmalar, yon panel
 import { deepTranslate, getLang, initI18n } from './i18n';
 import { captureRef } from './lib/referral';
+import { installNetRetry } from './lib/netRetry';
+installNetRetry(); // deploy paytidagi qisqa uzilishda o'qish so'rovlari o'zi qayta uriniladi
 
 captureRef(); // taklif havolasi (Telegram URL'ni tozalashidan oldin)
 
