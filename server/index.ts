@@ -746,6 +746,18 @@ if (live) attachLive(httpServer, {
   // Birinchi qo'ng'iroq — server bo'yicha (boshqa qurilmada ham to'g'ri); xotira — o'tgan qo'ng'iroqlardagi xatolar
   context: (pid) => ({ firstCall: !db.prepare('SELECT 1 FROM live_usage WHERE player_id = ? LIMIT 1').get(pid), memory: memoryForPrompt(getMemory(db, pid)) }),
   kickoff: liveKickoff,
+  // Ovozli suhbatda o'quvchi gapini ElevenLabs Scribe tanidi (o'zbekcha va aksentli inglizchani Gemini'dan yaxshi tushunadi), Gemini'ga matn boradi.
+  // Mavjud STT integratsiyasi va uning kunlik limitlari (STT_DAILY_MINUTES / STT_GLOBAL_DAILY_MINUTES) ishlatiladi; LIVE_ASR=gemini — eski usul (ovoz Gemini'ga).
+  // Limit tugasa yoki Scribe xato bersa — shu navbat ovozi Gemini'ga yuboriladi (o'quvchi javobsiz qolmaydi). Qo'ng'iroq daqiqalari qayta sanalmaydi (onEnd hisoblaydi).
+  asr: stt && (process.env.LIVE_ASR ?? 'scribe').trim().toLowerCase() !== 'gemini' ? async (pid, wav, lang) => {
+    sttAllowed(db, stt, pid);
+    const r = await transcribeLearner(stt, wav, 'audio/wav', NATIVE_STT_CODE[lang] ?? 'uzb', 'any');
+    const secs = r.seconds || wav.length / 32000;
+    recordStt(db, pid, secs);
+    console.log(`[stt] live ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
+    recordAiCost(db, { playerId: pid, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
+    return { text: r.text, lang: r.lang };
+  } : undefined,
   onTranscript: (pid, turns, lang) => {
     if (ai.provider === 'none') return;
     const q = summaryPrompt(turns, nativeOf(lang));

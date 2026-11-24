@@ -5,7 +5,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { ApiError } from './db';
 import { tzDay } from './day';
 
-export interface SttConfig { key: string; model: string; dailySecondsPerUser: number; globalDailySeconds: number; pricePerHour: number; fetchImpl?: typeof fetch }
+export interface SttConfig { key: string; model: string; dailySecondsPerUser: number; globalDailySeconds: number; pricePerHour: number; fetchImpl?: typeof fetch; /** faqat sinov uchun (STT_BASE_URL): soxta Scribe serveri; standart — ElevenLabs */ baseUrl?: string }
 export const MAX_AUDIO = 3 * 1024 * 1024; // ~90 soniya opus
 const MIMES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/aac', 'video/webm'];
 
@@ -14,7 +14,7 @@ export function sttConfigFromEnv(env: NodeJS.ProcessEnv = process.env): SttConfi
   const key = (env.ELEVENLABS_API_KEY ?? '').trim();
   const global = Number(env.STT_GLOBAL_DAILY_MINUTES ?? 600);
   if (!key || !(global > 0) || env.STT_PROVIDER === 'none') return null;
-  return { key, model: env.STT_MODEL ?? 'scribe_v1', dailySecondsPerUser: Number(env.STT_DAILY_MINUTES ?? 40) * 60, globalDailySeconds: global * 60, pricePerHour: Number(env.PRICE_STT_PER_HOUR ?? 0.4) };
+  return { key, model: env.STT_MODEL ?? 'scribe_v1', dailySecondsPerUser: Number(env.STT_DAILY_MINUTES ?? 40) * 60, globalDailySeconds: global * 60, pricePerHour: Number(env.PRICE_STT_PER_HOUR ?? 0.4), ...(env.STT_BASE_URL ? { baseUrl: env.STT_BASE_URL.trim().replace(/\/+$/, '') } : {}) };
 }
 
 export function ensureSttTable(db: DatabaseSync): void {
@@ -60,7 +60,7 @@ export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, la
   form.append('tag_audio_events', 'false');
   if (language) form.append('language_code', language);
   form.append('file', new Blob([new Uint8Array(audio)], { type }), `turn.${type.split('/')[1]}`);
-  const r = await (cfg.fetchImpl ?? fetch)('https://api.elevenlabs.io/v1/speech-to-text', { method: 'POST', headers: { 'xi-api-key': cfg.key }, body: form, signal: AbortSignal.timeout(30_000) });
+  const r = await (cfg.fetchImpl ?? fetch)(`${cfg.baseUrl ?? 'https://api.elevenlabs.io'}/v1/speech-to-text`, { method: 'POST', headers: { 'xi-api-key': cfg.key }, body: form, signal: AbortSignal.timeout(30_000) });
   if (!r.ok) throw new ApiError(502, `Nutqni tanib bo‘lmadi (${r.status})`);
   const j = await r.json() as { text?: string; language_code?: string; words?: { end?: number; type?: string }[] };
   const words = (j.words ?? []).filter((w) => w.type !== 'spacing');

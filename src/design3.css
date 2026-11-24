@@ -1467,26 +1467,42 @@ main.container { min-height: 100vh; }
 .tutor-call.emo-impressed { background: linear-gradient(180deg, rgba(252, 231, 243, .95), var(--surface) 60%); }
 @media (prefers-color-scheme: dark) { .tutor-call.emo-impressed { background: linear-gradient(180deg, rgba(131, 24, 67, .5), var(--surface) 60%); } }
 
-/* ===== Bosib-gapirish (push-to-talk): avatar/tugma — bosiladigan maydon; taymer, matn, tugmalar ===== */
-.ptt-pad, .mic-big.ptt { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
-.ptt-pad { display: grid; place-items: center; padding: 6px; border: 0; background: transparent; cursor: pointer; border-radius: 50%; color: inherit; transition: transform .15s; }
-.ptt-pad:disabled { cursor: default; opacity: .7; }
-.ptt-pad.on { transform: scale(1.03); }
-.ptt-pad:focus-visible, .mic-big.ptt:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
-.ptt-pad .ai-orb-wrap::after { display: none; }
-.voice-sub { margin: -14px 0 0; color: var(--ink-3, #6b7280); font-size: 14px; text-align: center; max-width: 320px; }
-.voice-top .muted.warn { color: var(--coral, #e5372b); }
-.voice-bar { height: 4px; border-radius: 999px; background: var(--line-2, rgba(0, 0, 0, .08)); overflow: hidden; margin: -4px 0 4px; }
-.voice-bar i { display: block; height: 100%; background: var(--brand); border-radius: inherit; transition: width 1s linear; }
-.voice-bar.warn i { background: var(--coral, #e5372b); }
-.voice-lines { display: grid; gap: 6px; width: min(100%, 420px); font-size: 14.5px; line-height: 1.4; }
-.voice-lines .vl { margin: 0; padding: 8px 12px; border-radius: 14px; background: var(--surface-2); color: var(--ink); max-height: 5.6em; overflow: hidden; }
-.voice-lines .vl.you { background: color-mix(in srgb, var(--brand) 12%, var(--surface)); }
-.voice-lines .vl b { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3, #6b7280); margin-right: 6px; }
-.voice-lessons { align-self: center; }
-.mic-big.ptt.on { background: var(--coral); color: #fff; animation: bm-pulse 1.2s ease-in-out infinite; }
-.mic-bars { display: inline-flex; align-items: center; gap: 4px; height: 44px; }
-.mic-bars i { width: 5px; border-radius: 3px; background: currentColor; transition: height .08s linear; }
-/* Bosib-gapirish ekrani: matn qatorlari va tugma sig'adi (kontent o'sganda tugmalar ustiga chiqib ketmasin) */
-.tutor-call.voice .voice-stage { flex: 1 0 auto; gap: 14px; padding-bottom: 12px; }
-.ai-avatar .av-shape { transition: opacity .25s ease, stroke .25s ease; }
+/* ===== Qo'ng'iroq ekrani: butun ekran, bitta sahifaga sig'adi, joylar band qilingan (siljish va skrol yo'q) ===== */
+.tutor-call.call { position: fixed; inset: 0; z-index: 1000; margin: 0; padding: calc(env(safe-area-inset-top) + 4px) 16px calc(10px + env(safe-area-inset-bottom)); min-height: 0; max-width: none; height: auto; border-radius: 0; /* height: auto — inset:0 butun ekranni egallaydi (eski .tutor-call balandlik qoidalari bekor) */ box-shadow: none;
+  display: grid; grid-template-columns: minmax(0, 560px); justify-content: center; grid-template-rows: auto 4px minmax(0, 1fr) auto; overflow: hidden; overscroll-behavior: none; touch-action: none;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.tutor-call.call:not([class*="emo-"]) { background: radial-gradient(120% 80% at 50% 30%, var(--lilac-50), var(--surface) 70%); }
+.call-top { display: flex; align-items: center; gap: 10px; min-height: 56px; }
+.call-who { font-weight: 800; font-size: 15px; }
+.call-time { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.call-time.warn { color: var(--coral, #e5372b); }
+.call-end { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; background: var(--coral-50); color: var(--red, #dc2626); cursor: pointer; touch-action: manipulation; }
+.call-end:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.call-bar { height: 4px; border-radius: 999px; background: var(--line-2, rgba(0, 0, 0, .08)); overflow: hidden; }
+.call-bar i { display: block; height: 100%; background: var(--brand); border-radius: inherit; transition: width 1s linear; }
+.call-bar.warn i { background: var(--coral, #e5372b); }
+.call-stage { --face: clamp(140px, min(54vw, 32vh), 260px); --face: clamp(140px, min(54vw, 32svh), 260px); min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; cursor: pointer; }
+.call-face { width: var(--face); height: var(--face); flex: none; transition: transform .15s; }
+.call.talking .call-face { transform: scale(1.04); }
+.call-face .ai-orb-wrap { width: 100%; height: 100%; }
+.call-face .ai-orb-wrap::after { display: none; }
+.call-status { margin: 8px 0 0; font-weight: 800; font-size: 18px; line-height: 1.3; min-height: 1.3em; color: var(--ink-2); }
+.call-sub { margin: 0; min-height: 2.7em; max-width: 320px; font-size: 14px; line-height: 1.35; color: var(--ink-3, #6b7280); }
+.call-lines { width: min(100%, 420px); height: 124px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; overflow: hidden; font-size: 14px; line-height: 1.35; text-align: left; }
+.call-lines .vl { margin: 0; padding: 7px 12px; border-radius: 14px; background: var(--surface-2); color: var(--ink); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.call-lines .vl.you { background: color-mix(in srgb, var(--brand) 12%, var(--surface)); }
+.call-lines .vl b { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3, #6b7280); margin-right: 6px; }
+.call-notes { position: absolute; left: 16px; right: 16px; bottom: calc(64px + env(safe-area-inset-bottom)); z-index: 2; max-width: 528px; margin: 0 auto; display: grid; gap: 6px; text-align: left; touch-action: manipulation; }
+.call-foot { min-height: 8px; }
+.call-foot .tutor-type { margin: 0; }
+@media (max-height: 560px) { .call-stage { --face: clamp(96px, 24vh, 150px); --face: clamp(96px, 24svh, 150px); } .call-lines { height: 80px; } .call-sub { min-height: 1.4em; } .call-top { min-height: 48px; } }
+@media (max-height: 440px) { .call-lines { display: none; } }
+/* Qo'ng'iroqdan oldin: Sellzen yuzi — "boshlash" tugmasi */
+.start-face { border: 0; background: transparent; padding: 6px; border-radius: 50%; cursor: pointer; touch-action: manipulation; animation: start-pulse 2.4s ease-in-out infinite; }
+.start-face:disabled { opacity: .6; animation: none; cursor: default; }
+.start-face:focus-visible { outline: 3px solid var(--brand); outline-offset: 4px; }
+@keyframes start-pulse { 50% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .start-face, .call-face { animation: none !important; transition: none !important; } }
+/* Qo'ng'iroq ekrani orqasidagi sahifa (sarlavha, menyu) ko'rinib turmasin: hissiyot fonlari yarim shaffof, shuning uchun ularning ostiga to'liq fon qo'yiladi */
+.tutor-call.call { isolation: isolate; }
+.tutor-call.call::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--bg, #fff); }

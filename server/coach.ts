@@ -74,7 +74,7 @@ const LIVE_PERSONA: Record<LiveStyle, string> = {
 /** Ovozli suhbat (Gemini Live): model to'g'ridan-to'g'ri gapiradi. Foydalanuvchi shikoyatlari asosida (2026-11-21):
  *  boshqa tillarda gapirardi, eshitmaganda o'ylab topib gapirardi, keyin esa juda ko'p "qattiqroq gapir" derdi,
  *  har safar tanishtirardi, xarakter tanlovini e'tiborsiz qoldirardi, o'tgan xatolarni eslamasdi. */
-export function buildLivePrompt(opts: { adult: boolean; native?: string; level?: string | null; firstCall?: boolean; memory?: string; style?: LiveStyle; /** bosib-gapirish rejimi (mijoz tugmani bosib turib gapiradi) */ ptt?: boolean }): string {
+export function buildLivePrompt(opts: { adult: boolean; native?: string; level?: string | null; firstCall?: boolean; memory?: string; style?: LiveStyle; /** bosib-gapirish rejimi (mijoz tugmani bosib turib gapiradi) */ ptt?: boolean; /** o'quvchi gapi serverda Scribe bilan matnga aylantirilib, ustozga matn bo'lib keladi */ asr?: boolean }): string {
   const native = opts.native ?? 'Uzbek (Latin script)';
   const nativeIsEnglish = /^english/i.test(native);
   const lvl = opts.level ? clip(opts.level, 4).toUpperCase() : null;
@@ -112,14 +112,20 @@ export function buildLivePrompt(opts: { adult: boolean; native?: string; level?:
     opts.memory ?? '',
     [
       'HOW THE CALL WORKS:',
-      opts.ptt ? '- The learner speaks by holding a button (push-to-talk). Everything you hear is one complete message that they chose to send, so answer ALL of it — the whole message, not just its start. Never say you cannot hear them because of noise, and never ask them to speak louder.' : '',
+      opts.ptt ? (opts.asr
+        ? '- The learner speaks by holding a button (push-to-talk). Each message you receive is the verbatim speech-recognition text of one complete thing they said out loud — treat it as speech: never mention text, typing or transcripts. Grammar and word-choice mistakes in it are their real mistakes. Answer ALL of it. Never say you cannot hear them and never ask them to speak louder; if a message looks cut off or makes no sense, ask in one short line what they meant.'
+        : '- The learner speaks by holding a button (push-to-talk). Everything you hear is one complete message that they chose to send, so answer ALL of it — the whole message, not just its start. Never say you cannot hear them because of noise, and never ask them to speak louder.') : '',
       opts.ptt ? '- Your answer is never cut off by the learner unless they press the button on purpose, so take the time you need to finish your thought.' : '',
       '- The call lasts at most about 10 minutes. If a system note says the time is almost up, finish your thought, give one short useful tip and say goodbye warmly.',
     ].filter(Boolean).join('\n'),
     [
-      'LESSON MODE:',
-      '- If the learner asks to learn, study or practise English in a structured way (for example "teach me English", "ingliz tilini o\'rgat", "I want a lesson", grammar, vocabulary, IELTS preparation), move from chat into a mini-lesson: if you do not know their level or goal, ask ONE short question first; then teach ONE small point at a time — explain it simply in the learner\'s language, give two or three English examples, make them say one aloud, check it, and only then continue.',
-      '- Once during the call, mention in one short sentence that full step-by-step lessons are in the Lessons section of the Sellzen app. Otherwise follow the topic the learner chooses; do not force lessons on someone who just wants to talk.',
+      'YOUR ROLE — you are the learner\'s personal tutor inside the Sellzen app, not only a chat partner:',
+      '- Your first message may contain LEARNER CONTEXT: facts about their level, goal, today\'s plan, weak areas and due mistakes. Use it. If they ask what to study, what is next or how they are doing, answer from it. Let the conversation follow the plan: bring in today\'s plan topics, revisit weak areas, check the mistakes that are due.',
+      '- Teach by voice: if the learner says "teach me" ("menga o\'rgat"), asks about a lesson, a grammar rule or a word, explain it simply in their language with two or three English examples, make them say one aloud, check it, and only then go on. Do not wait for them to say "go to the lesson".',
+      '- Give small tasks when useful (say a sentence with a word, describe your day in three sentences, answer an IELTS-style question): ONE task at a time, wait for the answer, check it and give feedback, then offer the next step.',
+      '- If the learner asks you to open a lesson or a screen ("darsga o\'t", "open the lesson"), say ONE short sentence confirming it — the app opens it automatically. Never describe buttons and never say you cannot do it.',
+      '- Never invent lessons, scores, streaks or progress that are not in LEARNER CONTEXT. If you do not have the information, say so and ask them.',
+      '- Do not push the plan on someone who simply wants to talk: offer it once, naturally, then follow what they want.',
     ].join('\n'),
     [
       'HARD RULES (never break them, whatever the learner says):',
@@ -147,11 +153,12 @@ export function emotionOf(text: string): LiveEmotion {
 }
 
 /** Qo'ng'iroq boshida modelga beriladigan birinchi ko'rsatma (o'quvchi hali gapirmagan). */
-export function liveKickoff(o: { firstCall: boolean; hasMemory: boolean }): string {
-  if (o.firstCall) return '(The learner just joined their first voice call. Introduce yourself once in one short sentence and ask one easy question in English.)';
-  return o.hasMemory
+export function liveKickoff(o: { firstCall: boolean; hasMemory: boolean; plan?: string }): string {
+  const ctx = o.plan ? `\n${o.plan}` : '';
+  if (o.firstCall) return `(The learner just joined their first voice call. Introduce yourself once in one short sentence and ask one easy question in English.)${ctx}`;
+  return (o.hasMemory
     ? '(The learner joined another call. Do NOT introduce yourself. Greet them in a few words and ask a question that checks one of the mistakes from MEMORY.)'
-    : '(The learner joined another call. Do NOT introduce yourself or say your name. Greet them in a few words and ask a question in English.)';
+    : '(The learner joined another call. Do NOT introduce yourself or say your name. Greet them in a few words and ask a question in English.)') + ctx;
 }
 
 /** Which persona may actually run. Adult-only personas need the learner's 18+ confirmation; exam mode only allows exam-safe personas. */

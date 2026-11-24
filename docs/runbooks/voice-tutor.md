@@ -1,52 +1,54 @@
-# Runbook — Ovozli ustoz (Gemini Live): bosib-gapirish, vaqt, til, hissiyot
+# Runbook — Ovozli ustoz (Gemini Live + Scribe): bosib-gapirish, tanish, reja, navigatsiya
 
-Holat: kod branch'da. Production'ga faqat egasi "Merge qil" degandan keyin chiqadi. Yangi pullik xizmat, yangi limit yoki narx yo'q:
-mavjud `LIVE_*` sozlamalari va 10 daqiqalik sessiya chegarasi o'zgarmagan.
+Holat: production'ga faqat egasi "Merge qil" degandan keyin chiqadi. Limit/narx/baza sxemasi o'zgarmagan (pastdagi "Xarajat" bo'limiga qarang).
 
-## Nima o'zgardi (Preppy/goprep.gg videolarini tahlil qilish asosida)
-| Preppy'da | Sellzen'da endi |
-|---|---|
-| Mobil: avatarni bosib turib gapiriladi; qo'yib yuborilganda ustoz javob beradi | Avatar va pastdagi katta tugma — bosib turish. Qo'yib yuborish → ustoz javob beradi |
-| Desktop: Probel (Space) bosib turiladi | Space bosib turish (matn maydonida ishlamaydi) |
-| Atrofdagi shovqin ustozni bezovta qilmaydi | Tugma bosilmaganda mikrofon ovozi **serverga ham, Gemini'ga ham bormaydi** |
-| Ustoz fikrini oxirigacha aytadi | Avtomatik "gapni bo'lish" o'chirilgan; ustozni faqat tugmani **ataylab bosish** to'xtatadi. Ko'rsatmada "2 gap" cheklovi o'rniga "to'liq fikr (2–5 gap)" |
-| `00:34 / 10:00` taymer | `0:34 / 10:00` (haqiqiy ruxsat etilgan vaqt serverdan keladi: bepul — 5:00, obunachi — oylik qoldiqqa qarab, eng ko'pi 10:00) + progress chizig'i; oxirgi 30 soniya qizaradi |
-| Suhbat mavzuga qarab davom etadi | Ustoz suhbat tilida **fikrni to'liq tugatadi**, tilni o'rtada almashtirmaydi; ingliz tiliga ataylab va e'lon qilib o'tadi |
-| — | "Ingliz tilini o'rgat / teach me English" desa — mini-dars rejimi + ekranda **Darslarga o'tish** tugmasi (`#/learn`) |
-| Avatar shakli/rangi hissiyotga qarab o'zgaradi (bulut, pufak, yurak, olovli qizil) | Yuzli avatar: holatga va hissiyotga qarab shakl+rang: navbat sizda — yashil tabletka; tinglash — ko'k tabletka; o'ylash — binafsha bulut; gapirish — shaftoli pufak (og'iz ovozga qarab ochiladi); quvonch — oval; iliq maqtov/g'urur ("qoyil", "proud of you") — pushti yurak; kulgi — sariq pufak; jahl — qizil tabletka (silkinadi, **olovsiz** — egasi avval olovni olib tashlashni so'ragan); hafsala — kulrang bulut + ko'z yoshi |
-| Ekranda "YOU / PREPPY" matni | "SIZ / SELLZEN" oxirgi gaplar (qurilmada saqlanmaydi) |
+## Qanday ishlaydi (qisqacha)
+1. **Boshlash:** Sellzen yuziga tegiladi (alohida "boshlash" tugmasi yo'q). Qo'ng'iroq **butun ekran** (skrol/siljish yo'q): tepada taymer `0:34 / 5:00` (bepul) yoki `/ 10:00` (obunachi, ko'pi bilan) va kichik "tugatish" tugmasi (yuqori o'ng burchak).
+2. **Gapirish:** sensorli ekranda **ekranning istalgan joyiga** tegib turiladi (yuzga ham, burchakka ham), qo'yib yuborilganda ustoz javob beradi. Desktopda — sichqoncha bilan yuz/markazni bosib turish yoki **Probel (Space)**. Qisqa tegish (<300 ms) — "qulf": yozuv davom etadi, yana tegilganda tugaydi. Tugatish tugmasi va matn maydoni gapirishni boshlamaydi.
+3. **Tanish (Scribe):** ovoz serverga ketadi (faqat tegib turilganda), qo'yib yuborilganda server uni **ElevenLabs Scribe** bilan matnga aylantiradi va **Gemini'ga matn** yuboradi. Gemini o'zbek tilini rasman qo'llab-quvvatlamaydi, Scribe esa o'zbekcha va aksentli inglizchani aniq tanaydi (mavjud `server/stt.ts`: til avtomatik aniqlanadi, kerak bo'lsa inglizcha qayta tanish). Ekranda "SIZ" qatorida Scribe matni ko'rinadi.
+   - **Zaxira:** Scribe xato bersa yoki kunlik limit (`STT_DAILY_MINUTES`, `STT_GLOBAL_DAILY_MINUTES`) tugasa — shu navbat ovozi Gemini'ga (activityStart → ovoz → activityEnd) yuboriladi; o'quvchi javobsiz qolmaydi.
+   - **O'chirish:** `LIVE_ASR=gemini` — eski usul (ovoz to'g'ridan-to'g'ri Gemini'ga). `ELEVENLABS_API_KEY` yo'q bo'lsa — avtomatik shu usul.
+4. **Kontekst:** qo'ng'iroq boshida mijoz o'quvchining haqiqiy ma'lumotini yuboradi (`src/lib/liveContext.ts`): daraja, maqsad, kuniga daqiqa, imtihongacha kun, bugungi reja (dars nomlari, sabab), takrorlanadigan xatolar, saqlangan xatolar soni, oxirgi o'tilgan darslar. Server qisqartiradi, yo'nalishlarni oq ro'yxatdan tekshiradi va salomlashish ko'rsatmasiga `LEARNER CONTEXT` qilib qo'shadi. Ustoz suhbatni shu asosda olib boradi: dars haqidagi savollarga javob beradi, "menga o'rgat" desa o'rgatadi (ikkita-uchta misol, bitta gapni aytdiradi, tekshiradi), kichik topshiriq beradi va javobini tekshiradi. To'qilgan dars/ball aytmaydi.
+5. **Navigatsiya:** "darsga o't / darsni och / open the lesson / открой урок / сабаққа өтейік …" (6 til), "rejani och", "xatolarimni och", "o'yinlarga o't" kabi **aniq buyruq** aytilsa, tugma ko'rsatilmaydi: ustoz bir gap bilan tasdiqlaydi va u gapni tugatgach (ko'pi 7 s) qo'ng'iroq yakunlanadi (suhbat xotirasi saqlanadi) va ilova o'sha sahifani ochadi (bugungi rejadagi birinchi dars `#/learn/<id>`). "Menga o'rgat", dars haqida savol — navigatsiya emas, suhbat davom etadi. (`navIntent` — `server/live.ts`; qo'ng'iroqda bir marta.)
+6. **Vaqt:** tugashidan 25 s oldin ustoz fikrini tugatib xayrlashadi. Chegara turi mijozga aytiladi: sessiya (10 daqiqa) tugaganda obuna taklif qilinmaydi, kunlik/oylik daqiqa tugaganda taklif qilinadi.
+7. **Ustozni to'xtatish:** ustoz gapirayotganda ekranga ataylab tegish ustozni to'xtatadi (qolgan eski ovozi tashlanadi). Shovqin ustozni bo'lmaydi: tegilmagan paytdagi ovoz serverga ham, Scribe'ga ham, Gemini'ga ham bormaydi.
 
-## Qanday ishlaydi
-- Mijoz `/api/ai/live?ptt=1` ga ulanadi (token — WebSocket subprotocol sarlavhasida, URL'da emas).
-- Server Gemini'ga `automaticActivityDetection.disabled = true` + `activityHandling = START_OF_ACTIVITY_INTERRUPTS` yuboradi
-  (nomlar rasmiy `google-genai` kutubxonasi 3.6.1 tiplaridan tasdiqlangan).
-- Bosildi → mijoz `{type:'activity', on:true}`; server `realtimeInput.activityStart`. Qo'yib yuborildi → 250 ms "dum" (oxirgi so'z kesilmasin) → `activityEnd`.
-- `ptt=1` ulanishda server tugma bosilmagan paytda kelgan ikkilik ovozni **tashlab yuboradi** (shovqin/ortiqcha ovoz Gemini'ga bormaydi, xarajat kamayadi); navbat 60 soniyadan keyin o'zi tugaydi; 400 tadan ortiq activity xabari e'tiborsiz.
-- Qisqa tegish (< 300 ms) — **qulf**: yozuv davom etadi, keyingi tegish tugatadi (bosib tura olmaydiganlar uchun). 60 soniyada o'zi tugaydi.
-- Ovoz kamida 200 ms "ovozli" bo'lmasa (jim/bloklangan mikrofon) — navbat Gemini'ga yuborilmaydi, "Ovoz eshitilmadi" xabari chiqadi. Chegara ataylab past (RMS 0.012): ataylab bosgan foydalanuvchi gapini tashlab yubormaslik uchun.
-- Vaqt tugashidan 25 soniya oldin server ustozga "fikringni tugat, bitta maslahat ber va xayrlash" deb xabar beradi (to'satdan uzilmasin). Chegara turi mijozga aytiladi:
-  `limit.kind = 'session'` (10 daqiqa — obuna taklif qilinmaydi) yoki `'quota'` (kunlik/oylik daqiqa — obuna havolasi).
-- Eski (keshlangan) mijozlar `ptt=1` yubormaydi — ular avvalgidek qo'lsiz rejimda ishlashda davom etadi.
-- Gemini Live ishlamasa — oddiy ovozli rejim (STT → matn AI → ovoz): u ham endi bosib-gapirish (tugma qo'yib yuborilguncha yozadi, sukutga qarab to'xtamaydi, shovqin bilan to'xtatilmaydi).
+## Protokol (WebSocket `/api/ai/live?ptt=1&ctx=1`, token — subprotocol sarlavhasida)
+Mijoz → server: ikkilik 16 kHz PCM16 (faqat tegib turilganda); `{type:'ctx', ctx}` (ulanishdan keyin birinchi); `{type:'activity', on}`; `{type:'end'}`.
+Server → mijoz: ikkilik 24 kHz PCM16 (ustoz ovozi); `ready{capSec, ptt, asr}`, `in{text}` (Scribe matni), `out{text}`, `turn`, `interrupted`, `emotion`, `noVoice` (Scribe bo'sh matn qaytardi yoki navbat juda qisqa), `navigate{route, kind}`, `limit{kind, message}`, `error`.
+`ptt=1` yubormaydigan eski (keshlangan) mijozlar qo'lsiz rejimda ishlashda davom etadi; `ctx=1` yubormasa — salomlashish kontekstni kutmaydi.
 
-## Sozlamalar (o'zgarmagan)
-`LIVE_MAX_SESSION_MINUTES` (standart 10), `LIVE_FREE_DAILY_MINUTES` (5), `LIVE_FREE_GLOBAL_DAILY_MINUTES`, `COACH_CALL_MONTH_MINUTES` — admin paneldan.
-`LIVE_SILENCE_MS` faqat eski qo'lsiz rejimga ta'sir qiladi.
+## Ovoz sifati
+- Mikrofon → 16 kHz: oynali sinc past chastota filtri (`makeResampler`, `src/lib/liveCall.ts`; avvalgi "o'rtacha olish" aliasing berardi). Birlik testi: 12 kHz tovush kuchli bostiriladi, kadrlab berilsa natija o'zgarmaydi.
+- Tanish rejimida bosilgan zahoti yoziladi (client'da ovoz chegarasi yo'q); Gemini ovozni o'zi eshitadigan zaxira rejimda juda past chegara (RMS 0.004) va 1 soniyadan uzoq bosilgan navbat baribir yuboriladi.
+
+## Diagnostika (Railway jurnali; ovozning o'zi va matn yozilmaydi)
+Qo'ng'iroq tugaganda: `[live] <id> 40s <model> (client) navbat=5 tanish=5/0/0 8s lvl=-22dB`
+- `navbat` — tegib gapirilgan navbatlar soni; `tanish=ok/bo'sh/xato` — Scribe natijalari (bo'sh ko'p bo'lsa — mikrofon/shovqin muammosi; xato ko'p bo'lsa — limit yoki ElevenLabs);
+- `8s` — yuborilgan ovoz soniyalari; `lvl` — o'rtacha ovoz balandligi (dBFS): −35 dan past bo'lsa mikrofon juda past; −15 dan baland bo'lsa kesilishi mumkin.
+- Alohida `[stt] live 1.9s til=uzb belgi=42` qatorlari (til va belgi soni).
+
+## Xarajat (o'zgargan joylar — egasi bilsin)
+- Qo'shimcha: har bir navbat uchun Scribe (mavjud integratsiya, mavjud limitlar: foydalanuvchiga kuniga 40 daqiqa, platformaga 600 daqiqa). `transcribeLearner` tilni aniqlash uchun ko'pincha **ikki so'rov** (avto + inglizcha) yuboradi — narx ≈ 2 × $0.4/soat × gapirilgan vaqt (taxminan 4 daqiqa gap uchun ~$0.05). `recordAiCost` (feature `stt`) orqali admin xarajat jadvalida ko'rinadi.
+- Tejash: Gemini'ga ovoz kirishi (audio tokenlar) deyarli yo'qoladi, faqat matn boradi; Gemini chiqish ovozi o'zgarmagan.
+- Qo'ng'iroq daqiqalari qayta sanalmaydi (faqat qo'ng'iroq davomiyligi hisoblanadi). Limit/narx/`LIVE_*` sozlamalari o'zgarmagan.
 
 ## Sinov
-- Birlik: `server/live.test.ts` (sozlama, activity yo'naltirish, ovozni tashlash, darsga yo'naltirish, vaqt eslatmasi, limit turi), `server/coach.test.ts` (ko'rsatma), `src/lib/ptt.test.ts`, `src/components/aiAvatar.test.ts`.
-- Brauzer: `npx tsx e2e/voice.ts` (`npm run test:e2e` ichida): haqiqiy server + **soxta Gemini** + fayldan soxta mikrofon; J1–J5. `E2E_SHOTS=<papka>` — ekran rasmlari.
-- **Haqiqiy Gemini bilan sinalmagan** (kalit/xarajat yo'q): `activityStart/End` yuborilishi va ustozning "to'liq fikr/til" xulqi haqiqiy qurilmada egasi yoki QA tomonidan bir marta tekshirilishi kerak (chek-list pastda).
+- Birlik: `server/live.test.ts` (ptt, tanish yo'li: WAV, matn → Gemini, bo'sh/qisqa navbat, xatoda ovoz Gemini'ga, ustozni to'xtatish va eski ovozni tashlash, navigatsiya buyruqlari, kontekst, vaqt eslatmasi, limit turi), `server/coach.test.ts`, `src/lib/ptt.test.ts`, `src/lib/liveCall.test.ts` (resampler), `src/lib/liveContext.test.ts`, `src/components/aiAvatar.test.ts`.
+- Brauzer: `npx tsx e2e/voice.ts` (`npm run test:e2e` ichida): haqiqiy server + soxta Gemini Live + **soxta Scribe** (`STT_BASE_URL`) + fayldan soxta mikrofon. J1–J8: yuzga tegib boshlash, tegilmaguncha hech narsa yuborilmasligi, Scribe → matn, ustozni to'xtatish, Space, qulf, "darsga o'tamiz" navigatsiyasi, 6 xil ekran o'lchami (skrol yo'q, tugatish tugmasi ko'rinadi, yuz siljimaydi), sensorli ekranda istalgan joyga tegish. `E2E_ONLY=J5,J7` — tanlangan qadamlar; `E2E_SHOTS=<papka>` — ekran rasmlari.
+- **Haqiqiy Gemini/Scribe bilan sinalmagan** (kalit/xarajat yo'q).
 
 ## Deploydan keyin tekshirish (haqiqiy telefon + desktop)
-1. Telefon: qo'ng'iroq → avatarni bosib turib gapiring → qo'yib yuborganda ustoz javob beradi; tugma bosilmaganda atrofdagi shovqin/gap ustozga ta'sir qilmaydi.
-2. Ustoz uzun gapirayotganda gapirmang — u fikrini tugatadi; avatarni bosing — ustoz to'xtab, sizni tinglaydi.
-3. Desktop: Space bosib turib gapiring; matn maydonida Space yozuvni boshlamaydi.
-4. O'zbekcha gapiring — ustoz o'zbekcha fikrni to'liq tugatadi; "ingliz tilini o'rgat" deng — mini-dars + "Darslarga o'tish" tugmasi.
-5. Bepul hisobda taymer `/ 5:00`; obunachida eng ko'pi `/ 10:00`; vaqt tugashidan oldin ustoz xayrlashadi, "obuna" havolasi **faqat** kunlik/oylik daqiqa tugaganda chiqadi.
-6. Muammo bo'lsa: PR'ni qaytarish (revert) — server eski qo'lsiz rejimni ham qo'llab-quvvatlaydi, qolgan hech narsa (baza, limitlar) o'zgarmagan.
+1. Telefon (kichik ekran ham): yuzga tegib qo'ng'iroqni boshlang — butun ekran, skrol yo'q, yuz va matn joyidan siljimaydi.
+2. Ekranning istalgan joyiga tegib turib o'zbekcha gapiring: "Siz" qatorida to'g'ri matn chiqadi, ustoz javob beradi. Inglizcha aksentli gap ham.
+3. Ustoz uzun gapirayotganda ekranga tegib to'xtating; tegmasangiz — fikrini tugatadi.
+4. "Bugun nimani o'rganamiz?" / "bu darsda nima bor?" — ustoz rejadagi darslardan aytadi. "Menga o'rgat" — o'rgatadi, topshiriq beradi, javobingizni tekshiradi.
+5. "Darsga o't" — ustoz bir gap aytadi va ilova dars sahifasini ochadi (tugma emas).
+6. Railway jurnalida `[live] … tanish=ok/bo'sh/xato` qatorini ko'ring: `xato` yuqori bo'lsa — ElevenLabs/limit; `bo'sh` yuqori bo'lsa — mikrofon.
+7. Muammo bo'lsa tezkor chora: Railway'da `LIVE_ASR=gemini` (Scribe o'chadi, ovoz Gemini'ga boradi) — kodni o'zgartirmasdan.
 
 ## Ma'lum cheklovlar
-- Bosib turish — Preppy kabi; qo'lsiz (hands-free) rejim endi yo'q. Kerak bo'lsa, `startLive({ ptt: false })` bilan qaytarish mumkin (server tayyor), lekin tugma/UI yo'q.
-- Gemini'ning tilga rioya qilishi 100% kafolatlanmaydi (modelga ko'rsatma); noto'g'ri tilga o'tish himoyasi (`wrongLanguage`) o'zgarmagan.
-- Avatar yuzi yangi (brend belgisi o'rniga); brend belgisi sahifa tepasida qoladi.
+- Gemini Live'ning tilga rioya qilishi 100% kafolatlanmaydi (modelga ko'rsatma); noto'g'ri tilga o'tish himoyasi (`wrongLanguage`) o'zgarmagan.
+- Tanish rejimida talaffuz haqida Gemini fikr bildira olmaydi (u faqat matnni ko'radi); grammatika va so'z tanlash xatolari matndan aniq ko'rinadi.
+- Navigatsiya faqat aniq buyruqlar bo'yicha (regex, 6 til); boshqacha ifodalangan so'rov suhbat sifatida ko'riladi. Kerak bo'lsa Gemini function-calling bilan kengaytirish mumkin (haqiqiy modelda sinash kerak).
+- Qo'ng'iroq dars sahifasiga o'tganda tugaydi (suhbat xotirasi saqlanadi); darsdan qaytgach yangi qo'ng'iroq boshlanadi.

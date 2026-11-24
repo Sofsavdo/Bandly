@@ -1,8 +1,8 @@
-// AI ustoz — ovozli suhbat (qo'ng'iroq kabi), bitta personaj: Sellzen. BOSIB-GAPIRISH (push-to-talk): mobilda avatar/tugmani bosib turib
-// gapiriladi, qo'yib yuborilganda ustoz javob beradi; desktopda — Probel (Space). Shovqin ustozni bo'lmaydi, ustoz fikrini tugatadi;
-// uni faqat tugmani ataylab bosish to'xtatadi. Ekranda: 10:00 taymer, holat, ikki tomonning oxirgi gapi (matn).
-// Nutq serverda (ElevenLabs Scribe) aniq tanadi. Xatolar "Xatolarim"ga jimgina yoziladi. Server tanishi bo'lmasa — brauzer tanishi.
-import { Mic, PhoneOff } from 'lucide-react';
+// AI ustoz — ovozli suhbat (qo'ng'iroq kabi), bitta personaj: Sellzen. Qo'ng'iroq ekrani BITTA ekranga sig'adi (skrol yo'q, joylar band qilingan).
+// Boshlash: Sellzen yuziga tegish. Gapirish (push-to-talk): ekranga (yuziga) tegib turish — qo'yib yuborilganda ustoz javob beradi; desktopda Probel.
+// Tugatish: yuqori burchakdagi kichik tugma. Shovqin ustozni bo'lmaydi, ustoz fikrini tugatadi; uni faqat ekranga ataylab tegish to'xtatadi.
+// Nutq serverda (ElevenLabs Scribe) aniq tanadi. Ustoz o'quvchi rejasini biladi, "darsga o't" desa o'tkazadi. Xatolar "Xatolarim"ga jimgina yoziladi.
+import { PhoneOff } from 'lucide-react';
 import { useEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react';
 import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
@@ -13,6 +13,7 @@ import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn } from
 import { MAX_TALK_MS, PTT_IDLE, pttStep, type PttInput, type PttState } from '../lib/ptt';
 import { personaLevel, useProfile } from '../lib/store';
 import { liveSupported, startLive, type LiveCall } from '../lib/liveCall';
+import { buildLiveContext } from '../lib/liveContext';
 import { getLang } from '../i18n';
 import { AiAvatar } from '../components/AiAvatar';
 import type { CoachEmotion } from '../content/personas';
@@ -105,12 +106,12 @@ export default function Coach() {
   const [liveOn, setLiveOn] = useState(false);
   const [heard, setHeard] = useState(''); const [said, setSaid] = useState('');
   const [hint, setHint] = useState('');
-  const [suggest, setSuggest] = useState(false); // "Darslarga o'tish"
   const [limitKind, setLimitKind] = useState<'session' | 'quota'>('quota');
   const heardRef = useRef(''); const saidRef = useRef(''); const saidFresh = useRef(true);
   const pttState = useRef<PttState>(PTT_IDLE);
   const talkingRef = useRef(false);
   const thinkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nav = useRef<{ route: string; spoke: boolean; timer: ReturnType<typeof setTimeout> | null } | null>(null); // "darsga o't": ustoz tasdiqlab bo'lgach o'tamiz
   const finePointer = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
   const [serverDown, setServerDown] = useState(false);
   const [minutes, setMinutes] = useState<{ subscribed: boolean; left: number; total: number } | null>(null);
@@ -132,6 +133,11 @@ export default function Coach() {
   useEffect(() => { if (!live) return; const t = setInterval(() => setSecs((s) => s + 1), 1000); return () => clearInterval(t); }, [live]);
 
   const showSaid = (t: string) => { saidRef.current = t; saidFresh.current = true; setSaid(t.slice(-400)); };
+  /** "Darsga o't" kabi buyruq: qo'ng'iroq yakunlanadi (xotira saqlanadi) va ilova so'ralgan joyni ochadi. */
+  const goNav = () => {
+    const n = nav.current; if (!n) return; nav.current = null; if (n.timer) clearTimeout(n.timer);
+    end(); if (/^#\/[\w/.-]*$/.test(n.route)) window.location.hash = n.route;
+  };
   /** Ustoz gapiradi (fikrini oxirigacha), keyin navbat o'quvchida: u tugmani bosib turib gapiradi. Ustozni faqat tugmani ataylab bosish to'xtatadi. */
   const tutorSays = async (line: string) => {
     setPhase('speaking'); showSaid(line);
@@ -155,9 +161,13 @@ export default function Coach() {
       // 10 s ichida ulanmasa — kutib qolmaymiz: oddiy ovozli rejimga o'tamiz
       const guard = setTimeout(() => { if (!settled) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } }, 10_000);
       const done = (ok: boolean) => { if (!settled) { settled = true; clearTimeout(guard); resolve(ok); } };
-      void startLive({ token: a.token, adult: p.adult, level: p.level, lang: getLang(), style: personaLevel(p) }, {
+      void startLive({ token: a.token, adult: p.adult, level: p.level, lang: getLang(), style: personaLevel(p), ctx: buildLiveContext(p) }, {
         onReady: (info) => { setCapSec(info.capSec); setLiveOn(true); setPhase('idle'); done(true); },
-        onSpeaking: (on) => { if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; } setPhase(on ? 'speaking' : talkingRef.current ? 'listening' : 'idle'); if (!on) setLvl(0); },
+        onSpeaking: (on) => {
+          if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
+          setPhase(on ? 'speaking' : talkingRef.current ? 'listening' : 'idle'); if (!on) setLvl(0);
+          const n = nav.current; if (n) { if (on) n.spoke = true; else if (n.spoke) setTimeout(goNav, 500); } // ustoz tasdiqlab bo'lgach — o'tamiz
+        },
         onLevel: (v) => setLvl(v),
         onHeard: (t) => { heardRef.current = (heardRef.current + t).slice(-400); setHeard(heardRef.current.trim()); },
         onSaid: (t) => {
@@ -167,7 +177,7 @@ export default function Coach() {
         },
         onTurn: () => { saidFresh.current = true; if (phaseRef.current === 'thinking') setPhase('idle'); },
         onNoVoice: () => { setPhase('idle'); setHint(L('Ovoz eshitilmadi — mikrofonga yaqinroq gapirib ko‘ring.')); },
-        onSuggest: () => setSuggest(true),
+        onNavigate: (route) => { if (nav.current) return; nav.current = { route, spoke: false, timer: setTimeout(goNav, 7000) }; }, // ustoz tasdiqlamasa ham 7 soniyada o'tamiz
         onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); setLiveFailed(true); end(); } }, // keyingi urinish — oddiy ovozli rejim (STT + matn AI + ovoz)
         onLimit: (m, kind) => { setLimitKind(kind); setLimitMsg(m || (kind === 'session' ? L('Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : L('Bugungi bepul ovozli suhbat daqiqalari tugadi. Yangi daqiqalar ertaga beriladi.'))); end(); },
         onClosed: () => { if (settled && liveRef.current) end(); done(false); },
@@ -178,7 +188,7 @@ export default function Coach() {
 
   const start = () => {
     liveRef.current = true; setLive(true); setSecs(0); setCapSec(0); setErr(''); setEmotion('happy'); resetCallVoice();
-    setLimitMsg(null); setLimitKind('quota'); setSuggest(false); setHint(''); showSaid(''); heardRef.current = ''; setHeard(''); pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false; setLatched(false);
+    setLimitMsg(null); setLimitKind('quota'); setHint(''); showSaid(''); heardRef.current = ''; setHeard(''); pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false; setLatched(false);
     if (useLive) { void startLiveCall().then((ok) => { if (!ok && liveRef.current) startClassic(); }); return; }
     startClassic();
   };
@@ -194,6 +204,7 @@ export default function Coach() {
     liveRef.current = false; setLive(false);
     sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.();
     stopSpeaking(); parkMic(); setPhase('idle'); setErr(''); setLvl(0); pending.current = null; turns.current = [];
+    if (nav.current?.timer) clearTimeout(nav.current.timer); nav.current = null;
     setLiveOn(false); setTalking(false); talkingRef.current = false; setLatched(false); pttState.current = PTT_IDLE; if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
     loadMinutes();
   };
@@ -301,80 +312,80 @@ export default function Coach() {
   }, [live]);
   // Bir navbat 60 soniyadan oshmaydi (qulflangan yozuv ochiq qolib ketmasin)
   useEffect(() => { if (!talking) return; const t = setTimeout(() => pressRef.current({ type: 'cancel' }), MAX_TALK_MS); return () => clearTimeout(t); }, [talking]);
+  // Butun qo'ng'iroq ekrani — bosiladigan maydon (sensorli ekranda istalgan joyga tegish; sichqonchada faqat yuz/markaz). Tugmalar (tugatish, matn maydoni) — bundan mustasno.
   const padProps = {
-    onPointerDown: (e: RPointerEvent<HTMLElement>) => { e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* */ } press({ type: 'down', at: performance.now() }); },
+    onPointerDown: (e: RPointerEvent<HTMLElement>) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-nopress]')) return;
+      if (e.pointerType === 'mouse' && (e.button !== 0 || !t.closest('[data-pad]'))) return;
+      e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* */ }
+      press({ type: 'down', at: performance.now() });
+    },
     onPointerUp: () => press({ type: 'up', at: performance.now() }),
     onPointerCancel: () => press({ type: 'cancel' }),
     onContextMenu: (e: { preventDefault(): void }) => e.preventDefault(),
   };
+  // Qo'ng'iroq paytida sahifa orqada siljimasin
+  useEffect(() => { if (!live) return; const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = prev; }; }, [live]);
 
-  const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase === 'connecting' ? 'thinking' : phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 200 : 170} look={personaLevel(p)} /></div>;
+  const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase === 'connecting' ? 'thinking' : phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 'var(--face)' : 'min(46vw, 190px)'} look={personaLevel(p)} /></div>;
 
+  // ---- Qo'ng'iroqdan oldin: Sellzen yuziga tegish — qo'ng'iroq boshlanadi (alohida "boshlash" tugmasi yo'q) ----
   if (!live) return (
     <div className="tutor">
       <section className="tutor-call voice idle-call">
-        {orb}
+        <button type="button" className="start-face" onClick={start} disabled={!acc || !status?.coach} aria-label={L('Qo‘ng‘iroqni boshlash')}>{orb}</button>
         <h2>{L('Sellzen')}</h2>
-        <p>{L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>
+        <p>{acc ? L('Gaplashish uchun Sellzen yuziga tegining') : L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>
         {acc && minutes === null && <span className="pill" style={{ visibility: 'hidden' }} aria-hidden="true">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span>}{/* daqiqalar yuklanguncha joy band — sahifa sakramaydi */}
         {minutes?.subscribed ? <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span> : minutes && FREE_INFO.liveMinutesPerDay > 0 ? <span className="pill">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span> : null}
         {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
         {status && !status.coach && <p className="notice">{L('AI ustoz tez orada ochiladi.')}</p>}
-        {!acc
-          ? <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />
-          : <button className="btn primary lg" disabled={!status?.coach} onClick={start}><Mic size={20} />  {L('Qo‘ng‘iroqni boshlash')}</button>}
+        {!acc && <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />}
       </section>
     </div>
   );
 
+  // ---- Qo'ng'iroq: butun ekran, joylar band qilingan (siljish va skrol yo'q) ----
   const canTalk = liveOn || canListen;
   const nearEnd = capSec > 0 && capSec - secs <= 30;
   const statusText = phase === 'idle' && hint ? hint : PHASE_UZ[phase];
-  const subHint = phase === 'listening' ? (latched ? L('Gapingiz tugagach yana bosing') : L('Gapingiz tugagach qo‘yib yuboring — Sellzen javob beradi'))
-    : phase === 'speaking' ? L('Gapirmoqchi bo‘lsangiz — bosing, Sellzen to‘xtaydi')
-    : phase === 'idle' && canTalk ? (finePointer ? L('Probelni (Space) bosib turib gapiring') : L('Avatarni yoki tugmani bosib turib gapiring'))
+  const subHint = phase === 'listening' ? (latched ? L('Gapingiz tugagach yana tegining') : L('Gapingiz tugagach qo‘yib yuboring — Sellzen javob beradi'))
+    : phase === 'speaking' ? L('Gapirmoqchi bo‘lsangiz — ekranga tegining, Sellzen to‘xtaydi')
+    : phase === 'idle' && canTalk ? (finePointer ? L('Probelni (Space) bosib turib gapiring') : L('Ekranga tegib turib gapiring'))
     : '';
   return (
-    <div className="tutor">
-      <section className={`tutor-call voice${phase === 'speaking' && emotion !== 'neutral' ? ` emo-${emotion}` : ''}`}>
-        <div className="voice-top">
-          <b>{L('Sellzen')}</b>
-          <span className={`muted${nearEnd ? ' warn' : ''}`}>{mmss(secs)}{capSec > 0 ? ` / ${mmss(capSec)}` : ''}{minutes?.subscribed ? ` · ${L('{0} daqiqa qoldi', [minutes.left])}` : ''}</span>
+    <div className={`tutor-call call${phase === 'speaking' && emotion !== 'neutral' ? ` emo-${emotion}` : ''}${talking ? ' talking' : ''}`} role="group" aria-label={L('Bosib turib gapirish')} {...(canTalk ? padProps : {})}>
+      <header className="call-top">
+        <span className="call-who">{L('Sellzen')}</span>
+        <span className={`call-time${nearEnd ? ' warn' : ''}`}>{mmss(secs)}{capSec > 0 ? ` / ${mmss(capSec)}` : ''}{minutes?.subscribed ? ` · ${L('{0} daqiqa qoldi', [minutes.left])}` : ''}</span>
+        <button type="button" data-nopress className="call-end" onClick={end} aria-label={L('Suhbatni tugatish')}><PhoneOff size={20} /></button>
+      </header>
+      <div className={`call-bar${nearEnd ? ' warn' : ''}`} aria-hidden="true">{capSec > 0 && <i style={{ width: `${Math.min(100, (secs / capSec) * 100)}%` }} />}</div>
+      <main className="call-stage" data-pad>
+        <div className={`call-face${talking ? ' on' : ''}`}>{orb}</div>
+        <p className="call-status" aria-live="polite">{statusText}</p>
+        <p className="call-sub">{subHint}</p>
+        <div className="call-lines" aria-live="polite">
+          {heard && <p className="vl you"><b>{L('Siz')}</b> {heard}</p>}
+          {said && <p className="vl bot"><b>{L('Sellzen')}</b> {said}</p>}
         </div>
-        {capSec > 0 && <div className={`voice-bar${nearEnd ? ' warn' : ''}`} aria-hidden="true"><i style={{ width: `${Math.min(100, (secs / capSec) * 100)}%` }} /></div>}
-        <div className="voice-stage">
-          {canTalk
-            ? <button type="button" data-ptt className={`ptt-pad${talking ? ' on' : ''}`} aria-pressed={talking} aria-label={L('Bosib turib gapirish')} disabled={phase === 'connecting'} {...padProps}>{orb}</button>
-            : orb}
-          <p className="voice-status" aria-live="polite">{statusText}</p>
-          {subHint && <p className="voice-sub">{subHint}</p>}
-          {(heard || said) && (
-            <div className="voice-lines" aria-live="polite">
-              {heard && <p className="vl you"><b>{L('Siz')}</b> {heard}</p>}
-              {said && <p className="vl bot"><b>{L('Sellzen')}</b> {said}</p>}
-            </div>
-          )}
-          {suggest && <a className="btn sm voice-lessons" href="#/learn">{L('Darslarga o‘tish')}</a>}
-          {liveFailed && !!status?.live && <p className="notice" role="status">{L('Jonli ovozli suhbat hozir ishlamayapti — oddiy ovozli rejimda davom etamiz: siz gapirasiz, Sellzen matn va ovoz bilan javob beradi.')}</p>}
-          {err && <p className="tutor-err">{err}</p>}
-          {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
-        </div>
-        <div className="tutor-ctrl">
-          {canTalk && (
-            <button type="button" data-ptt className={`mic-big ptt${talking ? ' on' : ''}`} disabled={phase === 'connecting'} aria-pressed={talking}
-              aria-label={L('Bosib turib gapirish')} {...padProps}>
-              {talking ? <span className="mic-bars" aria-hidden="true">{[0, 1, 2, 3, 4].map((i) => <i key={i} style={{ height: `${14 + Math.round(Math.min(1, lvl * (0.6 + ((i * 37) % 5) / 5)) * 30)}px` }} />)}</span> : <Mic size={30} />}
-            </button>
-          )}
-          <button type="button" className="icon-btn end" onClick={end} aria-label={L('Suhbatni tugatish')}><PhoneOff size={22} /></button>
-        </div>
+        {(err || limitMsg || (liveFailed && !!status?.live)) && (
+          <div className="call-notes">
+            {liveFailed && !!status?.live && <p className="notice" role="status">{L('Jonli ovozli suhbat hozir ishlamayapti — oddiy ovozli rejimda davom etamiz: siz gapirasiz, Sellzen matn va ovoz bilan javob beradi.')}</p>}
+            {err && <p className="tutor-err">{err}</p>}
+            {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
+          </div>
+        )}
+      </main>
+      <footer className="call-foot">
         {(textMode || !canListen || !!caption) && !liveOn && (
-          <form className="tutor-type" onSubmit={(e) => { e.preventDefault(); const v = typed.trim(); if (v) { setTyped(''); void send(v); } }}>
+          <form data-nopress className="tutor-type" onSubmit={(e) => { e.preventDefault(); const v = typed.trim(); if (v) { setTyped(''); void send(v); } }}>
             <input type="text" value={typed} maxLength={500} placeholder={L('Javobingizni ingliz tilida yozing')} aria-label={L('Javobingizni ingliz tilida yozing')} onChange={(e) => setTyped(e.target.value)} />
             <button type="submit" className="btn primary sm" disabled={!typed.trim() || phase === 'thinking'}>{L('Yuborish')}</button>
           </form>
         )}
-      </section>
+      </footer>
     </div>
   );
 }
