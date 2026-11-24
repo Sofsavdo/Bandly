@@ -9,6 +9,7 @@
 //   J7. Ekran: 6 xil o'lchamda sahifa skrol qilinmaydi, tugatish tugmasi ko'rinadi, holatlar almashganda yuz joyidan siljimaydi
 //   J9. Uzun javob: matn qisilmaydi (qisqartirilmaydi), oxirgi gap to'liq ko'rinadi, eski gaplar yuqoriga chiqib ketadi; 2 xil ekranda
 //   J8. Sensorli ekran: ekranning istalgan joyiga (yuqori burchak ham) tegib gapirish; tugatish tugmasi gapirishni boshlamaydi
+//   J10. IELTS darsi "Gapir": ovoz ko'rsatkichi, gap serverga boradi va natija chiqadi; jim mikrofon aniq aytiladi, ikki urinishdan keyin o'tkazib yuborish mumkin
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
@@ -17,6 +18,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocketServer } from 'ws';
+import { lessonById } from '../src/content/lessons';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright') as typeof import('playwright');
@@ -47,7 +49,8 @@ const scribe = createServer((req, res) => {
   const chunks: Buffer[] = []; req.on('data', (c) => chunks.push(c)); req.on('end', () => {
     const body = Buffer.concat(chunks); const at = body.indexOf('RIFF'); const pcm = at >= 0 ? body.subarray(at + 44) : Buffer.alloc(0);
     let s = 0, c = 0; for (let i = 0; i + 1 < pcm.length; i += 8) { const v = pcm.readInt16LE(i) / 32768; s += v * v; c++; }
-    const loud = Math.sqrt(s / Math.max(1, c)) > 0.015; scribeCalls.push({ bytes: pcm.length, loud });
+    const isWav = at >= 0; // dars mashqlari MediaRecorder (webm/mp4) yuboradi: jimlikni mijoz o'zi filtrlaydi, bu yerga faqat gap keladi
+    const loud = isWav ? Math.sqrt(s / Math.max(1, c)) > 0.015 : body.length > 800; scribeCalls.push({ bytes: isWav ? pcm.length : body.length, loud });
     res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify(loud && scribeText ? { text: scribeText, language_code: 'eng', words: [{ end: pcm.length / 32000, type: 'word' }] } : { text: '', language_code: 'eng', words: [] }));
   });
@@ -137,6 +140,43 @@ async function openCall(f: string, token: string, viewport = { width: 390, heigh
   await face.click({ force: true }); // Sellzen yuziga tegish — qo'ng'iroq boshlanadi (yuz doim "nafas oladi" — barqaror emas)
   await p.locator('.call').waitFor({ timeout: 15000 });
   return p;
+}
+/** Dars sahifasini ochadi va "Gapir" bosqichigacha o'tadi (kashf → mashq → gapirish). */
+async function openLessonSpeak(f: string, token: string, lessonId: string) {
+  const b = await chromium.launch({ args: args(f) }); browsers.push(b);
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, permissions: ['microphone'], deviceScaleFactor: 1 });
+  await ctx.addInitScript(([t]) => { try { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('bandly.account.v1', JSON.stringify({ token: t, nickname: 'Voice E2E', tg: true })); localStorage.setItem('bandly.profile.v1', JSON.stringify({ level: 'B1', placementAt: new Date().toISOString() })); localStorage.setItem('bandly.onboard.v1', JSON.stringify({ goal: 'ielts', why: 'abroad', when: 'm3', examDate: null, target: '6.5', level: 'B1', hard: [], minutes: 20, tutor: 'friendly' })); } } catch { /* */ } }, [token]);
+  const p = await ctx.newPage();
+  p.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
+  const lesson = lessonById(lessonId)!.lesson;
+  const items = [...lesson.practice, ...lesson.check];
+  await p.goto(`${base}/#/learn/${lessonId}`);
+  const speakShown = async () => /Eshiting, so‘ng mikrofonni bosib ayting|Brauzer nutqni tanimaydi/.test((await p.locator('main').innerText()).replace(/\s+/g, ' '));
+  for (let i = 0; i < 200 && !(await speakShown()); i++) {
+    const body = (await p.locator('main').innerText()).replace(/\s+/g, ' ');
+    if (/Juftini top/.test(body)) for (const v of lesson.vocab ?? []) { await p.locator('main button:not([disabled])', { hasText: new RegExp(`^${v.en}$`) }).first().click({ timeout: 800 }).catch(() => undefined); await p.locator('main button:not([disabled])', { hasText: v.uz }).first().click({ timeout: 800 }).catch(() => undefined); }
+    if (/Eshit va tanla/.test(body)) {
+      const mm = /«([^»]+)»/.exec(body); const ex = lesson.examples.find((e) => e.en === mm?.[1]);
+      if (ex) await p.locator('main button:not([disabled])', { hasText: ex.uz }).first().click({ timeout: 800 }).catch(() => undefined);
+      else for (const b2 of await p.locator('main .opts button, main button.opt, main .stack button').all()) { await b2.click({ timeout: 400 }).catch(() => undefined); const ok = p.locator('main button:not([disabled])', { hasText: /^Tayyor/ }).first(); if (await ok.count()) await ok.click({ timeout: 400 }).catch(() => undefined); await wait(120); if (!/Eshit va tanla/.test((await p.locator('main').innerText()))) break; }
+    }
+    const prompt = (await p.locator('main .q p b, main .boss-q p b, main [class*=item] p b').first().textContent({ timeout: 300 }).catch(() => null))?.trim();
+    const it = prompt ? items.find((x) => (x.kind !== 'order' && x.prompt === prompt) || (x.kind === 'order' && /So‘zlardan to‘g‘ri gap tuzing/.test(prompt))) : undefined;
+    if (it && !(await p.locator('.opt.right, .opt.bad').count())) {
+      if (it.kind === 'choice') await p.locator('main button.opt', { hasText: it.options[it.answer]! }).first().click({ timeout: 2000 }).catch(() => undefined);
+      else if (it.kind === 'gap') await p.locator('main input[type=text]').first().fill(it.accept[0]!).catch(() => undefined);
+      else if (it.kind === 'order') for (const w of it.answer.split(' ')) await p.locator('main button.chipbtn:not([disabled])', { hasText: new RegExp(`^${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }).first().click({ timeout: 1500 }).catch(() => undefined);
+    }
+    let clicked = false;
+    for (const label of [/^Yakuniy tekshiruvga/, /^Keyingi savol/, /^Davom etish/, /^Tushunarli/, /^Missiyani boshlash/, /^Keyingi/, /^Davom/, /^Tekshirish/, /^Gapirish mashqiga/]) {
+      const b3 = p.locator('main button:not([disabled]):visible', { hasText: label }).first();
+      if (await b3.count()) { await b3.click({ timeout: 1500 }).catch(() => undefined); clicked = true; break; }
+    }
+    if (!clicked) { const any = p.locator('main button.primary:not([disabled]):visible').first(); if (await any.count()) await any.click({ timeout: 1500 }).catch(() => undefined); }
+    await wait(140);
+  }
+  assert.ok(await speakShown(), `${lessonId}: "Gapir" bosqichiga yetib bo‘lmadi: ${(await p.locator('main').innerText()).replace(/\s+/g, ' ').slice(0, 300)} | tugmalar: ${JSON.stringify(await p.locator('main button:visible').allInnerTexts())}`);
+  return { p, lesson };
 }
 const statusText = (p: Page) => p.locator('.call-status').innerText();
 const waitStatus = async (p: Page, re: RegExp, ms = 6000) => { for (let i = 0; i < ms / 50; i++) { if (re.test(await statusText(p))) return; await wait(50); } assert.fail(`holat ${re} bo'lmadi: «${await statusText(p)}»`); };
@@ -310,6 +350,44 @@ try {
     await touch('pointerdown', end.x + end.width / 2, end.y + end.height / 2); await touch('pointerup', end.x + end.width / 2, end.y + end.height / 2);
     await wait(300); assert.ok(!/Tinglayapman/.test(await statusText(t0)), 'tugatish tugmasi gapirishni boshlamadi');
     await t0.locator('.call-end').click(); await t0.locator('.start-face').waitFor({ timeout: 5000 });
+  });
+
+  await step('J10. IELTS darsi "Gapir": ovoz ko‘rsatkichi + gap serverga boradi; jim mikrofon aniq aytiladi, ikki urinishdan keyin o‘tkazib yuborish', async () => {
+    const savedText = scribeText; scribeText = 'I am a student and I study economics';
+    // 1) Odatiy mikrofon: "Aytish" → ko'rsatkich harakatlanadi → "Tugatdim" → gap serverga → natija chiqadi
+    const a = await openLessonSpeak(LOUD, token, 'ie-ss-l1');
+    const sttOk: number[] = []; a.p.on('response', (r) => { if (r.url().includes('/api/ai/stt')) sttOk.push(r.status()); });
+    await a.p.locator('main button', { hasText: 'Aytish' }).first().click();
+    await a.p.locator('.mic-meter').waitFor({ timeout: 5000 });
+    let moved = false;
+    for (let i = 0; i < 40 && !moved; i++) { const st = (await a.p.locator('.mic-meter').getAttribute('style')) ?? ''; const m = /--lvl:\s*([0-9.]+)/.exec(st); if (m && Number(m[1]) > 0.05) moved = true; else await wait(50); }
+    assert.ok(moved, 'ovoz ko‘rsatkichi gapirganda harakatlanmadi');
+    await wait(1200);
+    await a.p.locator('main button', { hasText: 'Tugatdim' }).first().click();
+    await a.p.locator('main', { hasText: 'tanildi' }).waitFor({ timeout: 8000 });
+    assert.deepEqual(sttOk, [200], 'gap serverga bir marta yuborildi');
+    await a.p.context().browser()!.close();
+
+    // 2) Jim mikrofon (ovoz umuman kelmayapti): 3,5 s dan keyin maslahat; aniq xabar; serverga hech narsa bormaydi; ikkinchi urinishdan keyin "O'tkazib yuborish"
+    const s0 = scribeCalls.length;
+    const q = await openLessonSpeak(QUIET, token, 'ie-ss-l1');
+    const first = q.lesson.examples[0]!.en, second = q.lesson.examples[1]!.en;
+    await q.p.locator('main button', { hasText: 'Aytish' }).first().click();
+    await q.p.locator('main', { hasText: 'Ovoz kelmayapti' }).waitFor({ timeout: 8000 });
+    await q.p.locator('main button', { hasText: 'Tugatdim' }).first().click();
+    await q.p.locator('main', { hasText: 'Mikrofondan ovoz kelmadi' }).waitFor({ timeout: 6000 });
+    assert.equal(await q.p.locator('main button', { hasText: 'O‘tkazib yuborish' }).count(), 0, 'birinchi urinishdan keyin hali o‘tkazib yuborish yo‘q');
+    await q.p.locator('main button', { hasText: 'Aytish' }).first().click();
+    await wait(1400);
+    await q.p.locator('main button', { hasText: 'Tugatdim' }).first().click();
+    await q.p.locator('main button', { hasText: 'O‘tkazib yuborish' }).first().waitFor({ timeout: 6000 });
+    assert.equal(scribeCalls.length, s0, 'jim mikrofon Scribe’ga hech narsa yubormadi');
+    assert.ok(!(await q.p.locator('main').innerText()).includes(second), 'ikkinchi gap hali ko‘rinmasligi kerak');
+    await q.p.locator('main button', { hasText: 'O‘tkazib yuborish' }).first().click();
+    await q.p.locator('main', { hasText: 'O‘tkazib yuborildi' }).waitFor({ timeout: 4000 });
+    assert.ok((await q.p.locator('main').innerText()).includes(second), 'o‘tkazilgach keyingi gap ochildi');
+    assert.ok(first.length > 0);
+    scribeText = savedText;
   });
 
   assert.deepEqual(problems, [], 'brauzerda JS xatosi yoki 5xx bo‘lmasligi kerak');

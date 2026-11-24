@@ -88,10 +88,13 @@ export interface TurnOptions {
   mixed?: boolean;
   onInterim: (text: string) => void;
   onStatus?: (s: MicStatus) => void;
+  /** Ovoz balandligi 0..1 (faqat server tanishida): ekranda "ovoz kelyapti" ko'rsatkichi uchun */
+  onLevel?: (v: number) => void;
   signal: Signal;
   endRef: { current: (() => void) | null }; // "Tugatdim" tugmasi
 }
-export interface TurnResult { text: string; seconds: number; latencyMs: number }
+/** heard: mikrofon biror ovoz oldimi (false — mikrofon jim; undefined — brauzer tanishi, bilinmaydi) */
+export interface TurnResult { text: string; seconds: number; latencyMs: number; heard?: boolean }
 
 export class SpeechError extends Error {
   constructor(public code: 'denied' | 'network' | 'nomic' | 'unstable' | 'unsupported', message: string) { super(message); }

@@ -1,7 +1,7 @@
 // Anonim o'sish hodisasi (server/events.ts): nom + tasodifiy anonim identifikator (bandly.vid) yuboriladi —
 // token, laqab, telefon yoki boshqa shaxsiy ma'lumot yo'q. Identifikator faqat shu brauzerda, hisob bilan bog'lanmaydi.
 // Xato bo'lsa jim o'tadi: o'lchov hech qachon foydalanuvchi oqimini buzmasligi kerak.
-export type TrackEvent = 'landing_view' | 'signup_start' | 'pricing_view' | 'checkout_start' | 'placement_start' | 'placement_done' | 'share_placement_tg' | 'share_placement_img' | 'share_streak' | 'duel_guest_view' | 'duel_share' | 'share_mock' | 'login_widget_missing' | 'mock_guest_start' | 'mock_guest_submit' | 'mock_guest_signup_click' | 'mock_guest_unlocked';
+export type TrackEvent = 'landing_view' | 'signup_start' | 'pricing_view' | 'checkout_start' | 'placement_start' | 'placement_done' | 'share_placement_tg' | 'share_placement_img' | 'share_streak' | 'duel_guest_view' | 'duel_share' | 'share_mock' | 'login_widget_missing' | 'mock_guest_start' | 'mock_guest_submit' | 'mock_guest_signup_click' | 'mock_guest_unlocked' | 'mic_silent';
 
 import { getClickId } from './referral';
 
