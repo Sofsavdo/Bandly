@@ -115,6 +115,8 @@ console.log('coach.test: OK');
   const base = { adult: false, native: 'Uzbek (Latin script)', level: 'A2', firstCall: false } as const;
   const p = blp({ ...base, style: 1, ptt: true });
   assert.match(p, /FOLLOW THE CONVERSATION/); assert.match(p, /Never switch language in the middle of a sentence or a thought/);
+  assert.match(p, /Roast ONLY real English mistakes/); assert.match(p, /not for being hard to understand or for a speech-recognition error/); assert.match(p, /the problem is on your side/);
+  for (const st of [0, 1, 2, 3] as const) assert.doesNotMatch(blp({ ...base, style: st, ptt: true }), /g'o'ldirayapsan|Aniqroq gapir/, 'tushunmaslikda o‘quvchini ayblovchi namuna qator yo‘q');
   assert.match(p, /COMPLETE THOUGHTS/); assert.match(p, /ALWAYS finish your thought/);
   assert.doesNotMatch(p, /SHORT TURNS|at most 2 short spoken sentences/, 'fikrni qisqartiruvchi eski qoida yo‘q');
   assert.match(p, /YOUR ROLE/); assert.match(p, /LEARNER CONTEXT/); assert.match(p, /Teach by voice/); assert.match(p, /ONE task at a time/); assert.match(p, /the app opens it automatically/);

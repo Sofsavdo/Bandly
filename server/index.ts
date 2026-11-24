@@ -873,7 +873,7 @@ if (live) attachLive(httpServer, {
     recordStt(db, pid, secs);
     console.log(`[stt] live ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} ishonch=${r.score === null || r.score === undefined ? '?' : r.score.toFixed(2)} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
     recordAiCost(db, { playerId: pid, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
-    return { text: r.text, lang: r.lang };
+    return { text: r.text, lang: r.lang, score: r.score ?? null };
   } : undefined,
   onTranscript: (pid, turns, lang) => {
     if (ai.provider === 'none') return;

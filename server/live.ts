@@ -188,6 +188,11 @@ export function pcmToWav(pcm: Buffer, rate = 16000): Buffer {
   return Buffer.concat([h, pcm]);
 }
 /** PCM16 balandligi (RMS, 0..1) — jurnal diagnostikasi uchun (ovozning o'zi saqlanmaydi). */
+/** Tanish ishonchi (so'zlarning o'rtacha logprobi) shundan past bo'lsa, matn ehtimol noto'g'ri tanilgan. */
+export const UNSURE_SCORE = -0.25;
+/** Past ishonchli tanish: ustozga "bu matn xato bo'lishi mumkin" deyiladi — o'quvchini ayblamasin, tushunmasa muloyim so'rasin. */
+export const unsureTurn = (text: string): string => `(System: the speech recognizer is NOT sure about this turn. It heard: «${text}». That may be wrong or mixed-up words, so do NOT treat it as what the learner really said, and NEVER mock, insult or blame the learner for it. If it makes no sense, say ONE short friendly line that you did not catch it and ask them to say it again; otherwise just answer naturally.)`;
+
 export function pcmRms(pcm: Buffer): number {
   const n = Math.floor(pcm.length / 2); if (!n) return 0;
   let s = 0, c = 0;
@@ -206,7 +211,7 @@ interface LiveDeps {
   /** Qo'ng'iroq boshidagi ko'rsatma (o'quvchi hali gapirmagan) */
   kickoff?: (o: { firstCall: boolean; hasMemory: boolean; plan?: string }) => string;
   /** Nutqni tanish (ElevenLabs Scribe): navbat ovozi (WAV) → matn. Limit/xato — istisno: navbat Gemini'ga ovoz sifatida yuboriladi. Berilmasa — har doim ovoz yuboriladi. */
-  asr?: (playerId: number, wav: Buffer, lang: string) => Promise<{ text: string; lang: string | null } | null>;
+  asr?: (playerId: number, wav: Buffer, lang: string) => Promise<{ text: string; lang: string | null; score?: number | null } | null>;
   /** Qo'ng'iroq tugagach suhbat yozuvi (xotira uchun) */
   onTranscript?: (playerId: number, turns: { who: 'learner' | 'coach'; text: string }[], nativeCode: string) => void;
   native: (lang: string) => string;
@@ -401,9 +406,11 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     st.audioSec += secs; st.lvl += pcmRms(audio);
     if (secs < 0.3) { send({ type: 'noVoice' }); return; }
     let text = '';
+    let sure = true;
     try {
       const r = await d.asr!(who.id, pcmToWav(audio), lang);
       text = (r?.text ?? '').trim();
+      sure = r?.score == null || r.score >= UNSURE_SCORE;
       if (text) st.asrOk++; else st.asrEmpty++;
     } catch (e) {
       st.asrFail++; log(`[live] tanish ishlamadi (${(e as Error).message.slice(0, 80)}) — ovoz Gemini'ga yuboriladi`);
@@ -412,8 +419,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (closed) return;
     if (!text) { send({ type: 'noVoice' }); return; }
     send({ type: 'in', text }); addText('learner', text);
-    maybeNavigate(text);
-    sendText(text);
+    if (sure) maybeNavigate(text);
+    sendText(sure ? text : unsureTurn(text));
   };
   // Bosib-gapirish: "bosildi" → ustozni to'xtatadi (tanish rejimida: shu yerda ovoz yig'ila boshlaydi, aks holda activityStart);
   // "qo'yib yuborildi" → javob (tanish: Scribe → matn → Gemini; aks holda activityEnd). 60 soniyadan keyin o'zi tugaydi.
