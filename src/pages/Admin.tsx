@@ -191,6 +191,17 @@ export default function Admin() {
               </div>
             </section>
           )}
+          {g && (
+            <section className="card">
+              <h3 style={{ marginTop: 0 }}>{L('Mehmon mock voronkasi')}</h3>
+              <div className="kpis">
+                <div className="kpi2"><span>{L('Mockni boshladi')}</span><b>{num(ev('mock_guest_start').unique)}</b></div>
+                <div className="kpi2"><span>{L('Topshirdi')}</span><b>{num(ev('mock_guest_submit').unique)}</b></div>
+                <div className="kpi2"><span>{L('Ro‘yxatdan o‘tishni bosdi')}</span><b>{num(ev('mock_guest_signup_click').unique)}</b></div>
+                <div className="kpi2"><span>{L('Natijasi ochildi')}</span><b>{num(ev('mock_guest_unlocked').unique)}</b></div>
+              </div>
+            </section>
+          )}
           {data.walls && (
             <section className="card">
               <h3 style={{ marginTop: 0 }}>{L('Bepul tarif chegarasi (30 kun)')}</h3>

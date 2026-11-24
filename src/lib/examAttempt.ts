@@ -21,6 +21,8 @@ export interface ExamAttempt {
   /** Server bahosi (Mock Arena javoblari serverda tekshiriladi) va natija bir marta yozilganmi */
   graded?: import('../content/mockShared').Graded;
   recorded?: boolean;
+  /** Urinish ro'yxatdan o'tmagan mehmon tomonidan boshlangan: javoblar qurilmada saqlanadi, baholash (server kalitlari) ro'yxatdan o'tgach bajariladi */
+  guest?: boolean;
   /** Shu test bo'yicha anonim statistika (serverdan, baholash paytida) */
   stats?: { count: number; avgPct?: number; percentile?: number };
   audioPlays: number;
@@ -28,8 +30,15 @@ export interface ExamAttempt {
 
 const PREFIX = 'bandly.attempt.v1.';
 
-export function createAttempt(testKey: string, minutes: number, now = Date.now()): ExamAttempt {
-  return { v: 1, testKey, startedAt: now, deadlineAt: now + Math.round(minutes * 60_000), status: 'in_progress', submittedAt: null, autoSubmitted: false, answers: {}, flags: [], current: null, notes: '', highlights: [], audioPlays: 0 };
+export function createAttempt(testKey: string, minutes: number, now = Date.now(), guest = false): ExamAttempt {
+  return { v: 1, testKey, startedAt: now, deadlineAt: now + Math.round(minutes * 60_000), status: 'in_progress', submittedAt: null, autoSubmitted: false, answers: {}, flags: [], current: null, notes: '', highlights: [], audioPlays: 0, ...(guest ? { guest: true } : {}) };
+}
+
+/** Urinish kimniki: mehmon faqat O'Z (baholanmagan) urinishini ko'radi — oldingi hisobning natijasi yoki urinishi mehmonga ko'rinmaydi.
+ *  Hisobga kirgan o'quvchi hamma urinishni ko'radi (jumladan, mehmon sifatida topshirgan va hali baholanmaganini — u shu hisobga bog'lanadi). */
+export function visibleAttempt(a: ExamAttempt | null, account: boolean): ExamAttempt | null {
+  if (!a) return null;
+  return account || (a.guest === true && !a.graded) ? a : null;
 }
 
 /** Qolgan soniyalar — har doim saqlangan muddatdan hisoblanadi (qayta yuklash vaqtni tiklamaydi). */
@@ -98,6 +107,36 @@ export function loadAttempt(testKey: string): ExamAttempt | null {
 }
 export function saveAttempt(a: ExamAttempt): void {
   try { localStorage.setItem(PREFIX + a.testKey, JSON.stringify(a)); } catch { /* saqlash imkonsiz — test baribir davom etadi */ }
+}
+/** Mehmon boshlagan va hali baholanmagan urinishlar (jarayonda yoki topshirilgan — ro'yxatdan o'tishni kutayotgan). */
+export function openGuestAttempts(): ExamAttempt[] {
+  const out: ExamAttempt[] = [];
+  try {
+    for (const k of Object.keys(localStorage)) {
+      if (!k.startsWith(PREFIX)) continue;
+      const a = loadAttempt(k.slice(PREFIX.length));
+      if (a && a.guest === true && !a.graded && !a.recorded) out.push(a);
+    }
+  } catch { /* xotira yo'q */ }
+  return out.sort((x, y) => y.startedAt - x.startedAt);
+}
+/** Shulardan topshirilgani — natijasi ro'yxatdan o'tishni kutayotganlar. */
+export const pendingGuestAttempts = (): ExamAttempt[] => openGuestAttempts().filter((a) => a.status === 'submitted');
+/** Urinish kaliti → test sahifasi: "reading:reading-5" → "#/mocks/reading/reading-5". */
+export function attemptRoute(testKey: string): string | null {
+  const m = /^(reading|listening):([\w-]+)$/.exec(testKey);
+  return m ? `#/mocks/${m[1]}/${m[2]}` : null;
+}
+/** Chiqishda: hisobga tegishli, baholangan va natijasi hisobga yozilgan urinishlar qurilmadan o'chiriladi (keyingi foydalanuvchi ularni ko'rmasin).
+ *  Mehmon urinishlari va hali baholanmaganlari saqlanadi. */
+export function clearFinishedAttempts(): void {
+  try {
+    for (const k of Object.keys(localStorage)) {
+      if (!k.startsWith(PREFIX)) continue;
+      const a = loadAttempt(k.slice(PREFIX.length));
+      if (a && !a.guest && a.graded && a.recorded) localStorage.removeItem(k);
+    }
+  } catch { /* xotira yo'q */ }
 }
 export function clearAttempt(testKey: string): void {
   try { localStorage.removeItem(PREFIX + testKey); } catch { /* ignore */ }

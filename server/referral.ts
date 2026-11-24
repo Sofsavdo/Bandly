@@ -55,11 +55,19 @@ export function attachReferral(db: DatabaseSync, newPlayerId: number, code: unkn
   return Number(db.prepare('UPDATE players SET referred_by = ? WHERE id = ? AND referred_by IS NULL').run(ref.id, newPlayerId).changes) > 0;
 }
 
-/** Taklif qilingan o'quvchi haqiqiy mashg'ulot (dars yoki daraja testi) bajargach — bir marta, ikkala tomonga XP. */
+/** Server baholagan Mock Arena testi ham haqiqiy mashg'ulot: savollarning kamida yarmiga javob berilgan va kamida bittasi to'g'ri
+ *  (bo'sh topshirilgan yoki tasodifan bosilgan test mukofot bermaydi). Jadval hali yaratilmagan bo'lsa — false. */
+function meaningfulMock(db: DatabaseSync, playerId: number): unknown {
+  try {
+    return db.prepare("SELECT 1 FROM exam_results WHERE player_id = ? AND module IN ('ielts-skill', 'cefr') AND total > 0 AND answered * 2 >= total AND correct > 0 LIMIT 1").get(playerId);
+  } catch { return undefined; }
+}
+
+/** Taklif qilingan o'quvchi haqiqiy mashg'ulot (dars, daraja testi yoki mazmunli mock) bajargach — bir marta, ikkala tomonga XP. */
 export function maybeRewardReferral(db: DatabaseSync, playerId: number, now = Date.now(), env: NodeJS.ProcessEnv = process.env): boolean {
   const p = db.prepare('SELECT referred_by, ref_rewarded FROM players WHERE id = ?').get(playerId) as { referred_by: number | null; ref_rewarded: number } | undefined;
   if (!p?.referred_by || p.ref_rewarded) return false;
-  const did = db.prepare("SELECT 1 FROM xp_events WHERE player_id = ? AND source IN ('lesson', 'placement') AND accepted > 0 LIMIT 1").get(playerId);
+  const did = db.prepare("SELECT 1 FROM xp_events WHERE player_id = ? AND source IN ('lesson', 'placement') AND accepted > 0 LIMIT 1").get(playerId) ?? meaningfulMock(db, playerId);
   if (!did) return false;
   if (Number(db.prepare('UPDATE players SET ref_rewarded = 1, ref_rewarded_at = ? WHERE id = ? AND ref_rewarded = 0').run(now, playerId).changes) === 0) return false;
   const xpBonus = refXp(env);

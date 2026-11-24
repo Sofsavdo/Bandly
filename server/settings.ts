@@ -42,6 +42,7 @@ export const SETTINGS: SettingDef[] = [
   // Xarajat himoyasi
   { key: 'AI_GLOBAL_DAILY_CALLS', group: 'safety', label: 'Platforma bo‘yicha kuniga AI so‘rovlari', hint: '0 — AI o‘chiq', def: 0, min: 0, max: 1_000_000 },
   { key: 'AI_DAILY_LIMIT', group: 'safety', label: 'Bitta o‘quvchiga kuniga AI so‘rovlari (jami)', def: 120, min: 0, max: 10_000 },
+  { key: 'API_RATE_PER_MIN', group: 'safety', label: 'Bitta IP’dan daqiqasiga so‘rovlar soni', hint: 'Botlardan himoya. Maktab yoki ofis Wi-Fi’sida (bitta IP’dan ko‘p kishi) oshiring', def: 120, min: 30, max: 5000 },
   { key: 'LIVE_FREE_GLOBAL_DAILY_MINUTES', group: 'safety', label: 'Platforma bo‘yicha kuniga bepul ovozli suhbat', hint: '0 — cheklovsiz', def: 0, min: 0, max: 100_000, unit: 'min' },
 ];
 const BY_KEY = new Map(SETTINGS.map((s) => [s.key, s]));

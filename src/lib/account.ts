@@ -1,5 +1,6 @@
 import { clearServerPlans, dropXpQueue, getProfile, takeXpQueue } from './store';
-import { touchFields } from './referral';
+import { clearFinishedAttempts } from './examAttempt';
+import { getRef, touchFields } from './referral';
 import { onLogin, pushProgress, stageClear } from './cloud';
 import { L } from '../i18n';
 
@@ -39,6 +40,7 @@ export async function signOut(wipe: boolean): Promise<void> {
   const acc0 = getAccount(); const tok = acc0?.tg ? acc0.token : null;
   if (tok) { try { await fetch('/api/auth/logout', { method: 'POST', headers: { 'x-token': tok } }); } catch { /* oflayn: token qurilmadan baribir o'chiriladi */ } }
   logout();
+  if (had) clearFinishedAttempts(); // baholangan mock urinishlari keyingi foydalanuvchiga ko'rinmasin
   if (had) stageClear(); // hisob progressi qurilmada qolmaydi — qayta kirganda yuklanadi
   if (wipe) {
     for (const st of [localStorage, sessionStorage]) {

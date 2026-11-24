@@ -113,14 +113,13 @@ if (bot) setupBot(bot, fetch, { onUsername: (u) => { botUsername = u; } }).then(
 }).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
 const tts = ttsConfigFromEnv(process.env.TTS_CACHE_DIR ?? `${dirname(DB_FILE)}/tts-cache`);
 
-// Oddiy so'rov tezligi cheklovi (IP bo'yicha, daqiqada 120 ta; API_RATE_PER_MIN — faqat sinov muhiti uchun)
-const RATE_PER_MIN = Math.max(1, Math.floor(Number(process.env.API_RATE_PER_MIN) || 120));
+// Oddiy so'rov tezligi cheklovi (IP bo'yicha; standart daqiqada 120 ta). Admin panel → "Xarajat himoyasi" yoki API_RATE_PER_MIN orqali o'zgaradi
 const hits = new Map<string, { n: number; reset: number }>();
 function limited(ip: string): boolean {
   const now = Date.now();
   const h = hits.get(ip);
   if (!h || h.reset < now) { hits.set(ip, { n: 1, reset: now + 60_000 }); return false; }
-  return ++h.n > RATE_PER_MIN;
+  return ++h.n > settingValue('API_RATE_PER_MIN');
 }
 
 // /r/<kod> uchun alohida (API cheklovidan mustaqil) tezlik chegarasi: bir manbadan daqiqada 60 ta; undan ko'pi yozilmaydi (skaner jadvalni to'ldirmasin)
@@ -553,7 +552,10 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/mock/tests') { byToken(db, String(req.headers['x-token'] ?? '')); return send(res, 200, publicStudioTests(db)); } // kabinetda e'lon qilingan testlar (javobsiz), faqat hisob bilan
     if (req.method === 'POST' && url.pathname === '/api/mock/grade') {
       const b = await readJson(req, 16_384);
-      return send(res, 200, gradeRequest(db, String(req.headers['x-token'] ?? ''), b, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : [], Date.now(), MEDIA_DIR));
+      const tk = String(req.headers['x-token'] ?? '');
+      const graded = gradeRequest(db, tk, b, String(b.testId ?? '').startsWith('st-') ? publishedStudioTests(db) : [], Date.now(), MEDIA_DIR);
+      try { maybeRewardReferral(db, byToken(db, tk).id); } catch (e) { console.error('[referral]', (e as Error).message); } // taklif qilingan o'quvchi mazmunli mock topshirgan bo'lsa — bir martalik mukofot
+      return send(res, 200, graded);
     }
     // ---- Sertifikatlar ----
     if (url.pathname.startsWith('/api/certificates/verify/') && req.method === 'GET') return send(res, 200, publicCertificate(db, decodeURIComponent(url.pathname.slice('/api/certificates/verify/'.length))));

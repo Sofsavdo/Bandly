@@ -7,6 +7,7 @@
 //   D. Writing → AI baholash (soxta AI) → Writing Lab tuzatishi → «Xatolarim»ga tushadi
 //   F. Tariflar → to'lov (soxta Hamyon callback) → obuna ochiladi
 //   G. Obuna muddati tugadi → pullik bo'lim yopiladi
+//   H. Mehmon mock → natija yopiq → ro'yxatdan o'tish → natija akkauntga bog'lanadi (bir marta), shaxsiy reja
 //   I. Creator linki → bridge → veb → ro'yxat → creator kabinetida voronka
 //   K. Admin paneli: hamkor mukofot qoidasi — so'mda yaratish, tahrirlash, yoqish (egasi tasdig'i bilan); kredit rejimi «Limitlar»da
 import assert from 'node:assert/strict';
@@ -208,6 +209,63 @@ try {
     const p = await learner();
     await p.goto(`${base}/#/pricing`); await p.waitForTimeout(1500);
     assert.doesNotMatch(await text(p), /Faol obuna|amal qiladi:/i, 'tariflar sahifasida faol obuna ko‘rsatilmaydi');
+    await p.context().close();
+  });
+
+  await step('H. Mehmon mock → natija yopiq → ro‘yxatdan o‘tish → natija akkauntga bog‘lanadi, reja chiqadi', async () => {
+    const p = await page();
+    const gradeCalls: string[] = [];
+    p.on('request', (r) => { if (r.url().includes('/api/mock/grade')) gradeCalls.push(r.headers()['x-token'] ?? ''); });
+    await p.goto(`${base}/#/mocks/reading/reading-5`);
+    await p.getByRole('button', { name: 'Testni boshlash' }).click();
+    assert.doesNotMatch(p.url(), /#\/login/, 'mehmon login devoriga yo‘naltirilmadi');
+    await p.locator('main input[type=radio]').first().waitFor({ state: 'attached' });
+    const answerAll = () => p.evaluate(() => { const seen = new Set<string>(); for (const r of document.querySelectorAll<HTMLInputElement>('main input[type=radio]')) { if (seen.has(r.name)) continue; seen.add(r.name); (r.closest('label') ?? r).click(); } return seen.size; });
+    assert.ok(await answerAll() >= 5, 'savollar javoblandi');
+    // Sahifa yangilansa javoblar yo'qolmaydi
+    await p.reload(); await p.locator('main input[type=radio]:checked').first().waitFor({ state: 'attached', timeout: 8000 });
+    await p.locator('main button:has-text("Topshirish")').first().click();
+    await p.locator('button:has-text("Topshirish")').last().click(); // tasdiqlash
+    await p.getByText('Natijani ko‘rish va saqlash uchun bepul ro‘yxatdan o‘ting').waitFor({ timeout: 8000 });
+    assert.doesNotMatch(await text(p), /Band:|To‘g‘ri javob/, 'mehmonga natija va javob kalitlari ko‘rsatilmaydi');
+    assert.equal(gradeCalls.length, 0, 'mehmon uchun baholash so‘rovi yuborilmadi (kalitlar serverda qoladi)');
+    // Yangilash: gate qoladi, javoblar qurilmada
+    await p.reload(); await p.getByText('Natijangiz tayyor').first().waitFor({ timeout: 8000 });
+    const att = await p.evaluate(() => JSON.parse(localStorage.getItem('bandly.attempt.v1.reading:reading-5') ?? 'null') as { guest?: boolean; status: string; answers: Record<string, unknown> });
+    assert.ok(att?.guest === true && att.status === 'submitted' && Object.keys(att.answers).length >= 5, 'mehmon urinishi qurilmada saqlangan');
+    assert.equal(await p.getByRole('button', { name: 'Qayta boshlash' }).count(), 0, 'natijani ochmasdan javoblarni o‘chirib bo‘lmaydi');
+    // Ro'yxatdan o'tish → o'sha test sahifasiga qaytadi va natija darhol ochiladi (savolnomaga yo'naltirilmaydi)
+    await p.locator('main a:has-text("Bepul ro‘yxatdan o‘tish va natijani ochish")').first().click();
+    await p.waitForURL(/#\/login/);
+    await p.getByPlaceholder('Laqab').fill('Mehmon Mock');
+    await p.getByRole('button', { name: 'Davom etish' }).click();
+    await p.getByText('Natijangiz hisobingizga saqlandi.').waitFor({ timeout: 15000 }).catch(async (e) => { throw new Error(`natija ochilmadi: ${p.url()} :: ${(await text(p)).slice(0, 900)} :: ${e.message.split('\n')[0]}`); });
+    assert.match(p.url(), /#\/mocks\/reading\/reading-5/, 'natija sahifasida qoldi');
+    assert.match(await text(p), /\d+\s*\/\s*\d+/, 'natija (to‘g‘ri javoblar soni) ochildi');
+    assert.ok(gradeCalls.length >= 1 && gradeCalls.every((t) => t.length > 10), 'baholash faqat hisob tokeni bilan');
+    await p.getByText('Natijangiz asosida shaxsiy reja').waitFor({ timeout: 8000 });
+    assert.match(await text(p), /taxminiy tavsiya/, 'reja taxminiy tavsiya ekani aytilgan');
+    assert.match(await text(p), /kafolatlanmaydi/, 'kafolat yo‘q ogohlantirishi');
+    const hrefs = await p.locator('.mock-plan a.path-step').evaluateAll((els) => els.map((e) => e.getAttribute('href') ?? ''));
+    assert.ok(hrefs.length >= 1 && hrefs.every((h) => /^#\/(learn\/[\w-]+|mocks\/(reading|listening)\/[\w-]+|placement)$/.test(h)), `reja havolalari bevosita: ${hrefs.join(', ')}`);
+    await p.waitForTimeout(1800); // 600 ms dan keyin savolnomaga qaytarib yubormasligi kerak
+    assert.match(p.url(), /#\/mocks\/reading\/reading-5/, 'natijani ko‘rib bo‘lmay savolnomaga yo‘naltirilmadi');
+    // Yangilash: natija ikki marta yozilmaydi
+    await p.reload(); await p.getByText('Natijangiz asosida shaxsiy reja').waitFor({ timeout: 10000 });
+    await p.waitForTimeout(800);
+    const results = await p.evaluate(() => (JSON.parse(localStorage.getItem('bandly.results.v1') ?? '[]') as { title: string }[]).length);
+    assert.equal(results, 1, 'natijalar tarixida bitta yozuv');
+    // Takroriy so'rov (callback/refresh): server bitta natija, XP ikki marta berilmaydi
+    const tk = (await p.evaluate(() => JSON.parse(localStorage.getItem('bandly.account.v1') ?? 'null') as { token: string }))!.token;
+    const attemptId = String((await p.evaluate(() => JSON.parse(localStorage.getItem('bandly.attempt.v1.reading:reading-5') ?? 'null') as { startedAt: number })).startedAt);
+    const answers = (await p.evaluate(() => JSON.parse(localStorage.getItem('bandly.attempt.v1.reading:reading-5') ?? 'null') as { answers: Record<string, unknown> })).answers;
+    const g1 = (await api('/api/mock/grade', { method: 'POST', token: tk, body: JSON.stringify({ kind: 'reading', testId: 'reading-5', answers, attemptId }) })).json;
+    const g2 = (await api('/api/mock/grade', { method: 'POST', token: tk, body: JSON.stringify({ kind: 'reading', testId: 'reading-5', answers, attemptId }) })).json;
+    assert.equal(g1.resultId, g2.resultId, 'takroriy baholash bitta natija yozuvi'); assert.equal(g2.xp, 0, 'takroriy baholashda XP qayta berilmaydi');
+    const raw = new DatabaseSync(DB);
+    const n = (raw.prepare("SELECT COUNT(*) AS n FROM exam_results WHERE player_id = (SELECT id FROM players WHERE nickname = 'Mehmon Mock') AND test_id = 'reading-5'").get() as { n: number }).n;
+    raw.close();
+    assert.equal(n, 1, 'bazada bitta natija');
     await p.context().close();
   });
 

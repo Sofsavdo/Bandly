@@ -23,6 +23,15 @@ const v0 = Object.fromEntries(listSettings(db).map((s) => [s.key, s]));
 assert.equal(v0.FREE_LESSONS_PER_DAY!.source, 'env');
 assert.equal(v0.FREE_FIRST_DAY_LESSONS!.source, 'default');
 
+// So'rov tezligi cheklovi: standart 120/daq, admin 30–5000 oralig'ida o'zgartira oladi (admin paneldan)
+assert.equal(settingValue('API_RATE_PER_MIN'), 120);
+assert.throws(() => updateSettings(db, { API_RATE_PER_MIN: 10 }, null), ApiError);
+assert.throws(() => updateSettings(db, { API_RATE_PER_MIN: 9000 }, null), ApiError);
+updateSettings(db, { API_RATE_PER_MIN: 300 }, null);
+assert.equal(settingValue('API_RATE_PER_MIN'), 300);
+updateSettings(db, { API_RATE_PER_MIN: null }, null);
+assert.equal(settingValue('API_RATE_PER_MIN'), 120);
+
 // Admin qiymati Railway'dan ustun va darhol kuchga kiradi (serverni qayta ishga tushirmasdan)
 const admin = byToken(db, join(db, 'Boss').token).id;
 updateSettings(db, { FREE_LESSONS_PER_DAY: 4, PLAN_EXAM_WRITING: 15, COACH_CALL_MONTH_MINUTES: 90, REF_XP: 50, REF_PLAN_DAYS: 7, LIVE_FREE_DAILY_MINUTES: 8, PLAN_PRICE_EXAM: 109_000 }, admin);

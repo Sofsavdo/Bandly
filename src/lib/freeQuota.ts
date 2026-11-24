@@ -55,4 +55,8 @@ export function freeLeft(course: Course, now = Date.now()): number | null {
   if (isSubscribed(course)) return null;
   return leftToday(load(), course, tashkentDay(now), limits);
 }
+/** Keyingi kunlarda kuniga nechta yangi bepul dars ochiladi (server sozlamasi; obunachi uchun null — cheklovsiz). */
+export function freePerDay(course: Course): number | null {
+  return isSubscribed(course) ? null : limits.perDay;
+}
 export const isUnlockedFree = (lessonId: string): boolean => !!load().unlocked[lessonId];
