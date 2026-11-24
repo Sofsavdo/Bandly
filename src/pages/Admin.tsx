@@ -72,7 +72,7 @@ function Funnel({ steps }: { steps: { label: string; n: number; prev?: number }[
 }
 
 const SOURCE: Record<string, string> = { lesson: L('Darslar'), boss: L('Boss jangi'), game: L('So‘z o‘yinlari'), exam: L('Imtihon'), grammar: L('Grammatika'), practice: L('Mashq'), mistakes: L('Xatolar ustida ishlash'), placement: L('Daraja testi'), quest: L('Kunlik vazifalar'), other: L('Boshqa'), mock: L('Mock test'), referral: L('Taklif bonusi') };
-const FEATURE: Record<string, string> = { coach: L('AI ustoz (matn)'), live: L('AI ustoz (ovozli qo‘ng‘iroq)'), followup: L('Speaking savollari'), i18n: L('Tarjima'), stt: L('Nutqni tanish'), studio_voice: L('Studio ovozi'), tts_feedback: L('Ovozli izoh'), writing_eval: L('Writing baholash'), speaking_eval: L('Speaking baholash') };
+const FEATURE: Record<string, string> = { coach: L('Sellzen AI (matn)'), live: L('Sellzen AI (ovozli qo‘ng‘iroq)'), followup: L('Speaking savollari'), i18n: L('Tarjima'), stt: L('Nutqni tanish'), studio_voice: L('Studio ovozi'), tts_feedback: L('Ovozli izoh'), writing_eval: L('Writing baholash'), speaking_eval: L('Speaking baholash') };
 
 export default function Admin() {
   const [data, setData] = useState<Data | null>(null);

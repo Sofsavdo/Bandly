@@ -35,7 +35,7 @@ export default function Pricing() {
     <div>
       <div className="card page-head with-illo t-mint pricing-head">
         <h2 style={{ margin: 0 }}>{L('Tarif')} <em className="it">{L('tanlang')}</em></h2>
-        <p style={{ margin: '6px 0 12px' }}>{L('Mock testlar bepul. Obuna — cheksiz darslar, AI baho va AI ustoz.')}</p>
+        <p style={{ margin: '6px 0 12px' }}>{L('Mock testlar bepul. Obuna — cheksiz darslar, AI baho va Sellzen AI.')}</p>
         <div className="price-tabs" role="tablist" aria-label={L('Muddat')}>
           {SALE_PERIODS.map((x) => <button key={x.days} role="tab" aria-selected={x.days === days} className={x.days === days ? 'on' : ''} onClick={() => setDays(x.days)}>{x.label}{x.note && <small> {x.note}</small>}</button>)}
         </div>
@@ -51,7 +51,7 @@ export default function Pricing() {
           <h3 style={{ margin: 0 }}>{L('Bepul')}</h3>
           <div className="price">{L('0 so‘m')}</div>
           <ul>
-            {[L('Mock Arena: barcha Reading va Listening testlari — cheksiz'), L('Darajani aniqlash testi va natijalar'), L('Har kursda kuniga {0} ta yangi dars (birinchi kuni {1} ta)', [FREE_INFO.lessonsPerDay, FREE_INFO.firstDayLessons]), L('O‘tilgan darslarni takrorlash va “Xatolarim” — cheksiz'), L('AI baho: haftasiga {0} ta Writing va {1} ta Speaking', [FREE_INFO.writingPerWeek, FREE_INFO.speakingPerWeek]), L('AI ustoz: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay]), L('O‘yinlar, duel va reyting')].map((f) => <li key={f}><Check size={16} />{f}</li>)}
+            {[L('Mock Arena: barcha Reading va Listening testlari — cheksiz'), L('Darajani aniqlash testi va natijalar'), L('Har kursda kuniga {0} ta yangi dars (birinchi kuni {1} ta)', [FREE_INFO.lessonsPerDay, FREE_INFO.firstDayLessons]), L('O‘tilgan darslarni takrorlash va “Xatolarim” — cheksiz'), L('AI baho: haftasiga {0} ta Writing va {1} ta Speaking', [FREE_INFO.writingPerWeek, FREE_INFO.speakingPerWeek]), L('Sellzen AI: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay]), L('O‘yinlar, duel va reyting')].map((f) => <li key={f}><Check size={16} />{f}</li>)}
           </ul>
           <a className="btn" href="#/placement">{L('Bepul boshlash')}</a>
         </div>

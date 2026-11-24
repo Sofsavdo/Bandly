@@ -57,12 +57,12 @@ export interface CommonMistake { id: string; title: string; why: string; fix: st
 export const commonMistakes: CommonMistake[] = [
   { id: 'contractions', title: 'Qisqartmalar (don’t, it’s, can’t)', why: 'Akademik yozuv rasmiy bo‘ladi.', fix: 'To‘liq shakl: do not, it is, cannot.' },
   { id: 'words', title: 'So‘zlar soni noto‘g‘ri', why: 'Task 2 da kamida 250 so‘z kerak; juda uzun insho vaqtingizni oladi va xatoni oshiradi.', fix: '250–320 so‘z oralig‘ida yozing.' },
-  { id: 'informal', title: 'Norasmiy so‘zlar (nice, kids, a lot of, stuff)', why: 'Lexical Resource bandini tushiradi.', fix: 'beneficial, children, numerous, issues kabi rasmiy so‘zlarni ishlating.' },
+  { id: 'informal', title: 'Norasmiy so‘zlar (nice, kids, a lot of, stuff)', why: 'Lexical Resource ballini tushiradi.', fix: 'beneficial, children, numerous, issues kabi rasmiy so‘zlarni ishlating.' },
   { id: 'anecdote', title: 'Shaxsiy hikoyalar ("my friend ...", "when I was ...")', why: 'Task 2 da dunyodan misol kerak, shaxsiy voqea emas.', fix: 'Umumiy misol: "In Scandinavia, ...", "Studies show that ..."' },
   { id: 'emotion', title: 'Haddan tashqari hissiy so‘zlar (terrible, I hate)', why: 'Akademik uslub betaraf.', fix: 'unacceptable, I disapprove of, undesirable.' },
-  { id: 'offtopic', title: 'Mavzudan chetga chiqish', why: 'Task Response bandi tushadi.', fix: 'Yozishdan oldin savolning kalit so‘zlarini tagiga chizing va 2 daqiqa reja tuzing.' },
+  { id: 'offtopic', title: 'Mavzudan chetga chiqish', why: 'Task Response balli tushadi.', fix: 'Yozishdan oldin savolning kalit so‘zlarini tagiga chizing va 2 daqiqa reja tuzing.' },
   { id: 'type', title: 'Insho turini noto‘g‘ri aniqlash', why: 'Muammo-yechim savolida o‘z fikringizni yozib, yechimni unutish.', fix: 'Avval savol turini aniqlang (Insho turlari bo‘limi).' },
-  { id: 'structure', title: 'Abzatssiz yoki xulosasiz insho', why: 'Coherence and Cohesion bandi pasayadi.', fix: '4 abzats: kirish, 2 asosiy, xulosa. "In conclusion" bilan tugating.' },
+  { id: 'structure', title: 'Abzatssiz yoki xulosasiz insho', why: 'Coherence and Cohesion balli pasayadi.', fix: '4 abzats: kirish, 2 asosiy, xulosa. "In conclusion" bilan tugating.' },
 ];
 
 export interface TopicVocab { phrase: string; pos: string; uz: string; def: string; example: string; level: 'B2' | 'C1' }

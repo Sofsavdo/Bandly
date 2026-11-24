@@ -96,7 +96,7 @@ export async function complete(cfg: AiConfig, system: string, user: string, opts
   }
   const e = last as AiError;
   if (e.upstream === EMPTY_ANSWER) throw e; // hamma model bo'sh/yaroqsiz javob berdi — 'band' emas, aniq sabab
-  throw new AiError(503, e.upstream === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : 'AI ustoz hozir juda band (AI xizmatida navbat). Bir daqiqadan keyin qayta urinib ko‘ring.', e.upstream);
+  throw new AiError(503, e.upstream === 429 ? 'Sellzen AI hozir band. Birozdan keyin urinib ko‘ring.' : 'Sellzen AI hozir juda band (AI xizmatida navbat). Bir daqiqadan keyin qayta urinib ko‘ring.', e.upstream);
 }
 
 async function completeOnce(cfg: AiConfig, system: string, user: string, opts: CompleteOpts = {}): Promise<string> {
@@ -128,7 +128,7 @@ async function completeOnce(cfg: AiConfig, system: string, user: string, opts: C
       let why = '';
       try { const e = (await res.json()) as { error?: { type?: string; message?: string; status?: string } }; why = `${e.error?.type ?? e.error?.status ?? ''} ${String(e.error?.message ?? '').slice(0, 160)}`.trim(); } catch { /* bo'sh */ }
       console.error(`[ai] ${cfg.provider} ${cfg.model} → HTTP ${res.status}${why ? `: ${why}` : ''}`);
-      throw new AiError(502, res.status === 401 || res.status === 403 ? 'AI ustoz kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 402 ? 'AI ustoz vaqtincha ishlamayapti: AI xizmati hisobida mablag‘ tugagan. Administratorga xabar berildi.' : res.status === 429 ? 'AI ustoz hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`, res.status);
+      throw new AiError(502, res.status === 401 || res.status === 403 ? 'Sellzen AI kaliti yaroqsiz — administrator sozlashi kerak' : res.status === 402 ? 'Sellzen AI vaqtincha ishlamayapti: AI xizmati hisobida mablag‘ tugagan. Administratorga xabar berildi.' : res.status === 429 ? 'Sellzen AI hozir band. Birozdan keyin urinib ko‘ring.' : `AI provayder xatosi (${res.status})`, res.status);
     }
     const j = (await res.json().catch(() => null)) as Record<string, any> | null; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!j || typeof j !== 'object') { console.error(`[ai] ${cfg.provider} ${cfg.model} → JSON bo'lmagan javob`); throw new AiError(502, 'AI javobini o‘qib bo‘lmadi', EMPTY_ANSWER); }

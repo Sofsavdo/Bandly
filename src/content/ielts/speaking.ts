@@ -2,7 +2,7 @@ import type { Unit } from '../lessons/types';
 import { ch, gap, ord } from '../lessons/helpers';
 
 // IELTS kursi — Speaking. Har darsda "Gapirish" bosqichi bor: namunaviy javob gaplarini ovoz chiqarib aytasiz.
-// To'liq imtihon mashqi va AI baho — Speaking bo'limida va AI ustoz bilan. Original o'quv materiali (Sellzen).
+// To'liq imtihon mashqi va AI baho — Speaking bo'limida va Sellzen AI bilan. Original o'quv materiali (Sellzen).
 
 export const IE_SPEAKING_START: Unit = {
   id: 'ie-ss', level: 'A2', title: 'IELTS Speaking: Start', titleUz: 'Speaking: boshlang‘ich ko‘nikmalar',

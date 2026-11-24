@@ -1,4 +1,4 @@
-// AI ustoz — ovozli suhbat (qo'ng'iroq kabi), bitta personaj: Sellzen. Qo'ng'iroq ekrani BITTA ekranga sig'adi (skrol yo'q, joylar band qilingan).
+// Sellzen AI — ovozli suhbat (qo'ng'iroq kabi), bitta personaj: Sellzen. Qo'ng'iroq ekrani BITTA ekranga sig'adi (skrol yo'q, joylar band qilingan).
 // Boshlash: Sellzen yuziga tegish. Gapirish (push-to-talk): ekranga (yuziga) tegib turish — qo'yib yuborilganda ustoz javob beradi; desktopda Probel.
 // Tugatish: yuqori burchakdagi kichik tugma. Shovqin ustozni bo'lmaydi, ustoz fikrini tugatadi; uni faqat ekranga ataylab tegish to'xtatadi.
 // Nutq serverda (ElevenLabs Scribe) aniq tanadi. Ustoz o'quvchi rejasini biladi, "darsga o't" desa o'tkazadi. Xatolar "Xatolarim"ga jimgina yoziladi.
@@ -347,7 +347,7 @@ export default function Coach() {
         {acc && minutes === null && <span className="pill" style={{ visibility: 'hidden' }} aria-hidden="true">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span>}{/* daqiqalar yuklanguncha joy band — sahifa sakramaydi */}
         {minutes?.subscribed ? <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span> : minutes && FREE_INFO.liveMinutesPerDay > 0 ? <span className="pill">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span> : null}
         {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
-        {status && !status.coach && <p className="notice">{L('AI ustoz tez orada ochiladi.')}</p>}
+        {status && !status.coach && <p className="notice">{L('Sellzen AI tez orada ochiladi.')}</p>}
         {!acc && <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />}
       </section>
     </div>

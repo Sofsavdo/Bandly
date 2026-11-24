@@ -19,7 +19,7 @@ const STEP: Record<string, string> = {
   payment_done: L('To‘lov qildi'), referral_share: L('Taklif havolasini ulashdi'),
 };
 const FEATURE: Record<string, string> = {
-  lesson: L('Darslar'), mock: L('Mock testlar'), writing_eval: L('Writing baholash'), speaking_eval: L('Speaking baholash'), coach: L('AI ustoz'),
+  lesson: L('Darslar'), mock: L('Mock testlar'), writing_eval: L('Writing baholash'), speaking_eval: L('Speaking baholash'), coach: L('Sellzen AI'),
   plan_done: L('Kunlik reja bajarildi'), insight_follow: L('Tavsiyaga amal qildi'),
 };
 // Ta'riflar (server/userEvents.ts DEFINITIONS bilan bir xil ma'noda; bu yerda tarjima qilinadigan nusxa)

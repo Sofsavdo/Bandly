@@ -307,7 +307,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
   );
 }
 
-/** Mock natijasini story rasmi (1080×1920) qilib ulashish; Sellzen Mock Arena bandi. */
+/** Mock natijasini story rasmi (1080×1920) qilib ulashish; Sellzen Mock Arena natijasi. */
 async function shareMock(r: { kind: 'reading' | 'listening'; correct: number; total: number; band: number | null }): Promise<void> {
   track('share_mock');
   const skill = r.kind === 'reading' ? 'Reading' : 'Listening';
@@ -316,7 +316,7 @@ async function shareMock(r: { kind: 'reading' | 'listening'; correct: number; to
   const blob = await renderStory({
     eyebrow: L('Mening {0} mock natijam', [skill]), big,
     title: L('{0} / {1} to‘g‘ri', [r.correct, r.total]),
-    sub: r.band !== null ? L('Sellzen Mock Arena bandi') : undefined,
+    sub: r.band !== null ? L('Sellzen Mock Arena natijasi') : undefined,
     cta: L('Sen ham bepul mock test topshir!'), link: 'sellzen.uz',
   });
   if (blob) await shareCard(blob, `sellzen-${r.kind}-mock`, `${L('Mening {0} mock natijam', [skill])}: ${big}. ${L('Sen ham bepul mock test topshir!')} ${link}`);

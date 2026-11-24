@@ -18,7 +18,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 const GROUPS: { id: Group; title: string; note: string }[] = [
   { id: 'free', title: L('Bepul tarif'), note: L('Obunasiz o‘quvchilar uchun kunlik va haftalik chegaralar.') },
   { id: 'plans', title: L('Obuna tariflari'), note: L('Tariflar sahifasidagi raqamlar shu qiymatlardan avtomatik yangilanadi.') },
-  { id: 'coach', title: L('AI ustoz'), note: L('Hamma o‘quvchilar uchun.') },
+  { id: 'coach', title: L('Sellzen AI'), note: L('Hamma o‘quvchilar uchun.') },
   { id: 'referral', title: L('Taklif (referal) bonuslari'), note: L('Taklif qilingan o‘quvchi birinchi dars yoki daraja testini tugatganda ikkala tomonga beriladi.') },
   { id: 'creator', title: L('Creator (hamkor) dasturi'), note: L('Mukofot qoidalari (summa, foiz, byudjet, kutish muddati) «Hamkorlar → Mukofot daftari» bo‘limida sozlanadi. Bu yerda — umumiy qoida.') },
   { id: 'prices', title: L('Narxlar'), note: L('Oylik narx; 3 oylik (−10%) va 12 oylik (10 oy narxi) shundan hisoblanadi. Yangi to‘lovlarga qo‘llanadi.') },

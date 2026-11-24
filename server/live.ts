@@ -1,4 +1,4 @@
-// Gemini Live — ovozdan-ovozga (speech-to-speech) AI ustoz. Brauzer bizning serverga WebSocket bilan ulanadi, server esa
+// Gemini Live — ovozdan-ovozga (speech-to-speech) Sellzen AI. Brauzer bizning serverga WebSocket bilan ulanadi, server esa
 // Gemini Live API'ga (BidiGenerateContent): API kalit brauzerga chiqmaydi, daqiqalar va limitlar serverda hisoblanadi.
 // Brauzer → server: ikkilik kadrlar = 16 kHz PCM16 mikrofon ovozi; JSON {type:'end'} — tugatish; {type:'activity', on} — bosib-gapirish
 // (?ptt=1): "bosildi"/"qo'yib yuborildi" — Gemini'ga activityStart/activityEnd; shu paytdan tashqari kelgan ovoz Gemini'ga yuborilmaydi.
