@@ -11,6 +11,7 @@ import { tzDay } from './day';
 export const EVENT_NAMES = [
   'landing_view', 'signup_start', 'pricing_view', 'checkout_start',
   'placement_start', 'placement_done', 'share_placement_tg', 'share_placement_img', 'duel_guest_view', 'duel_share', 'share_mock', 'seo_cta',
+  'login_widget_missing', 'login_bot_start', 'login_bot_done', // kirish oynasi: Telegram vidjeti chiqmadi / bot orqali kirish boshlandi va tugadi (anonim hisoblagich)
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];
 export const isEventName = (x: unknown): x is EventName => (EVENT_NAMES as readonly unknown[]).includes(x);

@@ -5231,6 +5231,8 @@
 "Telegram orqali, bir bosishda — bepul.",
 "Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.",
 "Telegram orqali: {0}",
+"Telegram tugmasi chiqmadi? Pastdagi tugma orqali kiring.",
+"Telegram tugmasi faqat bu manzilda ishlaydi:",
 "Telegram webhook o‘rnatilmadi (oldingi webhook amal qilishda davom etishi mumkin):",
 "Telegram webhook: {0} — {1} s dan keyin qayta urinish ({2}/{3})",
 "Telegram ✓",

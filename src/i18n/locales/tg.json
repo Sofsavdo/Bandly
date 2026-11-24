@@ -5232,6 +5232,8 @@
  "Telegram orqali, bir bosishda — bepul.": "Тавассути Telegram, бо як пахш — ройгон.",
  "Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.": "Тавассути Telegram, бо як пахш. Пешрафт, рейтинг ва обуна дар дастгоҳи дигар ҳам кушода мешаванд.",
  "Telegram orqali: {0}": "Тавассути Telegram: {0}",
+ "Telegram tugmasi chiqmadi? Pastdagi tugma orqali kiring.": "Тугмаи Telegram пайдо нашуд? Бо тугмаи поён ворид шавед.",
+ "Telegram tugmasi faqat bu manzilda ishlaydi:": "Тугмаи Telegram танҳо дар ин суроға кор мекунад:",
  "Telegram webhook o‘rnatilmadi (oldingi webhook amal qilishda davom etishi mumkin):": "Telegram webhook насб нашуд (webhook-и қаблӣ метавонад кор карданро идома диҳад):",
  "Telegram webhook: {0} — {1} s dan keyin qayta urinish ({2}/{3})": "Telegram webhook: {0} — кӯшиши такрорӣ пас аз {1} с ({2}/{3})",
  "Telegram ✓": "Telegram ✓",

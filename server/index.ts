@@ -189,7 +189,7 @@ const httpServer = createServer(async (req, res) => {
       recordUserEvent(db, pid, b.name);
       res.writeHead(204); return void res.end();
     }
-    if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername } : null });
+    if (req.method === 'GET' && url.pathname === '/api/auth/config') return send(res, 200, { telegram: bot && botUsername ? { bot: botUsername, host: bot.publicUrl ? new URL(bot.publicUrl).host : null } : null }); // host — BotFather domeni (PUBLIC_URL): vidjet faqat shu manzilda ishlaydi
     if (req.method === 'POST' && (url.pathname === '/api/auth/telegram' || url.pathname === '/api/auth/telegram/webapp')) {
       if (!bot) throw new ApiError(503, 'Telegram orqali kirish hali sozlanmagan');
       const b = await readJson(req, 8192);
