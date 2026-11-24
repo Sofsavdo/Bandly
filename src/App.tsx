@@ -9,6 +9,7 @@ import { Toasts } from './components/Toasts';
 import { sectionOf } from './components/nav';
 import { authRoute, setupRoute } from './lib/setupGate';
 import { getAccount, onAccountChange } from './lib/account';
+import { cloudVerified } from './lib/cloud';
 import { SubNav } from './components/SubNav';
 import { PlanRunBar } from './components/PlanRunBar';
 import { useT } from './i18n';
@@ -137,9 +138,12 @@ function MainApp() {
   // Kirgan o'quvchi: avval shaxsiy reja (Sellzen uslubi bilan), keyin daraja testi — shundan keyin darslar darajaga qarab ochiladi
   useEffect(() => {
     const check = () => { const to = setupRoute(window.location.hash || '#/'); if (to) window.location.hash = to; };
-    const t = setTimeout(check, 600); // hisob progressi tiklanishiga vaqt
+    const t = setTimeout(check, 600);
+    // Hisob progressi serverdan o'qilguncha qaror qilinmaydi (setupGate): shu vaqt ichida qayta tekshiramiz (eng ko'pi ~15 s)
+    let n = 0;
+    const poll = setInterval(() => { if (!getAccount() || cloudVerified() || ++n > 20) { clearInterval(poll); if (cloudVerified()) check(); } }, 750);
     const off = onAccountChange(() => setTimeout(check, 600));
-    return () => { clearTimeout(t); off(); };
+    return () => { clearTimeout(t); clearInterval(poll); off(); };
   }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
   const lessonId = hash.match(/^#\/learn\/([\w-]+)$/)?.[1];

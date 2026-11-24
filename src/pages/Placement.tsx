@@ -5,12 +5,13 @@ import { placement } from '../content/placement';
 import { CEFR, LEVEL_INFO, suggestedTarget, type Cefr } from '../lib/levels';
 import { evaluate, nextQuestion } from '../lib/placement';
 import { LEVEL_BAND } from '../lib/progress';
-import { addXp, setLevel, useProfile } from '../lib/store';
+import { addXp, setLevel, setTarget, useProfile } from '../lib/store';
 import { confetti, sfx } from '../lib/fx';
 import { L } from '../i18n';
 import { getAccount, myRefCode } from '../lib/account';
 import { renderStory, resultLink, shareCard } from '../lib/shareCard';
 import { track } from '../lib/track';
+import { takeGo } from '../lib/setupGate';
 
 const TARGETS = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
 
@@ -26,7 +27,9 @@ function planFor(level: Cefr): { title: string; text: string; href: string }[] {
 
 export default function Placement() {
   const p = useProfile();
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(takeGo);
+  // Oldingi natija (taqqoslash uchun) — test boshlanishidagi holat; yangi natija avtomatik saqlangach ham to'g'ri ko'rinadi
+  const [prev] = useState(() => p.checkpoints[p.checkpoints.length - 1]?.level ?? null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [target, setTargetState] = useState<number | null>(null);
   const [date, setDate] = useState('');
@@ -39,6 +42,8 @@ export default function Placement() {
   const done = started && q === null;
   const answeredN = Object.keys(answers).length;
   useEffect(() => { if (done) track('placement_done'); }, [done]);
+  // Natija avtomatik saqlanadi: "saqlash" tugmasini bosmasa ham daraja yo'qolmaydi va test qayta so'ralmaydi
+  useEffect(() => { if (done && !saved) finish(); }, [done, saved]); // eslint-disable-line react-hooks/exhaustive-deps
   const lvlName = (l: Cefr) => `${l} · ${LEVEL_INFO[l].name}`;
 
   const finish = () => {
@@ -116,22 +121,26 @@ export default function Placement() {
           <div className="level-steps big">
             {CEFR.map((l) => <i key={l} className={l === lvl ? 'now' : CEFR.indexOf(l) < CEFR.indexOf(lvl) ? 'done' : ''}><b>{l}</b></i>)}
           </div>
+          <p className="evidence"><CheckCircle2 size={14} />  {L('Darajangiz saqlandi. Darslar shu darajadan ochiladi.')}</p>
+          {getAccount()
+            ? <a className="btn primary lg" href="#/"><Rocket size={18} />  {L('Darslarni boshlash')}</a>
+            : <a className="btn primary lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')} <ArrowRight size={18} /></a>}
         </div>
       </div>
 
-      {p.checkpoints.length > 0 && !saved && (
-        <div className="card"><b>{L('Oldingi natija:')} {p.checkpoints[p.checkpoints.length - 1].level}</b> → <b>{L('yangi:')} {lvl}</b>{LEVEL_BAND[lvl] > LEVEL_BAND[p.checkpoints[p.checkpoints.length - 1].level] ? <span className="ok"> · +{(LEVEL_BAND[lvl] - LEVEL_BAND[p.checkpoints[p.checkpoints.length - 1].level]).toFixed(1)}  {L('band o‘sdingiz')}</span> : null}</div>
+      {prev && (
+        <div className="card"><b>{L('Oldingi natija:')} {prev}</b> → <b>{L('yangi:')} {lvl}</b>{LEVEL_BAND[lvl] > LEVEL_BAND[prev] ? <span className="ok"> · +{(LEVEL_BAND[lvl] - LEVEL_BAND[prev]).toFixed(1)}  {L('band o‘sdingiz')}</span> : null}</div>
       )}
 
       <div className="card">
         <h3><Target size={18} style={{ verticalAlign: -3 }} />  {L('Maqsadingiz: IELTS')} {t.toFixed(1)}</h3>
         <p className="evidence">{L('Maqsadga qarab kunlik reja va tavsiyalar o‘zgaradi. Hozir tavsiya:')} {suggestedTarget(lvl).toFixed(1)}.</p>
         <div className="row" style={{ marginBottom: 12 }}>
-          {TARGETS.map((x) => <button key={x} className={`chipbtn ${t === x ? 'on' : ''}`} onClick={() => setTargetState(x)}>{x.toFixed(1)}</button>)}
+          {TARGETS.map((x) => <button key={x} className={`chipbtn ${t === x ? 'on' : ''}`} onClick={() => { setTargetState(x); if (saved) setTarget(x, date || p.examDate); }}>{x.toFixed(1)}</button>)}
         </div>
         <label className="evidence" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <CalendarDays size={16} />  {L('Imtihon sanasi (ixtiyoriy):')}
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input" style={{ width: 'auto' }} />
+          <input type="date" value={date} onChange={(e) => { setDate(e.target.value); if (saved) setTarget(t, e.target.value || null); }} className="input" style={{ width: 'auto' }} />
         </label>
       </div>
 
@@ -139,15 +148,13 @@ export default function Placement() {
         <h3>{L('Sizga tuzilgan dastur')}</h3>
         <div className="plan-list">
           {planFor(lvl).map((s, i) => (
-            <a key={s.title} className="plan-step" href={saved ? s.href : undefined} onClick={(e) => { if (!saved) e.preventDefault(); }}>
+            <a key={s.title} className="plan-step" href={s.href}>
               <span className="n">{i + 1}</span><div><b>{s.title}</b><p>{s.text}</p></div>
             </a>
           ))}
         </div>
         <div className="row" style={{ marginTop: 16 }}>
-          {!saved ? <button className="btn primary lg" onClick={finish}><Rocket size={18} />  {L('Dasturni saqlash')}</button>
-            : !getAccount() ? <a className="btn primary lg" href={`#/login?next=${encodeURIComponent('#/start')}`}>{L('Bepul ro‘yxatdan o‘tish')} <ArrowRight size={18} /></a>
-            : <><a className="btn primary lg" href="#/">{L('Boshlash')} <ArrowRight size={18} /></a> <a className="btn lg" href="#/skills">{L('Reading va Listening’ni ham tekshirish')}</a></>}
+          {getAccount() && <a className="btn lg" href="#/skills">{L('Reading va Listening’ni ham tekshirish')}</a>}
           {/* Virallik: natijani do'stga yuborish — "sen ham tekshir" (Telegram O'zbekistonda asosiy kanal); kirgan bo'lsa taklif kodi bilan */}
           <a className="btn lg" target="_blank" rel="noreferrer" onClick={() => track('share_placement_tg')} href={`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(`${L('Mening ingliz tili darajam:')} ${lvl}. ${L('Sen ham 3 daqiqada bepul tekshir!')}`)}`}>{L('Telegramda ulashish')}</a>
           <button className="btn lg" onClick={() => { track('share_placement_img'); void shareStory(); }}>{L('Rasm bilan ulashish')}</button>

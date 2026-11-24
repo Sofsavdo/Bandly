@@ -5,7 +5,7 @@ import { levelIndex } from '../lib/levels';
 import { recordMock } from '../lib/history';
 import { syncMock } from '../lib/bands';
 import { loadResults, type ResultRecord } from '../lib/storage';
-import { useProfile } from '../lib/store';
+import { setLevelFromExam, useProfile } from '../lib/store';
 import { Illo } from '../components/Illo';
 import { CertNotice } from '../components/CertNotice';
 import { getAccount } from '../lib/account';
@@ -23,9 +23,11 @@ const nearest = <T extends { level: Parameters<typeof levelIndex>[0] }>(list: T[
 const since = (results: ResultRecord[], t0: number, pred: (r: ResultRecord) => boolean) => results.find((r) => Date.parse(r.date) >= t0 && pred(r));
 
 /** Natija qurilmaga va (hisob bo'lsa) serverga yoziladi — o'sishni boshlang'ichdan o'lchash uchun. Bir xil natija qayta yozilmaydi. */
-function RecordMock({ entry }: { entry: Parameters<typeof recordMock>[0] }) {
+function RecordMock({ entry, final }: { entry: Parameters<typeof recordMock>[0]; final: boolean }) {
   const key = JSON.stringify(entry);
   useEffect(() => { recordMock(entry); syncMock(entry); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 4 bo'lim tugagach daraja shu natijadan yangilanadi (daraja testini qayta topshirish shart emas)
+  useEffect(() => { if (final) setLevelFromExam(entry.overall, entry.at); }, [final, key]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
 
@@ -122,12 +124,13 @@ export default function FullExam() {
             <p className="evidence">{all ? L('Imtihon yakunlandi') : L('Hozirgacha {0} ta bo‘lim bo‘yicha', [bands.length])}</p>
             <div className="score">{overall.toFixed(1)}</div>
             <p className="lead">{L('Umumiy band')}</p>
+            {all && p.level && <p className="evidence">{L('Darajangiz shu natija bo‘yicha yangilandi: {0}', [p.level])}</p>}
             {p.baselineBand !== null && <p>{overall > p.baselineBand ? <b className="ok">{L('Boshlang‘ich')} {p.baselineBand.toFixed(1)}  {L('dan +')}{(overall - p.baselineBand).toFixed(1)}  {L('yuqori.')}</b> : overall === p.baselineBand ? L('Boshlang‘ich natijangiz bilan teng.') : L('Boshlang‘ich bahodan past: yana mashq kerak.')}</p>}
           </div>
         </div>
       )}
       {all && <FullCert st={st} />}
-      {entry && <RecordMock entry={entry} />}
+      {entry && <RecordMock entry={entry} final={all} />}
       <div className="row"><button className="btn" onClick={reset}><RotateCcw size={16} />  {L('Yangi imtihon')}</button></div>
     </div>
   );

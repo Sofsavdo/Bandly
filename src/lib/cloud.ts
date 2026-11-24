@@ -34,6 +34,9 @@ async function req<T>(method: 'GET' | 'PUT', body?: unknown, keepalive = false):
 type Remote = { data: Record<string, string> | null; rev: number };
 
 let lastSent = '';
+/** Shu sahifada hisob progressi serverdan o'qildi (daraja, reja) — majburiy qadamlar (savolnoma, daraja testi) faqat shundan keyin so'raladi. */
+let verified = false;
+export const cloudVerified = (): boolean => verified;
 /** Boshqa qurilmadan kelgan, hali shu sahifaga yuklanmagan qism: keyingi yuborishlarda ham qo'shib yuboriladi (aks holda qayta o'chib ketardi). */
 let carry: Record<string, string> | null = null;
 const outgoing = (): Record<string, string> => (carry ? mergeSnapshot(snapshot(), carry) : snapshot());
@@ -71,9 +74,9 @@ export async function pullIfNewer(force = false): Promise<void> {
     if (!r.ok) return;
     if (r.json.data && (force || r.json.rev > getRev())) {
       const merged = mergeSnapshot(snapshot(), r.json.data);
-      if (JSON.stringify(merged) === JSON.stringify(snapshot())) { setRev(r.json.rev); return; }
+      if (JSON.stringify(merged) === JSON.stringify(snapshot())) { setRev(r.json.rev); verified = true; return; }
       stage(r.json.data, r.json.rev); location.reload();
-    } else if (!r.json.data) await pushProgress();
+    } else { verified = true; if (!r.json.data) await pushProgress(); }
   } catch { /* oflayn: qurilmadagi holat bilan davom etadi */ }
 }
 
@@ -85,10 +88,10 @@ export async function onLogin(): Promise<void> {
     const local = snapshot();
     const remote = r.json.data;
     setRev(r.json.rev); lastSent = '';
-    if (!remote) { await pushProgress(); return; }
+    if (!remote) { verified = true; await pushProgress(); return; }
     const merged = mergeSnapshot(local, remote);
     if (JSON.stringify(merged) !== JSON.stringify(remote)) { carry = merged; await pushProgress(); }
-    if (JSON.stringify(merged) === JSON.stringify(local)) return;
+    if (JSON.stringify(merged) === JSON.stringify(local)) { verified = true; return; }
     stage(remote, getRev()); // yuklanishda qurilmadagisi bilan birlashtiriladi
     location.reload();
   } catch { /* */ }

@@ -1331,7 +1331,6 @@
  "Darsni arxivlaysizmi (o‘chirish)? Keyin tiklash mumkin.": "Дарсро ба бойгонӣ мефиристед (нест кардан)? Баъд барқарор кардан мумкин аст.",
  "Darsni tahrirlash": "Таҳрири дарс",
  "Darsni tugatdi": "Дарсро анҷом дод",
- "Dasturni saqlash": "Нигоҳ доштани барнома",
  "Davlat": "Кишвар",
  "Davlat va qonun": "Давлат ва қонун",
  "Davom etayotgan edi — birdan… (when / while)": "Идома дошт — ногаҳон… (when / while)",
@@ -9590,5 +9589,9 @@
  "o‘zgartirilgan": "тағйирёфта",
  "tizim": "система",
  "{0} ta o‘zgarish": "{0} тағйирот",
- "ingliz tilini o‘rganish uchun": "барои омӯзиши забони англисӣ"
+ "ingliz tilini o‘rganish uchun": "барои омӯзиши забони англисӣ",
+ "Darajangiz saqlandi. Darslar shu darajadan ochiladi.": "Сатҳи шумо сабт шуд. Дарсҳо аз ҳамин сатҳ кушода мешаванд.",
+ "Darajangiz shu natija bo‘yicha yangilandi: {0}": "Сатҳи шумо аз рӯи ин натиҷа нав шуд: {0}",
+ "Darslarni boshlash": "Оғози дарсҳо",
+ "Daraja testini boshlash": "Оғози тести сатҳ"
 }
