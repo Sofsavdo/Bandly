@@ -764,11 +764,13 @@ const httpServer = createServer(async (req, res) => {
     // Admin akkaunti (rol 'admin') ham metodist rolini bera oladi
     if (req.method === 'GET' && url.pathname === '/api/staff') { requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']); return send(res, 200, { staff: staffList(db) }); }
     if (req.method === 'POST' && url.pathname === '/api/staff/role') {
-      requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']);
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']);
       const b = await readJson(req);
       // role: 'methodologist' | 'creator' | 'teacher' (true — eski mijozlar uchun metodist), false/null — olib tashlash; admin faqat ADMIN_NICKNAMES orqali
       const want = b.role === true ? 'methodologist' : typeof b.role === 'string' && ['methodologist', 'creator', 'teacher', 'sales'].includes(b.role) ? b.role as 'methodologist' | 'creator' | 'teacher' | 'sales' : null;
-      return send(res, 200, setRole(db, String(b.nickname ?? ''), want));
+      const out = setRole(db, String(b.nickname ?? ''), want);
+      audit(db, me.id, 'role.set', String(b.nickname ?? ''), { role: want });
+      return send(res, 200, out);
     }
     // Lidlar: o'quvchi o'zi raqam qoldiradi (rozilik bilan); operator (rol: sales) va admin ro'yxatni ko'radi
     if (url.pathname === '/api/lead') {

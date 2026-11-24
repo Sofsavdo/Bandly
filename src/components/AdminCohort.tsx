@@ -45,10 +45,13 @@ export function CohortPanel({ c }: { c: Cohort2 }) {
         <div className="kpi2"><span>{L('Bepuldan pullikka')}</span><b>{pct(c.freeToPaidPct)}</b><small>{L('faollashganlardan: {0}', [pct(c.activationToPaidPct)])}</small></div>
         <div className="kpi2"><span>{L('Uzaytirdi')}</span><b>{num(c.renewed)}</b><small>{pct(c.renewalPct)}</small></div>
       </div>
-      <div className="table-scroll"><table className="data wrap">
-        <thead><tr><th>{L('Qadam')}</th><th>{L('O‘quvchi')}</th><th>%</th></tr></thead>
-        <tbody>{c.steps.map((s) => <tr key={s.key}><td>{STEP[s.key] ?? s.key}</td><td>{num(s.users)}</td><td>{pct(s.pct)}</td></tr>)}</tbody>
-      </table></div>
+      <details className="fold">
+        <summary>{L('Qadamlar bo‘yicha ({0})', [c.steps.length])}</summary>
+        <div className="table-scroll"><table className="data wrap">
+          <thead><tr><th>{L('Qadam')}</th><th>{L('O‘quvchi')}</th><th>%</th></tr></thead>
+          <tbody>{c.steps.map((s) => <tr key={s.key}><td>{STEP[s.key] ?? s.key}</td><td>{num(s.users)}</td><td>{pct(s.pct)}</td></tr>)}</tbody>
+        </table></div>
+      </details>
       <h4>{L('Davr ko‘rsatkichlari')}</h4>
       <div className="kpis">
         <div className="kpi2"><span>{L('Faol o‘quvchilar')}</span><b>{num(c.period.activeUsers)}</b></div>
@@ -63,8 +66,10 @@ export function CohortPanel({ c }: { c: Cohort2 }) {
           <tbody>{c.period.byPlan.map((p) => <tr key={p.plan}><td>{SALE_PLANS.find((x) => x.id === p.plan)?.title ?? p.plan}</td><td>{num(p.payments)}</td><td>{num(p.revenue)} {L('so‘m')}</td></tr>)}</tbody>
         </table></div>
       </>}
-      <h4>{L('Funksiyalardan foydalanish (noyob o‘quvchilar)')}</h4>
-      <div className="table-scroll"><table className="data wrap"><tbody>{c.adoption.map((a) => <tr key={a.feature}><td>{FEATURE[a.feature] ?? a.feature}</td><td>{num(a.users)}</td></tr>)}</tbody></table></div>
+      <details className="fold">
+        <summary>{L('Funksiyalardan foydalanish (noyob o‘quvchilar)')}</summary>
+        <div className="table-scroll"><table className="data wrap"><tbody>{c.adoption.map((a) => <tr key={a.feature}><td>{FEATURE[a.feature] ?? a.feature}</td><td>{num(a.users)}</td></tr>)}</tbody></table></div>
+      </details>
       <details className="fold" style={{ marginTop: 10 }}><summary>{L('Ta’riflar')}</summary><ul className="muted" style={{ fontSize: 13 }}>{DEFS.map((d) => <li key={d}>{d}</li>)}</ul></details>
     </section>
   );

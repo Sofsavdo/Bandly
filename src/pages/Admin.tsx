@@ -1,13 +1,13 @@
 // Admin kabineti: analitika (Umumiy · O'sish · Natijalar · Tizim), lidlar, foydalanuvchilar, to'lovlar, xodimlar, sertifikatlar.
 // Analitika yuklanmasa ham boshqa tablar ishlaydi (avval xato butun kabinetni to'sardi).
-import { BarChart3, RefreshCw } from 'lucide-react';
+import { Award, BarChart3, CreditCard, Megaphone, Phone, RefreshCw, ShieldCheck, SlidersHorizontal, Users } from 'lucide-react';
 import { CohortPanel, type Cohort2 } from '../components/AdminCohort';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
 import { CertAdmin } from '../components/CertAdmin';
 import { CreatorAdmin } from '../components/CreatorAdmin';
-import { LeadsPanel, PaymentsPanel, StaffPanel, UsersPanel } from '../components/AdminOps';
+import { AuditPanel, LeadsPanel, PaymentsPanel, StaffPanel, UsersPanel } from '../components/AdminOps';
 import { LimitsPanel } from '../components/AdminLimits';
 import { L } from '../i18n';
 
@@ -74,11 +74,18 @@ function Funnel({ steps }: { steps: { label: string; n: number; prev?: number }[
 const SOURCE: Record<string, string> = { lesson: L('Darslar'), boss: L('Boss jangi'), game: L('So‘z o‘yinlari'), exam: L('Imtihon'), grammar: L('Grammatika'), practice: L('Mashq'), mistakes: L('Xatolar ustida ishlash'), placement: L('Daraja testi'), quest: L('Kunlik vazifalar'), other: L('Boshqa'), mock: L('Mock test'), referral: L('Taklif bonusi') };
 const FEATURE: Record<string, string> = { coach: L('Sellzen AI (matn)'), live: L('Sellzen AI (ovozli qo‘ng‘iroq)'), followup: L('Speaking savollari'), i18n: L('Tarjima'), stt: L('Nutqni tanish'), studio_voice: L('Studio ovozi'), tts_feedback: L('Ovozli izoh'), writing_eval: L('Writing baholash'), speaking_eval: L('Speaking baholash') };
 
+/** Bo'limlar ko'p ishlatilishi bo'yicha tartiblangan; telefonda hammasi ko'rinadi (gorizontal aylantirish yo'q). */
+const TABS = [
+  ['stats', L('Analitika'), BarChart3], ['users', L('O‘quvchilar'), Users], ['payments', L('To‘lovlar'), CreditCard], ['leads', L('Lidlar'), Phone],
+  ['limits', L('Limitlar'), SlidersHorizontal], ['certs', L('Sertifikatlar'), Award], ['creators', L('Hamkorlar'), Megaphone], ['staff', L('Xodimlar'), ShieldCheck],
+] as const;
+
 export default function Admin() {
   const [data, setData] = useState<Data | null>(null);
   const [err, setErr] = useState('');
   const [span, setSpan] = useState(30);
-  const [tab, setTab] = useState<Tab>('stats');
+  const [tab, setTabState] = useState<Tab>(() => { try { const t = sessionStorage.getItem('admin.tab') as Tab | null; return t && TABS.some(([k]) => k === t) ? t : 'stats'; } catch { return 'stats'; } });
+  const setTab = (t: Tab) => { setTabState(t); try { sessionStorage.setItem('admin.tab', t); } catch { /* ixtiyoriy */ } };
   const [sub, setSub] = useState<Sub>('overview');
   const load = async () => {
     setErr('');
@@ -92,11 +99,11 @@ export default function Admin() {
   useEffect(() => { void load(); }, [span]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const tabs = (
-    <div className="seg seg-scroll" role="tablist" aria-label={L('Admin kabineti')} style={{ marginBottom: 14 }}>
-      {([['stats', L('Analitika')], ['limits', L('Limitlar')], ['leads', L('Lidlar')], ['users', L('Foydalanuvchilar')], ['payments', L('To‘lovlar')], ['staff', L('Xodimlar')], ['creators', L('Hamkorlar')], ['certs', L('Sertifikatlar')]] as const).map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>)}
-    </div>
+    <nav className="admin-nav" role="tablist" aria-label={L('Admin kabineti')}>
+      {TABS.map(([k, label, Icon]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><Icon size={17} aria-hidden="true" /><span>{label}</span></button>)}
+    </nav>
   );
-  if (tab !== 'stats') return <div>{tabs}{tab === 'limits' ? <LimitsPanel /> : tab === 'leads' ? <LeadsPanel /> : tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <PaymentsPanel /> : tab === 'staff' ? <StaffPanel /> : tab === 'creators' ? <CreatorAdmin /> : <CertAdmin />}</div>;
+  if (tab !== 'stats') return <div>{tabs}{tab === 'limits' ? <LimitsPanel /> : tab === 'leads' ? <LeadsPanel /> : tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <PaymentsPanel /> : tab === 'staff' ? <><StaffPanel /><AuditPanel /></> : tab === 'creators' ? <CreatorAdmin /> : <CertAdmin />}</div>;
 
   const head = (
     <section className="card page-head t-sky">
