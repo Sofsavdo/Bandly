@@ -703,7 +703,7 @@ const httpServer = createServer(async (req, res) => {
     }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true });
     // Domenlararo 301 yo'naltirish YO'Q: brauzerlar 301 ni doimiy eslab qoladi va qarama-qarshi yo'naltirishlar bilan cheksiz aylanish
-    // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (www.sellzen.uz) ko'rsatiladi.
+    // (2026-11-23 hodisasi) bo'ladi. Ikkala domen ham saytni beradi; asosiy manzil canonical teg orqali (sellzen.uz) ko'rsatiladi.
     if (!url.pathname.startsWith('/api/') && serveStatic(req, res, DIST)) return;
     return send(res, 404, { error: 'Topilmadi' });
   } catch (e) {
