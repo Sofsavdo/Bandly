@@ -267,6 +267,8 @@ try {
     raw.close();
     assert.equal(n, 1, 'bazada bitta natija');
     await p.context().close();
+  });
+
   await step('I. Creator linki → bridge sahifa → veb → ro‘yxat → creator kabinetida voronka', async () => {
     const mk = async (nickname: string) => String((await api('/api/join', { method: 'POST', body: JSON.stringify({ nickname }) })).json.token);
     const adminT = await mk('E2E Admin'), crT = await mk('E2E Creator'); adminToken = adminT;
