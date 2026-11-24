@@ -10,6 +10,11 @@ import { captureRef } from './lib/referral';
 
 captureRef(); // taklif havolasi (Telegram URL'ni tozalashidan oldin)
 
+// Yangi versiya chiqqach keshlangan eski sahifadagi bo'lak fayllari (masalan /assets/cert-xxxx.js) 404 bo'ladi (jurnal 2026-11-24): sahifa bir marta o'zi yangilanadi
+window.addEventListener('vite:preloadError', (e) => {
+  try { const k = 'sz.chunkReload'; if (Date.now() - Number(sessionStorage.getItem(k) || 0) > 60_000) { sessionStorage.setItem(k, String(Date.now())); e.preventDefault(); location.reload(); } } catch { /* sessionStorage yo'q — odatdagi xato */ }
+});
+
 // Server so'rovlariga til sarlavhasi: server xabarlari (xatolar va h.k.) shu tilda qaytadi
 const nativeFetch = window.fetch.bind(window);
 window.fetch = (input, init) => {

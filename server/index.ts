@@ -635,7 +635,7 @@ const httpServer = createServer(async (req, res) => {
       const r = await transcribeLearner(stt, audio, String(req.headers['content-type'] ?? ''), NATIVE_STT_CODE[xl] ?? 'uzb', req.headers['x-expect'] === 'en' ? 'en' : 'any');
       const secs = r.seconds || audio.length / 4000; // so'z vaqti bo'lmasa — hajmdan taxmin
       recordStt(db, p.id, secs);
-      console.log(`[stt] ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
+      console.log(`[stt] ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} ishonch=${r.score === null || r.score === undefined ? '?' : r.score.toFixed(2)} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
       addCall(db, p.id, secs);
       recordAiCost(db, { playerId: p.id, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
       return send(res, 200, { text: r.text, lang: r.lang });
@@ -867,14 +867,15 @@ if (live) attachLive(httpServer, {
     const r = await transcribeLearner(stt, wav, 'audio/wav', NATIVE_STT_CODE[lang] ?? 'uzb', 'any');
     const secs = r.seconds || wav.length / 32000;
     recordStt(db, pid, secs);
-    console.log(`[stt] live ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
+    console.log(`[stt] live ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} ishonch=${r.score === null || r.score === undefined ? '?' : r.score.toFixed(2)} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
     recordAiCost(db, { playerId: pid, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
     return { text: r.text, lang: r.lang };
   } : undefined,
   onTranscript: (pid, turns, lang) => {
     if (ai.provider === 'none') return;
+    // Suhbat xotirasi tezkor model (Flash-Lite) bilan: asosiy Flash har safar 9 s da qotib zaxiraga o'tardi (jurnal 2026-11-24)
     const q = summaryPrompt(turns, nativeOf(lang));
-    void withAiCtx({ playerId: pid, feature: 'live-memory' }, () => complete(ai, q.system, q.user, { maxTokens: 400, timeoutMs: 20_000 })).then((raw) => {
+    void withAiCtx({ playerId: pid, feature: 'live-memory' }, () => complete(coachAi, q.system, q.user, { maxTokens: 400, timeoutMs: 20_000 })).then((raw) => {
       const add = parseSummary(raw);
       if (add.mistakes.length || add.topics.length) saveMemory(db, pid, mergeMemory(getMemory(db, pid), add));
     }).catch((e) => console.warn('[live] xotira yozilmadi:', (e as Error).message));
