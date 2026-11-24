@@ -1331,7 +1331,6 @@
  "Darsni arxivlaysizmi (o‘chirish)? Keyin tiklash mumkin.": "Сабақты мұрағатқа жібересіз бе (жою)? Кейін қалпына келтіруге болады.",
  "Darsni tahrirlash": "Сабақты өңдеу",
  "Darsni tugatdi": "Сабақты аяқтады",
- "Dasturni saqlash": "Бағдарламаны сақтау",
  "Davlat": "Ел",
  "Davlat va qonun": "Мемлекет және заң",
  "Davom etayotgan edi — birdan… (when / while)": "Жалғасып жатқан еді — кенет… (when / while)",
@@ -9590,5 +9589,9 @@
  "o‘zgartirilgan": "өзгертілген",
  "tizim": "жүйе",
  "{0} ta o‘zgarish": "{0} өзгеріс",
- "ingliz tilini o‘rganish uchun": "ағылшын тілін үйренуге арналған"
+ "ingliz tilini o‘rganish uchun": "ағылшын тілін үйренуге арналған",
+ "Darajangiz saqlandi. Darslar shu darajadan ochiladi.": "Деңгейіңіз сақталды. Сабақтар осы деңгейден ашылады.",
+ "Darajangiz shu natija bo‘yicha yangilandi: {0}": "Деңгейіңіз осы нәтиже бойынша жаңартылды: {0}",
+ "Darslarni boshlash": "Сабақтарды бастау",
+ "Daraja testini boshlash": "Деңгей тестін бастау"
 }

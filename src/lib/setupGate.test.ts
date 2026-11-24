@@ -31,3 +31,8 @@ assert.equal(setupRoute('#/mocks/reading/reading-5', { account: true, onboarded:
 assert.equal(setupRoute('#/learn/ie-rs-l1', { account: true, onboarded: false, level: null, direct: true }), null, 'reja havolasi bevosita ochiladi');
 assert.equal(setupRoute('#/learn/ie-rs-l1', { account: true, onboarded: false, level: null, direct: false }), '#/start', 'boshqa sahifalar uchun qoida o‘zgarmadi');
 console.log('setupGate: OK');
+// 2026-11-24: daraja bor bo'lsa — savolnoma bo'lmasa ham qayta yo'naltirilmaydi; hisob progressi o'qilmagan bo'lsa — kutiladi
+assert.equal(setupRoute('#/learn', { account: true, onboarded: false, level: 'B1', verified: true }), null, 'daraja bor — savolnoma qayta so‘ralmaydi');
+assert.equal(setupRoute('#/learn', { account: true, onboarded: false, level: null, verified: false }), null, 'progress hali yuklanmagan — yo‘naltirilmaydi');
+assert.equal(setupRoute('#/learn', { account: true, onboarded: false, level: null, verified: true }), '#/start', 'yangi o‘quvchi — savolnoma');
+assert.equal(setupRoute('#/learn', { account: true, onboarded: true, level: null, verified: true }), '#/placement', 'reja bor, daraja yo‘q — daraja testi');

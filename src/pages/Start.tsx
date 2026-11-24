@@ -10,6 +10,7 @@ import { buildPlan, isExam, loadAnswers, saveAnswers, targetBand, type Answers, 
 import { MINUTES, savePrefs, type Goal } from '../lib/planPrefs';
 import { getProfile, setPersona, setTarget, useProfile } from '../lib/store';
 import { L } from '../i18n';
+import { goPlacement } from '../lib/setupGate';
 import { LeadCard } from '../components/LeadCard';
 
 type StepId = 'goal' | 'why' | 'when' | 'target' | 'level' | 'hard' | 'minutes' | 'tutor';
@@ -66,7 +67,7 @@ export default function Start() {
     window.scrollTo({ top: 0 });
   };
 
-  if (done && a.goal && a.level && a.minutes && a.tutor) return <Result a={a as Answers} acc={acc} onJoined={(x) => { setAcc(x); if (!getProfile().level) setTimeout(() => { window.location.hash = '#/placement'; }, 300); }} onRedo={() => { setDone(false); setI(0); }} />;
+  if (done && a.goal && a.level && a.minutes && a.tutor) return <Result a={a as Answers} acc={acc} onJoined={(x) => { setAcc(x); if (!getProfile().level) setTimeout(goPlacement, 300); }} onRedo={() => { setDone(false); setI(0); }} />;
 
   const opts = (list: { id: string; label: string; sub?: string }[], key: keyof Answers, current: unknown) => (
     <div className="opts" key={step}>
@@ -159,6 +160,9 @@ function Result({ a, acc, onJoined, onRedo }: { a: Answers; acc: Account | null;
           </p>
         )}
         <p className="muted onboard-note">{L('Daraja testidan keyin aniqlashadi.')}</p>
+        {acc && (getProfile().level
+          ? <a className="btn primary lg" href="#/"><Rocket size={18} />  {L('Darslarni boshlash')}</a>
+          : <button type="button" className="btn primary lg" onClick={goPlacement}><Rocket size={18} />  {L('Daraja testini boshlash')}</button>)}
       </section>
 
       <section className="card">
@@ -170,7 +174,7 @@ function Result({ a, acc, onJoined, onRedo }: { a: Answers; acc: Account | null;
 
       {acc && <LeadCard goal={a.goal} level={a.level} minutes={min} />}
       {acc
-        ? <div className="row"><a className="btn primary lg" href="#/placement"><Rocket size={18} />  {L('Boshlash')}</a><button className="btn lg" onClick={onRedo}>{L('Javoblarni o‘zgartirish')}</button></div>
+        ? <button className="btn" onClick={onRedo}>{L('Javoblarni o‘zgartirish')}</button>
         : <>
           <JoinForm onJoined={onJoined} text={L('Rejangiz hisobingizda saqlanadi.')} />
           <button className="btn" onClick={onRedo}>{L('Javoblarni o‘zgartirish')}</button>

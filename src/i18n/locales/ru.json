@@ -1331,7 +1331,6 @@
  "Darsni arxivlaysizmi (o‘chirish)? Keyin tiklash mumkin.": "Архивировать (удалить) урок? Его можно восстановить.",
  "Darsni tahrirlash": "Редактировать урок",
  "Darsni tugatdi": "Завершил урок",
- "Dasturni saqlash": "Сохранить программу",
  "Davlat": "Страна",
  "Davlat va qonun": "Государство и закон",
  "Davom etayotgan edi — birdan… (when / while)": "Происходило — вдруг… (when / while)",
@@ -9590,5 +9589,9 @@
  "o‘zgartirilgan": "изменено",
  "tizim": "система",
  "{0} ta o‘zgarish": "Изменений: {0}",
- "ingliz tilini o‘rganish uchun": "для изучения английского"
+ "ingliz tilini o‘rganish uchun": "для изучения английского",
+ "Darajangiz saqlandi. Darslar shu darajadan ochiladi.": "Ваш уровень сохранён. Уроки открываются с этого уровня.",
+ "Darajangiz shu natija bo‘yicha yangilandi: {0}": "Ваш уровень обновлён по этому результату: {0}",
+ "Darslarni boshlash": "Начать уроки",
+ "Daraja testini boshlash": "Начать тест уровня"
 }

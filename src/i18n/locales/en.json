@@ -1331,7 +1331,6 @@
  "Darsni arxivlaysizmi (o‘chirish)? Keyin tiklash mumkin.": "Archive (delete) this lesson? It can be restored later.",
  "Darsni tahrirlash": "Edit lesson",
  "Darsni tugatdi": "Finished a lesson",
- "Dasturni saqlash": "Save programme",
  "Davlat": "Country",
  "Davlat va qonun": "The state and law",
  "Davom etayotgan edi — birdan… (when / while)": "It was going on — suddenly… (when / while)",
@@ -9590,5 +9589,9 @@
  "o‘zgartirilgan": "changed",
  "tizim": "system",
  "{0} ta o‘zgarish": "{0} changes",
- "ingliz tilini o‘rganish uchun": "for learning English"
+ "ingliz tilini o‘rganish uchun": "for learning English",
+ "Darajangiz saqlandi. Darslar shu darajadan ochiladi.": "Your level is saved. Lessons open from this level.",
+ "Darajangiz shu natija bo‘yicha yangilandi: {0}": "Your level was updated from this result: {0}",
+ "Darslarni boshlash": "Start lessons",
+ "Daraja testini boshlash": "Start the level test"
 }

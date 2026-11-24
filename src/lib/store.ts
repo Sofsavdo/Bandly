@@ -173,6 +173,14 @@ export function setLevel(level: Cefr, target: number, examDate: string | null): 
   const at = new Date().toISOString();
   commit({ ...state, level, target, examDate, placementAt: at, dailyGoal: level === 'A1' || level === 'A2' ? 40 : 60, baselineBand: state.baselineBand ?? band, checkpoints: [...state.checkpoints, { at, level, band }].slice(-20) });
 }
+/** To'liq imtihon (4 bo'lim) natijasidan daraja: o'quvchi daraja testini qayta topshirmasa ham darslar haqiqiy natijaga moslashadi.
+ *  Maqsad va imtihon sanasi o'zgarmaydi. Bir imtihon bir marta hisoblanadi (at — imtihon boshlangan vaqt). */
+export function setLevelFromExam(overall: number, startedAt: number): void {
+  const at = new Date(startedAt).toISOString();
+  if (state.checkpoints.some((c) => c.at === at)) return;
+  const level: Cefr = overall < 3.5 ? 'A1' : overall < 4.5 ? 'A2' : overall < 5.5 ? 'B1' : overall < 6.5 ? 'B2' : 'C1';
+  commit({ ...state, level, placementAt: state.placementAt ?? at, baselineBand: state.baselineBand ?? overall, checkpoints: [...state.checkpoints, { at, level, band: overall }].slice(-20) });
+}
 /** Bugungi rejadagi vazifa bajarildi (bir martalik belgi). */
 export function markDone(task: string): void {
   const key = TASK_BY_KIND[task] ?? task;

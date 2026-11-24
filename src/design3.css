@@ -1564,3 +1564,10 @@ details.card[open] > summary::after { transform: translateY(2px) rotate(-135deg)
 @media (max-width: 480px) { .plan-matrix th, .plan-matrix td { padding: 8px 6px; } .plan-matrix .limit-input { gap: 4px; } .plan-matrix .limit-input input { width: 62px; padding: 7px 6px; flex: none; } .plan-matrix th:first-child { width: 38%; } }
 table.data.plan-matrix td { white-space: normal; min-width: 0; }
 .limit-savebar > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: 13.5px; }
+/* Qo'ng'iroq ekrani (2026-11-24, egasi): yuz kattaroq va markazda, matn oynasi ixcham — ekranning ~quarter qismi, oxirgi gaplar ko'rinadi */
+.call-stage { --face: clamp(120px, min(46vw, 27vh), 230px); --face: clamp(120px, min(46vw, 27svh), 230px); justify-content: center; padding-top: 0; }
+.call-lines { flex: 0 1 auto; max-height: min(26svh, 220px); font-size: 14px; line-height: 1.35; gap: 6px; margin-top: 10px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px); mask-image: linear-gradient(to bottom, transparent 0, #000 28px); }
+.call-lines .vl { padding: 6px 10px; border-radius: 12px; }
+.call-lines .vl b { font-size: 10.5px; }
+@media (max-height: 560px) { .call-stage { --face: clamp(80px, 18svh, 130px); } .call-lines { max-height: 22svh; } }

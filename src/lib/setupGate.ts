@@ -1,9 +1,13 @@
-// Kirgan o'quvchi uchun majburiy boshlang'ich qadamlar: 1) shaxsiy reja savolnomasi (ustoz uslubi shu yerda tanlanadi),
-// 2) daraja testi. Ular bajarilmaguncha asosiy sahifalardan shu qadamlarga yo'naltiriladi (to'lov, profil va xodim sahifalari ochiq).
+// Kirgan YANGI o'quvchi uchun bir martalik majburiy qadamlar: 1) shaxsiy reja savolnomasi (ustoz uslubi shu yerda tanlanadi),
+// 2) daraja testi. Darajasi bor o'quvchi (daraja testi yoki to'liq imtihon natijasidan) hech qachon qayta yo'naltirilmaydi —
+// keyin daraja faqat o'zi qayta topshirsa yoki to'liq imtihon natijasidan yangilanadi (egasi qarori 2026-11-24).
+// Qaror hisob progressi serverdan o'qilgandan keyingina qabul qilinadi: aks holda boshqa qurilmada/qayta kirishda
+// darajasi bor o'quvchi ham progress yuklanguncha daraja testiga tushib qolardi.
 import { getAccount } from './account';
 import { loadAnswers } from './onboarding';
 import { loadAttempt } from './examAttempt';
 import { getProfile } from './store';
+import { cloudVerified } from './cloud';
 
 const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|leads|groups|welcome|login|certificates|duel\/)/;
 
@@ -41,8 +45,10 @@ function guestMockHere(hash: string): boolean {
   return !!m && loadAttempt(`${m[1]}:${m[2]}`)?.guest === true;
 }
 
-export function setupRoute(hash: string, s: { account: boolean; onboarded: boolean; level: string | null; guestMock?: boolean; direct?: boolean } = { account: !!getAccount(), onboarded: !!loadAnswers(), level: getProfile().level }): string | null {
+export function setupRoute(hash: string, s: { account: boolean; onboarded: boolean; level: string | null; guestMock?: boolean; direct?: boolean; verified?: boolean } = { account: !!getAccount(), onboarded: !!loadAnswers(), level: getProfile().level, verified: cloudVerified() }): string | null {
   if (!s.account || FREE.test(hash)) return null;
+  if (s.level) return null; // daraja bor — bir martalik qadamlar bajarilgan
+  if (s.verified === false) return null; // hisob progressi hali o'qilmagan: kutamiz (App qayta tekshiradi)
   // Mehmon sifatida topshirilgan mock natijasi hisobga bog'lanayotgan paytda: avval natijani ko'ramiz, savolnoma/daraja testiga keyin o'tiladi
   if (s.guestMock ?? guestMockHere(hash)) return null;
   if (s.direct ?? directAllowed(hash)) return null;
@@ -50,3 +56,8 @@ export function setupRoute(hash: string, s: { account: boolean; onboarded: boole
   if (!s.level) return '#/placement';
   return null;
 }
+
+/** Shaxsiy reja tayyor bo'lgach "Daraja testini boshlash": test kirish ekranisiz darhol boshlanadi (bitta bosish). */
+const PLACEMENT_GO = 'sz.placement.go';
+export function goPlacement(): void { try { sessionStorage.setItem(PLACEMENT_GO, '1'); } catch { /* */ } window.location.hash = '#/placement'; }
+export function takeGo(): boolean { try { const v = sessionStorage.getItem(PLACEMENT_GO) === '1'; sessionStorage.removeItem(PLACEMENT_GO); return v; } catch { return false; } }
