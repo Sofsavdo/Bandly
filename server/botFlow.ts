@@ -19,7 +19,6 @@ export interface BotDeps {
   requirePhone?: () => boolean;
   savePhone: (tgId: number, phone: string) => void;
   setRef: (tgId: number, ref: string) => void;
-  /** Saytga bot orqali kirish: kodni shu Telegram foydalanuvchisiga bog'laydi (true — kod yaroqli va tasdiqlandi) */
   getRef: (tgId: number) => string | undefined;
   setRemind: (tgId: number, on: boolean) => boolean;
   channel?: string;

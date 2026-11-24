@@ -34,8 +34,8 @@ const KEEP = new Set(['bandly.lang', 'bandly.sound', 'bandly.tg']);
 export async function signOut(wipe: boolean): Promise<void> {
   const had = !!getAccount();
   if (had) await pushProgress(); // progress hisobda qoladi
-  // Telegram'ga bog'langan hisob: shu qurilma tokeni serverda bekor qilinadi (qayta kirish — Telegram orqali).
-  // Bog'lanmagan eski hisobda token yagona kalit (hisob kodi), shuning uchun bekor qilinmaydi.
+  // Doimiy identifikatorga (Telegram, Google yoki telefon) bog'langan hisob: shu qurilma tokeni serverda bekor qilinadi (qayta kirish — shu usullar bilan).
+  // Hech narsaga bog'lanmagan eski hisobda token yagona kalit, shuning uchun bekor qilinmaydi.
   const acc0 = getAccount(); const tok = acc0?.tg ? acc0.token : null;
   if (tok) { try { await fetch('/api/auth/logout', { method: 'POST', headers: { 'x-token': tok } }); } catch { /* oflayn: token qurilmadan baribir o'chiriladi */ } }
   logout();
@@ -64,7 +64,7 @@ export async function googleLogin(credential: string): Promise<Account> {
   const r = await call<Account>('/api/auth/google', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ credential, link: getAccount()?.token, ref: getRef() }) });
   return finishLogin(r);
 }
-// `tg: true` — hisob doimiy identifikatorga (Telegram, telefon yoki Google) bog'langan: qayta kirish mumkin, hisob kodi saqlash shart emas.
+// `tg: true` — hisob doimiy identifikatorga (Telegram, telefon yoki Google) bog'langan: qayta kirish mumkin, hisob tokenini saqlash shart emas.
 async function finishLogin(r: Account): Promise<Account> {
   setAccount({ token: r.token, nickname: r.nickname, tg: true, photo: r.photo ?? null });
   await onLogin();
@@ -156,12 +156,3 @@ export function myRefCode(): Promise<string | null> {
   return refCode;
 }
 
-/** Boshqa qurilmada kirish: hisob kodi (token) bilan. */
-export async function restoreAccount(code: string): Promise<Account> {
-  const token = code.trim();
-  const me = await call<{ nickname: string }>('/api/me', { headers: { 'x-token': token } });
-  const a = { token, nickname: me.nickname };
-  setAccount(a);
-  await onLogin();
-  return a;
-}
