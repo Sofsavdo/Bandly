@@ -65,7 +65,6 @@ const COACH_DAILY_LIMIT = () => settingValue('AI_COACH_DAILY_LIMIT');
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
-/** Saytga bot orqali kirish kodlari (xotirada, 10 daqiqa, bir martalik). Kod 128 bit tasodifiy; token faqat kodni yaratgan brauzerga beriladi. */
 // Telefon+parol va Google bilan kirish. GOOGLE_CLIENT_ID sozlanmaguncha Google tugmasi ko'rinmaydi va /api/auth/google 503 qaytaradi.
 const GOOGLE_CLIENT_ID = (process.env.GOOGLE_CLIENT_ID ?? '').trim() || null;
 const phoneFails = new AttemptLimiter(5, 15 * 60_000);   // bitta raqamga 15 daqiqada 5 ta xato parol — keyin blok

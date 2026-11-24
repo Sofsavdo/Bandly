@@ -4,6 +4,7 @@
 //   H4. Vidjet skripti yuklanmasa (telegram.org yopiq) → tushunarli xabar + anonim hisoblagich (botga kirish yo'li olib tashlangan)
 //   H5. Telefon raqam + parol: ro'yxatdan o'tish → chiqish → qayta kirish; xato parol → xabar
 //   H6. Google: soxta GIS skripti + soxta JWKS (haqiqiy RS256 imzo): kirish; boshqa ilovaga berilgan token rad etiladi
+//   H7. Hisob kodi bilan kirish bo'limi yo'q; bog'lanmagan hisob chiqishda ogohlantiriladi
 import assert from 'node:assert/strict';
 import { createHash, createHmac, createSign, generateKeyPairSync } from 'node:crypto';
 import { createServer } from 'node:http';
@@ -143,6 +144,28 @@ try {
     await run(gtoken(gclaims()));
     for (let i = 0; i < 60 && !(await account(p)); i++) await p.waitForTimeout(150);
     const a = await account(p); assert.ok(a?.token && a.nickname === 'Gulnora' && a.tg === true, 'Google bilan kirildi');
+    await ctx.close();
+  });
+
+  await step('H7. Hisob kodi bilan kirish yo‘q; bog‘lanmagan hisob chiqishdan oldin ogohlantiriladi', async () => {
+    const { ctx, p } = await newPage();
+    await p.goto(`${base}/#/login`);
+    await p.locator('.alt-login, .join-form, main').first().waitFor({ timeout: 8000 });
+    const txt = await p.evaluate(() => document.querySelector('main')?.innerText ?? '');
+    assert.doesNotMatch(txt, /hisob kodi|account code|код аккаунта/i, 'kirish sahifasida hisob kodi bo‘limi yo‘q');
+    assert.equal(await p.locator('main input[placeholder*="kod" i], main details:has-text("kod")').count(), 0, 'kod kiritish maydoni yo‘q');
+    // Eski (hech narsaga bog'lanmagan) hisobni taqlid qilamiz: haqiqiy sessiya tokeni, lekin tg bayrog'isiz
+    const r = await fetch(`${base}/api/auth/phone/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: '+998901112233', password: 'eski-hisob-parol-1', nickname: 'Eski E2E' }) });
+    const reg = await r.json() as { token: string; nickname: string };
+    await p.evaluate((a) => localStorage.setItem('bandly.account.v1', JSON.stringify({ token: a.token, nickname: a.nickname })), reg);
+    await p.goto(`${base}/#/profile`); await p.reload();
+    await p.getByRole('button', { name: 'Chiqish' }).first().click();
+    const dlg = p.locator('[role=dialog]');
+    await dlg.waitFor({ timeout: 8000 });
+    const d = await dlg.innerText();
+    assert.match(d, /bog‘lanmagan/, 'bog‘lanmagan hisob haqida ogohlantirish');
+    assert.equal(await dlg.locator('a[href="#/profile"]').count(), 1, '«Hisobni bog‘lash» havolasi');
+    assert.doesNotMatch(d, /nusxa|kod/i, 'chiqish oynasida hisob kodi nusxalash yo‘q');
     await ctx.close();
   });
 

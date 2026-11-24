@@ -1,7 +1,7 @@
 import { Lock, LogOut, Trophy } from 'lucide-react';
 import { UserAvatar } from '../components/UserAvatar';
 import { useEffect, useState } from 'react';
-import { authConfig, getAccount, onAccountChange } from '../lib/account';
+import { getAccount, onAccountChange } from '../lib/account';
 import { JoinForm } from '../components/JoinForm';
 import { SignOutDialog } from '../components/SignOutDialog';
 import { fmtDate, refreshEntitlements } from '../lib/pay';
@@ -28,11 +28,9 @@ import { LeadCard } from '../components/LeadCard';
 export default function Profile() {
   const p = useProfile();
   const [snd, setSnd] = useState(soundOn());
-  const [msg, setMsg] = useState('');
   const [acc, setAcc] = useState(getAccount());
-  const [tgOn, setTgOn] = useState(false);
   const [bye, setBye] = useState(false);
-  useEffect(() => { void authConfig().then((c) => setTgOn(!!c.telegram)); return onAccountChange(() => setAcc(getAccount())); }, []);
+  useEffect(() => onAccountChange(() => setAcc(getAccount())), []);
   const earned = ACHIEVEMENTS.filter((a) => p.achievements.includes(a.id));
   const lp = levelProgress(p.xp);
   const results = loadResults();
@@ -67,7 +65,7 @@ export default function Profile() {
           <button className="btn sm" onClick={() => setBye(true)}><LogOut size={14} />  {L('Chiqish')}</button>
         </div>
         {bye && <SignOutDialog onClose={() => setBye(false)} />}
-        {acc && tgOn && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text={L('Hisobni Telegram\'ga bog‘lang.')} /></div>}
+        {acc && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text={L('Hisobingizni bog‘lang (Telegram, Google yoki telefon raqam) — shunda qayta kira olasiz.')} /></div>}
         <h4 style={{ margin: '14px 0 4px' }}>{L('Obunalar')}</h4>
         {(() => {
           const now = Date.now(); const u = p.planUntil;
@@ -78,8 +76,6 @@ export default function Profile() {
           const demo = (['exam', 'grammar'] as const).filter((t) => p.plan[t]);
           return <p style={{ margin: '4px 0' }}>{demo.length ? <>{L('Demo:')} {demo.map((t) => TRACK_NAME[t]).join(', ')}  {L('(faqat shu qurilmada)')}</> : <span className="evidence">{L('Bepul tarif.')}</span>} <a href="#/pricing">{L('Tariflar')}</a></p>;
         })()}
-        {acc && !acc.tg && <button className="btn sm" style={{ marginTop: 8 }} onClick={async () => { await navigator.clipboard.writeText(acc.token).catch(() => {}); setMsg(L('Hisob kodi nusxalandi. Hech kimga bermang.')); }}>{L('Hisob kodini nusxalash')}</button>}
-        {msg && <p className="evidence">{msg}</p>}
       </div>
 
       <div className="card">

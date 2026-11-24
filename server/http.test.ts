@@ -1,7 +1,7 @@
 // HTTP integratsiya testi: haqiqiy server jarayoni + soxta Hamyon serveri + vaqtinchalik baza.
 // Haqiqiy pul, haqiqiy AI yoki haqiqiy foydalanuvchi ma'lumoti ishlatilmaydi: barcha kalitlar test qiymatlari, tarmoq faqat 127.0.0.1.
 // Tekshiriladi: to'lov oqimi (yaratish → prepare → complete), imzo, summa, takroriy/kech/noma'lum callback, obuna ochilishi va tugashi;
-// PUT /api/progress (eski mijoz keshi bilan ham 200, haqiqatan katta progress — 413, server yiqilmaydi); bot orqali kirish kodlari.
+// PUT /api/progress (eski mijoz keshi bilan ham 200, haqiqatan katta progress — 413, server yiqilmaydi).  Bot orqali kirish endpointlari yo'qligi (404).
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer, type IncomingMessage } from 'node:http';

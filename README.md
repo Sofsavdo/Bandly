@@ -176,7 +176,7 @@ Fidem loyihasidagi kabi **kartaga o'tkazma** orqali ishlaydi (`server/hamyon.ts`
 4. Kech kelgan to'lov (bekor qilingandan keyin) ham yetkaziladi; summa mos kelmasa yetkazilmaydi va `note` ga yoziladi.
 
 Sozlash (Railway Variables): `HAMYON_SHOP_ID`, `HAMYON_SHOP_KEY`; Hamyon botida `prepare_url` va `complete_url` ni `/api/pay/hamyon/prepare|complete` ga qo'ying. `HAMYON_*` bo'lmasa: productionda to'lov o'chiq ("To'lov hali ulanmagan"), demo faqat development'da yoki `PAY_DEMO=1` bilan (`server/pricing.ts` → `demoMode`). Production'da Hamyon ulangan. Qo'llab-quvvatlash: `ADMIN_TOKEN` bilan `GET /api/admin/payments` va `POST /api/admin/grant {nickname, track, days}` (sarlavha `x-admin`).
-Obunalar serverda hisobga (laqab + token) bog'lanadi; boshqa qurilmada Profil'dagi "hisob kodi" bilan tiklanadi.
+Obunalar serverda hisobga bog'lanadi; boshqa qurilmada Telegram, Google yoki telefon raqam + parol bilan kirilganda o'sha hisob (va obuna) qaytadi.
 
 
 ## Writing darslari (Task 2)
