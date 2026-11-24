@@ -41,9 +41,16 @@ export function refCodeOf(db: DatabaseSync, playerId: number): string {
 }
 
 /** Yangi hisobni taklif qilgan kishiga bog'laydi (faqat yangi ochilgan, hali bog'lanmagan va o'zi emas). */
+/** Creator tracking linkining kodi (creator_links): faol link va tasdiqlangan hamkor bo'lsagina taklif qilganga aylanadi. Eski ref_code'lar o'zgarishsiz ishlaydi. */
+function linkOwner(db: DatabaseSync, code: string): { id: number } | undefined {
+  try {
+    return db.prepare(`SELECT l.creator_id AS id FROM creator_links l JOIN players p ON p.id = l.creator_id LEFT JOIN creator_profiles cp ON cp.player_id = l.creator_id
+      WHERE l.code = ? AND l.active = 1 AND p.role = 'creator' AND COALESCE(cp.status, 'approved') = 'approved'`).get(code) as { id: number } | undefined;
+  } catch { return undefined; } // jadval yo'q (eski baza/test)
+}
 export function attachReferral(db: DatabaseSync, newPlayerId: number, code: unknown): boolean {
   if (!isRefCode(code)) return false;
-  const ref = db.prepare('SELECT id FROM players WHERE ref_code = ?').get(code) as { id: number } | undefined;
+  const ref = (db.prepare('SELECT id FROM players WHERE ref_code = ?').get(code) as { id: number } | undefined) ?? linkOwner(db, code);
   if (!ref || ref.id === newPlayerId) return false;
   return Number(db.prepare('UPDATE players SET referred_by = ? WHERE id = ? AND referred_by IS NULL').run(ref.id, newPlayerId).changes) > 0;
 }

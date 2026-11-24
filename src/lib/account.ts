@@ -1,6 +1,6 @@
 import { clearServerPlans, dropXpQueue, getProfile, takeXpQueue } from './store';
 import { clearFinishedAttempts } from './examAttempt';
-import { getRef } from './referral';
+import { getRef, touchFields } from './referral';
 import { onLogin, pushProgress, stageClear } from './cloud';
 import { L } from '../i18n';
 
@@ -58,12 +58,12 @@ export const authConfig = (): Promise<AuthConfig> => (cfg ??= fetch('/api/auth/c
 
 /** Telefon raqam + parol (kirish yoki yangi hisob). Qurilmadagi eski hisob bo'lsa unga bog'lanadi (XP/obuna/progress saqlanadi). */
 export async function phoneAuth(kind: 'login' | 'register', phone: string, password: string, nickname?: string): Promise<Account> {
-  const r = await call<Account>(`/api/auth/phone/${kind}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, password, nickname: nickname || undefined, link: getAccount()?.token, ref: getRef() }) });
+  const r = await call<Account>(`/api/auth/phone/${kind}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, password, nickname: nickname || undefined, link: getAccount()?.token, ...touchFields() }) });
   return finishLogin(r);
 }
 /** Google ID token bilan kirish (token serverda tekshiriladi). */
 export async function googleLogin(credential: string): Promise<Account> {
-  const r = await call<Account>('/api/auth/google', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ credential, link: getAccount()?.token, ref: getRef() }) });
+  const r = await call<Account>('/api/auth/google', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ credential, link: getAccount()?.token, ...touchFields() }) });
   return finishLogin(r);
 }
 // `tg: true` — hisob doimiy identifikatorga (Telegram, telefon yoki Google) bog'langan: qayta kirish mumkin, hisob tokenini saqlash shart emas.
@@ -77,8 +77,7 @@ async function finishLogin(r: Account): Promise<Account> {
 /** Telegram ma'lumoti bilan kirish. Qurilmada eski (laqabli) hisob bo'lsa, u Telegram'ga bog'lanadi — XP va obuna saqlanadi. */
 export async function loginTelegram(kind: 'widget' | 'webapp', payload: unknown): Promise<Account & { linked: boolean }> {
   const link = getAccount()?.token;
-  const ref = getRef();
-  const body = kind === 'webapp' ? { initData: payload, link, ref } : { user: payload, link, ref };
+  const body = kind === 'webapp' ? { initData: payload, link, ...touchFields() } : { user: payload, link, ...touchFields() };
   const r = await call<Account & { linked: boolean }>(kind === 'webapp' ? '/api/auth/telegram/webapp' : '/api/auth/telegram', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   setAccount({ token: r.token, nickname: r.nickname, tg: true, photo: (r as { photo?: string | null }).photo ?? null });
   await onLogin();
@@ -95,7 +94,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function joinLeague(nickname: string): Promise<Account> {
-  const a = await call<Account>('/api/join', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nickname, ref: getRef() }) });
+  const a = await call<Account>('/api/join', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nickname, ...touchFields() }) });
   setAccount(a);
   await onLogin(); // qurilmadagi progress yangi hisobga yoziladi
   void syncNow();

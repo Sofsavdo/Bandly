@@ -8,6 +8,8 @@
 //   F. Tariflar → to'lov (soxta Hamyon callback) → obuna ochiladi
 //   G. Obuna muddati tugadi → pullik bo'lim yopiladi
 //   H. Mehmon mock → natija yopiq → ro'yxatdan o'tish → natija akkauntga bog'lanadi (bir marta), shaxsiy reja
+//   I. Creator linki → bridge → veb → ro'yxat → creator kabinetida voronka
+//   K. Admin paneli: hamkor mukofot qoidasi — so'mda yaratish, tahrirlash, yoqish (egasi tasdig'i bilan); kredit rejimi «Limitlar»da
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -51,6 +53,7 @@ Object.assign(env, {
   PORT: String(PORT), HOST: '127.0.0.1', DB_PATH: DB, BACKUP_DISABLED: '1', NODE_ENV: 'test',
   HAMYON_SHOP_ID: SHOP.shopId, HAMYON_SHOP_KEY: SHOP.shopKey, HAMYON_BASE_URL: `http://127.0.0.1:${hamyonPort}`,
   API_RATE_PER_MIN: '5000', // barcha ssenariylar bitta IP'dan: umumiy tezlik cheklovi (productionda 120/daq) sinovni to'sib qo'ymasin
+  ADMIN_NICKNAMES: 'E2E Admin',
   AI_PROVIDER: 'openai', AI_API_KEY: 'sk-e2e-not-real', AI_MODEL: 'e2e-model', AI_FALLBACK_MODEL: ' ', AI_BASE_URL: `http://127.0.0.1:${aiPort}`, AI_GLOBAL_DAILY_CALLS: '100',
 });
 const srv = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -82,6 +85,7 @@ try {
     await new Promise((r) => setTimeout(r, 200));
   }
   let token = '';
+  let adminToken = '';
 
   await step('A. Mehmon → daraja testi → natija → ro‘yxatdan o‘tish', async () => {
     const p = await page();
@@ -263,6 +267,73 @@ try {
     raw.close();
     assert.equal(n, 1, 'bazada bitta natija');
     await p.context().close();
+  await step('I. Creator linki → bridge sahifa → veb → ro‘yxat → creator kabinetida voronka', async () => {
+    const mk = async (nickname: string) => String((await api('/api/join', { method: 'POST', body: JSON.stringify({ nickname }) })).json.token);
+    const adminT = await mk('E2E Admin'), crT = await mk('E2E Creator'); adminToken = adminT;
+    assert.equal((await api('/api/staff/role', { method: 'POST', token: adminT, body: JSON.stringify({ nickname: 'E2E Creator', role: 'creator' }) })).status, 200);
+    const link = (await api('/api/creator/links', { method: 'POST', token: crT, body: JSON.stringify({ kind: 'reel', label: 'E2E Reel', lang: 'ru' }) })).json.link as { code: string };
+    // Haqiqiy mobil brauzer UA (HeadlessChrome — bot sifatida filtrlanadi: bu ham to'g'ri xulq)
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' });
+    const p = await ctx.newPage();
+    p.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
+    await p.goto(`${base}/r/${link.code}`);
+    assert.match(await p.evaluate(() => document.documentElement.lang), /ru/, 'bridge sahifa link tilida');
+    assert.ok(await p.locator('#web').count(), 'veb-saytda davom etish tugmasi');
+    assert.equal(await p.locator('a[href^="https://t.me/"]').count(), 0, 'bot sozlanmagan — Telegram tugmasi yo‘q');
+    await p.locator('#web').click();
+    await p.waitForURL(/\/\?ref=[a-z2-9]+&cid=[a-f0-9]{16}#\//);
+    await p.waitForSelector('.w-hero', { timeout: 10000 });
+    const ls = await p.evaluate(() => ({ ref: localStorage.getItem('bandly.ref'), first: localStorage.getItem('bandly.ref.first'), cid: localStorage.getItem('bandly.cid') }));
+    assert.ok(ls.ref?.includes(link.code) && ls.first?.includes(link.code) && /[a-f0-9]{16}/.test(ls.cid ?? ''), 'ref, first-touch va click identifikatori saqlandi');
+    await p.locator('.w-hero a.btn.primary').first().click();   // signup_start (click bilan bog'lanadi); sahifa link tilida (ru), shuning uchun matn emas, element bo'yicha
+    await p.waitForURL(/#\/login/); await p.waitForTimeout(500);
+    const nick = p.locator('input[type=text][maxlength="20"]').first(); await nick.fill('E2E Talaba'); await nick.press('Enter'); // til (ru) va matndan mustaqil
+    await p.waitForURL(/#\/start/);
+    const ov = (await api('/api/creator/overview?days=30', { token: crT })).json;
+    assert.equal(ov.funnel.signups, 1, 'ro‘yxatdan o‘tish creator voronkasida'); assert.equal(ov.funnel.uniqueClicks, 1); assert.equal(ov.funnel.landingViews, 1, 'bridge JS ko‘rishi'); assert.equal(ov.funnel.signupStarts, 1, 'signup_start click bilan bog‘landi');
+    assert.equal(ov.links[0].signups, 1);
+    // Creator kabineti (brauzerda): link va voronka ko'rinadi, o'quvchi ma'lumoti yo'q
+    const c = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: crT, nickname: 'E2E Creator' }) });
+    await c.goto(`${base}/#/creator`); await c.getByText('Tracking linklar').waitFor({ timeout: 10000 });
+    await c.getByText('E2E Reel').first().waitFor({ timeout: 8000 });
+    assert.match(await text(c), /Voronka/); assert.match(await text(c), new RegExp(`/r/${link.code}`), 'qisqa havola ko‘rsatiladi');
+    assert.doesNotMatch(await text(c), /E2E Talaba/, 'creator o‘quvchi laqabini ko‘rmaydi');
+    await p.context().close(); await c.context().close();
+  });
+
+  await step('K. Admin paneli: hamkor mukofot qoidasi — so‘mda yaratish, tahrirlash, yoqish; kredit rejimi «Limitlar»da', async () => {
+    const a = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: adminToken, nickname: 'E2E Admin' }) });
+    await a.goto(`${base}/#/admin`);
+    await a.getByRole('tab', { name: 'Hamkorlar' }).click();
+    await a.getByRole('tab', { name: 'Mukofot daftari' }).click();
+    await a.getByText('Hali qoida yo‘q').waitFor({ timeout: 8000 });
+    // Summalar SO'MDA: 50 000 so'm → serverda 5 000 000 tiyin
+    await a.getByPlaceholder('Qoida nomi').fill('E2E faollashgan');
+    await a.getByPlaceholder('Summa, so‘m').fill('50000'); await a.getByPlaceholder('Kutish, kun').fill('0'); await a.getByPlaceholder('Muddat, kun').fill('90');
+    await a.getByPlaceholder('Hamkor chegarasi, so‘m').fill('200000'); await a.getByPlaceholder('Umumiy byudjet, so‘m').fill('1000000');
+    await a.getByRole('button', { name: 'Qoida yaratish' }).click();
+    await a.getByText('E2E faollashgan').first().waitFor({ timeout: 8000 });
+    let rules = ((await api('/api/creatoradmin/rules', { token: adminToken })).json.rules ?? []) as { name: string; amountMinor: number; capPerCreatorMinor: number; budgetMinor: number; holdDays: number; windowDays: number; enabled: boolean }[];
+    let r = rules.find((x) => x.name === 'E2E faollashgan')!;
+    assert.deepEqual([r.amountMinor, r.capPerCreatorMinor, r.budgetMinor, r.holdDays, r.windowDays, r.enabled], [5_000_000, 20_000_000, 100_000_000, 0, 90, false], 'so‘m → tiyin; qoida o‘chiq (qoralama) yaratildi');
+    // Tahrirlash: summa 70 000 so'm
+    await a.getByRole('button', { name: 'Tahrirlash' }).first().click();
+    await a.getByPlaceholder('Summa, so‘m').fill('70000');
+    await a.getByRole('button', { name: 'Saqlash' }).click();
+    for (let i = 0; i < 40; i++) { rules = ((await api('/api/creatoradmin/rules', { token: adminToken })).json.rules ?? []); r = rules.find((x) => x.name === 'E2E faollashgan')!; if (r.amountMinor === 7_000_000) break; await a.waitForTimeout(150); }
+    assert.equal(r.amountMinor, 7_000_000, 'tahrirlangan summa saqlandi'); assert.equal(r.capPerCreatorMinor, 20_000_000, 'boshqa shartlar o‘zgarmadi');
+    // Yoqish: "Egasi tasdiqlagan" belgisisiz yoqilmaydi; belgilansa yoqiladi
+    await a.getByRole('button', { name: 'Yoqish' }).first().click(); await a.waitForTimeout(400);
+    assert.equal(((await api('/api/creatoradmin/rules', { token: adminToken })).json.rules as { enabled: boolean }[])[0]!.enabled, false, 'egasi tasdig‘isiz yoqilmaydi');
+    await a.getByLabel('Egasi tasdiqlagan').check(); await a.getByRole('button', { name: 'Yoqish' }).first().click();
+    for (let i = 0; i < 40; i++) { if (((await api('/api/creatoradmin/rules', { token: adminToken })).json.rules as { enabled: boolean }[])[0]!.enabled) break; await a.waitForTimeout(150); }
+    assert.equal(((await api('/api/creatoradmin/rules', { token: adminToken })).json.rules as { enabled: boolean }[])[0]!.enabled, true, 'tasdiqlangach qoida yoqildi');
+    assert.match(await text(a), /oxirgi bosilgan havola/, 'kredit rejimi ko‘rsatiladi');
+    // Kredit rejimi — Limitlar bo'limida (admin boshqaradi)
+    await a.getByRole('tab', { name: 'Limitlar' }).click();
+    await a.getByText('Creator (hamkor) dasturi').waitFor({ timeout: 8000 });
+    assert.match(await text(a), /Creator krediti: qaysi havola hisobga olinadi/);
+    await a.context().close();
   });
 
   assert.deepEqual(problems, [], 'brauzerda JS xatosi yoki 5xx bo‘lmasligi kerak');

@@ -5,7 +5,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { ApiError } from './db';
 import { tzDay } from './day';
 
-export interface SttConfig { key: string; model: string; dailySecondsPerUser: number; globalDailySeconds: number; pricePerHour: number; fetchImpl?: typeof fetch }
+export interface SttConfig { key: string; model: string; dailySecondsPerUser: number; globalDailySeconds: number; pricePerHour: number; fetchImpl?: typeof fetch; /** faqat sinov uchun (STT_BASE_URL): soxta Scribe serveri; standart — ElevenLabs */ baseUrl?: string }
 export const MAX_AUDIO = 3 * 1024 * 1024; // ~90 soniya opus
 const MIMES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/aac', 'video/webm'];
 
@@ -14,7 +14,7 @@ export function sttConfigFromEnv(env: NodeJS.ProcessEnv = process.env): SttConfi
   const key = (env.ELEVENLABS_API_KEY ?? '').trim();
   const global = Number(env.STT_GLOBAL_DAILY_MINUTES ?? 600);
   if (!key || !(global > 0) || env.STT_PROVIDER === 'none') return null;
-  return { key, model: env.STT_MODEL ?? 'scribe_v1', dailySecondsPerUser: Number(env.STT_DAILY_MINUTES ?? 40) * 60, globalDailySeconds: global * 60, pricePerHour: Number(env.PRICE_STT_PER_HOUR ?? 0.4) };
+  return { key, model: env.STT_MODEL ?? 'scribe_v1', dailySecondsPerUser: Number(env.STT_DAILY_MINUTES ?? 40) * 60, globalDailySeconds: global * 60, pricePerHour: Number(env.PRICE_STT_PER_HOUR ?? 0.4), ...(env.STT_BASE_URL ? { baseUrl: env.STT_BASE_URL.trim().replace(/\/+$/, '') } : {}) };
 }
 
 export function ensureSttTable(db: DatabaseSync): void {
@@ -33,7 +33,8 @@ export function recordStt(db: DatabaseSync, playerId: number, seconds: number, n
   db.prepare('INSERT INTO stt_usage (day, player_id, seconds) VALUES (?, ?, ?) ON CONFLICT(day, player_id) DO UPDATE SET seconds = seconds + excluded.seconds').run(tzDay(now), playerId, Math.max(1, seconds));
 }
 
-export interface SttResult { text: string; lang: string | null; seconds: number }
+/** score — so'zlarning o'rtacha logprob'i (≤ 0; 0 ga yaqin — ishonchli). Scribe so'z ro'yxatida bermasa — null. */
+export interface SttResult { text: string; lang: string | null; seconds: number; score?: number | null }
 
 /** Ovozni ElevenLabs'ga yuboradi. Til avtomatik aniqlanadi (o'quvchi inglizcha va ona tilini aralashtiradi). */
 /** Interfeys tili → Scribe til kodi (ISO 639-3). */
@@ -41,13 +42,21 @@ export const NATIVE_STT_CODE: Record<string, string> = { uz: 'uzb', ru: 'rus', k
 
 /** Tanish: avval tilni o'zi aniqlaydi; qisqa gapda boshqa til (masalan, marathi yoki shved) chiqsa — ingliz tili deb qayta tanadi.
  *  O'quvchi faqat ingliz tilida yoki o'z ona tilida gapiradi. */
+/** Ishonch chegarasi: undan past bo'lsa ona tili natijasi shubhali — inglizcha ham sinab ko'riladi (haqiqiy sinovda toza gap −0.01…−0.1, shovqinli/tushunarsiz −0.2…−0.5). */
+export const LOW_CONFIDENCE = -0.2;
+/** O'quvchi gapini tanish. Til avtomatik ANIQLANMAYDI: ElevenLabs avto-aniqlashi qisqa o'zbekchani ingliz (p≈0.5), turk, serb, belarus deb adashtiradi va
+ *  kirill yozuvda yozib yuboradi (2026-11-24 haqiqiy sinov, "Darsga o'tamiz" → «Дарске ўтамиz»). Ona tili ko'rsatmasi (masalan uzb) bilan esa o'zbekcha ham,
+ *  aksentli inglizcha va aralash gap ham to'g'ri lotin yozuvida chiqadi. Shuning uchun odatda BITTA so'rov; faqat natija bo'sh yoki ishonchsiz bo'lsa ingliz
+ *  ko'rsatmasi bilan ikkinchi marta sinab, ishonchlisi olinadi. Mashqlar (expect='en') — faqat inglizcha. */
 export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb', expect: 'en' | 'any' = 'any'): Promise<SttResult & { forced: boolean }> {
-  // Inglizcha mashq (o'qish, speaking, shadowing): faqat ingliz tilida — aksentli inglizcha o'zbek tili deb aniqlanib qolmasin; bitta so'rov
   if (expect === 'en') return { ...(await transcribe(cfg, audio, mime, 'eng')), forced: false };
-  // Ikkalasi parallel: tilni o'zi aniqlagani va "ingliz tili" deb tanilgani — ketma-ket ikki marta kutilmaydi
-  const [auto, eng] = await Promise.all([transcribe(cfg, audio, mime), transcribe(cfg, audio, mime, 'eng').catch(() => null)]);
-  if (!auto.text || !auto.lang || auto.lang === 'eng' || auto.lang === native || !eng) return { ...auto, forced: false };
-  return { ...eng, seconds: Math.max(auto.seconds, eng.seconds), forced: true };
+  const a = await transcribe(cfg, audio, mime, native);
+  if (a.text && (a.score === null || a.score === undefined || a.score >= LOW_CONFIDENCE)) return { ...a, forced: false };
+  const e = await transcribe(cfg, audio, mime, 'eng').catch(() => null);
+  const secs = a.seconds + (e?.seconds ?? 0); // ikkala so'rov ham to'lanadi
+  if (!e || !e.text) return { ...a, seconds: secs, forced: false };
+  if (!a.text || (e.score ?? Number.NEGATIVE_INFINITY) > (a.score ?? Number.NEGATIVE_INFINITY)) return { ...e, seconds: secs, forced: true };
+  return { ...a, seconds: secs, forced: false };
 }
 
 export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, language?: string): Promise<SttResult> {
@@ -60,10 +69,11 @@ export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, la
   form.append('tag_audio_events', 'false');
   if (language) form.append('language_code', language);
   form.append('file', new Blob([new Uint8Array(audio)], { type }), `turn.${type.split('/')[1]}`);
-  const r = await (cfg.fetchImpl ?? fetch)('https://api.elevenlabs.io/v1/speech-to-text', { method: 'POST', headers: { 'xi-api-key': cfg.key }, body: form, signal: AbortSignal.timeout(30_000) });
+  const r = await (cfg.fetchImpl ?? fetch)(`${cfg.baseUrl ?? 'https://api.elevenlabs.io'}/v1/speech-to-text`, { method: 'POST', headers: { 'xi-api-key': cfg.key }, body: form, signal: AbortSignal.timeout(30_000) });
   if (!r.ok) throw new ApiError(502, `Nutqni tanib bo‘lmadi (${r.status})`);
-  const j = await r.json() as { text?: string; language_code?: string; words?: { end?: number; type?: string }[] };
+  const j = await r.json() as { text?: string; language_code?: string; words?: { end?: number; type?: string; logprob?: number }[] };
   const words = (j.words ?? []).filter((w) => w.type !== 'spacing');
   const seconds = words.length ? Math.max(...words.map((w) => w.end ?? 0)) : 0;
-  return { text: (j.text ?? '').replace(/\s+/g, ' ').trim().slice(0, 2000), lang: j.language_code ?? null, seconds };
+  const lps = words.filter((w) => w.type === 'word' && typeof w.logprob === 'number').map((w) => w.logprob!);
+  return { text: (j.text ?? '').replace(/\s+/g, ' ').trim().slice(0, 2000), lang: j.language_code ?? null, seconds, score: lps.length ? lps.reduce((x, y) => x + y, 0) / lps.length : null };
 }
