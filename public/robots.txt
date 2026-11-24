@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Sitemap: https://www.sellzen.uz/sitemap.xml
+Sitemap: https://sellzen.uz/sitemap.xml
