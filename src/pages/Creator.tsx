@@ -52,7 +52,7 @@ export default function Creator() {
           {[
             L('Ingliz tili darajangizni 3 daqiqada bilib oling 👇 Men sinab ko‘rdim — natija darhol chiqadi, keyin shaxsiy reja tuzib beradi. Bepul: {0}', [link]),
             L('IELTS’ga tayyorlanyapsizmi? Sellzen’da bepul mock testlar (Listening, Reading), AI Writing va Speaking bahosi bor. Mening balimni yengib ko‘ring: {0}', [link]),
-            L('Ingliz tilida gapirishdan qo‘rqasizmi? Sellzen AI bilan har kuni 5 daqiqa ovozli gaplashing — xatolaringizni o‘zbekcha tushuntiradi va eslab qoladi. Sinab ko‘ring: {0}', [link]),
+            L('Ingliz tilida gapirishdan qo‘rqasizmi? Sellzen ovozli ustozi bilan har kuni 5 daqiqa gaplashing — xatolaringizni o‘zbekcha tushuntiradi va eslab qoladi. Sinab ko‘ring: {0}', [link]),
             L('Узнай свой уровень английского за 3 минуты — бесплатно, с личным планом и AI-репетитором: {0}', [link]),
           ].map((txt) => (
             <div key={txt} className="promo">

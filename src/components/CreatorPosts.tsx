@@ -27,7 +27,7 @@ const BRAND_RULES = (): string[] => [
   L('Reklama ekanini aniq belgilang (masalan, #reklama yoki #ad).'),
   L('Natijani kafolatlamang: «band beramiz», «albatta o‘tasiz» kabi da’volar mumkin emas.'),
   L('Sellzen rasmiy IELTS tashkilotlari bilan bog‘liq emas — «rasmiy IELTS» deb da’vo qilmang.'),
-  L('18+ Sellzen AI xarakterini voyaga yetmaganlarga qaratilgan reklamada ko‘rsatmang.'),
+  L('18+ ustoz xarakterini voyaga yetmaganlarga qaratilgan reklamada ko‘rsatmang.'),
 ];
 
 export function CreatorPosts() {

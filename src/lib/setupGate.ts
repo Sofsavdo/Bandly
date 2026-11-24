@@ -8,7 +8,7 @@ import { getProfile } from './store';
 const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|leads|groups|welcome|login|certificates|duel\/)/;
 
 /** Mehmon (kirmagan) bo'limlarni KO'RA oladi: bosh sahifa, darslar xaritasi, IELTS kursi ro'yxati, Imtihon va Mock Arena ro'yxatlari,
- *  o'yinlar ro'yxati, tariflar, bepul vositalar, duel taklifi va 3 daqiqalik daraja testi (o'sish voronkasi: test → natija → ro'yxatdan o'tish). Kirish faqat HARAKATda so'raladi: darsni ochish, Sellzen AI, test topshirish,
+ *  o'yinlar ro'yxati, tariflar, bepul vositalar, duel taklifi va 3 daqiqalik daraja testi (o'sish voronkasi: test → natija → ro'yxatdan o'tish). Kirish faqat HARAKATda so'raladi: darsni ochish, Sellzen, test topshirish,
  *  o'yin o'ynash, Writing/Speaking, profil va boshqalar (qaytish manzili saqlanadi) — natija darhol hisobga yoziladi.
  *  (Egasi qarori 2026-11-23: oldingi "mehmon faqat landing" siyosati o'rniga.) */
 const PUBLIC = /^#\/(welcome|placement|learn|ielts|exam|mocks|mocks\/(reading|listening)|games|pricing|tools|duel\/[A-Za-z0-9]{4,12})?$/;

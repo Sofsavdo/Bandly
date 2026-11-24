@@ -73,13 +73,13 @@ export function welcomeMsg(chatId: number, publicUrl: string, tr: Tr, name?: str
     chat_id: chatId,
     caption: [
       `🎉 ${hi}`,
-      `Sellzen — ${tr('ingliz tili uchun Sellzen AI')}: ${lessons}${tr('mock testlar va ovozli suhbat.')}`,
+      `Sellzen — ${tr('ingliz tilini o‘rganish uchun')}: ${lessons}${tr('mock testlar va ovozli suhbat.')}`,
       '',
       `👇 ${tr('Boshlash uchun tugmani bosing.')}`,
     ].join('\n'),
     reply_markup: { inline_keyboard: [
       [{ text: `🚀 ${tr('Ilovani ochish')}`, web_app: app('/') }],
-      [{ text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: app('/placement') }, { text: `🎙 ${tr('Sellzen AI')}`, web_app: app('/coach') }],
+      [{ text: `🎯 ${tr('Darajamni aniqlash')}`, web_app: app('/placement') }, { text: `🎙 ${tr('Sellzen')}`, web_app: app('/coach') }],
     ] },
   };
 }
@@ -89,7 +89,7 @@ export function helpMsg(chatId: number, tr: Tr): Record<string, unknown> {
     chat_id: chatId,
     text: [
       tr('Buyruqlar:'),
-      `/start — ${tr('boshlash')}`, `/app — ${tr('ilovani ochish')}`, `/level — ${tr('darajani aniqlash')}`, `/mock — ${tr('bepul mock test')}`, `/coach — ${tr('Sellzen AI')}`,
+      `/start — ${tr('boshlash')}`, `/app — ${tr('ilovani ochish')}`, `/level — ${tr('darajani aniqlash')}`, `/mock — ${tr('bepul mock test')}`, `/coach — ${tr('Sellzen')}`,
       `/remind — ${tr('kunlik eslatmani yoqish')}`, `/stop — ${tr('eslatmani o‘chirish')}`,
       '', tr('Savol bo‘lsa, shu yerga yozing — jamoamiz javob beradi.'),
     ].join('\n'),

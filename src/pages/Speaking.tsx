@@ -171,7 +171,7 @@ export default function Speaking() {
             <Illo kind="mic" size={96} />
             <div>
               <span className="eyebrow"><Mic size={15} />  {L('Jonli ovozli suhbat')}</span>
-              <h2 style={{ marginBottom: 8 }}>{L('Speaking: Sellzen AI bilan suhbat')}</h2>
+              <h2 style={{ marginBottom: 8 }}>{L('Speaking: ustoz bilan suhbat')}</h2>
               <p style={{ color: 'var(--ink-2)' }}>{L('IELTS tartibida: Part 1, Part 2 (monolog), Part 3.')}</p>
               <div className="row">
                 <span className="pill"><ShieldCheck size={14} />  {L('Ovoz yozilmaydi')}</span>
@@ -191,13 +191,13 @@ export default function Speaking() {
             <div className="tabs" style={{ margin: '8px 0 4px' }}>
               {ACCENTS.map((a) => <button key={a.id} className={`btn sm ${accent === a.id ? 'dark' : ''}`} onClick={() => chooseAccent(a.id)}>{a.label}</button>)}
             </div>
-            <span className="evidence">{ACCENTS.find((a) => a.id === accent)?.hint}{L('. Sellzen AI sizni noto‘g‘ri tushunsa, boshqa aksentni sinab ko‘ring.')}</span>
+            <span className="evidence">{ACCENTS.find((a) => a.id === accent)?.hint}{L('. Ustoz sizni noto‘g‘ri tushunsa, boshqa aksentni sinab ko‘ring.')}</span>
           </div>
           <p><label><input type="checkbox" checked={textMode} disabled={!supported} onChange={(e) => setTextMode(e.target.checked)} />  {L('Mikrofonsiz rejim (yozib javob berish)')}</label></p>
           <button className="btn primary lg" onClick={() => void run()}><Mic size={18} />  {L('Suhbatni boshlash')}</button>
           <p className="evidence" style={{ marginTop: 14 }}>
             
-            {L('Sellzen AI javoblari hozircha')} <b>{L('qoidaviy')}</b>{aiOn ? L(' (AI yoqilgan bo‘lsa, javobingizga bog‘liq savollar ham beradi)') : L(' (AI hali ulanmagan)')}{L(': savollarni tartib bilan beradi, qisqa javobda "batafsilroq ayting" deydi. Talaffuz va grammatika baholanmaydi.')}
+            {L('Ustozning javoblari hozircha')} <b>{L('qoidaviy')}</b>{aiOn ? L(' (AI yoqilgan bo‘lsa, javobingizga bog‘liq savollar ham beradi)') : L(' (AI hali ulanmagan)')}{L(': savollarni tartib bilan beradi, qisqa javobda "batafsilroq ayting" deydi. Talaffuz va grammatika baholanmaydi.')}
           </p>
         </div>
       </div>
@@ -265,7 +265,7 @@ export default function Speaking() {
 
   const EMO: Record<Reaction['emotion'], Mood> = { angry: 'angry', laugh: 'laugh', disappointed: 'sad', impressed: 'impressed', happy: 'happy' };
   const mood: Mood = reaction && status === 'speaking' ? EMO[reaction.emotion] : flash && status === 'listening' ? 'angry' : status === 'speaking' ? 'idle' : status === 'listening' ? 'listen' : 'think';
-  const statusLabel = status === 'speaking' ? L('Sellzen AI gapiryapti') : status === 'listening' ? L('Sizni tinglayapti') : status === 'prep' ? L('Tayyorgarlik vaqti') : L('O‘ylayapti');
+  const statusLabel = status === 'speaking' ? L('Ustoz gapiryapti') : status === 'listening' ? L('Sizni tinglayapti') : status === 'prep' ? L('Tayyorgarlik vaqti') : L('O‘ylayapti');
   return (
     <div>
       <div className="stage">

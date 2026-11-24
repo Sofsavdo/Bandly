@@ -408,7 +408,7 @@ export function submitDuel(db: DatabaseSync, token: string, code: string, score:
 // ---------------- AI foydalanish limiti ----------------
 /** Platform-wide daily ceiling for AI calls. FAIL-CLOSED: no configured limit (or 0) means no call is allowed. */
 export function useGlobalAi(db: DatabaseSync, limit: number, now = Date.now()): number {
-  if (!Number.isFinite(limit) || limit <= 0) throw new ApiError(503, 'Sellzen AI hali sozlanmagan: umumiy kunlik chegara belgilanmagan.');
+  if (!Number.isFinite(limit) || limit <= 0) throw new ApiError(503, 'Sellzen hali sozlanmagan: umumiy kunlik chegara belgilanmagan.');
   const day = tzDay(now);
   const row = db.prepare('SELECT calls FROM ai_global_usage WHERE day = ?').get(day) as { calls: number } | undefined;
   if ((row?.calls ?? 0) >= limit) throw new ApiError(503, 'Bugungi umumiy AI chegarasi tugadi. Ertaga qayta urinib ko‘ring.');

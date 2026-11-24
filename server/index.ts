@@ -59,12 +59,12 @@ const PORT = Number(process.env.PORT ?? 3101);
 const ai = configFromEnv();
 // AI Coach limits (env). Global ceiling is FAIL-CLOSED: unset or 0 = coach disabled even with a key (owner decision OD-09).
 // Limitlar admin panelda o'zgaradi (server/settings.ts) — shuning uchun har chaqiruvda o'qiladi.
-const COACH_FREE_DAILY_ANSWERS = () => settingValue('COACH_FREE_DAILY_ANSWERS'); // obunasiz: Sellzen AI suhbatidagi neyron ovozli javoblar/kun
+const COACH_FREE_DAILY_ANSWERS = () => settingValue('COACH_FREE_DAILY_ANSWERS'); // obunasiz: Sellzen suhbatidagi neyron ovozli javoblar/kun
 const COACH_GLOBAL_DAILY = () => settingValue('AI_GLOBAL_DAILY_CALLS');
 const STUDIO_VOICE_DAILY_CHARS = Number(process.env.STUDIO_VOICE_DAILY_CHARS ?? 20_000);
 const stt = sttConfigFromEnv();
 const coachAi = coachConfig(ai);
-const live = liveConfigFromEnv(ai.provider === 'gemini' ? ai.key : null); // Gemini Live: ovozdan-ovozga Sellzen AI // ovozli suhbat uchun tez model (Gemini: Flash-Lite birinchi) // ElevenLabs Scribe (Sellzen AI uchun nutqni tanish); bo'lmasa brauzer tanishi
+const live = liveConfigFromEnv(ai.provider === 'gemini' ? ai.key : null); // Gemini Live: ovozdan-ovozga Sellzen // ovozli suhbat uchun tez model (Gemini: Flash-Lite birinchi) // ElevenLabs Scribe (Sellzen uchun nutqni tanish); bo'lmasa brauzer tanishi
 const COACH_DAILY_LIMIT = () => settingValue('AI_COACH_DAILY_LIMIT');
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
@@ -643,7 +643,7 @@ const httpServer = createServer(async (req, res) => {
       return send(res, 200, { text: r.text, lang: r.lang });
     }
     if (req.method === 'POST' && url.pathname === '/api/ai/coach') {
-      if (ai.provider === 'none') throw new AiError(503, 'Sellzen AI hali ulanmagan');
+      if (ai.provider === 'none') throw new AiError(503, 'Sellzen hali ulanmagan');
       const b = await readJson(req, 16_384);
       const token = String(b.token ?? '');
       const player = byToken(db, token);
@@ -656,7 +656,7 @@ const httpServer = createServer(async (req, res) => {
       const t0 = Date.now();
       const reply = await once(`${player.id}:${turnId}`, async () => {
         useGlobalAi(db, COACH_GLOBAL_DAILY());                       // platform ceiling first (fail-closed)
-        useAi(db, token, Date.now(), COACH_DAILY_LIMIT(), 'coach', 'Bugungi Sellzen AI xabarlari tugadi. Yangi xabarlar ertaga 00:00 da (Toshkent vaqti). Ovozli suhbat va darslar ishlayveradi.');  // per-learner daily limit
+        useAi(db, token, Date.now(), COACH_DAILY_LIMIT(), 'coach', 'Bugungi Sellzen xabarlari tugadi. Yangi xabarlar ertaga 00:00 da (Toshkent vaqti). Ovozli suhbat va darslar ishlayveradi.');  // per-learner daily limit
         return withAiCtx({ playerId: player.id, feature: 'coach' }, () => coachTurn(coachAi, resolved.id, history, text, { level: typeof b.level === 'string' ? b.level : null, mode, native: nativeOf(req.headers['x-lang']), adult: b.adult === true }));
       });
       console.log(`[coach] ${Date.now() - t0}ms ${resolved.id} adult=${b.adult === true}`); // javob matni yozilmaydi
@@ -710,7 +710,7 @@ const httpServer = createServer(async (req, res) => {
       // ElevenLabs: limit faqat yangi (xarajatli) javobga — kuniga VOICE_DAILY_ANSWERS ta + platforma kunlik belgilar chegarasi (OD-25).
       const paid = tts.provider === 'elevenlabs' && !isCached(tts, text, opts);
       const reserve = text.length + 16;
-      // Sellzen AI suhbati: obunachi oylik daqiqalari tugaguncha va xodimlar (admin, metodist — sinov uchun) kunlik chegarasiz;
+      // Sellzen suhbati: obunachi oylik daqiqalari tugaguncha va xodimlar (admin, metodist — sinov uchun) kunlik chegarasiz;
       // obunasiz o'quvchining suhbat ovozi — alohida kunlik chegara (COACH_FREE_DAILY_ANSWERS), boshqa ovozli javoblar bilan aralashmaydi
       const isCoach = b.feature === 'coach';
       const contPart = Number.isInteger(b.part) && Number(b.part) >= 1 && Number(b.part) <= 8;

@@ -1,4 +1,4 @@
-// Sellzen AI uchun ovozli navbat: mikrofonni yozib oladi, gap tugaganini o'zi sezadi (sukut), ovozni serverga yuboradi,
+// Sellzen uchun ovozli navbat: mikrofonni yozib oladi, gap tugaganini o'zi sezadi (sukut), ovozni serverga yuboradi,
 // server uni ElevenLabs Scribe bilan matnga aylantiradi (inglizcha xatolar bilan so'zma-so'z, o'zbekcha ham aniq).
 // Ovoz qurilmada ham, serverda ham saqlanmaydi. Mikrofon sessiyada BIR MARTA ochiladi: suhbatlar orasida faqat o'chirib qo'yiladi
 // (Telegram va telefon brauzerlari har getUserMedia'da ruxsat so'raydi). Ilova yopilganda yoki 2 daqiqa fonda tursa — to'liq yopiladi.

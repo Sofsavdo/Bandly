@@ -21,7 +21,7 @@ const SECTIONS: { id: string; title: string; note: string; groups: Group[] }[] =
   { id: 'free', title: L('Bepul tarif'), note: L('Obunasiz o‘quvchilar uchun kunlik va haftalik chegaralar.'), groups: ['free'] },
   { id: 'plans', title: L('Obuna tariflari'), note: L('Tariflar sahifasidagi raqamlar shu qiymatlardan avtomatik yangilanadi.'), groups: ['plans'] },
   { id: 'prices', title: L('Narxlar'), note: L('Oylik narx; 3 oylik (−10%) va 12 oylik (10 oy narxi) shundan hisoblanadi. Yangi to‘lovlarga qo‘llanadi.'), groups: ['prices'] },
-  { id: 'coach', title: L('Sellzen AI'), note: L('Hamma o‘quvchilar uchun.'), groups: ['coach'] },
+  { id: 'coach', title: L('Sellzen'), note: L('Hamma o‘quvchilar uchun.'), groups: ['coach'] },
   { id: 'bonus', title: L('Bonuslar'), note: L('Taklif qilingan o‘quvchi birinchi dars yoki daraja testini tugatganda ikkala tomonga beriladi.'), groups: ['referral', 'creator'] },
   { id: 'bot', title: L('Telegram bot'), note: L('O‘chiq bo‘lsa, /start bosilganda darhol xush kelibsiz xabari keladi (reklama tarmoqlari talabi uchun).'), groups: ['bot'] },
   { id: 'safety', title: L('Xarajat himoyasi'), note: L('AI xarajati keskin oshib ketmasligi uchun umumiy chegaralar.'), groups: ['safety'] },

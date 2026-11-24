@@ -27,11 +27,11 @@ const TUTOR_OPTS: { id: Tutor; label: string; sub: string }[] = [
   { id: 'savage', label: L('So‘kinsa ham bo‘ladi (18+)'), sub: L('Xatolaringiz ustidan so‘kinib kuladi') },
 ];
 const SKILL_HREF: Record<Skill, string> = { speaking: '#/coach', writing: '#/exam/writing', listening: '#/mocks', reading: '#/mocks', grammar: '#/grammar', vocab: '#/games' };
-const SKILL_STEP: Record<Skill, string> = { speaking: L('Speaking: Sellzen AI bilan ovozli suhbat'), writing: L('Writing: insho va AI baho'), listening: L('Listening: mock testlar'), reading: L('Reading: mock testlar'), grammar: L('Grammar: zaif mavzular'), vocab: L('So‘z o‘yinlari: har kuni 5 daqiqa') };
+const SKILL_STEP: Record<Skill, string> = { speaking: L('Speaking: Sellzen bilan ovozli suhbat'), writing: L('Writing: insho va AI baho'), listening: L('Listening: mock testlar'), reading: L('Reading: mock testlar'), grammar: L('Grammar: zaif mavzular'), vocab: L('So‘z o‘yinlari: har kuni 5 daqiqa') };
 
 const QUESTION: Record<StepId, string> = {
   goal: L('Nimaga tayyorlanyapsiz?'), why: L('Ingliz tili sizga nima uchun kerak?'), when: L('Imtihon qachon?'), target: L('Qaysi natija kerak?'),
-  level: L('Hozirgi darajangiz qanday?'), hard: L('Nima eng qiyin? (bir nechtasini tanlang)'), minutes: L('Kuniga qancha vaqt ajratasiz?'), tutor: L('Sellzen AI qanday gaplashsin?'),
+  level: L('Hozirgi darajangiz qanday?'), hard: L('Nima eng qiyin? (bir nechtasini tanlang)'), minutes: L('Kuniga qancha vaqt ajratasiz?'), tutor: L('Sellzen ustoz qanday gaplashsin?'),
 };
 
 const blank = (): Partial<Answers> => ({ hard: [], examDate: null, target: null });
