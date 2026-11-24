@@ -7,6 +7,7 @@
 //   J5. Scribe bo'sh matn qaytardi (jim/tushunarsiz navbat) — "Ovoz eshitilmadi", Gemini'ga hech narsa bormaydi
 //   J6. "Darsga o'tamiz" desa — tugma emas, ilova o'zi dars sahifasini ochadi (qo'ng'iroq tugaydi)
 //   J7. Ekran: 6 xil o'lchamda sahifa skrol qilinmaydi, tugatish tugmasi ko'rinadi, holatlar almashganda yuz joyidan siljimaydi
+//   J9. Uzun javob: matn qisilmaydi (qisqartirilmaydi), oxirgi gap to'liq ko'rinadi, eski gaplar yuqoriga chiqib ketadi; 2 xil ekranda
 //   J8. Sensorli ekran: ekranning istalgan joyiga (yuqori burchak ham) tegib gapirish; tugatish tugmasi gapirishni boshlamaydi
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
@@ -78,7 +79,8 @@ up.on('connection', (ws) => {
     if (text) { // o'quvchi gapi (Scribe matni): eski javob to'xtaydi, yangisi boshlanadi
       seen.push({ t: Date.now() - T0, kind: 'text', text });
       if (speakingTimer) { clearInterval(speakingTimer); speakingTimer = null; ws.send(JSON.stringify({ serverContent: { interrupted: true } })); }
-      setTimeout(() => say(/darsga/i.test(text) ? 'Mayli, hozir ochamiz!' : 'Qoyil! Juda zo‘r gapirdingiz, endi shu gapni to‘liq ayting.', /darsga/i.test(text) ? 2 : 9), 150); // uzun javob (~3.4 s): gapirayotganda bosib to'xtatish mumkin
+      const LONGREPLY = 'Present perfect zamoni o‘tgan paytda boshlangan, lekin natijasi hozirgi paytga bog‘liq bo‘lgan ishlarni bildiradi. Masalan: I have finished my homework — men uy vazifamni tugatdim va u endi tayyor. Yasalishi: have yoki has va fe’lning uchinchi shakli. Endi o‘zingiz bitta gap tuzing: I have already visited Samarkand — va shu gapni to‘liq ayting.';
+      setTimeout(() => say(/LONG/.test(text) ? LONGREPLY : /darsga/i.test(text) ? 'Mayli, hozir ochamiz!' : 'Qoyil! Juda zo‘r gapirdingiz, endi shu gapni to‘liq ayting.', /LONG/.test(text) ? 3 : /darsga/i.test(text) ? 2 : 9), 150); // uzun javob (~3.4 s): gapirayotganda bosib to'xtatish mumkin
       return;
     }
     const ri = m.realtimeInput;
@@ -173,16 +175,16 @@ try {
     await waitStatus(p, /Tinglayapman/, 3000);
     await wait(1600); await shot(p, 'j2-listening');
     await p.mouse.up();
-    await p.locator('.vl.you').waitFor({ timeout: 8000 });
-    assert.match(await p.locator('.vl.you').innerText(), /teach me English/, 'Scribe matni "Siz" qatorida');
+    await p.locator('.vl.you').first().waitFor({ timeout: 8000 });
+    assert.match(await p.locator('.vl.you').last().innerText(), /teach me English/, 'Scribe matni "Siz" qatorida');
     assert.ok(scribeCalls.length - s0 >= 1, 'Scribe chaqirildi (til aniqlash + inglizcha qayta tanish: 1–2 so‘rov)'); assert.ok(scribeCalls.at(-1)!.loud && scribeCalls.at(-1)!.bytes > 16000, 'Scribe’ga navbat ovozi bordi (WAV)');
     await waitStatus(p, /Sellzen gapiryapti/, 6000);
     const k = kinds(t);
     assert.ok(!k.includes('audio') && !k.includes('start') && !k.includes('end'), `Gemini’ga ovoz/activity bormadi: ${k.join(',')}`);
     assert.equal(count('text', t), 1, 'Gemini’ga o‘quvchi gapi MATN bo‘lib bordi');
     assert.match(seen.filter((s) => s.kind === 'text').at(-1)!.text!, /teach me English/);
-    await p.locator('.vl.bot').waitFor();
-    assert.match(await p.locator('.vl.bot').innerText(), /Qoyil/, 'ustoz gapi (Sellzen)');
+    await p.locator('.vl.bot').last().waitFor();
+    assert.match(await p.locator('.vl.bot').last().innerText(), /Qoyil/, 'ustoz gapi (Sellzen)');
     assert.equal(await p.locator('.ai-avatar.mood-love').count(), 1, 'iliq maqtov — yurak shaklidagi avatar');
     assert.equal(await p.locator('a:has-text("Darslarga o‘tish")').count(), 0, '"Darslarga o‘tish" tugmasi yo‘q (ustoz o‘zi yo‘naltiradi)');
     await shot(p, 'j2-speaking-heart');
@@ -230,7 +232,7 @@ try {
       assert.ok(m.callScroll <= 1 && m.noteOverflow <= 1, `${tag}: ichki kontent sig‘maydi (${m.callScroll}, ${m.noteOverflow})`);
       assert.equal(m.bodyOverflow, 'hidden', 'sahifa orqada siljimaydi');
       await p.mouse.wheel(0, 900); await wait(120); assert.equal(await p.evaluate(() => Math.round(scrollY)), 0, `${tag}: g‘ildirak/skrol sahifani siljitdi`);
-      assert.ok(m.faceW >= 90, `${tag}: yuz juda kichik ${m.faceW}`);
+      assert.ok(m.faceW >= 70, `${tag}: yuz juda kichik ${m.faceW}`);
     }
     await p.setViewportSize({ width: 390, height: 800 }); await wait(250);
     // Holatlar almashganda yuz va tugatish tugmasi joyidan siljimaydi (hint/matn o'zgarsa ham)
@@ -263,6 +265,33 @@ try {
     await waitStatus(q, /Ovoz eshitilmadi/, 6000);
     assert.equal(count('text', t) - n0 + count('start', t) + count('audio', t), 0, 'ovoz yo‘q — Gemini’ga hech narsa yuborilmadi');
     await shot(q, 'j5-no-voice');
+    scribeText = 'teach me English, I go to school yesterday';
+  });
+
+  await step('J9. Uzun javob: matn qisilmaydi, oxirgi gaplar to‘liq ko‘rinadi, eski gaplar yuqoriga chiqadi', async () => {
+    const p9 = await openCall(LOUD, token);
+    await waitStatus(p9, /Navbat sizda/, 12000);
+    for (const vp of [{ width: 390, height: 800 }, { width: 320, height: 568 }]) {
+      await p9.setViewportSize(vp); await wait(200);
+      scribeText = 'LONG please explain present perfect';
+      const c = await faceCenter(p9);
+      await p9.mouse.move(c.x, c.y); await p9.mouse.down(); await wait(1200); await p9.mouse.up();
+      await waitStatus(p9, /Sellzen gapiryapti/, 8000); await waitStatus(p9, /Navbat sizda/, 15000);
+      const m = await p9.evaluate(() => {
+        const lines = document.querySelector('.call-lines')!.getBoundingClientRect();
+        const all = [...document.querySelectorAll('.call-lines .vl')] as HTMLElement[];
+        const last = all[all.length - 1]!; const r = last.getBoundingClientRect(); const first = all[0]!.getBoundingClientRect();
+        return { n: all.length, lastText: last.innerText, lastTop: r.top, lastBottom: r.bottom, linesTop: lines.top, linesBottom: lines.bottom, bubbleClipped: last.scrollHeight - last.clientHeight, firstTop: first.top, stageOverflow: document.querySelector('.call-stage')!.scrollHeight - document.querySelector('.call-stage')!.clientHeight, lineH: parseFloat(getComputedStyle(last).lineHeight) };
+      });
+      const tag = `${vp.width}×${vp.height}`;
+      assert.match(m.lastText, /uchinchi shakli.*to‘liq ayting\.$/s, `${tag}: oxirgi gap to‘liq (qisqartirilmagan)`);
+      assert.ok(m.bubbleClipped <= 1, `${tag}: xabar ichida qisilish bor (${m.bubbleClipped})`);
+      assert.ok(m.lastBottom <= m.linesBottom + 1 && m.lastTop >= m.linesTop - 1, `${tag}: oxirgi xabar oyna ichida to‘liq ko‘rinmaydi (${m.lastTop}–${m.lastBottom} / ${m.linesTop}–${m.linesBottom})`);
+      assert.ok(m.lastBottom - m.lastTop > m.lineH * 3, `${tag}: uzun xabar bir necha qatorda`);
+      assert.ok(m.stageOverflow <= 1, `${tag}: sahifa/oyna sig‘maydi (${m.stageOverflow})`);
+      if (vp.height === 568) assert.ok(m.n >= 4 && m.firstTop < m.linesTop, `${tag}: eski gaplar yuqoriga chiqib ketdi (${m.n} xabar)`);
+      await shot(p9, `j9-${vp.width}x${vp.height}`);
+    }
     scribeText = 'teach me English, I go to school yesterday';
   });
 

@@ -104,10 +104,11 @@ export default function Coach() {
   const [talking, setTalking] = useState(false); // tugma bosib turilibdi (yoki qulflangan)
   const [latched, setLatched] = useState(false);
   const [liveOn, setLiveOn] = useState(false);
-  const [heard, setHeard] = useState(''); const [said, setSaid] = useState('');
+  // Suhbat tarixi (Siz / Sellzen): chat kabi — eski gaplar yuqoriga chiqib ketadi, oxirgilari to'liq ko'rinadi (qisqartirilmaydi)
+  const [msgs, setMsgs] = useState<{ id: number; who: 'you' | 'bot'; text: string }[]>([]);
   const [hint, setHint] = useState('');
   const [limitKind, setLimitKind] = useState<'session' | 'quota'>('quota');
-  const heardRef = useRef(''); const saidRef = useRef(''); const saidFresh = useRef(true);
+  const msgId = useRef(0); const youFresh = useRef(true); const botFresh = useRef(true);
   const pttState = useRef<PttState>(PTT_IDLE);
   const talkingRef = useRef(false);
   const thinkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -132,7 +133,14 @@ export default function Coach() {
   useEffect(() => { void coachStatus().then(setStatus); return () => { liveRefCall.current?.end(); liveRef.current = false; sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.(); stopSpeaking(); parkMic(); }; }, []);
   useEffect(() => { if (!live) return; const t = setInterval(() => setSecs((s) => s + 1), 1000); return () => clearInterval(t); }, [live]);
 
-  const showSaid = (t: string) => { saidRef.current = t; saidFresh.current = true; setSaid(t.slice(-400)); };
+  const pushMsg = (who: 'you' | 'bot', text: string) => { const t = text.trim(); if (t) setMsgs((m) => [...m, { id: ++msgId.current, who, text: t.slice(0, 700) }].slice(-30)); };
+  /** Oqim bo'lagi (Gemini matni bo'laklab keladi): oxirgi xabar shu tomonniki bo'lsa — davom ettiradi, aks holda yangi xabar. */
+  const appendMsg = (who: 'you' | 'bot', text: string) => setMsgs((m) => {
+    const i = m.length - 1;
+    if (i >= 0 && m[i]!.who === who) { const c = m.slice(); c[i] = { ...c[i]!, text: (c[i]!.text + text).slice(-700) }; return c; }
+    const t = text.trimStart(); return t ? [...m, { id: ++msgId.current, who, text: t.slice(0, 700) }].slice(-30) : m;
+  });
+  const showSaid = (t: string) => { botFresh.current = true; pushMsg('bot', t); };
   /** "Darsga o't" kabi buyruq: qo'ng'iroq yakunlanadi (xotira saqlanadi) va ilova so'ralgan joyni ochadi. */
   const goNav = () => {
     const n = nav.current; if (!n) return; nav.current = null; if (n.timer) clearTimeout(n.timer);
@@ -169,13 +177,12 @@ export default function Coach() {
           const n = nav.current; if (n) { if (on) n.spoke = true; else if (n.spoke) setTimeout(goNav, 500); } // ustoz tasdiqlab bo'lgach — o'tamiz
         },
         onLevel: (v) => setLvl(v),
-        onHeard: (t) => { heardRef.current = (heardRef.current + t).slice(-400); setHeard(heardRef.current.trim()); },
+        onHeard: (t) => { if (youFresh.current) { youFresh.current = false; pushMsg('you', t); } else appendMsg('you', t); },
         onSaid: (t) => {
-          if (saidFresh.current) { saidRef.current = ''; saidFresh.current = false; }
-          saidRef.current = (saidRef.current + t).slice(-400); setSaid(saidRef.current.trim());
+          if (botFresh.current) { botFresh.current = false; pushMsg('bot', t); } else appendMsg('bot', t);
           if (/\bha(ha)+\b|lol/i.test(t)) setEmotion('laugh'); else if (/damn|hell|shit|what the|ahmoq|tentak|eshak/i.test(t)) setEmotion('angry');
         },
-        onTurn: () => { saidFresh.current = true; if (phaseRef.current === 'thinking') setPhase('idle'); },
+        onTurn: () => { botFresh.current = true; if (phaseRef.current === 'thinking') setPhase('idle'); },
         onNoVoice: () => { setPhase('idle'); setHint(L('Ovoz eshitilmadi — mikrofonga yaqinroq gapirib ko‘ring.')); },
         onNavigate: (route) => { if (nav.current) return; nav.current = { route, spoke: false, timer: setTimeout(goNav, 7000) }; }, // ustoz tasdiqlamasa ham 7 soniyada o'tamiz
         onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); setLiveFailed(true); end(); } }, // keyingi urinish — oddiy ovozli rejim (STT + matn AI + ovoz)
@@ -188,7 +195,7 @@ export default function Coach() {
 
   const start = () => {
     liveRef.current = true; setLive(true); setSecs(0); setCapSec(0); setErr(''); setEmotion('happy'); resetCallVoice();
-    setLimitMsg(null); setLimitKind('quota'); setHint(''); showSaid(''); heardRef.current = ''; setHeard(''); pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false; setLatched(false);
+    setLimitMsg(null); setLimitKind('quota'); setHint(''); setMsgs([]); youFresh.current = true; botFresh.current = true; pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false; setLatched(false);
     if (useLive) { void startLiveCall().then((ok) => { if (!ok && liveRef.current) startClassic(); }); return; }
     startClassic();
   };
@@ -260,7 +267,7 @@ export default function Coach() {
       }
       if (!liveRef.current) return;
       setPhase('idle');
-      if (heard) { heardRef.current = heard; setHeard(heard); await send(heard); }
+      if (heard) { pushMsg('you', heard); await send(heard); }
     } catch (e) {
       setLvl(0);
       if (e instanceof SttError) {
@@ -275,7 +282,7 @@ export default function Coach() {
 
   // ---- Bosib-gapirish: bosildi → yozish boshlanadi; qo'yib yuborildi → ustoz javob beradi. Qisqa tegish — qulf (yana tegib tugatiladi). ----
   const startTalk = () => {
-    setHint(''); setErr(''); heardRef.current = ''; setHeard(''); saidFresh.current = true;
+    setHint(''); setErr(''); youFresh.current = true; botFresh.current = true;
     talkingRef.current = true; setTalking(true);
     if (liveRefCall.current) { liveRefCall.current.talk(true); setPhase('listening'); setLvl(0); return; }
     if (phaseRef.current === 'speaking') { sig.current.cancelled = true; stopSpeaking(); } // ustozni ataylab to'xtatish
@@ -367,8 +374,7 @@ export default function Coach() {
         <p className="call-status" aria-live="polite">{statusText}</p>
         <p className="call-sub">{subHint}</p>
         <div className="call-lines" aria-live="polite">
-          {heard && <p className="vl you"><b>{L('Siz')}</b> {heard}</p>}
-          {said && <p className="vl bot"><b>{L('Sellzen')}</b> {said}</p>}
+          {msgs.map((m) => <p key={m.id} className={`vl ${m.who}`}><b>{m.who === 'you' ? L('Siz') : L('Sellzen')}</b> {m.text}</p>)}
         </div>
         {(err || limitMsg || (liveFailed && !!status?.live)) && (
           <div className="call-notes">

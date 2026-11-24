@@ -8,7 +8,7 @@ let sent: FormData | null = null;
 const cfg: SttConfig = { key: 'k', model: 'scribe_v1', dailySecondsPerUser: 60, globalDailySeconds: 120, pricePerHour: 0.4,
   fetchImpl: (async (_u: string, init: { body: FormData }) => { sent = init.body; return new Response(JSON.stringify({ text: ' I  go to market yesterday ', language_code: 'eng', words: [{ type: 'word', end: 0.5 }, { type: 'spacing', end: 0.6 }, { type: 'word', end: 2.4 }] }), { status: 200 }); }) as never };
 const r = await transcribe(cfg, Buffer.alloc(2000, 1), 'audio/webm;codecs=opus');
-assert.deepEqual(r, { text: 'I go to market yesterday', lang: 'eng', seconds: 2.4 });
+assert.deepEqual(r, { text: 'I go to market yesterday', lang: 'eng', seconds: 2.4, score: null }, 'logprob bo‘lmasa — score null');
 assert.equal((sent as unknown as FormData).get('model_id'), 'scribe_v1');
 assert.equal((sent as unknown as FormData).get('language_code'), null, 'til avtomatik aniqlanadi');
 await assert.rejects(transcribe(cfg, Buffer.alloc(2000), 'text/html'), ApiError);
@@ -23,22 +23,39 @@ recordStt(db, b, 50); sttAllowed(db, cfg, c); recordStt(db, c, 10);
 assert.throws(() => sttAllowed(db, cfg, c), (e: ApiError) => e.status === 503);
 console.log('stt: OK');
 
-// Qisqa gapda boshqa til aniqlansa (marathi, shved) — ingliz tili deb qayta tanadi; o'zbekcha yoki inglizcha bo'lsa — bir marta
+// Til: avto-aniqlash ISHLATILMAYDI (qisqa o'zbekchani turk/serb/ingliz deb adashtirardi) — ona tili ko'rsatmasi bilan bitta so'rov; shubhali bo'lsa ingliz ham sinaladi
 {
-  const { transcribeLearner } = await import('./stt');
-  const calls: (string | null)[] = [];
-  const fake = (async (_u: string, init: { body: FormData }) => { const lc = init.body.get('language_code') as string | null; calls.push(lc); return { ok: true, status: 200, json: async () => (lc === 'eng' ? { text: 'I go to school', language_code: 'eng', words: [{ end: 1.2 }] } : { text: 'आय गो टू स्कूल', language_code: 'mar', words: [{ end: 1.1 }] }) }; }) as never;
-  const cfg = { key: 'k', model: 'scribe_v1', dailySecondsPerUser: 999, globalDailySeconds: 9999, pricePerHour: 0.4, fetchImpl: fake };
-  const r = await transcribeLearner(cfg, Buffer.alloc(2000), 'audio/webm', 'uzb');
-  assert.equal(r.text, 'I go to school'); assert.equal(r.forced, true); assert.deepEqual([...calls].sort(), ['eng', null].sort());
-  const calls2: (string | null)[] = [];
-  const uz = (async (_u: string, init: { body: FormData }) => { calls2.push(init.body.get('language_code') as string | null); return { ok: true, status: 200, json: async () => ({ text: 'salom qalaysan', language_code: 'uzb', words: [] }) }; }) as never;
-  const r2 = await transcribeLearner({ ...cfg, fetchImpl: uz }, Buffer.alloc(2000), 'audio/webm', 'uzb');
-  assert.equal(r2.forced, false); assert.equal(r2.text, 'salom qalaysan', 'o‘zbekcha — o‘zi aniqlagani olinadi');
-  // Mashqlar (matnni ovoz chiqarib o'qish, speaking): faqat ingliz tili kutiladi — aksentli ovoz o'zbekcha deb tanilmaydi
-  const calls3: (string | null)[] = [];
-  const en = (async (_u: string, init: { body: FormData }) => { calls3.push(init.body.get('language_code') as string | null); return { ok: true, status: 200, json: async () => ({ text: 'I go to school', language_code: 'eng', words: [{ end: 1 }] }) }; }) as never;
-  const r3 = await transcribeLearner({ ...cfg, fetchImpl: en }, Buffer.alloc(2000), 'audio/webm', 'uzb', 'en');
-  assert.deepEqual(calls3, ['eng'], 'bitta so‘rov, ingliz tili majburiy'); assert.equal(r3.text, 'I go to school');
+  const { transcribeLearner, LOW_CONFIDENCE } = await import('./stt');
+  const mk = (by: Record<string, { text: string; lp?: number; end?: number } | Error>, calls: (string | null)[]) => (async (_u: string, init: { body: FormData }) => {
+    const lc = init.body.get('language_code') as string | null; calls.push(lc);
+    const x = by[lc ?? 'auto']; if (x instanceof Error) throw x;
+    const w = x ? x.text.split(' ').filter(Boolean).map((_, i) => ({ type: 'word', end: (x.end ?? 1) * (i + 1), logprob: x.lp })) : [];
+    return { ok: true, status: 200, json: async () => ({ text: x?.text ?? '', language_code: lc ?? 'eng', words: w.map((q) => (q.logprob === undefined ? { type: 'word', end: q.end } : q)) }) };
+  }) as never;
+  const base = { key: 'k', model: 'scribe_v1', dailySecondsPerUser: 999, globalDailySeconds: 9999, pricePerHour: 0.4 };
+  const audio = Buffer.alloc(2000);
+  // 1) Toza o'zbekcha gap: BITTA so'rov, ona tili ko'rsatmasi bilan (avto-aniqlash yo'q)
+  const c1: (string | null)[] = [];
+  const r1 = await transcribeLearner({ ...base, fetchImpl: mk({ uzb: { text: 'Darsga o\'tamiz', lp: -0.07 } }, c1) }, audio, 'audio/wav', 'uzb');
+  assert.deepEqual(c1, ['uzb']); assert.equal(r1.text, 'Darsga o\'tamiz'); assert.equal(r1.forced, false); assert.ok(r1.score! > LOW_CONFIDENCE);
+  // 2) Ona tili natijasi ishonchsiz, inglizcha ishonchli: ikkala so'rov, ishonchlisi olinadi; soniyalar ikkalasi uchun
+  const c2: (string | null)[] = [];
+  const r2 = await transcribeLearner({ ...base, fetchImpl: mk({ uzb: { text: 'yesterday ay go skul', lp: -0.6, end: 1 }, eng: { text: 'Yesterday I go school', lp: -0.05, end: 1 } }, c2) }, audio, 'audio/wav', 'uzb');
+  assert.deepEqual(c2, ['uzb', 'eng']); assert.equal(r2.text, 'Yesterday I go school'); assert.equal(r2.forced, true); assert.equal(r2.seconds, 4 + 4, 'ikki so‘rov ham hisobga olinadi');
+  // 3) Ishonchsiz, lekin inglizcha yomonroq: ona tili natijasi qoladi
+  const c3: (string | null)[] = [];
+  const r3 = await transcribeLearner({ ...base, fetchImpl: mk({ uzb: { text: 'Men tushunmadim', lp: -0.3 }, eng: { text: 'Дарске ўтамиз', lp: -0.9 } }, c3) }, audio, 'audio/wav', 'uzb');
+  assert.equal(r3.text, 'Men tushunmadim'); assert.equal(r3.forced, false);
+  // 4) Ona tili natijasi bo'sh: ingliz sinaladi; ikkinchisi xato bersa — bo'sh natija (qo'ng'iroq "ovoz eshitilmadi" deydi, qulamaydi)
+  const c4: (string | null)[] = [];
+  const r4 = await transcribeLearner({ ...base, fetchImpl: mk({ uzb: { text: '' }, eng: { text: 'Hello', lp: -0.02 } }, c4) }, audio, 'audio/wav', 'uzb'); assert.equal(r4.text, 'Hello'); assert.equal(r4.forced, true);
+  const r5 = await transcribeLearner({ ...base, fetchImpl: mk({ uzb: { text: '' }, eng: new Error('tarmoq') }, []) }, audio, 'audio/wav', 'uzb'); assert.equal(r5.text, '');
+  // 5) Ona tili — rus: ko'rsatma rus tilida (uzb emas)
+  const c6: (string | null)[] = [];
+  await transcribeLearner({ ...base, fetchImpl: mk({ rus: { text: 'Привет', lp: -0.05 } }, c6) }, audio, 'audio/wav', 'rus'); assert.deepEqual(c6, ['rus']);
+  // 6) Mashqlar (matnni ovoz chiqarib o'qish, speaking): faqat ingliz tili, bitta so'rov
+  const c7: (string | null)[] = [];
+  const r7 = await transcribeLearner({ ...base, fetchImpl: mk({ eng: { text: 'I go to school', lp: -0.01 } }, c7) }, audio, 'audio/wav', 'uzb', 'en');
+  assert.deepEqual(c7, ['eng'], 'bitta so‘rov, ingliz tili majburiy'); assert.equal(r7.text, 'I go to school');
   console.log('stt (til): OK');
 }
