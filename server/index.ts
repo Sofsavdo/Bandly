@@ -45,8 +45,12 @@ import { MAX_AUDIO, NATIVE_STT_CODE, recordStt, sttAllowed, sttConfigFromEnv, tr
 import { analytics } from './analytics';
 import { ensureEventsTable, recordEvent } from './events';
 import { cohortReport, DEFINITIONS, ensureUserEventsTable, recordUserEvent } from './userEvents';
-import { attachReferral, maybeRewardReferral, refStats } from './referral';
+import { maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
+import { bridgeHtml, pickBridgeLang } from './creatorBridge';
+import { accrueRewards, addManualEntry, adminLedger, balances, createRule, creatorCosts, creatorEarnings, creatorRanking, decideEntry, disableRule, enableRule, ledgerHistory, listRules, markPaid, programKpis, recordRefund, ruleUsage, updateRule } from './creatorLedger';
+import { adminCreators, adminSetProfile, createCampaign, creatorsCsv, listCampaigns, listFlags, postsForAdmin, postsOf, profileOf as creatorProfileOf, resolveFlag, reviewPost, savePost, selfSetProfile, updateCampaign } from './creatorOps';
+import { attachAttribution, clientFingerprint, creditMode, createLink, creatorFunnel, linksOf, noteCreatorDevice, purgeCreatorData, recordClick, recordClickEvent, scanClickBursts, setLinkActive, isClickId } from './creatorLinks';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
 import { coverage, dictFor, isTarget, langReady, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { complete, AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
@@ -74,7 +78,10 @@ const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url)
 const db = createDb(DB_FILE);
 ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan ustun)
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
-expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); // 180 kun ishlatilmagan sessiyalar
+expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); purgeCreatorData(db); setInterval(() => purgeCreatorData(db), 86_400_000).unref(); // creator click/barmoq izi saqlash muddati
+// Mukofotni avtomatik hisoblash: yoqilgan qoida bo'lsagina; yozuvlar faqat "kutilmoqda" (admin tasdiqlamaguncha hech narsa o'tmaydi). Har 6 soatda; kutish davri (hold) o'tgan hodisalar olinadi.
+const accrueTick = (): void => { try { accrueRewards(db); } catch (e) { console.error('[creator.accrue]', (e as Error).message); } };
+setTimeout(accrueTick, 30_000).unref(); setInterval(accrueTick, 6 * 3_600_000).unref(); // 180 kun ishlatilmagan sessiyalar
 ensureEventsTable(db);
 ensureUserEventsTable(db);
 ensureMemoryTable(db);
@@ -106,13 +113,22 @@ if (bot) setupBot(bot, fetch, { onUsername: (u) => { botUsername = u; } }).then(
 }).catch((e) => console.error('Telegram bot sozlanmadi:', (e as Error).message));
 const tts = ttsConfigFromEnv(process.env.TTS_CACHE_DIR ?? `${dirname(DB_FILE)}/tts-cache`);
 
-// Oddiy so'rov tezligi cheklovi (IP bo'yicha, daqiqada 120 ta)
+// Oddiy so'rov tezligi cheklovi (IP bo'yicha, daqiqada 120 ta; API_RATE_PER_MIN — faqat sinov muhiti uchun)
+const RATE_PER_MIN = Math.max(1, Math.floor(Number(process.env.API_RATE_PER_MIN) || 120));
 const hits = new Map<string, { n: number; reset: number }>();
 function limited(ip: string): boolean {
   const now = Date.now();
   const h = hits.get(ip);
   if (!h || h.reset < now) { hits.set(ip, { n: 1, reset: now + 60_000 }); return false; }
-  return ++h.n > 120;
+  return ++h.n > RATE_PER_MIN;
+}
+
+// /r/<kod> uchun alohida (API cheklovidan mustaqil) tezlik chegarasi: bir manbadan daqiqada 60 ta; undan ko'pi yozilmaydi (skaner jadvalni to'ldirmasin)
+const rhits = new Map<string, { n: number; reset: number }>();
+function rlimited(ip: string): boolean {
+  const now = Date.now(); const h = rhits.get(ip);
+  if (!h || h.reset < now) { if (rhits.size > 50_000) rhits.clear(); rhits.set(ip, { n: 1, reset: now + 60_000 }); return false; }
+  return ++h.n > 60;
 }
 
 let langsCache: { at: number; langs: string[] } | null = null; // tayyor tillar ro'yxati (5 daqiqa kesh)
@@ -184,6 +200,7 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/event') {
       const b = await readJson(req, 256);
       recordEvent(db, b.name, ip, b.vid); // anonim identifikator xeshlanadi; IP faqat xotirada (suiiste'mol chegarasi)
+      if (b.cid !== undefined) recordClickEvent(db, b.cid, b.name); // creator linkidan kelgan click bilan bog'liq hodisa (ro'yxatdagi nomlargina, bir click — bir marta)
       res.writeHead(204); return void res.end();
     }
     // Kirgan o'quvchining hodisasi (Analytics 2.0): token majburiy, bir kunda bir hodisa bir marta sanaladi
@@ -203,7 +220,7 @@ const httpServer = createServer(async (req, res) => {
       const r = loginTelegram(db, u.id, nickFrom(u), typeof b.link === 'string' ? b.link : undefined);
       const pid = byToken(db, r.token).id;
       if (u.photo_url !== undefined) db.prepare('UPDATE players SET photo_url = ? WHERE id = ?').run(u.photo_url, pid); // Telegram rasmi (har kirishda yangilanadi)
-      if (r.created) attachReferral(db, pid, b.ref ?? getBotRef(db, u.id)); // taklif havolasi orqali kelgan bo'lsa (botda /start ref_ ham)
+      if (r.created) attachAttribution(db, pid, { ref: b.ref ?? getBotRef(db, u.id), ref0: b.ref0, cid: b.cid }, clientFingerprint(db, ip, String(req.headers['user-agent'] ?? '')), Date.now()); // taklif havolasi orqali kelgan bo'lsa (botda /start ref_ ham)
       claimBotPhone(db, u.id, pid); // botda ulashilgan raqam lidga o'tadi
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: u.photo_url ?? null });
     }
@@ -218,7 +235,7 @@ const httpServer = createServer(async (req, res) => {
         const bad = passwordProblem(password, phone); if (bad) throw new ApiError(400, bad);
         signupsByIp.check(ip); signupsByIp.fail(ip);
         const r = registerPhone(db, phone, await hashPassword(password), b.nickname, typeof b.link === 'string' ? b.link : undefined);
-        if (!r.linked) attachReferral(db, byToken(db, r.token).id, b.ref);
+        if (!r.linked) attachAttribution(db, byToken(db, r.token).id, { ref: b.ref, ref0: b.ref0, cid: b.cid }, clientFingerprint(db, ip, String(req.headers['user-agent'] ?? '')));
         return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: !r.linked });
       }
       phoneFails.check(phone);
@@ -235,7 +252,7 @@ const httpServer = createServer(async (req, res) => {
       let g;
       try { g = await verifyGoogleIdToken(b.credential, GOOGLE_CLIENT_ID); } catch (e) { if (e instanceof GoogleAuthError) { ipFails.fail(ip); throw new ApiError(401, e.message); } throw e; }
       const r = loginGoogle(db, g.sub, g.name ?? '', typeof b.link === 'string' ? b.link : undefined);
-      if (r.created) attachReferral(db, byToken(db, r.token).id, b.ref);
+      if (r.created) attachAttribution(db, byToken(db, r.token).id, { ref: b.ref, ref0: b.ref0, cid: b.cid }, clientFingerprint(db, ip, String(req.headers['user-agent'] ?? '')));
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: null });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
@@ -267,7 +284,7 @@ const httpServer = createServer(async (req, res) => {
       if (bot) throw new ApiError(410, 'Hisob endi Telegram orqali ochiladi');
       const b = await readJson(req);
       const jr = join(db, String(b.nickname ?? ''));
-      attachReferral(db, byToken(db, jr.token).id, b.ref);
+      attachAttribution(db, byToken(db, jr.token).id, { ref: b.ref, ref0: b.ref0, cid: b.cid }, clientFingerprint(db, ip, String(req.headers['user-agent'] ?? '')));
       return send(res, 200, jr);
     }
     // ---- Darslar kontenti: o'quvchilar uchun e'lon qilingan versiya ----
@@ -297,8 +314,28 @@ const httpServer = createServer(async (req, res) => {
       return send(res, 200, { ...refStats(db, p.id), bot: botUsername });
     }
     // ---- Hamkor kabineti (rol: creator; admin — barcha hamkorlar) ----
+    // Qisqa tracking link: /r/<kod> — click yoziladi, yengil bridge sahifa ko'rsatiladi (web yoki Telegram). Noma'lum/yopiq kod — oddiy bosh sahifaga (404 emas).
+    {
+      const rm = req.method === 'GET' || req.method === 'HEAD' ? url.pathname.match(/^\/r\/([a-z2-9]{6,10})\/?$/) : null;
+      if (rm) {
+        const ua = String(req.headers['user-agent'] ?? '');
+        const c = rlimited(ip) ? null : recordClick(db, rm[1]!, { ip, ua, method: req.method }, Date.now());
+        if (!c) { res.writeHead(302, { location: '/', 'cache-control': 'no-store' }); return void res.end(); }
+        const bl = pickBridgeLang(c.link.lang, String(req.headers['accept-language'] ?? ''));
+        const html = bridgeHtml({ lang: bl, code: rm[1]!, clickId: c.clickId, bot: botUsername, tr: (x) => trServer(db, bl, x) });
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow', 'referrer-policy': 'no-referrer' });
+        return void res.end(req.method === 'HEAD' ? undefined : html);
+      }
+    }
+    // Bridge sahifasi JS bajarilgach: haqiqiy ko'rish (landing_view) — botlar JS bajarmaydi
+    if (req.method === 'POST' && url.pathname === '/api/creator/ping') {
+      const b = await readJson(req, 256);
+      if (isClickId(b.cid)) recordClickEvent(db, b.cid, 'landing_view');
+      res.writeHead(204); return void res.end();
+    }
     if (req.method === 'GET' && url.pathname === '/api/creator') {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['creator']);
+      if (me.role === 'creator') noteCreatorDevice(db, me.id, clientFingerprint(db, ip, String(req.headers['user-agent'] ?? ''))); // o'z-o'zini taklif qilishni aniqlash uchun qurilma izi
       return send(res, 200, { me: creatorStats(db, me.id), all: me.role === 'admin' ? creatorsOverview(db) : null, bot: botUsername });
     }
     // ---- Guruhlar (B2B): o'qituvchi — yaratish va hisobot; o'quvchi — kod bilan qo'shilish ----
@@ -340,6 +377,82 @@ const httpServer = createServer(async (req, res) => {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), []);
       if (req.method === 'GET') return send(res, 200, { items: listSettings(db) });
       if (req.method === 'PUT') { const b = await readJson(req, 8192); return send(res, 200, { items: updateSettings(db, (b.values ?? {}) as Record<string, unknown>, me.id) }); }
+    }
+    // ---- Creator Growth: tracking linklar va voronka (rol: creator; faqat O'Z linklari/statistikasi — admin ham o'zinikini ko'radi) ----
+    if (url.pathname === '/api/creator/links' || url.pathname === '/api/creator/overview' || /^\/api\/creator\/links\/[a-z2-9]{6,10}\/active$/.test(url.pathname)) {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['creator']);
+      if (url.pathname === '/api/creator/links' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { link: createLink(db, me.id, b) }); }
+      if (url.pathname === '/api/creator/links' && req.method === 'GET') return send(res, 200, { links: linksOf(db, me.id) });
+      const am = url.pathname.match(/^\/api\/creator\/links\/([a-z2-9]{6,10})\/active$/);
+      if (am && req.method === 'POST') { const b = await readJson(req, 256); return send(res, 200, { link: setLinkActive(db, am[1]!, b.active === true, { id: me.id, admin: false }) }); }
+      if (url.pathname === '/api/creator/overview' && req.method === 'GET') {
+        const now = Date.now(); const days = Math.min(365, Math.max(1, Number(url.searchParams.get('days')) || 30));
+        const q = { from: now - days * 86_400_000, to: now + 1, kind: url.searchParams.get('kind') || undefined, lang: url.searchParams.get('lang') || undefined, campaignId: url.searchParams.get('campaign') ? Number(url.searchParams.get('campaign')) : undefined };
+        scanClickBursts(db, now);
+        const links = linksOf(db, me.id);
+        const rows = links.filter((l) => (!q.kind || l.kind === q.kind) && (!q.lang || l.lang === q.lang) && (q.campaignId === undefined || l.campaignId === q.campaignId)).map((l) => {
+          const f = creatorFunnel(db, { creatorId: me.id, linkCode: l.code, from: q.from, to: q.to }, now);
+          return { ...l, clicks: f.clicks, uniqueClicks: f.uniqueClicks, signups: f.signups, activated: f.activated, paid: f.paid, netRevenue: f.netRevenue };
+        });
+        return send(res, 200, { days, funnel: creatorFunnel(db, { creatorId: me.id, ...q }, now), links: rows });
+      }
+      return send(res, 405, { error: 'Method not allowed' });
+    }
+    // ---- Creator Growth: profil, kampaniya, post, mukofot (creator FAQAT o'zinikini ko'radi) ----
+    if (url.pathname.startsWith('/api/creator/') && !/^\/api\/creator\/(links|overview|ping)/.test(url.pathname)) {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), ['creator']);
+      const sub = url.pathname.slice('/api/creator/'.length);
+      if (sub === 'profile') { if (req.method === 'POST') { const b = await readJson(req, 2048); return send(res, 200, { profile: selfSetProfile(db, me.id, b) }); } return send(res, 200, { profile: creatorProfileOf(db, me.id) }); }
+      if (sub === 'campaigns' && req.method === 'GET') return send(res, 200, { campaigns: listCampaigns(db, false) });
+      if (sub === 'posts' && req.method === 'GET') return send(res, 200, { posts: postsOf(db, me.id) });
+      if (sub === 'posts' && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { post: savePost(db, me.id, b) }); }
+      if (sub === 'rewards' && req.method === 'GET') return send(res, 200, creatorEarnings(db, me.id));
+      if (sub === 'ranking' && req.method === 'GET') return send(res, 200, creatorRanking(db));
+      return send(res, 404, { error: 'Topilmadi' });
+    }
+    // ---- Creator CRM (faqat admin; rol bo'yicha) ----
+    if (url.pathname.startsWith('/api/creatoradmin/')) {
+      const adm = requireRole(db, String(req.headers['x-token'] ?? ''), ['admin']);
+      if (adm.role !== 'admin') throw new ApiError(403, 'Bu bo‘lim uchun ruxsat yo‘q');
+      const sub = url.pathname.slice('/api/creatoradmin/'.length); const now = Date.now();
+      const range = () => { const days = Math.min(365, Math.max(1, Number(url.searchParams.get('days')) || 30)); return { from: now - days * 86_400_000, to: now + 1, days }; };
+      if (sub === 'list' && req.method === 'GET') {
+        const r = range(); scanClickBursts(db, now);
+        const rows = adminCreators(db, { text: url.searchParams.get('q') || undefined, status: url.searchParams.get('status') || undefined, locale: url.searchParams.get('locale') || undefined, campaignId: url.searchParams.get('campaign') ? Number(url.searchParams.get('campaign')) : undefined, from: r.from, to: r.to }, now);
+        return send(res, 200, { days: r.days, creators: rows, kpis: programKpis(db, r.from, r.to, now), attribution: creditMode(), rules: ruleUsage(db), costs: creatorCosts(db), balances: balances(db), campaigns: listCampaigns(db, true, now) });
+      }
+      if (sub === 'export.csv' && req.method === 'GET') {
+        const r = range(); audit(db, adm.id, 'creator.export', 'summary', { days: r.days });
+        res.writeHead(200, { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="sellzen-creators.csv"', 'cache-control': 'no-store' });
+        return void res.end(creatorsCsv(adminCreators(db, { from: r.from, to: r.to }, now)));
+      }
+      if (sub === 'profile' && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { profile: adminSetProfile(db, adm.id, b.nickname, b) }); }
+      if (sub === 'campaigns' && req.method === 'GET') return send(res, 200, { campaigns: listCampaigns(db, true) });
+      if (sub === 'campaigns' && req.method === 'POST') { const b = await readJson(req, 8192); return send(res, 200, { campaign: createCampaign(db, adm.id, b) }); }
+      const cm = sub.match(/^campaigns\/(\d+)$/);
+      if (cm && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { campaign: updateCampaign(db, adm.id, Number(cm[1]), b) }); }
+      if (sub === 'posts' && req.method === 'GET') return send(res, 200, { posts: postsForAdmin(db, url.searchParams.get('status') || undefined) });
+      const pm = sub.match(/^posts\/(\d+)\/review$/); if (pm && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { post: reviewPost(db, adm.id, Number(pm[1]), b) }); }
+      if (sub === 'flags' && req.method === 'GET') return send(res, 200, { flags: listFlags(db, url.searchParams.get('resolved') === '1') });
+      const fm = sub.match(/^flags\/(\d+)\/resolve$/); if (fm && req.method === 'POST') { resolveFlag(db, adm.id, Number(fm[1])); return send(res, 200, { ok: true }); }
+      const lm = sub.match(/^links\/([a-z2-9]{6,10})\/active$/); if (lm && req.method === 'POST') { const b = await readJson(req, 256); return send(res, 200, { link: setLinkActive(db, lm[1]!, b.active === true, { id: adm.id, admin: true }) }); }
+      // Mukofot qoidalari (standart o'chiq; yoqish — egasi tasdig'i + byudjet bilan)
+      if (sub === 'rules' && req.method === 'GET') return send(res, 200, { rules: ruleUsage(db) });
+      if (sub === 'rules' && req.method === 'POST') { const b = await readJson(req, 2048); return send(res, 200, { rule: createRule(db, adm.id, b) }); }
+      const rm2 = sub.match(/^rules\/(\d+)(?:\/(enable|disable))?$/);
+      if (rm2 && req.method === 'POST') {
+        const b = await readJson(req, 2048); const rid = Number(rm2[1]);
+        return send(res, 200, { rule: rm2[2] === 'enable' ? enableRule(db, adm.id, rid, b) : rm2[2] === 'disable' ? disableRule(db, adm.id, rid) : updateRule(db, adm.id, rid, b) });
+      }
+      if (sub === 'costs' && req.method === 'GET') return send(res, 200, { costs: creatorCosts(db), rules: ruleUsage(db), balances: balances(db) });
+      if (sub === 'manual' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: addManualEntry(db, adm.id, b) }); }
+      if (sub === 'ledger' && req.method === 'GET') return send(res, 200, { entries: adminLedger(db, url.searchParams.get('status') || undefined), balances: balances(db), rules: listRules(db), attribution: creditMode() });
+      const dm = sub.match(/^ledger\/(\d+)\/(decision|paid|history)$/);
+      if (dm && req.method === 'GET' && dm[2] === 'history') return send(res, 200, { history: ledgerHistory(db, Number(dm[1])) });
+      if (dm && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: dm[2] === 'paid' ? markPaid(db, adm.id, Number(dm[1]), b.ref) : decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note) }); }
+      if (sub === 'refund' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, recordRefund(db, adm.id, b.paymentId, b.amountMinor, b.note)); }
+      if (sub === 'accrue' && req.method === 'POST') return send(res, 200, accrueRewards(db));
+      return send(res, 404, { error: 'Topilmadi' });
     }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
     if (url.pathname.startsWith('/api/studio/')) {

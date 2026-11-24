@@ -4,7 +4,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { ApiError } from './db';
 
-export type SettingGroup = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety' | 'bot';
+export type SettingGroup = 'free' | 'plans' | 'coach' | 'referral' | 'prices' | 'safety' | 'bot' | 'creator';
 export interface SettingDef { key: string; group: SettingGroup; label: string; hint?: string; def: number; min: number; max: number; unit?: string }
 
 /** Ro'yxat tartibi admin panelda ko'rinish tartibi. Yorliqlar o'zbekcha (admin panel ilova tilida tarjima qiladi). */
@@ -33,6 +33,8 @@ export const SETTINGS: SettingDef[] = [
   { key: 'REF_XP', group: 'referral', label: 'Taklif bonusi: ikkala tomonga XP', def: 100, min: 0, max: 150 },
   { key: 'REF_PLAN_DAYS', group: 'referral', label: 'Taklif bonusi: ikkala tomonga All Access kunlari', hint: '0 — o‘chiq', def: 0, min: 0, max: 30, unit: 'day' },
   { key: 'REF_PLAN_MONTHLY_CAP', group: 'referral', label: 'Taklif qilgan bir kishiga 30 kunda ko‘pi bilan bonus', def: 3, min: 0, max: 100 },
+  // Creator (hamkor) dasturi: mukofot qoidalari (summa, foiz, byudjet) "Hamkorlar → Mukofot" bo'limida; bu yerda — umumiy qoida
+  { key: 'CREATOR_CREDIT_FIRST', group: 'creator', label: 'Creator krediti: qaysi havola hisobga olinadi', hint: '0 — oxirgi bosilgan havola, 1 — birinchi bosilgan havola. Faqat yangi hisob-kitoblarga ta’sir qiladi', def: 0, min: 0, max: 1 },
   // Narxlar (so'm / oy; 3 va 12 oylik narx shundan hisoblanadi)
   { key: 'PLAN_PRICE_GENERAL', group: 'prices', label: 'General English narxi, oyiga', def: 69_000, min: 1000, max: 10_000_000, unit: 'uzs' },
   { key: 'PLAN_PRICE_EXAM', group: 'prices', label: 'Exam Preparation narxi, oyiga', def: 99_000, min: 1000, max: 10_000_000, unit: 'uzs' },

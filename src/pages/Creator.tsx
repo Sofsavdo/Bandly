@@ -2,6 +2,8 @@
 import { Copy, Megaphone, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
+import { CreatorLinks } from '../components/CreatorLinks';
+import { CreatorPosts } from '../components/CreatorPosts';
 import { fmtSum } from '../lib/pay';
 import { L } from '../i18n';
 
@@ -29,6 +31,8 @@ export default function Creator() {
         </div>
         {msg && <p className="evidence">{msg}</p>}
       </section>
+      <CreatorLinks bot={d.bot} />
+      <CreatorPosts />
       <div className="kpis">
         <div className="kpi2"><span>{L('Kelganlar')}</span><b>{m.invited}</b><small>{L('30 kun: {0}', [m.invited30])}</small></div>
         <div className="kpi2"><span>{L('Faollashgan')}</span><b>{m.activated}</b><small>{L('birinchi darsni tugatgan')}</small></div>
@@ -39,7 +43,7 @@ export default function Creator() {
         <h3 style={{ marginTop: 0 }}>{L('Oylar bo‘yicha')}</h3>
         <div className="table-scroll"><table className="data"><thead><tr><th>{L('Oy')}</th><th>{L('Kelganlar')}</th><th>{L('To‘lov qilgan')}</th><th>{L('Tushum')}</th></tr></thead>
           <tbody>{m.months.map((x) => <tr key={x.month}><td>{x.month}</td><td>{x.signups}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table></div>
-        <p className="muted" style={{ marginBottom: 0 }}>{m.commissionPct === null ? L('Hamkorlik shartlari alohida kelishiladi.') : L('Hamkorlik ulushi ({0}%): {1} so‘m', [m.commissionPct, fmtSum(m.commission ?? 0)])}</p>
+        <p className="muted" style={{ marginBottom: 0 }}>{L('Mukofot shartlari va balansingiz pastdagi «Bonus / komissiya holati» bo‘limida.')}</p>
       </section>
       <section className="card">
         <h3 style={{ marginTop: 0 }}>{L('Tayyor post matnlari')}</h3>

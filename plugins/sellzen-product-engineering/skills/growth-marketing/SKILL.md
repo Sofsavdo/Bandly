@@ -35,7 +35,7 @@ Design and implement growth mechanics that move **paid conversion and retention*
 
 ## Standards
 - Every experiment has: hypothesis, primary metric (signup→activation, D7, paid conversion, referral K-factor = invites sent × acceptance × activation), guardrail metric (AI cost/user, refund/cancel, spam reports), duration, and decision rule.
-- Attribution must be server-side and first-touch with a 30-day window (current `captureRef` behaviour); self-referral and multi-account farming blocked (same `tg_id`, rewards only after real activity — keep `maybeRewardReferral` condition).
+- Attribution must be server-side with a 30-day window. Current behaviour: `players.referred_by` = last touched code (client `captureRef` overwrites; server binds only at account creation); `creator_attrib` stores first AND last touch separately; commission credit is chosen by `CREATOR_ATTRIBUTION` (default `last`); self-referral and multi-account farming blocked (same `tg_id`, rewards only after real activity — keep `maybeRewardReferral` condition).
 - Rewards that cost money (AI minutes, plan days) are capped per referrer per month.
 - Messaging honesty: no guaranteed band scores (OD-19), no "official" claims, 18+ persona content only for opted-in adults and never in ads targeting minors.
 - Privacy: public leaderboards use nicknames; never expose Telegram ids, full names or photos without consent.

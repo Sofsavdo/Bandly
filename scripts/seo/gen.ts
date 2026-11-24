@@ -322,7 +322,7 @@ export function generate(): Record<string, string> {
     'ru/vositalar/test-urovnya-angliyskogo.html': placementLanding('ru'),
     'ru/vositalar/multilevel-bally.html': multilevelPage('ru'),
     'ru/vositalar/urovni-cefr.html': cefrLevelsPage('ru'),
-    'robots.txt': `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n`,
+    'robots.txt': `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /r/\nSitemap: ${SITE}/sitemap.xml\n`,
   };
   // lastmod — qidiruv tizimlari yangilangan sahifalarni tezroq qayta o'qishi uchun (kontent o'zgarganda yangilang)
   const LASTMOD = '2026-11-23';

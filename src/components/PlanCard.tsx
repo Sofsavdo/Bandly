@@ -71,6 +71,7 @@ function PlanBody() {
   const minutes = full ? prefs.minutes : load.minutes;
   const { tasks: plan, weak } = buildDailyPlan({ level: p.level!, saved, prefs: { ...prefs, minutes }, skills, examDate, now: Date.now() });
   const planKey = plan.map((t) => t.nodeId).join(',');
+  useEffect(() => { trackUser('plan_open'); }, []); // creator voronkasi: shaxsiy reja ochildi (kuniga bir marta sanaladi)
   useEffect(() => { recordPlanned(today, planKey ? planKey.split(',') : []); }, [today, planKey]);
   // Analytics 2.0: bugungi rejadagi barcha vazifalar bugun bajarilgan bo'lsa — plan_done (kuniga bir marta sanaladi)
   const plannedToday = loadLog()[today] ?? [];

@@ -12,7 +12,7 @@ import { TZ_OFFSET_MS, tzDay } from './day';
 
 export const USER_EVENTS = [
   'onboarding_done', 'lesson_start', 'mock_start', 'speaking_start', 'writing_start',
-  'plan_done', 'pricing_view', 'checkout_start', 'referral_share', 'insight_follow',
+  'plan_done', 'pricing_view', 'checkout_start', 'referral_share', 'insight_follow', 'plan_open',
 ] as const;
 export type UserEvent = (typeof USER_EVENTS)[number];
 export const isUserEvent = (x: unknown): x is UserEvent => (USER_EVENTS as readonly unknown[]).includes(x);
