@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
-import { LEDGER_STATUS, POST_STATUS } from './CreatorPosts';
+import { LEDGER_KIND, LEDGER_STATUS, POST_STATUS, RULE_KIND } from './CreatorPosts';
 import { L } from '../i18n';
 
 async function call<T>(path: string, body?: unknown): Promise<T> {
@@ -14,10 +14,11 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
 }
 interface Fun { uniqueClicks: number; signups: number; activated: number; d7: { active: number }; paid: number; netRevenue: number; refundedSum: number; rates: { clickToSignup: number | null; signupToActivation: number | null; activationToPaid: number | null; refundRate: number | null } }
 interface Creator { id: number; nickname: string; status: string; locale: string | null; country: string | null; platforms: string | null; note: string | null; links: number; funnel: Fun; openFlags: number; posts: Record<string, number> }
-interface Camp { id: number; name: string; brief: string; status: string; requiresVideo: boolean; rewardEnabled: boolean; budgetMinor: number | null; capPerCreatorMinor: number | null; endsAt: number | null }
-interface Program { commissionEnabled: boolean; commissionPct: number | null; globalBudgetMinor: number | null; capPerCreatorMinor: number | null; windowDays: number; attribution: string }
+interface Camp { id: number; name: string; brief: string; status: string; requiresVideo: boolean; endsAt: number | null }
+interface Rule { id: number; name: string; kind: string; campaignId: number | null; pct: number | null; amountMinor: number | null; holdDays: number; windowDays: number; capPerCreatorMinor: number | null; budgetMinor: number | null; capPerItemMinor: number | null; enabled: boolean; spentMinor: number; remainingMinor: number | null }
+interface Cost { creatorId: number; nickname: string; pending: number; approved: number; paid: number; total: number }
 interface Kpis { funnel: Fun & { clicks: number }; rewardCostMinor: number; cacPerActivatedMinor: number | null; cacPerPayerMinor: number | null }
-interface LedgerRow { id: number; creator?: string; kind: string; amountMinor: number; status: string; createdAt: number; paymentId?: string | null; basis: { pct?: number; capped?: boolean } | null }
+interface LedgerRow { id: number; creator?: string; kind: string; amountMinor: number; status: string; createdAt: number; paymentId?: string | null; note: string | null; basis: { pct?: number; capped?: boolean } | null }
 interface AdminPost { id: number; creator?: string; platform: string; url: string | null; lang: string | null; postedOn: string | null; caption: string | null; claimedViews: number | null; status: string }
 interface Flag { id: number; creator: string; kind: string; detail: string | null; ts: number }
 const STATUSES = ['invited', 'applied', 'approved', 'paused', 'rejected'];
@@ -41,7 +42,7 @@ export function CreatorAdmin() {
 type Run = (fn: () => Promise<unknown>, ok?: string) => Promise<void>;
 
 function Creators({ run }: { run: Run }) {
-  const [d, setD] = useState<{ creators: Creator[]; kpis: Kpis; program: Program } | null>(null);
+  const [d, setD] = useState<{ creators: Creator[]; kpis: Kpis } | null>(null);
   const [q, setQ] = useState(''); const [status, setStatus] = useState(''); const [locale, setLocale] = useState(''); const [days, setDays] = useState(30); const [open, setOpen] = useState<number | null>(null);
   const load = useCallback(() => { const p = new URLSearchParams({ days: String(days), ...(q ? { q } : {}), ...(status ? { status } : {}), ...(locale ? { locale } : {}) }); void run(async () => setD(await call(`/api/creatoradmin/list?${p}`))); }, [days, q, status, locale, run]);
   useEffect(load, [load]);
@@ -98,11 +99,11 @@ function ProfileForm({ c, save }: { c: Creator; save: (b: Record<string, unknown
 
 function Campaigns({ run }: { run: Run }) {
   const [list, setList] = useState<Camp[]>([]); const [f, setF] = useState({ name: '', brief: '', rules: '', requiresVideo: false, endsAt: '' });
-  const [rw, setRw] = useState({ id: 0, pct: '', budget: '', cap: '', confirm: false });
   const load = useCallback(() => void run(async () => setList((await call<{ campaigns: Camp[] }>('/api/creatoradmin/campaigns')).campaigns)), [run]);
   useEffect(load, [load]);
   return (
     <>
+      <p className="muted" style={{ fontSize: 13 }}>{L('Kampaniya — brief va talablar. Mukofot kampaniyada emas, «Mukofot daftari» bo‘limidagi qoidalarda belgilanadi.')}</p>
       <div className="row" style={{ margin: '10px 0' }}>
         <input className="input" value={f.name} placeholder={L('Kampaniya nomi')} onChange={(e) => setF({ ...f, name: e.target.value })} />
         <input className="input" value={f.brief} placeholder={L('Kreativ brief')} onChange={(e) => setF({ ...f, brief: e.target.value })} />
@@ -111,23 +112,10 @@ function Campaigns({ run }: { run: Run }) {
         <label className="evidence"><input type="checkbox" checked={f.requiresVideo} onChange={(e) => setF({ ...f, requiresVideo: e.target.checked })} /> {L('Video majburiy')}</label>
         <button className="btn primary sm" onClick={() => void run(async () => { await call('/api/creatoradmin/campaigns', { ...f, endsAt: f.endsAt || null }); setF({ name: '', brief: '', rules: '', requiresVideo: false, endsAt: '' }); load(); }, L('Kampaniya qoralama sifatida yaratildi'))}>{L('Yaratish')}</button>
       </div>
-      <div className="table-scroll"><table className="data"><thead><tr><th>{L('Nomi')}</th><th>{L('Holat')}</th><th>{L('Mukofot')}</th><th /></tr></thead><tbody>
+      <div className="table-scroll"><table className="data"><thead><tr><th>{L('Nomi')}</th><th>{L('Holat')}</th></tr></thead><tbody>
         {list.map((c) => <tr key={c.id}><td><b>{c.name}</b>{c.requiresVideo ? <small className="muted"> · {L('video majburiy')}</small> : null}</td>
-          <td><select value={c.status} aria-label={L('Holat')} onChange={(e) => void run(async () => { await call(`/api/creatoradmin/campaigns/${c.id}`, { status: e.target.value }); load(); })}>{['draft', 'active', 'paused', 'ended'].map((s) => <option key={s} value={s}>{s}</option>)}</select></td>
-          <td>{c.rewardEnabled ? <>{L('yoqilgan')} · {c.budgetMinor !== null ? minorToSom(c.budgetMinor) : ''} <button className="linkbtn" onClick={() => void run(async () => { await call(`/api/creatoradmin/campaigns/${c.id}/reward`, { enable: false }); load(); })}>{L('o‘chirish')}</button></> : <>{L('o‘chiq')} <button className="linkbtn" onClick={() => setRw({ ...rw, id: c.id })}>{L('sozlash')}</button></>}</td><td /></tr>)}
+          <td><select value={c.status} aria-label={L('Holat')} onChange={(e) => void run(async () => { await call(`/api/creatoradmin/campaigns/${c.id}`, { status: e.target.value }); load(); })}>{['draft', 'active', 'paused', 'ended'].map((st) => <option key={st} value={st}>{st}</option>)}</select></td></tr>)}
       </tbody></table></div>
-      {rw.id > 0 && (
-        <div className="card"><b>{L('Kampaniya mukofotini yoqish')}</b>
-          <p className="muted" style={{ fontSize: 13 }}>{L('Faqat egasi tasdiqlagan foiz va summalar bilan. Valyuta: so‘m (UZS). Summalar tiyinda (1 so‘m = 100 tiyin).')}</p>
-          <div className="row">
-            <input className="input" value={rw.pct} placeholder={L('Foiz (masalan 5)')} onChange={(e) => setRw({ ...rw, pct: e.target.value })} />
-            <input className="input" value={rw.budget} placeholder={L('Byudjet (tiyin)')} onChange={(e) => setRw({ ...rw, budget: e.target.value })} />
-            <input className="input" value={rw.cap} placeholder={L('Creator chegarasi (tiyin)')} onChange={(e) => setRw({ ...rw, cap: e.target.value })} />
-            <label className="evidence"><input type="checkbox" checked={rw.confirm} onChange={(e) => setRw({ ...rw, confirm: e.target.checked })} /> {L('Egasi tasdiqlagan')}</label>
-            <button className="btn primary sm" onClick={() => void run(async () => { await call(`/api/creatoradmin/campaigns/${rw.id}/reward`, { pct: Number(rw.pct), currency: 'UZS', budgetMinor: Number(rw.budget), capPerCreatorMinor: Number(rw.cap), confirmOwnerApproved: rw.confirm }); setRw({ id: 0, pct: '', budget: '', cap: '', confirm: false }); load(); }, L('Mukofot yoqildi'))}>{L('Yoqish')}</button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
@@ -176,39 +164,69 @@ function Flags({ run }: { run: Run }) {
   );
 }
 
+function terms(r: Rule): string {
+  const v = r.kind === 'paid_pct' ? `${r.pct}%` : r.amountMinor === null ? '—' : minorToSom(r.amountMinor);
+  return `${RULE_KIND()[r.kind] ?? r.kind}: ${v} · ${L('kutish {0} kun', [r.holdDays])}`;
+}
 function Ledger({ run }: { run: Run }) {
-  const [d, setD] = useState<{ entries: LedgerRow[]; balances: { pending: number; approved: number; paid: number } } | null>(null);
-  const [prog, setProg] = useState<Program | null>(null);
-  const [pf, setPf] = useState({ pct: '', budget: '', cap: '', days: '', confirm: false });
-  const [refund, setRefund] = useState({ paymentId: '', amount: '', note: '' });
-  const load = useCallback(() => void run(async () => { setD(await call('/api/creatoradmin/ledger')); setProg((await call<{ program: Program }>('/api/creatoradmin/program')).program); }), [run]);
+  const [d, setD] = useState<{ entries: LedgerRow[]; balances: { pending: number; approved: number; paid: number }; rules: Rule[] } | null>(null);
+  const [costs, setCosts] = useState<Cost[]>([]); const [camps, setCamps] = useState<Camp[]>([]);
+  const blank = { name: '', kind: 'activated_flat', pct: '', amount: '', hold: '7', window: '180', cap: '', budget: '', item: '', campaignId: '' };
+  const [rf, setRf] = useState(blank); const [confirm, setConfirm] = useState(false);
+  const [refund, setRefund] = useState({ paymentId: '', amount: '', note: '' }); const [man, setMan] = useState({ nickname: '', amount: '', note: '', ruleId: '' });
+  const load = useCallback(() => void run(async () => { setD(await call('/api/creatoradmin/ledger')); setCosts((await call<{ costs: Cost[] }>('/api/creatoradmin/costs')).costs); setCamps((await call<{ campaigns: Camp[] }>('/api/creatoradmin/campaigns')).campaigns); }), [run]);
   useEffect(load, [load]);
-  const st = LEDGER_STATUS();
+  const [rules, setRules] = useState<Rule[]>([]);
+  const loadRules = useCallback(() => void run(async () => setRules((await call<{ rules: Rule[] }>('/api/creatoradmin/rules')).rules)), [run]);
+  useEffect(loadRules, [loadRules]);
+  const st = LEDGER_STATUS(); const kinds = LEDGER_KIND();
+  const num = (x: string): number | undefined => (x === '' ? undefined : Number(x));
+  const create = () => void run(async () => { await call('/api/creatoradmin/rules', { name: rf.name, kind: rf.kind, pct: num(rf.pct), amountMinor: num(rf.amount), holdDays: num(rf.hold), windowDays: num(rf.window), capPerCreatorMinor: num(rf.cap), budgetMinor: num(rf.budget), capPerItemMinor: num(rf.item), campaignId: rf.campaignId === '' ? null : Number(rf.campaignId) }); setRf(blank); loadRules(); }, L('Qoida qoralama (o‘chiq) sifatida yaratildi'));
   return (
     <>
       <div className="card">
-        <b>{L('Komissiya dasturi')}: {prog?.commissionEnabled ? L('yoqilgan') : L('o‘chiq')}</b>
-        <p className="muted" style={{ fontSize: 13 }}>{L('Standart — o‘chiq. Yoqish uchun foiz, creator chegarasi va umumiy byudjet kerak (tiyinda). Hech narsa avtomatik to‘lanmaydi: «to‘langan» faqat qo‘lda belgilanadi.')} {prog && L('Hozir: foiz {0}, chegara {1}, byudjet {2}, muddat {3} kun, kredit: {4}.', [prog.commissionPct ?? '—', prog.capPerCreatorMinor ?? '—', prog.globalBudgetMinor ?? '—', prog.windowDays, prog.attribution])}</p>
+        <b>{L('Mukofot qoidalari')}</b>
+        <p className="muted" style={{ fontSize: 13 }}>{L('Mukofot turi va summasi shu yerda sozlanadi — keyinchalik o‘zgartirish uchun kod o‘zgarmaydi. Ro‘yxatdan o‘tganlik va tasdiqlanmagan ko‘rishlar uchun mukofot yo‘q. Standart — o‘chiq: yoqish uchun summa/foiz, creator chegarasi va umumiy byudjet kerak (tiyinda, 1 so‘m = 100 tiyin). Yoqilgan qoidani o‘zgartirib bo‘lmaydi — avval o‘chiring. Hisoblash avtomatik (har 6 soatda), yozuvlar «kutilmoqda» bo‘lib turadi; to‘lov faqat qo‘lda belgilanadi.')}</p>
+        <div className="table-scroll"><table className="data"><thead><tr><th>{L('Qoida')}</th><th>{L('Shartlar')}</th><th>{L('Sarflandi / byudjet')}</th><th /></tr></thead><tbody>
+          {rules.map((r) => <tr key={r.id}><td><b>{r.name}</b><small className="muted"> · {r.campaignId === null ? L('kampaniyasiz') : camps.find((c) => c.id === r.campaignId)?.name ?? r.campaignId}</small></td><td>{terms(r)}</td>
+            <td>{minorToSom(r.spentMinor)} / {r.budgetMinor === null ? '—' : minorToSom(r.budgetMinor)}</td>
+            <td>{r.enabled ? <button className="btn sm" onClick={() => void run(async () => { await call(`/api/creatoradmin/rules/${r.id}/disable`, {}); loadRules(); load(); }, L('Qoida o‘chirildi'))}>{L('O‘chirish')}</button>
+              : <button className="btn primary sm" onClick={() => void run(async () => { await call(`/api/creatoradmin/rules/${r.id}/enable`, { confirmOwnerApproved: confirm }); loadRules(); load(); }, L('Qoida yoqildi'))}>{L('Yoqish')}</button>}</td></tr>)}
+        </tbody></table></div>
+        <label className="evidence"><input type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} /> {L('Egasi tasdiqlagan (yoqish uchun belgilang)')}</label>
+        <h4 className="list-h">{L('Yangi qoida')}</h4>
         <div className="row">
-          <input className="input" value={pf.pct} placeholder={L('Foiz')} onChange={(e) => setPf({ ...pf, pct: e.target.value })} />
-          <input className="input" value={pf.cap} placeholder={L('Creator chegarasi (tiyin)')} onChange={(e) => setPf({ ...pf, cap: e.target.value })} />
-          <input className="input" value={pf.budget} placeholder={L('Umumiy byudjet (tiyin)')} onChange={(e) => setPf({ ...pf, budget: e.target.value })} />
-          <input className="input" value={pf.days} placeholder={L('Muddat (kun)')} onChange={(e) => setPf({ ...pf, days: e.target.value })} />
-          <label className="evidence"><input type="checkbox" checked={pf.confirm} onChange={(e) => setPf({ ...pf, confirm: e.target.checked })} /> {L('Egasi tasdiqlagan')}</label>
-          <button className="btn sm" onClick={() => void run(async () => { await call('/api/creatoradmin/program', { ...(pf.pct ? { commissionPct: Number(pf.pct) } : {}), ...(pf.cap ? { capPerCreatorMinor: Number(pf.cap) } : {}), ...(pf.budget ? { globalBudgetMinor: Number(pf.budget) } : {}), ...(pf.days ? { windowDays: Number(pf.days) } : {}) }); load(); }, L('Saqlandi'))}>{L('Saqlash')}</button>
-          <button className="btn primary sm" onClick={() => void run(async () => { await call('/api/creatoradmin/program', { commissionEnabled: true, confirmOwnerApproved: pf.confirm }); load(); }, L('Komissiya yoqildi'))}>{L('Yoqish')}</button>
-          <button className="btn sm" onClick={() => void run(async () => { await call('/api/creatoradmin/program', { commissionEnabled: false }); load(); }, L('Komissiya o‘chirildi'))}>{L('O‘chirish')}</button>
-          <button className="btn sm" onClick={() => void run(async () => { const r = await call<{ created: number; disabled: boolean }>('/api/creatoradmin/accrue', {}); load(); alert(r.disabled ? L('Dastur o‘chiq') : L('Yangi yozuvlar: {0}', [r.created])); })}>{L('Hisoblash')}</button>
+          <input className="input" value={rf.name} placeholder={L('Qoida nomi')} onChange={(e) => setRf({ ...rf, name: e.target.value })} />
+          <select value={rf.kind} onChange={(e) => setRf({ ...rf, kind: e.target.value })} aria-label={L('Mukofot turi')}>{Object.entries(RULE_KIND()).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+          {rf.kind === 'paid_pct' ? <input className="input" value={rf.pct} placeholder={L('Foiz (masalan 10)')} onChange={(e) => setRf({ ...rf, pct: e.target.value })} /> : <input className="input" value={rf.amount} placeholder={L('Summa (tiyin)')} onChange={(e) => setRf({ ...rf, amount: e.target.value })} />}
+          <input className="input" value={rf.hold} placeholder={L('Kutish (kun)')} onChange={(e) => setRf({ ...rf, hold: e.target.value })} />
+          <input className="input" value={rf.window} placeholder={L('Muddat (kun)')} onChange={(e) => setRf({ ...rf, window: e.target.value })} />
+          <input className="input" value={rf.cap} placeholder={L('Creator chegarasi (tiyin)')} onChange={(e) => setRf({ ...rf, cap: e.target.value })} />
+          <input className="input" value={rf.budget} placeholder={L('Umumiy byudjet (tiyin)')} onChange={(e) => setRf({ ...rf, budget: e.target.value })} />
+          {rf.kind === 'verified_views_per_1k' && <input className="input" value={rf.item} placeholder={L('Post chegarasi (tiyin)')} onChange={(e) => setRf({ ...rf, item: e.target.value })} />}
+          <select value={rf.campaignId} onChange={(e) => setRf({ ...rf, campaignId: e.target.value })} aria-label={L('Kampaniya')}><option value="">{L('Kampaniyasiz')}</option>{camps.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+          <button className="btn sm" onClick={create}>{L('Qoida yaratish')}</button>
+          <button className="btn sm" onClick={() => void run(async () => { const r = await call<{ created: number; disabled: boolean }>('/api/creatoradmin/accrue', {}); load(); alert(r.disabled ? L('Yoqilgan qoida yo‘q') : L('Yangi yozuvlar: {0}', [r.created])); })}>{L('Hozir hisoblash')}</button>
         </div>
       </div>
+      {d && <div className="kpis"><div className="kpi2"><span>{L('Kutilmoqda')}</span><b>{minorToSom(d.balances.pending)}</b></div><div className="kpi2"><span>{L('Tasdiqlangan')}</span><b>{minorToSom(d.balances.approved)}</b></div><div className="kpi2"><span>{L('To‘langan')}</span><b>{minorToSom(d.balances.paid)}</b></div></div>}
+      <div className="card"><b>{L('Creator boshiga xarajat')}</b>
+        <div className="table-scroll"><table className="data"><thead><tr><th>{L('Laqab')}</th><th>{L('Kutilmoqda')}</th><th>{L('Tasdiqlangan')}</th><th>{L('To‘langan')}</th><th>{L('Jami')}</th></tr></thead><tbody>
+          {costs.map((c) => <tr key={c.creatorId}><td>{c.nickname}</td><td>{minorToSom(c.pending)}</td><td>{minorToSom(c.approved)}</td><td>{minorToSom(c.paid)}</td><td><b>{minorToSom(c.total)}</b></td></tr>)}</tbody></table></div>
+        {costs.length === 0 && <p className="muted">{L('Hali xarajat yo‘q.')}</p>}
+      </div>
+      <div className="card"><b>{L('Qo‘lda bonus / tuzatish kiritish')}</b>
+        <p className="muted" style={{ fontSize: 13 }}>{L('Musbat summa — bonus, manfiy — tuzatish. Sabab majburiy; yozuv «kutilmoqda» bo‘ladi va umumiy tasdiqlash oqimidan o‘tadi.')}</p>
+        <div className="row"><input className="input" value={man.nickname} placeholder={L('Hamkor laqabi')} onChange={(e) => setMan({ ...man, nickname: e.target.value })} /><input className="input" value={man.amount} placeholder={L('Summa (tiyin; manfiy — tuzatish)')} onChange={(e) => setMan({ ...man, amount: e.target.value })} /><input className="input" value={man.note} placeholder={L('Sabab')} onChange={(e) => setMan({ ...man, note: e.target.value })} />
+          <select value={man.ruleId} onChange={(e) => setMan({ ...man, ruleId: e.target.value })} aria-label={L('Qoida')}><option value="">{L('Qoidasiz')}</option>{rules.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</select>
+          <button className="btn sm" onClick={() => void run(async () => { await call('/api/creatoradmin/manual', { nickname: man.nickname, amountMinor: Number(man.amount), note: man.note, ruleId: man.ruleId || null }); setMan({ nickname: '', amount: '', note: '', ruleId: '' }); load(); loadRules(); }, L('Yozuv qo‘shildi'))}>{L('Qo‘shish')}</button></div></div>
       <div className="card"><b>{L('Qaytarilgan to‘lovni qayd etish')}</b>
         <div className="row"><input className="input" value={refund.paymentId} placeholder={L('To‘lov identifikatori')} onChange={(e) => setRefund({ ...refund, paymentId: e.target.value })} /><input className="input" value={refund.amount} placeholder={L('Summa (tiyin; bo‘sh — to‘liq)')} onChange={(e) => setRefund({ ...refund, amount: e.target.value })} /><input className="input" value={refund.note} placeholder={L('Izoh')} onChange={(e) => setRefund({ ...refund, note: e.target.value })} />
           <button className="btn sm" onClick={() => void run(async () => { await call('/api/creatoradmin/refund', { paymentId: refund.paymentId, amountMinor: refund.amount ? Number(refund.amount) : undefined, note: refund.note }); setRefund({ paymentId: '', amount: '', note: '' }); load(); }, L('Qaytarish qayd etildi'))}>{L('Qayd etish')}</button></div></div>
-      {d && <div className="kpis three"><div className="kpi2"><span>{L('Kutilmoqda')}</span><b>{minorToSom(d.balances.pending)}</b></div><div className="kpi2"><span>{L('Tasdiqlangan')}</span><b>{minorToSom(d.balances.approved)}</b></div><div className="kpi2"><span>{L('To‘langan')}</span><b>{minorToSom(d.balances.paid)}</b></div></div>}
       <div className="table-scroll"><table className="data"><thead><tr><th>{L('Sana')}</th><th>{L('Laqab')}</th><th>{L('Turi')}</th><th>{L('Summa')}</th><th>{L('Holat')}</th><th /></tr></thead><tbody>
-        {d?.entries.map((e) => <tr key={e.id}><td>{new Date(e.createdAt).toLocaleDateString()}</td><td>{e.creator}</td><td>{e.kind}{e.basis?.capped ? <small className="muted"> · {L('chegara')}</small> : null}</td><td>{minorToSom(e.amountMinor)}</td><td>{st[e.status] ?? e.status}</td>
+        {d?.entries.map((e) => <tr key={e.id}><td>{new Date(e.createdAt).toLocaleDateString()}</td><td>{e.creator}</td><td>{kinds[e.kind] ?? e.kind}{e.basis?.capped ? <small className="muted"> · {L('chegara')}</small> : null}{e.note ? <small className="muted"> · {e.note}</small> : null}</td><td>{minorToSom(e.amountMinor)}</td><td>{st[e.status] ?? e.status}</td>
           <td>{e.status === 'pending' && e.kind !== 'reversal' && <><button className="btn sm" onClick={() => void run(async () => { await call(`/api/creatoradmin/ledger/${e.id}/decision`, { decision: 'approved' }); load(); })}>{L('Tasdiqlash')}</button> <button className="btn sm" onClick={() => { const note = prompt(L('Rad etish sababi')) ?? ''; void run(async () => { await call(`/api/creatoradmin/ledger/${e.id}/decision`, { decision: 'rejected', note }); load(); }); }}>{L('Rad etish')}</button></>}
-            {e.status === 'approved' && e.kind !== 'reversal' && e.amountMinor > 0 && <button className="btn sm" onClick={() => { const ref = prompt(L('To‘lov havolasi/izohi (tashqarida bajarilgan o‘tkazma)')) ?? ''; void run(async () => { await call(`/api/creatoradmin/ledger/${e.id}/paid`, { ref }); load(); }); }}>{L('To‘langan deb belgilash')}</button>}</td></tr>)}
+            {e.status === 'approved' && e.kind !== 'reversal' && e.kind !== 'adjustment' && e.amountMinor > 0 && <button className="btn sm" onClick={() => { const ref = prompt(L('To‘lov havolasi/izohi (tashqarida bajarilgan o‘tkazma)')) ?? ''; void run(async () => { await call(`/api/creatoradmin/ledger/${e.id}/paid`, { ref }); load(); }); }}>{L('To‘langan deb belgilash')}</button>}</td></tr>)}
       </tbody></table></div>
     </>
   );

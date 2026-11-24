@@ -48,9 +48,9 @@ import { cohortReport, DEFINITIONS, ensureUserEventsTable, recordUserEvent } fro
 import { maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { bridgeHtml, pickBridgeLang } from './creatorBridge';
-import { accrueCommissions, adminLedger, approveCampaignReward, balances, creatorLedgerOf, creatorRanking, decideEntry, disableCampaignReward, getProgram, ledgerHistory, markPaid, programKpis, recordRefund, setProgram } from './creatorLedger';
+import { accrueRewards, addManualEntry, adminLedger, balances, createRule, creatorCosts, creatorEarnings, creatorRanking, decideEntry, disableRule, enableRule, ledgerHistory, listRules, markPaid, programKpis, recordRefund, ruleUsage, updateRule } from './creatorLedger';
 import { adminCreators, adminSetProfile, createCampaign, creatorsCsv, listCampaigns, listFlags, postsForAdmin, postsOf, profileOf as creatorProfileOf, resolveFlag, reviewPost, savePost, selfSetProfile, updateCampaign } from './creatorOps';
-import { attachAttribution, clientFingerprint, createLink, creatorFunnel, linksOf, noteCreatorDevice, purgeCreatorData, recordClick, recordClickEvent, scanClickBursts, setLinkActive, isClickId } from './creatorLinks';
+import { attachAttribution, clientFingerprint, creditMode, createLink, creatorFunnel, linksOf, noteCreatorDevice, purgeCreatorData, recordClick, recordClickEvent, scanClickBursts, setLinkActive, isClickId } from './creatorLinks';
 import { archiveGroup, createGroup, groupReport, joinGroup, joinedGroups, leaveGroup, myGroups, removeMember } from './groups';
 import { coverage, dictFor, isTarget, langReady, lastRejected, listTranslations, setTranslation, translateMissing, trServer } from './i18n';
 import { complete, AiError, aiOffReason, coachConfig, configFromEnv, evaluateSpeaking, evaluateWriting, followUp, followUpPersona, nativeOf } from './ai';
@@ -78,7 +78,10 @@ const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url)
 const db = createDb(DB_FILE);
 ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan ustun)
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
-expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); purgeCreatorData(db); setInterval(() => purgeCreatorData(db), 86_400_000).unref(); // creator click/barmoq izi saqlash muddati // 180 kun ishlatilmagan sessiyalar
+expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); purgeCreatorData(db); setInterval(() => purgeCreatorData(db), 86_400_000).unref(); // creator click/barmoq izi saqlash muddati
+// Mukofotni avtomatik hisoblash: yoqilgan qoida bo'lsagina; yozuvlar faqat "kutilmoqda" (admin tasdiqlamaguncha hech narsa o'tmaydi). Har 6 soatda; kutish davri (hold) o'tgan hodisalar olinadi.
+const accrueTick = (): void => { try { accrueRewards(db); } catch (e) { console.error('[creator.accrue]', (e as Error).message); } };
+setTimeout(accrueTick, 30_000).unref(); setInterval(accrueTick, 6 * 3_600_000).unref(); // 180 kun ishlatilmagan sessiyalar
 ensureEventsTable(db);
 ensureUserEventsTable(db);
 ensureMemoryTable(db);
@@ -403,7 +406,7 @@ const httpServer = createServer(async (req, res) => {
       if (sub === 'campaigns' && req.method === 'GET') return send(res, 200, { campaigns: listCampaigns(db, false) });
       if (sub === 'posts' && req.method === 'GET') return send(res, 200, { posts: postsOf(db, me.id) });
       if (sub === 'posts' && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { post: savePost(db, me.id, b) }); }
-      if (sub === 'rewards' && req.method === 'GET') return send(res, 200, creatorLedgerOf(db, me.id));
+      if (sub === 'rewards' && req.method === 'GET') return send(res, 200, creatorEarnings(db, me.id));
       if (sub === 'ranking' && req.method === 'GET') return send(res, 200, creatorRanking(db));
       return send(res, 404, { error: 'Topilmadi' });
     }
@@ -416,7 +419,7 @@ const httpServer = createServer(async (req, res) => {
       if (sub === 'list' && req.method === 'GET') {
         const r = range(); scanClickBursts(db, now);
         const rows = adminCreators(db, { text: url.searchParams.get('q') || undefined, status: url.searchParams.get('status') || undefined, locale: url.searchParams.get('locale') || undefined, campaignId: url.searchParams.get('campaign') ? Number(url.searchParams.get('campaign')) : undefined, from: r.from, to: r.to }, now);
-        return send(res, 200, { days: r.days, creators: rows, kpis: programKpis(db, r.from, r.to, now), program: getProgram(db), balances: balances(db), campaigns: listCampaigns(db, true, now) });
+        return send(res, 200, { days: r.days, creators: rows, kpis: programKpis(db, r.from, r.to, now), attribution: creditMode(), rules: ruleUsage(db), costs: creatorCosts(db), balances: balances(db), campaigns: listCampaigns(db, true, now) });
       }
       if (sub === 'export.csv' && req.method === 'GET') {
         const r = range(); audit(db, adm.id, 'creator.export', 'summary', { days: r.days });
@@ -426,24 +429,29 @@ const httpServer = createServer(async (req, res) => {
       if (sub === 'profile' && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { profile: adminSetProfile(db, adm.id, b.nickname, b) }); }
       if (sub === 'campaigns' && req.method === 'GET') return send(res, 200, { campaigns: listCampaigns(db, true) });
       if (sub === 'campaigns' && req.method === 'POST') { const b = await readJson(req, 8192); return send(res, 200, { campaign: createCampaign(db, adm.id, b) }); }
-      const cm = sub.match(/^campaigns\/(\d+)(?:\/(reward))?$/);
-      if (cm && req.method === 'POST') {
-        const b = await readJson(req, 4096);
-        if (cm[2]) { if (b.enable === false) disableCampaignReward(db, adm.id, Number(cm[1])); else approveCampaignReward(db, adm.id, Number(cm[1]), b); return send(res, 200, { campaigns: listCampaigns(db, true) }); }
-        return send(res, 200, { campaign: updateCampaign(db, adm.id, Number(cm[1]), b) });
-      }
+      const cm = sub.match(/^campaigns\/(\d+)$/);
+      if (cm && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { campaign: updateCampaign(db, adm.id, Number(cm[1]), b) }); }
       if (sub === 'posts' && req.method === 'GET') return send(res, 200, { posts: postsForAdmin(db, url.searchParams.get('status') || undefined) });
       const pm = sub.match(/^posts\/(\d+)\/review$/); if (pm && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { post: reviewPost(db, adm.id, Number(pm[1]), b) }); }
       if (sub === 'flags' && req.method === 'GET') return send(res, 200, { flags: listFlags(db, url.searchParams.get('resolved') === '1') });
       const fm = sub.match(/^flags\/(\d+)\/resolve$/); if (fm && req.method === 'POST') { resolveFlag(db, adm.id, Number(fm[1])); return send(res, 200, { ok: true }); }
       const lm = sub.match(/^links\/([a-z2-9]{6,10})\/active$/); if (lm && req.method === 'POST') { const b = await readJson(req, 256); return send(res, 200, { link: setLinkActive(db, lm[1]!, b.active === true, { id: adm.id, admin: true }) }); }
-      if (sub === 'program') { if (req.method === 'POST') { const b = await readJson(req, 2048); return send(res, 200, { program: setProgram(db, adm.id, b) }); } return send(res, 200, { program: getProgram(db) }); }
-      if (sub === 'ledger' && req.method === 'GET') return send(res, 200, { entries: adminLedger(db, url.searchParams.get('status') || undefined), balances: balances(db) });
+      // Mukofot qoidalari (standart o'chiq; yoqish — egasi tasdig'i + byudjet bilan)
+      if (sub === 'rules' && req.method === 'GET') return send(res, 200, { rules: ruleUsage(db) });
+      if (sub === 'rules' && req.method === 'POST') { const b = await readJson(req, 2048); return send(res, 200, { rule: createRule(db, adm.id, b) }); }
+      const rm2 = sub.match(/^rules\/(\d+)(?:\/(enable|disable))?$/);
+      if (rm2 && req.method === 'POST') {
+        const b = await readJson(req, 2048); const rid = Number(rm2[1]);
+        return send(res, 200, { rule: rm2[2] === 'enable' ? enableRule(db, adm.id, rid, b) : rm2[2] === 'disable' ? disableRule(db, adm.id, rid) : updateRule(db, adm.id, rid, b) });
+      }
+      if (sub === 'costs' && req.method === 'GET') return send(res, 200, { costs: creatorCosts(db), rules: ruleUsage(db), balances: balances(db) });
+      if (sub === 'manual' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: addManualEntry(db, adm.id, b) }); }
+      if (sub === 'ledger' && req.method === 'GET') return send(res, 200, { entries: adminLedger(db, url.searchParams.get('status') || undefined), balances: balances(db), rules: listRules(db) });
       const dm = sub.match(/^ledger\/(\d+)\/(decision|paid|history)$/);
       if (dm && req.method === 'GET' && dm[2] === 'history') return send(res, 200, { history: ledgerHistory(db, Number(dm[1])) });
       if (dm && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: dm[2] === 'paid' ? markPaid(db, adm.id, Number(dm[1]), b.ref) : decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note) }); }
       if (sub === 'refund' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, recordRefund(db, adm.id, b.paymentId, b.amountMinor, b.note)); }
-      if (sub === 'accrue' && req.method === 'POST') return send(res, 200, accrueCommissions(db));
+      if (sub === 'accrue' && req.method === 'POST') return send(res, 200, accrueRewards(db));
       return send(res, 404, { error: 'Topilmadi' });
     }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----

@@ -58,12 +58,11 @@ export function selfSetProfile(db: DatabaseSync, id: number, b: Record<string, u
 
 // ---------------- Kampaniyalar ----------------
 export const CAMPAIGN_STATUSES = ['draft', 'active', 'paused', 'ended'] as const;
-export interface Campaign { id: number; name: string; brief: string; rules: string; requiresVideo: boolean; startsAt: number | null; endsAt: number | null; status: string; rewardEnabled: boolean; currency: string | null; budgetMinor: number | null; capPerCreatorMinor: number | null }
-const toCampaign = (r: Record<string, unknown>): Campaign => ({ id: Number(r.id), name: String(r.name), brief: String(r.brief), rules: String(r.rules), requiresVideo: Number(r.requires_video) === 1, startsAt: r.starts_at === null ? null : Number(r.starts_at), endsAt: r.ends_at === null ? null : Number(r.ends_at), status: String(r.status), rewardEnabled: Number(r.reward_enabled) === 1, currency: (r.currency as string | null) ?? null, budgetMinor: r.budget_minor === null ? null : Number(r.budget_minor), capPerCreatorMinor: r.cap_per_creator_minor === null ? null : Number(r.cap_per_creator_minor) });
+export interface Campaign { id: number; name: string; brief: string; rules: string; requiresVideo: boolean; startsAt: number | null; endsAt: number | null; status: string }
+const toCampaign = (r: Record<string, unknown>): Campaign => ({ id: Number(r.id), name: String(r.name), brief: String(r.brief), rules: String(r.rules), requiresVideo: Number(r.requires_video) === 1, startsAt: r.starts_at === null ? null : Number(r.starts_at), endsAt: r.ends_at === null ? null : Number(r.ends_at), status: String(r.status) });
 const ts = (v: unknown): number | null => { if (v === null || v === undefined || v === '') return null; const n = typeof v === 'number' ? v : Date.parse(String(v)); if (!Number.isFinite(n)) throw new ApiError(400, 'Sana noto‘g‘ri'); return n; };
-const minor = (v: unknown, what: string): number | null => { if (v === null || v === undefined || v === '') return null; const n = Number(v); if (!Number.isInteger(n) || n < 0 || n > 1e12) throw new ApiError(400, `${what}: butun, manfiy bo‘lmagan son (kichik birlikda)`); return n; };
 
-/** Kampaniya yaratish: standart `draft`, mukofot O'CHIQ. Mukofotni yoqish alohida (creatorLedger.approveCampaignReward) va egasi tasdiqlagan valyuta/summa bilan. */
+/** Kampaniya yaratish: standart `draft`. Mukofot kampaniyada EMAS — alohida qoidada (creator_reward_rules, standart o'chiq). */
 export function createCampaign(db: DatabaseSync, adminId: number, b: Record<string, unknown>, now = Date.now()): Campaign {
   const name = clean(b.name, 80); if (name.length < 3) throw new ApiError(400, 'Kampaniya nomi kamida 3 belgi');
   const startsAt = ts(b.startsAt), endsAt = ts(b.endsAt); if (startsAt && endsAt && endsAt <= startsAt) throw new ApiError(400, 'Tugash sanasi boshlanishdan keyin bo‘lsin');
@@ -79,7 +78,6 @@ export function updateCampaign(db: DatabaseSync, adminId: number, id: number, b:
   if (b.brief !== undefined) f.brief = clean(b.brief, 4000); if (b.rules !== undefined) f.rules = clean(b.rules, 2000);
   if (b.requiresVideo !== undefined) f.requires_video = b.requiresVideo === true ? 1 : 0;
   if (b.startsAt !== undefined) f.starts_at = ts(b.startsAt); if (b.endsAt !== undefined) f.ends_at = ts(b.endsAt);
-  if (b.budgetMinor !== undefined) f.budget_minor = minor(b.budgetMinor, 'Byudjet'); if (b.capPerCreatorMinor !== undefined) f.cap_per_creator_minor = minor(b.capPerCreatorMinor, 'Creator chegarasi');
   if (b.status !== undefined) { if (!(CAMPAIGN_STATUSES as readonly unknown[]).includes(b.status)) throw new ApiError(400, 'Status noto‘g‘ri'); f.status = String(b.status); }
   const cols = Object.keys(f);
   if (cols.length) db.prepare(`UPDATE creator_campaigns SET ${cols.map((k) => `${k} = ?`).join(', ')}, updated_at = ? WHERE id = ?`).run(...(Object.values(f) as (string | number | null)[]), now, id);
@@ -90,7 +88,7 @@ export function updateCampaign(db: DatabaseSync, adminId: number, id: number, b:
 export function listCampaigns(db: DatabaseSync, admin: boolean, now = Date.now()): Campaign[] {
   const rows = (db.prepare('SELECT * FROM creator_campaigns ORDER BY id DESC').all() as Record<string, unknown>[]).map(toCampaign);
   if (admin) return rows;
-  return rows.filter((c) => c.status === 'active' && (!c.startsAt || c.startsAt <= now) && (!c.endsAt || c.endsAt >= now)).map((c) => ({ ...c, rewardEnabled: false, currency: null, budgetMinor: null, capPerCreatorMinor: null }));
+  return rows.filter((c) => c.status === 'active' && (!c.startsAt || c.startsAt <= now) && (!c.endsAt || c.endsAt >= now));
 }
 
 // ---------------- Post / video topshirish ----------------

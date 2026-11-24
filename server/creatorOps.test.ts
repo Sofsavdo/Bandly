@@ -25,14 +25,14 @@ assert.equal(profileOf(db, A).country, 'KZ'); assert.equal(profileOf(db, A).rank
 
 // ---- Kampaniya: standart draft va mukofot o'chiq; creator faqat faolini ko'radi (moliyasiz) ----
 const camp = createCampaign(db, admin, { name: 'Noyabr UGC', brief: 'Qisqa video', rules: 'Reklama deb belgilang', requiresVideo: true, startsAt: T - DAY, endsAt: T + 30 * DAY }, T);
-assert.equal(camp.status, 'draft'); assert.equal(camp.rewardEnabled, false, 'mukofot standart o‘chiq');
+assert.equal(camp.status, 'draft'); assert.ok(!('rewardEnabled' in camp) && !('budgetMinor' in camp), 'kampaniyada moliya yo‘q: mukofot alohida qoidada (standart o‘chiq)');
 assert.deepEqual(listCampaigns(db, false, T), [], 'qoralama kampaniya creator ko‘rmaydi'); assert.equal(listCampaigns(db, true, T).length, 1);
 throwsMsg(() => createLink(db, A, { kind: 'campaign', label: 'Kampaniya linki', campaignId: camp.id }, T), /Kampaniya/, 'faol bo‘lmagan kampaniyaga link');
 throwsMsg(() => createCampaign(db, admin, { name: 'ab' }), /nomi/, 'nom'); throwsMsg(() => createCampaign(db, admin, { name: 'Test k', startsAt: T, endsAt: T - 1 }), /Tugash/, 'sana tartibi');
-updateCampaign(db, admin, camp.id, { status: 'active', budgetMinor: 5_000_000, capPerCreatorMinor: 1_000_000 }, T);
-const vis = listCampaigns(db, false, T)[0]!; assert.equal(vis.name, 'Noyabr UGC'); assert.equal(vis.budgetMinor, null, 'creator byudjet/moliya sozlamalarini ko‘rmaydi'); assert.equal(vis.rewardEnabled, false);
+updateCampaign(db, admin, camp.id, { status: 'active' }, T);
+const vis = listCampaigns(db, false, T)[0]!; assert.equal(vis.name, 'Noyabr UGC'); assert.ok(!JSON.stringify(vis).match(/budget|cap|reward/i), 'creator moliya sozlamalarini ko‘rmaydi');
 assert.deepEqual(listCampaigns(db, false, T + 40 * DAY), [], 'muddati o‘tgan kampaniya ko‘rinmaydi');
-throwsMsg(() => updateCampaign(db, admin, camp.id, { budgetMinor: -5 }), /Byudjet/, 'manfiy byudjet'); throwsMsg(() => updateCampaign(db, admin, 999, {}), /topilmadi/, 'yo‘q kampaniya');
+throwsMsg(() => updateCampaign(db, admin, camp.id, { status: 'archived' }), /Status/, 'noto‘g‘ri status'); throwsMsg(() => updateCampaign(db, admin, 999, {}), /topilmadi/, 'yo‘q kampaniya');
 const cl = createLink(db, A, { kind: 'campaign', label: 'Noyabr UGC link', campaignId: camp.id }, T);
 const bl = createLink(db, B, { kind: 'reel', label: 'B reel' }, T);
 

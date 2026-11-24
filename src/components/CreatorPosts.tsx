@@ -19,6 +19,8 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return j;
 }
 export const POST_STATUS = (): Record<string, string> => ({ draft: L('Qoralama'), submitted: L('Ko‘rib chiqilmoqda'), needs_changes: L('O‘zgartirish kerak'), approved: L('Tasdiqlangan'), rejected: L('Rad etilgan') });
+export const RULE_KIND = (): Record<string, string> => ({ paid_pct: L('To‘lovdan foiz'), activated_flat: L('Faollashgan o‘quvchi boshiga'), first_paid_flat: L('Birinchi to‘lov boshiga'), verified_views_per_1k: L('Har 1000 tasdiqlangan ko‘rish uchun') });
+export const LEDGER_KIND = (): Record<string, string> => ({ commission: L('Komissiya'), cpa_activated: L('Faollashgan o‘quvchi'), cpa_first_paid: L('Birinchi to‘lov'), views: L('Tasdiqlangan ko‘rishlar'), bonus: L('Bonus'), adjustment: L('Tuzatish'), reversal: L('Qaytarish ushlanmasi') });
 export const LEDGER_STATUS = (): Record<string, string> => ({ pending: L('Kutilmoqda'), approved: L('Tasdiqlangan'), rejected: L('Rad etilgan'), paid: L('To‘langan') });
 const fmtDate = (t: number): string => new Date(t).toLocaleDateString();
 const BRAND_RULES = (): string[] => [
@@ -30,7 +32,7 @@ const BRAND_RULES = (): string[] => [
 
 export function CreatorPosts() {
   const [camps, setCamps] = useState<Campaign[]>([]); const [posts, setPosts] = useState<Post[]>([]); const [links, setLinks] = useState<Link[]>([]);
-  const [rw, setRw] = useState<{ entries: Entry[]; balances: { pending: number; approved: number; paid: number; currency: string }; enabled: boolean } | null>(null);
+  const [rw, setRw] = useState<{ entries: Entry[]; balances: { pending: number; approved: number; paid: number; currency: string }; enabled: boolean; inHoldMinor: number; terms: { kind: string; name: string; pct: number | null; amountMinor: number | null; holdDays: number; endsAt: number | null }[] } | null>(null);
   const [rk, setRk] = useState<Record<string, { nickname: string; value: number }[]> | null>(null);
   const [prof, setProf] = useState<{ rankOptIn: boolean; status: string } | null>(null);
   const [err, setErr] = useState(''); const [msg, setMsg] = useState('');
@@ -85,14 +87,16 @@ export function CreatorPosts() {
         <section className="card">
           <h3 style={{ marginTop: 0 }}>{L('Bonus / komissiya holati')}</h3>
           {!rw.enabled && <p className="muted">{L('Hozircha mukofot dasturi yoqilmagan: hisoblash va to‘lovlar admin tasdiqlagan qoidalar bilan keyin boshlanadi. Hamkorlik shartlari alohida kelishiladi.')}</p>}
-          <div className="kpis three">
+          {rw.terms.length > 0 && (<><h4 className="list-h">{L('Amaldagi mukofot shartlari')}</h4><ul>{rw.terms.map((t) => <li key={t.name}><b>{t.name}</b> — {RULE_KIND()[t.kind] ?? t.kind}: {t.kind === 'paid_pct' ? `${t.pct}%` : `${fmtSum(Math.round((t.amountMinor ?? 0) / 100))} ${L('so‘m')}`} · {L('kutish davri {0} kun', [t.holdDays])}{t.endsAt ? ` · ${L('muddati: {0}', [fmtDate(t.endsAt)])}` : ''}</li>)}</ul></>)}
+          <div className="kpis">
+            <div className="kpi2"><span>{L('Kutish davrida (taxminiy)')}</span><b>{fmtSum(Math.round(rw.inHoldMinor / 100))}</b></div>
             <div className="kpi2"><span>{L('Kutilmoqda')}</span><b>{fmtSum(Math.round(rw.balances.pending / 100))}</b></div>
             <div className="kpi2"><span>{L('Tasdiqlangan')}</span><b>{fmtSum(Math.round(rw.balances.approved / 100))}</b></div>
             <div className="kpi2"><span>{L('To‘langan')}</span><b>{fmtSum(Math.round(rw.balances.paid / 100))}</b></div>
           </div>
           {rw.entries.length > 0 && <div className="table-scroll"><table className="data"><thead><tr><th>{L('Sana')}</th><th>{L('Turi')}</th><th>{L('Summa')}</th><th>{L('Holat')}</th></tr></thead><tbody>
-            {rw.entries.map((e) => <tr key={e.id}><td>{fmtDate(e.createdAt)}</td><td>{e.kind}</td><td>{fmtSum(Math.round(e.amountMinor / 100))} {e.currency === 'UZS' ? L('so‘m') : e.currency}</td><td>{LEDGER_STATUS()[e.status] ?? e.status}</td></tr>)}</tbody></table></div>}
-          <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>{L('Komissiya faqat muvaffaqiyatli, qaytarilmagan to‘lovlardan hisoblanadi. Ko‘rishlar sonining o‘zi pul mukofoti bermaydi.')}</p>
+            {rw.entries.map((e) => <tr key={e.id}><td>{fmtDate(e.createdAt)}</td><td>{LEDGER_KIND()[e.kind] ?? e.kind}</td><td>{fmtSum(Math.round(e.amountMinor / 100))} {e.currency === 'UZS' ? L('so‘m') : e.currency}</td><td>{LEDGER_STATUS()[e.status] ?? e.status}</td></tr>)}</tbody></table></div>}
+          <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>{L('Mukofot faqat shartlarda ko‘rsatilgan hodisalar uchun hisoblanadi. Qaytarilgan to‘lovlar ayriladi; ro‘yxatdan o‘tganlik va tasdiqlanmagan ko‘rishlar uchun to‘lov yo‘q. Kutish davridagi summa taxminiy.')}</p>
         </section>
       )}
       <section className="card">

@@ -79,7 +79,7 @@ try {
 
   // ---- Admin CRM, CSV, belgilar ----
   assert.equal((await api('/api/creatoradmin/list', { token: aT })).status, 403, 'creator admin ro‘yxatini ko‘rmaydi'); assert.equal((await api('/api/creatoradmin/list', { token: xT })).status, 403);
-  const adm = (await api('/api/creatoradmin/list?days=30', { token: adminT })).json; assert.equal(adm.creators.length, 2); assert.equal(adm.program.commissionEnabled, false, 'komissiya standart o‘chiq'); assert.ok(adm.kpis.funnel);
+  const adm = (await api('/api/creatoradmin/list?days=30', { token: adminT })).json; assert.equal(adm.creators.length, 2); assert.ok(Array.isArray(adm.rules) && Array.isArray(adm.costs), 'admin ro‘yxatida qoidalar va creator boshiga xarajat'); assert.ok(adm.kpis.funnel);
   const csv = await fetch(`${base}/api/creatoradmin/export.csv`, { headers: { 'x-token': adminT } }); assert.equal(csv.status, 200); assert.match(csv.headers.get('content-type') ?? '', /text\/csv/); const csvText = await csv.text();
   assert.match(csvText.split('\n')[0]!, /^nickname,status/); assert.ok(!/Student|phone|email/i.test(csvText), 'CSV: o‘quvchi ma’lumoti yo‘q');
   assert.equal((await fetch(`${base}/api/creatoradmin/export.csv`, { headers: { 'x-token': aT } })).status, 403, 'CSV faqat admin');
@@ -88,10 +88,22 @@ try {
   assert.equal((await api('/r/' + lb.code)).status === 200, true); // to'xtatilgan hamkor linki baribir saytga yo'naltiradi (atribusiyasiz)
   const sB = await joinAs('Student Two', { ref: lb.code, ref0: lb.code });
   assert.ok(sB); assert.equal((await api('/api/creator/overview', { token: bT })).json.funnel.signups, 0, 'to‘xtatilgan hamkor yangi atribusiya olmaydi');
-  // ---- Mukofot: standart o'chiq, avtomatik hisoblash yo'q; yoqish egasi tasdig'isiz bo'lmaydi ----
-  assert.deepEqual((await api('/api/creatoradmin/accrue', { token: adminT, body: {} })).json, { created: 0, skipped: {}, disabled: true });
-  assert.equal((await api('/api/creatoradmin/program', { token: adminT, body: { commissionEnabled: true } })).status, 409);
-  const rw = (await api('/api/creator/rewards', { token: aT })).json; assert.equal(rw.enabled, false); assert.deepEqual(rw.entries, []);
+  // ---- Mukofot: qoida standart o'chiq; yoqish egasi tasdig'i va byudjetsiz bo'lmaydi; creator o'zinikini ko'radi ----
+  assert.deepEqual((await api('/api/creatoradmin/accrue', { token: adminT, body: {} })).json, { created: 0, skipped: {}, disabled: true, byRule: {} });
+  const rule = (await api('/api/creatoradmin/rules', { token: adminT, body: { kind: 'activated_flat', name: 'Faollashgan boshiga', amountMinor: 5_000_000, holdDays: 0 } })).json.rule;
+  assert.equal(rule.enabled, false, 'yangi qoida o‘chiq');
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: adminT, body: { confirmOwnerApproved: true } })).status, 409, 'byudjet/chegarasiz yoqilmaydi');
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}`, { token: adminT, body: { capPerCreatorMinor: 10_000_000, budgetMinor: 20_000_000 } })).status, 200);
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: adminT, body: {} })).status, 409, 'egasi tasdig‘isiz yoqilmaydi');
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: aT, body: { confirmOwnerApproved: true } })).status, 403, 'creator qoidani yoqa olmaydi');
+  assert.equal((await api('/api/creator/rewards', { token: aT })).json.enabled, false, 'qoida yoqilmaguncha creator "yoqilmagan" ko‘radi');
+  assert.equal((await api(`/api/creatoradmin/rules/${rule.id}/enable`, { token: adminT, body: { confirmOwnerApproved: true } })).json.rule.enabled, true);
+  const rw = (await api('/api/creator/rewards', { token: aT })).json; assert.equal(rw.enabled, true); assert.equal(rw.terms[0].kind, 'activated_flat'); assert.ok(!JSON.stringify(rw).match(/budget|capPer/i), 'creator byudjetni ko‘rmaydi'); assert.ok(rw.inHoldMinor >= 0);
+  const man = (await api('/api/creatoradmin/manual', { token: adminT, body: { nickname: 'Bloger A', amountMinor: 1_000_000, note: 'Reel uchun bonus' } })).json.entry; assert.equal(man.status, 'pending');
+  assert.equal((await api('/api/creatoradmin/manual', { token: aT, body: { nickname: 'Bloger A', amountMinor: 1_000_000, note: 'o‘zimga bonus' } })).status, 403, 'creator o‘ziga summa kirita olmaydi');
+  assert.equal((await api('/api/creator/rewards', { token: aT })).json.balances.pending, 1_000_000, 'creator kutilayotgan summani ko‘radi'); assert.equal((await api('/api/creator/rewards', { token: bT })).json.balances.pending, 0, 'B A ning summasini ko‘rmaydi');
+  const costs = (await api('/api/creatoradmin/costs', { token: adminT })).json; assert.equal(costs.costs[0].nickname, 'Bloger A'); assert.equal(costs.costs[0].pending, 1_000_000); assert.ok(costs.rules[0].spentMinor >= 0);
+  assert.equal((await api('/api/creatoradmin/costs', { token: aT })).status, 403, 'xarajat faqat admin');
   assert.equal((await api('/api/creator/rewards', { token: xT })).status, 403);
   assert.equal((await api('/api/creator/ranking', { token: aT })).status, 200);
   console.log('creatorApi.test: OK');
