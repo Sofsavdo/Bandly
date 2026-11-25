@@ -416,7 +416,7 @@ export const A1_U20: Unit = {
         { en: 'He watches TV and washes his car on Sundays.', uz: 'U yakshanba kunlari televizor ko‘radi va mashinasini yuvadi.' },
         { en: 'My sister doesn’t like tea.', uz: 'Singlim choyni yoqtirmaydi.' },
       ],
-      vocab: [{ en: 'study', uz: 'o‘qimoq, o‘rganmoq' }, { en: 'watch', uz: 'tomosha qilmoq' }, { en: 'fix', uz: 'tuzatmoq' }, { en: 'try', uz: 'urinmoq' }],
+      vocab: [{ en: 'study', uz: 'o‘qimoq, o‘rganmoq' }, { en: 'watch', uz: 'tomosha qilmoq' }, { en: 'fix', uz: 'tuzatib qo‘ymoq' }, { en: 'try', uz: 'urinmoq' }],
       practice: [
         ch('She ___ English every day.', ['studies', 'studys', 'study'], 0, 'study → studies (undosh + y → ies).'),
         ch('He ___ TV in the evening.', ['watches', 'watchs', 'watch'], 0, 'watch → watches (-ch dan keyin -es).'),
