@@ -2,8 +2,9 @@ import type { Word } from './vocab';
 
 // Words introduced in General English lessons (src/content/lessons) that were not yet in the app word list.
 // Definitions and examples are original. They join the shared SRS deck and word games.
-const g = (word: string, pos: string, uz: string, def: string, example: string, level: Word['level']): Word =>
-  ({ id: `gl-${word.toLowerCase().replace(/[^a-z]+/g, '-')}`, word, pos, uz, def, example, topic: 'General English', level });
+// C2 darslaridagi so'zlar o'yinlarda eng yuqori daraja (C1) sifatida chiqadi (vocabCourse.ts dagidek).
+const g = (word: string, pos: string, uz: string, def: string, example: string, level: Word['level'] | 'C2'): Word =>
+  ({ id: `gl-${word.toLowerCase().replace(/[^a-z]+/g, '-')}`, word, pos, uz, def, example, topic: 'General English', level: level === 'C2' ? 'C1' : level });
 
 export const lessonWords: Word[] = [
   g('name', 'n', 'ism', 'the word that a person is called by', 'My name is Aziz.', 'A1'),
