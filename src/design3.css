@@ -1458,12 +1458,13 @@ main.container { min-height: 100vh; }
 .ai-avatar .av-look-up { transform: translate(5px, -5px); }
 .ai-avatar .av-blink { transform-box: fill-box; transform-origin: center; animation: av-blink 4.2s infinite; }
 .ai-avatar .av-dots circle { animation: av-dot 1s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .18s); fill: var(--ring); }
-/* Mikrofon darajasi bilan yuz biroz "nafas oladi" — silliq (har kadrda sakramaydi) */
-.ai-avatar.listening .ai-face { transform: scale(calc(1 + var(--lvl, 0) * .05)); transition: transform .22s ease-out; }
+/* Yuz — xarakter: jahlda titraydi, kulganda sakraydi, istalgancha ifodali. Faqat transform ishlatiladi —
+   bu boshqa elementlarni (holat, matn, tugmalar) hech qachon siljitmaydi (e2e J11 shuni tekshiradi). */
+.ai-avatar .ai-face { will-change: transform; }
+.ai-avatar.listening .ai-face { transform: scale(calc(1 + var(--lvl, 0) * .08)); transition: transform .1s; }
 .ai-avatar.speaking .ai-face { animation: av-talk 1s ease-in-out infinite; }
-/* Jahl va kulgi: javob boshida qisqa urg'u (2–3 marta), so'ng oddiy gapirish — butun javob davomida titrash ko'zni charchatardi (J11) */
-.ai-avatar.emo-angry.speaking .ai-face { animation: emo-shake .32s ease-in-out 2, av-talk 1s ease-in-out .64s infinite; filter: drop-shadow(0 0 22px rgba(239, 68, 68, .6)); }
-.ai-avatar.emo-laugh.speaking .ai-face { animation: emo-bounce .5s ease-in-out 3, av-talk 1s ease-in-out 1.5s infinite; }
+.ai-avatar.emo-angry.speaking .ai-face { animation: emo-shake .28s ease-in-out infinite; filter: drop-shadow(0 0 22px rgba(239, 68, 68, .6)); }
+.ai-avatar.emo-laugh.speaking .ai-face { animation: emo-bounce .45s ease-in-out infinite; }
 .ai-avatar.emo-impressed.speaking .ai-face { animation: av-beat .8s ease-in-out infinite; }
 .ai-avatar.thinking .ai-face { animation: av-float 2.2s ease-in-out infinite; }
 @keyframes av-talk { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.035); } }

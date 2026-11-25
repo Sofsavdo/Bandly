@@ -407,4 +407,10 @@ http.close(); upstream.close();
   assert.equal(lim.kind, 'session'); assert.match(String(lim.message), /^\[tr\] Suhbat vaqti tugadi/, 'sessiya tugashi — obuna taklif qilinmaydi, xabar tarjima qilinadi');
   h.close(); up.close();
 }
+// 2026-11-25: ishonchsiz navbatda ustoz javob beradi (eng ehtimolli ma'no), ketma-ket ikkinchi marta qayta so'ramaydi
+{
+  const u1 = unsureTurn('men kecha bozor bordim'), u2 = unsureTurn('men kecha bozor bordim', true);
+  assert.ok(/most likely meant and ANSWER that/.test(u1) && /Do NOT correct grammar from this turn/.test(u1) && /Only if it makes no sense at all/.test(u1));
+  assert.ok(/do NOT ask again/.test(u2) && !/Only if it makes no sense at all/.test(u2), 'ikkinchi ishonchsiz navbatda qayta so‘ramaydi');
+}
 console.log('live: OK');
