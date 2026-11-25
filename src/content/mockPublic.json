@@ -15411,6 +15411,1216 @@
    ]
   },
   {
+   "id": "listening-full-4",
+   "level": "C1",
+   "title": "IELTS Listening — to‘liq mock 4",
+   "minutes": 35,
+   "names": {
+    "A": "Lucy / Lecturer",
+    "B": "David / Ben",
+    "C": "Sophie",
+    "D": "Tom"
+   },
+   "context": "4 qism: 1) bolalar tug‘ilgan kunini band qilish (telefon); 2) shahar transportidagi o‘zgarishlar haqida radio xabari; 3) ikki talabaning kafe va ijtimoiy tarmoqlar haqidagi loyihasi; 4) kartoshka tarixi haqida ma’ruza.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good morning, Funzone Activity Centre. Lucy speaking."
+    },
+    {
+     "speaker": "B",
+     "text": "Hello. I'd like to book a birthday party for my daughter. She'll be eight next month."
+    },
+    {
+     "speaker": "A",
+     "text": "Lovely. What date were you thinking of?"
+    },
+    {
+     "speaker": "B",
+     "text": "Saturday the sixteenth of May, if possible."
+    },
+    {
+     "speaker": "A",
+     "text": "Let me check. We have a morning slot from ten till twelve, or an afternoon slot from two till four."
+    },
+    {
+     "speaker": "B",
+     "text": "The afternoon would be better. Her grandparents are travelling in that morning."
+    },
+    {
+     "speaker": "A",
+     "text": "Fine. How many children will there be?"
+    },
+    {
+     "speaker": "B",
+     "text": "About fifteen, I think."
+    },
+    {
+     "speaker": "A",
+     "text": "Our standard party is for up to twelve children, at a hundred and twenty pounds. Each extra child costs eight pounds."
+    },
+    {
+     "speaker": "B",
+     "text": "OK, that's fine. What activities do you offer?"
+    },
+    {
+     "speaker": "A",
+     "text": "There's a choice of two: climbing or trampolining."
+    },
+    {
+     "speaker": "B",
+     "text": "She loves climbing, so let's go for that."
+    },
+    {
+     "speaker": "A",
+     "text": "Good. And food? We offer pizza or sandwiches, and we provide the drinks."
+    },
+    {
+     "speaker": "B",
+     "text": "Pizza, please. But one of the children can't eat cheese, so could you make one plate without it?"
+    },
+    {
+     "speaker": "A",
+     "text": "No problem, I'll note that. Will you bring a cake?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, my wife is making one."
+    },
+    {
+     "speaker": "A",
+     "text": "Then we'll provide candles and plates. Now, can I take your name?"
+    },
+    {
+     "speaker": "B",
+     "text": "David Ashworth. A, S, H, W, O, R, T, H."
+    },
+    {
+     "speaker": "A",
+     "text": "And a phone number?"
+    },
+    {
+     "speaker": "B",
+     "text": "Oh seven nine four five, three one two, six six eight."
+    },
+    {
+     "speaker": "A",
+     "text": "Thank you. We need a deposit of thirty pounds to confirm the booking, and the rest is paid on the day."
+    },
+    {
+     "speaker": "B",
+     "text": "Can I pay the deposit by bank transfer?"
+    },
+    {
+     "speaker": "A",
+     "text": "Yes, or by card now. Also, please arrive fifteen minutes early so the children can put on their socks. They're compulsory for climbing, and we sell them at reception if anyone forgets."
+    },
+    {
+     "speaker": "B",
+     "text": "Great. Thanks for your help."
+    },
+    {
+     "speaker": "B",
+     "text": "Good afternoon. This is Ben Harris with the local travel update, and today I want to tell you about the changes to Northfield's bus and tram services, which start on the first of September."
+    },
+    {
+     "speaker": "B",
+     "text": "The biggest change is to the tram. At the moment, trams run every fifteen minutes during the day. From September, they'll run every ten minutes, and the last tram will leave the city centre at midnight instead of eleven, which should be welcome news for people working evening shifts."
+    },
+    {
+     "speaker": "B",
+     "text": "Bus route seven, which currently goes through the city centre, will be divided into two shorter routes, seven A and seven B. The council says this will make buses more reliable, because delays in one part of the route will no longer affect the whole line."
+    },
+    {
+     "speaker": "B",
+     "text": "Fares are also changing. A single ticket will rise by twenty pence, to two pounds forty, but a new day ticket, which costs five pounds, will allow unlimited travel on both buses and trams. Children under eleven will continue to travel free."
+    },
+    {
+     "speaker": "B",
+     "text": "For the first time, passengers will be able to pay by tapping a bank card on the reader, so there's no need to buy a paper ticket in advance. Cash will still be accepted on buses, but not on trams."
+    },
+    {
+     "speaker": "B",
+     "text": "Some stops are moving too. The stop outside the old cinema on Park Street is closing, because the road is being widened. Passengers should use the new stop next to the hospital, which is only about a hundred metres away."
+    },
+    {
+     "speaker": "B",
+     "text": "And finally, the council wants to hear what you think. There's an online survey on its website until the end of October, and there will be a public meeting at the town hall on the twelfth of October at seven pm."
+    },
+    {
+     "speaker": "C",
+     "text": "Tom, how did your interview with the café owner go?"
+    },
+    {
+     "speaker": "D",
+     "text": "Really well. She was very open. She told me they started posting on social media about a year ago, mainly because younger customers kept asking whether they had an account."
+    },
+    {
+     "speaker": "C",
+     "text": "Did it make any difference to sales?"
+    },
+    {
+     "speaker": "D",
+     "text": "She thinks so, but she doesn't have exact figures. The number of customers at weekends has gone up, but they also changed the menu at the same time, so it's hard to know which one caused the increase."
+    },
+    {
+     "speaker": "C",
+     "text": "That's a problem for our analysis. We can't claim social media was the reason."
+    },
+    {
+     "speaker": "D",
+     "text": "Exactly. We'll have to be careful how we word it."
+    },
+    {
+     "speaker": "C",
+     "text": "What kind of posts work best for them?"
+    },
+    {
+     "speaker": "D",
+     "text": "Photos of the food get lots of likes, but she said the posts that actually bring people in are the ones about events, like the live music on Friday evenings."
+    },
+    {
+     "speaker": "C",
+     "text": "Interesting. So likes aren't the same as sales."
+    },
+    {
+     "speaker": "D",
+     "text": "Right. And short videos did much better than she expected. She's started making one a week."
+    },
+    {
+     "speaker": "C",
+     "text": "Who does all this? It must take a lot of time."
+    },
+    {
+     "speaker": "D",
+     "text": "Her nephew did it at first, but he went to university, so now one of the waiters does it in quiet periods."
+    },
+    {
+     "speaker": "C",
+     "text": "OK. For our report, I think we should recommend that they collect proper data, maybe by asking customers how they heard about the café."
+    },
+    {
+     "speaker": "D",
+     "text": "Good idea. I'd also suggest they reply to customer reviews. At the moment they ignore them, even the negative ones."
+    },
+    {
+     "speaker": "C",
+     "text": "Now, the work. I'll write up the interview notes tonight."
+    },
+    {
+     "speaker": "D",
+     "text": "Then I'll look for some research articles on small businesses and social media."
+    },
+    {
+     "speaker": "C",
+     "text": "And who'll do the slides for the presentation?"
+    },
+    {
+     "speaker": "D",
+     "text": "You're better at design than me. Could you?"
+    },
+    {
+     "speaker": "C",
+     "text": "Fine. Then you can prepare the handout."
+    },
+    {
+     "speaker": "A",
+     "text": "Good morning. Today we're going to look at a plant that has had an enormous influence on world history: the potato."
+    },
+    {
+     "speaker": "A",
+     "text": "The potato was first grown in the Andes mountains of South America at least seven thousand years ago. The people of the region developed hundreds of varieties, suited to different heights and climates, and they also invented a way of preserving potatoes by freezing them at night and drying them in the sun during the day."
+    },
+    {
+     "speaker": "A",
+     "text": "Spanish explorers brought the potato to Europe in the second half of the sixteenth century. At first, Europeans were suspicious of it. Because it grew underground and was related to some poisonous plants, many people believed it caused disease, and in some areas it was used mainly to feed animals."
+    },
+    {
+     "speaker": "A",
+     "text": "Attitudes changed slowly. In France, a scientist named Antoine Parmentier, who had eaten potatoes as a prisoner of war, campaigned to persuade people of their value. According to a popular story, he placed guards around a field of potatoes, which made local people think the crop was valuable, and they came at night to steal it."
+    },
+    {
+     "speaker": "A",
+     "text": "By the nineteenth century, the potato had become a basic food for millions of poor people in northern Europe. It produced more food per hectare than wheat, and it could be grown in poor soil. This helped populations to grow rapidly."
+    },
+    {
+     "speaker": "A",
+     "text": "However, depending on a single crop was dangerous. In Ireland in the 1840s, a disease destroyed the potato harvest several years in a row. Around a million people died, and another million emigrated, many of them to North America."
+    },
+    {
+     "speaker": "A",
+     "text": "Today, the potato is the world's third most important food crop after rice and wheat, and China is now the largest producer. Scientists are working on new varieties that can resist disease and survive drought, which will be important as the climate changes."
+    }
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1 — Questions 1–10"
+    },
+    {
+     "at": 24,
+     "title": "Part 2 — Questions 11–20"
+    },
+    {
+     "at": 31,
+     "title": "Part 3 — Questions 21–30"
+    },
+    {
+     "at": 50,
+     "title": "Part 4 — Questions 31–40"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–10: Complete the booking form. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 11–15: Choose the correct letter.",
+     "questionIds": [
+      11,
+      12,
+      13,
+      14,
+      15
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 16–20: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 21–26: Choose the correct letter.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 27–30: Who will do each task? Choose Sophie or Tom.",
+     "questionIds": [
+      27,
+      28,
+      29,
+      30
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 31–40: Complete the notes. Write ONE WORD ONLY for each answer.",
+     "questionIds": [
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Daughter’s age at the party: ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Date: Saturday 16 ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Time: the ______ slot"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Number of children: about ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Cost of each extra child: £______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Activity: ______"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Food: ______"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Special request: one plate without ______"
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "Surname: ______"
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Deposit: £______"
+    },
+    {
+     "id": 11,
+     "type": "mcq",
+     "text": "From September, how often will trams run during the day?",
+     "options": [
+      "Every five minutes",
+      "Every ten minutes",
+      "Every fifteen minutes",
+      "Every twenty minutes"
+     ]
+    },
+    {
+     "id": 12,
+     "type": "mcq",
+     "text": "Why is bus route seven being divided?",
+     "options": [
+      "To save money",
+      "Because of road works",
+      "To make buses more reliable",
+      "To reach new areas"
+     ]
+    },
+    {
+     "id": 13,
+     "type": "mcq",
+     "text": "What will the new day ticket allow?",
+     "options": [
+      "Unlimited travel on buses and trams",
+      "Travel on trams only",
+      "Free travel after 7 pm",
+      "Two return journeys"
+     ]
+    },
+    {
+     "id": 14,
+     "type": "mcq",
+     "text": "Who will continue to travel free?",
+     "options": [
+      "Students",
+      "People over sixty-five",
+      "Hospital workers",
+      "Children under eleven"
+     ]
+    },
+    {
+     "id": 15,
+     "type": "mcq",
+     "text": "Where will cash NOT be accepted?",
+     "options": [
+      "On buses",
+      "On trams",
+      "At the town hall",
+      "At ticket machines"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "fill",
+     "text": "Last tram from the city centre: ______"
+    },
+    {
+     "id": 17,
+     "type": "fill",
+     "text": "New price of a single ticket: £______"
+    },
+    {
+     "id": 18,
+     "type": "fill",
+     "text": "Passengers can pay by tapping a bank ______."
+    },
+    {
+     "id": 19,
+     "type": "fill",
+     "text": "The new stop is next to the ______."
+    },
+    {
+     "id": 20,
+     "type": "fill",
+     "text": "Public meeting: 12 ______ at the town hall"
+    },
+    {
+     "id": 21,
+     "type": "mcq",
+     "text": "Why did the café start using social media?",
+     "options": [
+      "Younger customers kept asking about it.",
+      "The owner’s nephew suggested it.",
+      "A competitor was doing it."
+     ]
+    },
+    {
+     "id": 22,
+     "type": "mcq",
+     "text": "Why is it hard to judge the effect on sales?",
+     "options": [
+      "The café has no records.",
+      "Sales fell at weekends.",
+      "The menu changed at the same time."
+     ]
+    },
+    {
+     "id": 23,
+     "type": "mcq",
+     "text": "Which posts actually bring customers in?",
+     "options": [
+      "Photos of the food",
+      "Posts about events",
+      "Special offers"
+     ]
+    },
+    {
+     "id": 24,
+     "type": "mcq",
+     "text": "What surprised the owner?",
+     "options": [
+      "How well short videos did",
+      "How many likes the photos got",
+      "How expensive advertising was"
+     ]
+    },
+    {
+     "id": 25,
+     "type": "mcq",
+     "text": "Who manages the social media now?",
+     "options": [
+      "The owner’s nephew",
+      "The owner",
+      "One of the waiters"
+     ]
+    },
+    {
+     "id": 26,
+     "type": "mcq",
+     "text": "What does Tom suggest the café should do?",
+     "options": [
+      "Post more food photos",
+      "Reply to customer reviews",
+      "Hire a professional"
+     ]
+    },
+    {
+     "id": 27,
+     "type": "mcq",
+     "text": "Writing up the interview notes",
+     "options": [
+      "Sophie",
+      "Tom"
+     ]
+    },
+    {
+     "id": 28,
+     "type": "mcq",
+     "text": "Finding research articles",
+     "options": [
+      "Sophie",
+      "Tom"
+     ]
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "Making the slides",
+     "options": [
+      "Sophie",
+      "Tom"
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "Preparing the handout",
+     "options": [
+      "Sophie",
+      "Tom"
+     ]
+    },
+    {
+     "id": 31,
+     "type": "fill",
+     "text": "The potato was first grown in the ______ mountains."
+    },
+    {
+     "id": 32,
+     "type": "fill",
+     "text": "Potatoes were preserved by freezing them and ______ them in the sun."
+    },
+    {
+     "id": 33,
+     "type": "fill",
+     "text": "At first, Europeans were ______ of the potato."
+    },
+    {
+     "id": 34,
+     "type": "fill",
+     "text": "In some areas it was used mainly to feed ______."
+    },
+    {
+     "id": 35,
+     "type": "fill",
+     "text": "Parmentier had eaten potatoes as a ______ of war."
+    },
+    {
+     "id": 36,
+     "type": "fill",
+     "text": "He placed ______ around a field of potatoes."
+    },
+    {
+     "id": 37,
+     "type": "fill",
+     "text": "The potato could be grown in poor ______."
+    },
+    {
+     "id": 38,
+     "type": "fill",
+     "text": "In Ireland in the 1840s, a ______ destroyed the harvest."
+    },
+    {
+     "id": 39,
+     "type": "fill",
+     "text": "The largest producer today is ______."
+    },
+    {
+     "id": 40,
+     "type": "fill",
+     "text": "New varieties should resist disease and survive ______."
+    }
+   ]
+  },
+  {
+   "id": "listening-full-5",
+   "level": "C1",
+   "title": "IELTS Listening — to‘liq mock 5",
+   "minutes": 35,
+   "names": {
+    "A": "Clare / Lecturer",
+    "B": "Andrew / Guide",
+    "C": "Grace",
+    "D": "Omar"
+   },
+   "context": "4 qism: 1) yozgi ish uchun agentlikka ro‘yxatdan o‘tish (telefon); 2) eski kon muzeyida ekskursiya; 3) ikki talabaning kinofestival rejasi; 4) vaqtni o‘lchash tarixi haqida ma’ruza.",
+   "script": [
+    {
+     "speaker": "A",
+     "text": "Good afternoon, Bright Futures Recruitment. Clare speaking. How can I help?"
+    },
+    {
+     "speaker": "B",
+     "text": "Hello. I'm a student, and I'm looking for part-time work during the summer. A friend told me you might be able to help."
+    },
+    {
+     "speaker": "A",
+     "text": "Certainly. I'll just take some details. What's your full name?"
+    },
+    {
+     "speaker": "B",
+     "text": "Andrew Pemberton. P, E, M, B, E, R, T, O, N."
+    },
+    {
+     "speaker": "A",
+     "text": "And how old are you, Andrew?"
+    },
+    {
+     "speaker": "B",
+     "text": "I'm nineteen."
+    },
+    {
+     "speaker": "A",
+     "text": "What are you studying?"
+    },
+    {
+     "speaker": "B",
+     "text": "Engineering, at the technical college. I'm in my first year."
+    },
+    {
+     "speaker": "A",
+     "text": "When are you available?"
+    },
+    {
+     "speaker": "B",
+     "text": "From the twentieth of June until the end of August. I'm going on holiday for a week in early August, though."
+    },
+    {
+     "speaker": "A",
+     "text": "That's fine. How many hours a week would you like?"
+    },
+    {
+     "speaker": "B",
+     "text": "About twenty. I don't want to work at weekends if I can avoid it, because I play football on Saturdays."
+    },
+    {
+     "speaker": "A",
+     "text": "OK. Have you had a job before?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, last summer I worked in a supermarket, mostly stacking shelves. And I sometimes help in my uncle's garage."
+    },
+    {
+     "speaker": "A",
+     "text": "That's useful. We have quite a few jobs in warehouses at the moment, and one in a garden centre."
+    },
+    {
+     "speaker": "B",
+     "text": "The garden centre sounds nice. I like working outside."
+    },
+    {
+     "speaker": "A",
+     "text": "It pays ten pounds fifty an hour, and the hours are Monday to Friday, eight till twelve. You'd need to be able to lift heavy bags of soil."
+    },
+    {
+     "speaker": "B",
+     "text": "That's no problem. How do I apply?"
+    },
+    {
+     "speaker": "A",
+     "text": "I'll need a copy of your CV by email, and you'll have to bring your passport when you come in for a short interview. Could you come in tomorrow morning?"
+    },
+    {
+     "speaker": "B",
+     "text": "Yes, at around ten?"
+    },
+    {
+     "speaker": "A",
+     "text": "Perfect. Our office is on the second floor, above the bank on Queen Street."
+    },
+    {
+     "speaker": "B",
+     "text": "Good morning, everyone, and welcome to Blackrock Mine Museum. I'll be your guide this morning. The tour lasts about ninety minutes, and for part of it we'll be going underground, so I'll begin with some important information."
+    },
+    {
+     "speaker": "B",
+     "text": "First, everyone must wear a helmet. You'll find them on the shelves next to the lift. Please choose one that fits well and adjust the strap under your chin. It gets cold underground, around ten degrees, even in summer, so if you've got a jacket, keep it with you."
+    },
+    {
+     "speaker": "B",
+     "text": "The mine was opened in 1780 and produced tin and copper for almost two hundred years. At its busiest, in the 1860s, it employed over a thousand people, including children as young as eight, who worked sorting the stones on the surface."
+    },
+    {
+     "speaker": "B",
+     "text": "We'll go down in the original lift cage, which travels about sixty metres underground. It's quite small, so we'll go down in groups of six. Anyone who doesn't like enclosed spaces can watch a short film about the mine in the visitor centre instead."
+    },
+    {
+     "speaker": "B",
+     "text": "Underground, you'll see the tunnels where the miners worked, and the tools they used. Until the 1870s, they worked by candlelight, and each miner had to buy his own candles, which took a large part of his wages."
+    },
+    {
+     "speaker": "B",
+     "text": "After the underground section, we'll visit the engine house, where you can see the huge steam engine that pumped water out of the mine. It's switched on every day at midday, so we'll time our visit so you can see it working."
+    },
+    {
+     "speaker": "B",
+     "text": "At the end of the tour, the café in the visitor centre serves hot drinks and lunch, and in the shop you can buy a piece of real tin ore as a souvenir."
+    },
+    {
+     "speaker": "C",
+     "text": "Omar, we need to finish planning the film festival. It's only a month away."
+    },
+    {
+     "speaker": "D",
+     "text": "I know. The good news is that we've received thirty-two films, which is more than last year."
+    },
+    {
+     "speaker": "C",
+     "text": "That's great. But we can only show about twenty, so we'll have to choose."
+    },
+    {
+     "speaker": "D",
+     "text": "I suggest we ask three lecturers from the media department to help judge. Then nobody can say we chose our friends' films."
+    },
+    {
+     "speaker": "C",
+     "text": "Good idea. What about the venue? Last year we used the lecture theatre, but the sound was terrible."
+    },
+    {
+     "speaker": "D",
+     "text": "The student union has offered us their main hall. It's bigger and the sound system is much better. The only problem is that we can't use it before six in the evening."
+    },
+    {
+     "speaker": "C",
+     "text": "That's fine. The festival was going to be in the evening anyway. How are we going to sell tickets?"
+    },
+    {
+     "speaker": "D",
+     "text": "Online. Last year people queued at the door, and it was chaos. If we sell them online, we'll know exactly how many people are coming."
+    },
+    {
+     "speaker": "C",
+     "text": "And the price?"
+    },
+    {
+     "speaker": "D",
+     "text": "I think we should keep it at three pounds. We want as many students as possible to come."
+    },
+    {
+     "speaker": "C",
+     "text": "Agreed. Now, the prize. Last year it was a cinema voucher, which wasn't very exciting."
+    },
+    {
+     "speaker": "D",
+     "text": "A local camera shop has offered to give a camera lens as first prize. That would be much more useful for a film-maker."
+    },
+    {
+     "speaker": "C",
+     "text": "Brilliant. So, tasks. I'll contact the lecturers about judging."
+    },
+    {
+     "speaker": "D",
+     "text": "Then I'll book the hall and set up the ticket website."
+    },
+    {
+     "speaker": "C",
+     "text": "What about publicity? Someone needs to make posters."
+    },
+    {
+     "speaker": "D",
+     "text": "You're the artist. Could you design them?"
+    },
+    {
+     "speaker": "C",
+     "text": "OK. And can you write the programme? You've seen most of the films already."
+    },
+    {
+     "speaker": "D",
+     "text": "Sure."
+    },
+    {
+     "speaker": "A",
+     "text": "Good afternoon. Today I'd like to talk about how people have measured time, and how the need for accurate time changed society."
+    },
+    {
+     "speaker": "A",
+     "text": "The earliest method was simply to watch the sun. The ancient Egyptians used shadow clocks, simple instruments that cast a shadow which moved during the day. The obvious problem was that they didn't work at night or on cloudy days."
+    },
+    {
+     "speaker": "A",
+     "text": "To solve this, people developed water clocks, in which water dripped slowly from one container into another. They were used in Egypt, Babylon and China, and some of them were extremely complex, with moving figures and bells."
+    },
+    {
+     "speaker": "A",
+     "text": "Mechanical clocks appeared in Europe in the late thirteenth century, usually in church towers. They had no faces at first; they simply rang a bell every hour. They were also very inaccurate, often losing or gaining as much as fifteen minutes a day."
+    },
+    {
+     "speaker": "A",
+     "text": "A major improvement came in the seventeenth century, when the Dutch scientist Christiaan Huygens built the first pendulum clock. It was accurate to within about a minute a day, and clocks soon began to be given minute hands."
+    },
+    {
+     "speaker": "A",
+     "text": "Accurate time was particularly important at sea. To find their position, sailors needed to know the exact time at their home port. In the eighteenth century, an English carpenter, John Harrison, spent decades building a clock that could keep accurate time on a moving ship, and his work saved countless lives."
+    },
+    {
+     "speaker": "A",
+     "text": "Interestingly, until the nineteenth century, every town kept its own local time, based on the sun. It was the railways that changed this: timetables were impossible if every station had a different time, so railway companies introduced standard time across whole countries."
+    },
+    {
+     "speaker": "A",
+     "text": "In our next session, we'll look at atomic clocks, and at why modern technology, such as satellite navigation, depends on them."
+    }
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1 — Questions 1–10"
+    },
+    {
+     "at": 21,
+     "title": "Part 2 — Questions 11–20"
+    },
+    {
+     "at": 28,
+     "title": "Part 3 — Questions 21–30"
+    },
+    {
+     "at": 46,
+     "title": "Part 4 — Questions 31–40"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–10: Complete the form. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 11–15: Choose the correct letter.",
+     "questionIds": [
+      11,
+      12,
+      13,
+      14,
+      15
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 16–20: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 21–26: Choose the correct letter.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 27–30: Who will do each task? Choose Grace or Omar.",
+     "questionIds": [
+      27,
+      28,
+      29,
+      30
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 31–40: Complete the notes. Write ONE WORD ONLY for each answer.",
+     "questionIds": [
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "fill",
+     "text": "Surname: ______"
+    },
+    {
+     "id": 2,
+     "type": "fill",
+     "text": "Age: ______"
+    },
+    {
+     "id": 3,
+     "type": "fill",
+     "text": "Subject studied: ______"
+    },
+    {
+     "id": 4,
+     "type": "fill",
+     "text": "Available from: 20 ______"
+    },
+    {
+     "id": 5,
+     "type": "fill",
+     "text": "Hours wanted per week: about ______"
+    },
+    {
+     "id": 6,
+     "type": "fill",
+     "text": "Prefers not to work at ______"
+    },
+    {
+     "id": 7,
+     "type": "fill",
+     "text": "Previous job: in a ______"
+    },
+    {
+     "id": 8,
+     "type": "fill",
+     "text": "Job of interest: at a garden ______"
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "Pay: £______ per hour"
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Bring to the interview: ______"
+    },
+    {
+     "id": 11,
+     "type": "mcq",
+     "text": "How long does the tour last?",
+     "options": [
+      "About an hour",
+      "About ninety minutes",
+      "About two hours",
+      "Half a day"
+     ]
+    },
+    {
+     "id": 12,
+     "type": "mcq",
+     "text": "Where are the helmets?",
+     "options": [
+      "At the ticket desk",
+      "In the visitor centre",
+      "In the engine house",
+      "Next to the lift"
+     ]
+    },
+    {
+     "id": 13,
+     "type": "mcq",
+     "text": "What is the temperature underground?",
+     "options": [
+      "Around ten degrees",
+      "Around zero",
+      "Around twenty degrees",
+      "The same as outside"
+     ]
+    },
+    {
+     "id": 14,
+     "type": "mcq",
+     "text": "What work did young children do at the mine?",
+     "options": [
+      "They carried candles.",
+      "They worked the lift.",
+      "They sorted stones on the surface.",
+      "They pumped water."
+     ]
+    },
+    {
+     "id": 15,
+     "type": "mcq",
+     "text": "What can visitors who do not like enclosed spaces do?",
+     "options": [
+      "Wait in the café",
+      "Watch a film in the visitor centre",
+      "Visit the shop",
+      "Join a later tour"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "fill",
+     "text": "The mine produced tin and ______."
+    },
+    {
+     "id": 17,
+     "type": "fill",
+     "text": "The lift goes about ______ metres underground."
+    },
+    {
+     "id": 18,
+     "type": "fill",
+     "text": "Visitors go down in groups of ______."
+    },
+    {
+     "id": 19,
+     "type": "fill",
+     "text": "Miners had to buy their own ______."
+    },
+    {
+     "id": 20,
+     "type": "fill",
+     "text": "The steam engine pumped ______ out of the mine."
+    },
+    {
+     "id": 21,
+     "type": "mcq",
+     "text": "How many films have they received?",
+     "options": [
+      "Twenty",
+      "Thirty",
+      "Thirty-two"
+     ]
+    },
+    {
+     "id": 22,
+     "type": "mcq",
+     "text": "Why does Omar want lecturers to help judge?",
+     "options": [
+      "So the choice is seen as fair",
+      "Because they are film experts",
+      "Because the students are too busy"
+     ]
+    },
+    {
+     "id": 23,
+     "type": "mcq",
+     "text": "What was wrong with last year’s venue?",
+     "options": [
+      "It was too small.",
+      "The sound was terrible.",
+      "It was too expensive."
+     ]
+    },
+    {
+     "id": 24,
+     "type": "mcq",
+     "text": "What is the problem with the main hall?",
+     "options": [
+      "It cannot be used before 6 pm.",
+      "It has no sound system.",
+      "It is far from the campus."
+     ]
+    },
+    {
+     "id": 25,
+     "type": "mcq",
+     "text": "Why will they sell tickets online?",
+     "options": [
+      "It is cheaper.",
+      "The union insists on it.",
+      "They will know exactly how many people are coming."
+     ]
+    },
+    {
+     "id": 26,
+     "type": "mcq",
+     "text": "What will the first prize be?",
+     "options": [
+      "A cinema voucher",
+      "A camera lens",
+      "Free tickets"
+     ]
+    },
+    {
+     "id": 27,
+     "type": "mcq",
+     "text": "Contacting the lecturers",
+     "options": [
+      "Grace",
+      "Omar"
+     ]
+    },
+    {
+     "id": 28,
+     "type": "mcq",
+     "text": "Booking the hall",
+     "options": [
+      "Grace",
+      "Omar"
+     ]
+    },
+    {
+     "id": 29,
+     "type": "mcq",
+     "text": "Designing the posters",
+     "options": [
+      "Grace",
+      "Omar"
+     ]
+    },
+    {
+     "id": 30,
+     "type": "mcq",
+     "text": "Writing the programme",
+     "options": [
+      "Grace",
+      "Omar"
+     ]
+    },
+    {
+     "id": 31,
+     "type": "fill",
+     "text": "Shadow clocks did not work at night or on ______ days."
+    },
+    {
+     "id": 32,
+     "type": "fill",
+     "text": "In water clocks, water ______ slowly from one container into another."
+    },
+    {
+     "id": 33,
+     "type": "fill",
+     "text": "Early mechanical clocks were usually in church ______."
+    },
+    {
+     "id": 34,
+     "type": "fill",
+     "text": "At first these clocks had no ______."
+    },
+    {
+     "id": 35,
+     "type": "fill",
+     "text": "Huygens built the first ______ clock."
+    },
+    {
+     "id": 36,
+     "type": "fill",
+     "text": "Clocks then began to be given ______ hands."
+    },
+    {
+     "id": 37,
+     "type": "fill",
+     "text": "Sailors needed the exact time to find their ______."
+    },
+    {
+     "id": 38,
+     "type": "fill",
+     "text": "John Harrison worked as a ______."
+    },
+    {
+     "id": 39,
+     "type": "fill",
+     "text": "Until the 19th century, every town kept its own ______ time."
+    },
+    {
+     "id": 40,
+     "type": "fill",
+     "text": "Standard time was introduced because of the ______."
+    }
+   ]
+  },
+  {
    "id": "cefr-listening-1",
    "exam": "cefr",
    "level": "B2",
@@ -17204,6 +18414,609 @@
      "id": 35,
      "type": "fill",
      "text": "Today most cacao is grown in West ______."
+    }
+   ]
+  },
+  {
+   "id": "cefr-listening-4",
+   "exam": "cefr",
+   "level": "B2",
+   "title": "CEFR Multilevel uslubida Listening — mashq testi 4",
+   "minutes": 45,
+   "names": {
+    "A": "Sarah",
+    "B": "Alistair",
+    "C": "Hope",
+    "D": "Max"
+   },
+   "context": "5 qism: 1) sakkizta qisqa suhbat; 2) suzish havzasi qayta ochilishi haqida e’lon; 3) ikki do‘stning ingliz tili kursini tanlashi; 4) o‘rik bog‘i egasi bilan intervyu; 5) pul tarixi haqida ma’ruza.",
+   "script": [
+    {
+     "speaker": "C",
+     "text": "One. Excuse me, how often do the trains to the airport run?"
+    },
+    {
+     "speaker": "B",
+     "text": "Every half an hour during the day, but only once an hour after nine in the evening."
+    },
+    {
+     "speaker": "A",
+     "text": "Two. Did you buy the blue shirt in the end?"
+    },
+    {
+     "speaker": "D",
+     "text": "No, they only had it in small. I got the white one instead."
+    },
+    {
+     "speaker": "D",
+     "text": "Three. Hello, I'm calling to cancel my appointment on Friday."
+    },
+    {
+     "speaker": "B",
+     "text": "No problem. Would you like to book another day?"
+    },
+    {
+     "speaker": "D",
+     "text": "Yes, Monday afternoon, if possible."
+    },
+    {
+     "speaker": "B",
+     "text": "Monday at three is free. I’ll put you down for that."
+    },
+    {
+     "speaker": "C",
+     "text": "Four. What do you want to do this weekend?"
+    },
+    {
+     "speaker": "A",
+     "text": "I'd love to go to the mountains, but the forecast says heavy rain. Let's go to the new museum instead."
+    },
+    {
+     "speaker": "B",
+     "text": "Five. Attention, please. Because of a technical problem, the lift in the east building is not working. Please use the stairs or the lift in the west building."
+    },
+    {
+     "speaker": "A",
+     "text": "Six. How much is a ticket for the concert?"
+    },
+    {
+     "speaker": "C",
+     "text": "Normally it’s fifteen dollars, but students pay ten."
+    },
+    {
+     "speaker": "A",
+     "text": "Great, I've got my student card with me."
+    },
+    {
+     "speaker": "D",
+     "text": "Seven. You look tired."
+    },
+    {
+     "speaker": "C",
+     "text": "I am. My neighbours had a party until three in the morning, and I couldn't sleep."
+    },
+    {
+     "speaker": "B",
+     "text": "Eight. Hello, I'm phoning about the flat you advertised. Is it still available?"
+    },
+    {
+     "speaker": "A",
+     "text": "I'm afraid someone took it yesterday, but I have a similar one on the same street."
+    },
+    {
+     "speaker": "B",
+     "text": "Good news for swimmers: the City Sports Centre swimming pool will reopen on Monday the third of April, after six months of repairs. The pool now has a new roof and a new heating system, so the water will be warmer than before."
+    },
+    {
+     "speaker": "B",
+     "text": "Opening hours are from seven in the morning until ten at night on weekdays, and from eight until six at weekends. Early morning sessions, before nine, are for adults only."
+    },
+    {
+     "speaker": "B",
+     "text": "A single swim costs four dollars for adults and two dollars for children. If you swim regularly, a monthly card at thirty dollars is much better value."
+    },
+    {
+     "speaker": "B",
+     "text": "Swimming lessons for children start again in May. There are groups for beginners and for more experienced swimmers. To book a place, please visit the reception desk; lessons cannot be booked by phone."
+    },
+    {
+     "speaker": "B",
+     "text": "Finally, please remember that swimming caps are now compulsory for everyone. They can be bought at reception for one dollar."
+    },
+    {
+     "speaker": "C",
+     "text": "Max, I've found two English courses, and I can't decide which one is better."
+    },
+    {
+     "speaker": "D",
+     "text": "Tell me about them."
+    },
+    {
+     "speaker": "C",
+     "text": "The first is at the university language centre. It's three evenings a week, and it costs two hundred dollars a month. The second is online, with a teacher in London, twice a week, for a hundred and twenty."
+    },
+    {
+     "speaker": "D",
+     "text": "The online one is cheaper. But do you want to sit at a computer after work?"
+    },
+    {
+     "speaker": "C",
+     "text": "That's my worry. I already look at a screen all day. And at the language centre I'd meet other students and practise speaking."
+    },
+    {
+     "speaker": "D",
+     "text": "How long does it take you to get to the university?"
+    },
+    {
+     "speaker": "C",
+     "text": "About forty minutes by bus. That's the main disadvantage."
+    },
+    {
+     "speaker": "D",
+     "text": "Could you ask if they have a weekend group? Then you wouldn't have to travel after work."
+    },
+    {
+     "speaker": "C",
+     "text": "Good idea. Actually, they do have a Saturday morning class. It’s four hours long."
+    },
+    {
+     "speaker": "D",
+     "text": "Four hours is a lot, but it's only once a week. I'd go for that."
+    },
+    {
+     "speaker": "C",
+     "text": "You're right. I'll call them tomorrow and ask whether there are any places left."
+    },
+    {
+     "speaker": "A",
+     "text": "Today I'm talking to Max, who gave up a job in the city to run his family's apricot farm. Max, why did you go back to the farm?"
+    },
+    {
+     "speaker": "D",
+     "text": "My grandfather was getting too old to manage it, and nobody else in the family wanted to take it over. I didn't want the farm to be sold, so I decided to try it for one year."
+    },
+    {
+     "speaker": "A",
+     "text": "And now?"
+    },
+    {
+     "speaker": "D",
+     "text": "That was six years ago! I never went back to the city."
+    },
+    {
+     "speaker": "A",
+     "text": "What has changed since you took over?"
+    },
+    {
+     "speaker": "D",
+     "text": "The biggest change is that we now dry most of our apricots instead of selling them fresh. Fresh fruit must be sold within a few days, but dried apricots can be stored for months and sold abroad."
+    },
+    {
+     "speaker": "A",
+     "text": "Who buys them?"
+    },
+    {
+     "speaker": "D",
+     "text": "At first we only sold at local markets. Now about half goes to buyers in Russia and Kazakhstan."
+    },
+    {
+     "speaker": "A",
+     "text": "What's the most difficult part of the work?"
+    },
+    {
+     "speaker": "D",
+     "text": "Spring frosts. If the temperature falls below zero when the trees are flowering, we can lose most of the harvest in one night. Two years ago that happened, and we lost about seventy per cent of the crop."
+    },
+    {
+     "speaker": "A",
+     "text": "Is there anything you can do?"
+    },
+    {
+     "speaker": "D",
+     "text": "We've installed a system that sprays water on the trees on cold nights. It sounds strange, but the ice actually protects the flowers."
+    },
+    {
+     "speaker": "A",
+     "text": "Would you recommend farming to young people?"
+    },
+    {
+     "speaker": "D",
+     "text": "Yes, but they need to learn modern methods. I took an online course in farm management, and it helped me much more than I expected."
+    },
+    {
+     "speaker": "A",
+     "text": "Today's lecture is about the history of money. Before money existed, people exchanged goods directly, a system known as barter. A farmer might exchange grain for tools. The problem was that both people had to want what the other one had."
+    },
+    {
+     "speaker": "A",
+     "text": "To solve this, many societies began to use objects that everyone accepted as valuable, such as shells, salt or cattle. Later, metal became popular, because it was durable and could be divided into small pieces."
+    },
+    {
+     "speaker": "A",
+     "text": "The first coins were made in Lydia, in what is now Turkey, more than two and a half thousand years ago. They were made of a natural mixture of gold and silver, and they were stamped with a picture."
+    },
+    {
+     "speaker": "A",
+     "text": "Paper money was first used in China, around a thousand years ago. Merchants found metal coins too heavy to carry over long distances, so they left them with trusted traders and received paper receipts instead."
+    },
+    {
+     "speaker": "A",
+     "text": "In Europe, banknotes became common only in the seventeenth century. For a long time, their value was linked to gold, which meant that people could, in theory, exchange their notes for a fixed amount of gold at the bank."
+    },
+    {
+     "speaker": "A",
+     "text": "Today, most money exists only as numbers in computers. Next week we'll look at how cards and mobile payments have changed the way we shop."
+    }
+   ],
+   "sections": [
+    {
+     "at": 0,
+     "title": "Part 1 — Questions 1–8"
+    },
+    {
+     "at": 18,
+     "title": "Part 2 — Questions 9–14"
+    },
+    {
+     "at": 23,
+     "title": "Part 3 — Questions 15–20"
+    },
+    {
+     "at": 34,
+     "title": "Part 4 — Questions 21–28"
+    },
+    {
+     "at": 48,
+     "title": "Part 5 — Questions 29–35"
+    }
+   ],
+   "groups": [
+    {
+     "instruction": "Part 1 — Questions 1–8: You will hear eight short conversations. Choose the correct answer.",
+     "questionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "instruction": "Part 2 — Questions 9–14: Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.",
+     "questionIds": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    },
+    {
+     "instruction": "Part 3 — Questions 15–20: Choose the correct answer.",
+     "questionIds": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ]
+    },
+    {
+     "instruction": "Part 4 — Questions 21–28: Choose the correct answer.",
+     "questionIds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+     ]
+    },
+    {
+     "instruction": "Part 5 — Questions 29–35: Complete the notes. Write ONE WORD ONLY for each answer.",
+     "questionIds": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+     ]
+    }
+   ],
+   "questions": [
+    {
+     "id": 1,
+     "type": "mcq",
+     "text": "How often do airport trains run after 9 pm?",
+     "options": [
+      "Every half an hour",
+      "Once an hour",
+      "Every two hours"
+     ]
+    },
+    {
+     "id": 2,
+     "type": "mcq",
+     "text": "What did the man buy?",
+     "options": [
+      "A white shirt",
+      "A blue shirt",
+      "Nothing"
+     ]
+    },
+    {
+     "id": 3,
+     "type": "mcq",
+     "text": "When is the new appointment?",
+     "options": [
+      "On Friday",
+      "On Monday morning",
+      "On Monday afternoon"
+     ]
+    },
+    {
+     "id": 4,
+     "type": "mcq",
+     "text": "Where will they go this weekend?",
+     "options": [
+      "To the mountains",
+      "To the new museum",
+      "To the cinema"
+     ]
+    },
+    {
+     "id": 5,
+     "type": "mcq",
+     "text": "What should people in the east building do?",
+     "options": [
+      "Use the stairs or the lift in the west building",
+      "Wait for the lift to be repaired",
+      "Leave the building"
+     ]
+    },
+    {
+     "id": 6,
+     "type": "mcq",
+     "text": "How much will the woman pay for the concert?",
+     "options": [
+      "Fifteen dollars",
+      "Five dollars",
+      "Ten dollars"
+     ]
+    },
+    {
+     "id": 7,
+     "type": "mcq",
+     "text": "Why is the woman tired?",
+     "options": [
+      "She worked late.",
+      "Her neighbours had a party.",
+      "She was travelling."
+     ]
+    },
+    {
+     "id": 8,
+     "type": "mcq",
+     "text": "What is true about the flat?",
+     "options": [
+      "It is still available.",
+      "The price has gone up.",
+      "It has already been taken."
+     ]
+    },
+    {
+     "id": 9,
+     "type": "fill",
+     "text": "The pool reopens on Monday 3 ______."
+    },
+    {
+     "id": 10,
+     "type": "fill",
+     "text": "Repairs lasted ______ months."
+    },
+    {
+     "id": 11,
+     "type": "fill",
+     "text": "Sessions before 9 am are for ______ only."
+    },
+    {
+     "id": 12,
+     "type": "fill",
+     "text": "Monthly card: $______"
+    },
+    {
+     "id": 13,
+     "type": "fill",
+     "text": "Children’s lessons start again in ______."
+    },
+    {
+     "id": 14,
+     "type": "fill",
+     "text": "Compulsory for everyone: swimming ______"
+    },
+    {
+     "id": 15,
+     "type": "mcq",
+     "text": "How often is the evening course at the language centre?",
+     "options": [
+      "Twice a week",
+      "Three evenings a week",
+      "Once a week"
+     ]
+    },
+    {
+     "id": 16,
+     "type": "mcq",
+     "text": "How much does the online course cost?",
+     "options": [
+      "$120",
+      "$200",
+      "$40"
+     ]
+    },
+    {
+     "id": 17,
+     "type": "mcq",
+     "text": "What is Hope’s worry about the online course?",
+     "options": [
+      "The teacher is far away.",
+      "It is too expensive.",
+      "She already looks at a screen all day."
+     ]
+    },
+    {
+     "id": 18,
+     "type": "mcq",
+     "text": "What is the main disadvantage of the language centre?",
+     "options": [
+      "The journey takes about forty minutes.",
+      "The groups are too large.",
+      "There are no other students."
+     ]
+    },
+    {
+     "id": 19,
+     "type": "mcq",
+     "text": "What does Max suggest?",
+     "options": [
+      "Choosing the online course",
+      "Asking about a weekend group",
+      "Finding a private teacher"
+     ]
+    },
+    {
+     "id": 20,
+     "type": "mcq",
+     "text": "What will Hope do tomorrow?",
+     "options": [
+      "Start the online course",
+      "Visit the university",
+      "Call to ask about places"
+     ]
+    },
+    {
+     "id": 21,
+     "type": "mcq",
+     "text": "Why did Max go back to the farm?",
+     "options": [
+      "He lost his job in the city.",
+      "He did not want the farm to be sold.",
+      "His parents asked him to."
+     ]
+    },
+    {
+     "id": 22,
+     "type": "mcq",
+     "text": "How long has Max been running the farm?",
+     "options": [
+      "Six years",
+      "One year",
+      "Ten years"
+     ]
+    },
+    {
+     "id": 23,
+     "type": "mcq",
+     "text": "What is the biggest change since he took over?",
+     "options": [
+      "They sell only fresh fruit.",
+      "They grow new kinds of fruit.",
+      "They dry most of their apricots."
+     ]
+    },
+    {
+     "id": 24,
+     "type": "mcq",
+     "text": "What is the advantage of dried apricots?",
+     "options": [
+      "They can be stored for months.",
+      "They are easier to grow.",
+      "They taste sweeter."
+     ]
+    },
+    {
+     "id": 25,
+     "type": "mcq",
+     "text": "Where does about half of the fruit go now?",
+     "options": [
+      "To local markets",
+      "To buyers in Russia and Kazakhstan",
+      "To factories in the city"
+     ]
+    },
+    {
+     "id": 26,
+     "type": "mcq",
+     "text": "What is the most difficult part of the work?",
+     "options": [
+      "Finding workers",
+      "Spring frosts",
+      "Summer heat"
+     ]
+    },
+    {
+     "id": 27,
+     "type": "mcq",
+     "text": "How much of the crop did they lose two years ago?",
+     "options": [
+      "About half",
+      "Almost all",
+      "About seventy per cent"
+     ]
+    },
+    {
+     "id": 28,
+     "type": "mcq",
+     "text": "What helped Max more than he expected?",
+     "options": [
+      "An online course in farm management",
+      "Advice from his grandfather",
+      "A bank loan"
+     ]
+    },
+    {
+     "id": 29,
+     "type": "fill",
+     "text": "Exchanging goods directly is called ______."
+    },
+    {
+     "id": 30,
+     "type": "fill",
+     "text": "Objects used as money included shells, salt and ______."
+    },
+    {
+     "id": 31,
+     "type": "fill",
+     "text": "Metal became popular because it was ______."
+    },
+    {
+     "id": 32,
+     "type": "fill",
+     "text": "The first coins were made in ______."
+    },
+    {
+     "id": 33,
+     "type": "fill",
+     "text": "Paper money was first used in ______."
+    },
+    {
+     "id": 34,
+     "type": "fill",
+     "text": "Merchants found metal coins too ______ to carry."
+    },
+    {
+     "id": 35,
+     "type": "fill",
+     "text": "The value of banknotes was linked to ______."
     }
    ]
   }

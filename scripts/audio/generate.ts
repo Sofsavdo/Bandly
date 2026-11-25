@@ -28,7 +28,7 @@ export const VOICES = {
   maleA: 'onwK4e9ZLuTAKqWW03F9',    // Daniel — British male, broadcaster
   maleB: 'JBFqnCBsd6RMkjVDRZzb',    // George — British male
 } as const;
-const FEMALE = new Set(['Madina', 'Anna', 'Maria', 'Aziza', 'Leila', 'Emma', 'Sarah', 'Hope', 'Helen / Lecturer', 'Rachel / Lecturer', 'Kate', 'Jane / Lecturer', 'Nadia', 'Customer', 'Agent', 'Receptionist', 'Librarian', 'Coordinator', 'Adviser', 'Professor']);
+const FEMALE = new Set(['Madina', 'Anna', 'Maria', 'Aziza', 'Leila', 'Emma', 'Sarah', 'Hope', 'Helen / Lecturer', 'Rachel / Lecturer', 'Kate', 'Jane / Lecturer', 'Nadia', 'Lucy / Lecturer', 'Sophie', 'Clare / Lecturer', 'Grace', 'Customer', 'Agent', 'Receptionist', 'Librarian', 'Coordinator', 'Adviser', 'Professor']);
 
 /** Test ichida har bir so'zlovchiga alohida ovoz: ayollar Lily/Alice, erkaklar Daniel/George navbat bilan. */
 export function castFor(names: Record<string, string>, order: string[]): Record<string, string> {
