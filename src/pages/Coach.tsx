@@ -183,7 +183,7 @@ export default function Coach() {
         onHeard: (t) => { if (youFresh.current) { youFresh.current = false; pushMsg('you', t); } else appendMsg('you', t); },
         onSaid: (t) => {
           if (botFresh.current) { botFresh.current = false; pushMsg('bot', t); } else appendMsg('bot', t);
-          if (/\bha(ha)+\b|lol/i.test(t)) setEmotion('laugh'); else if (/damn|hell|shit|what the|ahmoq|tentak|eshak/i.test(t)) setEmotion('angry');
+          // Hissiyot faqat serverdan keladi (onEmotion: butun javob bo'yicha). Avvalgi mijoz tekshiruvi "Hello" so'zidagi "hell"ni so'kinish deb, salomlashishda jahl yuzini ko'rsatardi.
         },
         onTurn: () => { botFresh.current = true; if (phaseRef.current === 'thinking') setPhase('idle'); },
         onNoVoice: () => { setPhase('idle'); setHint(L('Ovoz eshitilmadi — mikrofonga yaqinroq gapirib ko‘ring.')); },

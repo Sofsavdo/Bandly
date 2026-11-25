@@ -93,6 +93,18 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   const mute = ctx.createGain(); mute.gain.value = 0;
   src.connect(node); node.connect(mute); mute.connect(ctx.destination);
   const out = ctx.createGain(); out.connect(ctx.destination);
+  // Og'iz harakati ustoz ovozining AYNAN eshitilayotgan qismiga bog'lanadi (analizator chiqishda). Avval daraja bo'lak KELGANDA o'rnatilardi:
+  // bo'laklar oldindan tez kelgani uchun og'iz ovozdan oldin harakatlanar, oxirgi soniyalarda esa qotib qolardi.
+  const meter = ctx.createAnalyser(); meter.fftSize = 512; out.connect(meter);
+  const mbuf = new Float32Array(meter.fftSize);
+  let meterTimer: ReturnType<typeof setInterval> | null = null, mouth = 0;
+  const meterTick = () => {
+    meter.getFloatTimeDomainData(mbuf);
+    let s2 = 0; for (let i = 0; i < mbuf.length; i++) s2 += mbuf[i]! * mbuf[i]!;
+    const v = Math.min(1, Math.sqrt(s2 / mbuf.length) * 6);
+    mouth = v > mouth ? v : mouth * 0.6 + v * 0.4; // tez ochiladi, silliq yopiladi
+    h.onLevel(mouth < 0.02 ? 0 : mouth);
+  };
 
   // Token URL'da emas (proksi loglariga tushmasin) — subprotocol sarlavhasida (server/live.ts tokenFromProtocols)
 
@@ -101,7 +113,12 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   const rs = makeResampler(ctx.sampleRate);
   let pendingPcm: Int16Array[] = [], pendingLen = 0;
 
-  const setSpeaking = (on: boolean) => { if (speaking !== on) { speaking = on; h.onSpeaking(on); } };
+  const setSpeaking = (on: boolean) => {
+    if (speaking === on) return;
+    speaking = on; h.onSpeaking(on);
+    if (on && !meterTimer) { mouth = 0; meterTimer = setInterval(meterTick, 50); }
+    if (!on && meterTimer) { clearInterval(meterTimer); meterTimer = null; mouth = 0; }
+  };
   const stopPlayback = () => { for (const s of playing) { try { s.stop(); } catch { /* */ } } playing.clear(); nextAt = ctx.currentTime; setSpeaking(false); };
 
   const flush = (force = false) => {
@@ -163,7 +180,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
       const s = ctx.createBufferSource(); s.buffer = b; s.connect(out);
       const at = Math.max(ctx.currentTime + 0.03, nextAt);
       s.start(at); nextAt = at + b.duration; playing.add(s);
-      setSpeaking(true); h.onLevel(Math.min(1, rms(f) * 6));
+      setSpeaking(true);
       s.onended = () => { playing.delete(s); if (!playing.size && ctx.currentTime >= nextAt - 0.05) setSpeaking(false); };
       return;
     }

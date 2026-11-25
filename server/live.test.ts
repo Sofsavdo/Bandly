@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
-import { attachLive, ctxPrompt, navIntent, navRoute, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
@@ -239,7 +239,7 @@ http.close(); upstream.close();
   assert.equal(ctxPrompt(null), ''); assert.equal(ctxPrompt(sanitizeCtx({})), ''); assert.equal(sanitizeCtx('x'), null);
   assert.equal(navRoute('lesson', cx), '#/learn/b1-u3-l2'); assert.equal(navRoute('lesson', null), '#/learn'); assert.equal(navRoute('plan', cx), '#/'); assert.equal(navRoute('mistakes', cx), '#/mistakes');
   // WAV: sarlavha to'g'ri; PCM balandligi
-  assert.equal(UNSURE_SCORE, -0.25); assert.match(unsureTurn('salom'), /«salom»/); assert.match(unsureTurn('x'), /did not catch it/);
+  assert.equal(UNSURE_SCORE, -0.75); assert.equal(PARTLY_SCORE, -0.4); assert.match(partlyTurn('he go'), /«he go».*Answer it normally.*never treat one odd/s); assert.match(unsureTurn('salom'), /«salom»/); assert.match(unsureTurn('x'), /did not catch it/);
   const wav = pcmToWav(Buffer.alloc(3200)); assert.equal(wav.length, 3244); assert.equal(wav.subarray(0, 4).toString(), 'RIFF'); assert.equal(wav.readUInt32LE(24), 16000); assert.equal(wav.readUInt32LE(40), 3200);
   const loud = Buffer.alloc(3200); for (let i = 0; i < 1600; i++) loud.writeInt16LE(i % 2 ? 16000 : -16000, i * 2);
   assert.ok(pcmRms(loud) > 0.4 && pcmRms(Buffer.alloc(3200)) === 0);
@@ -319,14 +319,14 @@ http.close(); upstream.close();
   });
   await new Promise((r) => up.once('listening', r));
   const asrCalls: { wavBytes: number; lang: string; prefer?: string }[] = []; const prompts: { ptt: boolean; asr: boolean }[] = [];
-  let asrMode: 'text' | 'empty' | 'fail' | 'nav' | 'unsure' = 'text';
+  let asrMode: 'text' | 'empty' | 'fail' | 'nav' | 'unsure' | 'partly' = 'text';
   const h = createServer((_q, s2) => { s2.end(); });
   attachLive(h, {
     db, cfg: { ...cfg0, url: `ws://127.0.0.1:${(up.address() as { port: number }).port}` },
     auth: () => ({ id: 31, staff: true, subscriberLeftSec: 0 }),
     prompt: (o) => { prompts.push({ ptt: o.ptt, asr: o.asr }); return 'SYS'; },
     native: () => 'Uzbek (Latin script)',
-    asr: async (_pid, wav, lang, prefer) => { asrCalls.push({ wavBytes: wav.length, lang, prefer }); if (asrMode === 'fail') throw new Error('limit'); if (asrMode === 'empty') return { text: '', lang: null }; if (asrMode === 'unsure') return { text: "darsga o'tamiz", lang: 'uzb', score: -0.38 }; return { text: asrMode === 'nav' ? "darsga o'tamiz" : 'I go to school yesterday', lang: 'eng', score: -0.05 }; },
+    asr: async (_pid, wav, lang, prefer) => { asrCalls.push({ wavBytes: wav.length, lang, prefer }); if (asrMode === 'fail') throw new Error('limit'); if (asrMode === 'empty') return { text: '', lang: null }; if (asrMode === 'unsure') return { text: "darsga o'tamiz", lang: 'uzb', score: -0.9 }; if (asrMode === 'partly') return { text: 'men kecha school ga bordim', lang: 'uzb', score: -0.55 }; return { text: asrMode === 'nav' ? "darsga o'tamiz" : 'I go to school yesterday', lang: 'eng', score: -0.05 }; },
     onEnd: () => undefined, log: () => undefined,
   });
   await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
@@ -372,6 +372,10 @@ http.close(); upstream.close();
   assert.ok(upCount((m) => /NOT sure about this turn.*darsga o'tamiz.*NEVER mock, insult or blame/s.test(m.clientContent?.turns?.[0]?.parts?.[0]?.text ?? '')) >= 1, 'ishonchsiz matn ogohlantirish bilan yuborildi');
   assert.equal(msgs.filter((m) => m.type === 'navigate').length, 0, 'ishonchsiz matn bilan ekran ochilmaydi');
   assert.equal(msgs.filter((m) => m.type === 'in').at(-1)!.text, "darsga o'tamiz", 'o‘quvchiga tanilgan matn ko‘rsatiladi');
+  // 3c) "Asosan ishonchli" (-0.4…-0.75, jurnalda aksentli inglizchaning ko'pi): ustoz odatdagidek javob beradi, faqat aniq grammatik xatoni tuzatadi
+  asrMode = 'partly'; await press(10); await until(() => upCount((m) => /fairly confident/.test(m.clientContent?.turns?.[0]?.parts?.[0]?.text ?? '')) >= 1);
+  assert.ok(upCount((m) => /fairly confident.*men kecha school ga bordim.*Answer it normally/s.test(m.clientContent?.turns?.[0]?.parts?.[0]?.text ?? '')) === 1);
+  assert.equal(upCount((m) => /NOT sure/.test(m.clientContent?.turns?.[0]?.parts?.[0]?.text ?? '')), 1, 'asosan ishonchli navbat "ishonchsiz" deb yuborilmadi');
   // 4) "darsga o'tamiz" — tanilgan matn bo'yicha navigatsiya (bir marta)
   asrMode = 'nav'; await press(10); await until(() => msgs.some((m) => m.type === 'navigate'));
   assert.equal(msgs.find((m) => m.type === 'navigate')!.route, '#/learn');

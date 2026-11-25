@@ -366,12 +366,12 @@ try {
       await waitStatus(p11, /Sellzen gapiryapti/, 8000); await wait(300);
       // 3 soniya davomida har 50 ms: yuz rasmi (aylanish/siljish bilan), holat qatori, matn oynasi va tugatish tugmasi
       const samples = await p11.evaluate(async () => {
-        const out: { fx: number; fy: number; fw: number; st: number; ln: number; lh: number; en: number; wrap: number; scroll: number; sy: number }[] = [];
+        const out: { fx: number; fy: number; fw: number; st: number; ln: number; lh: number; en: number; wrap: number; scroll: number; sy: number; lvl: number }[] = [];
         const de = document.documentElement;
         for (let i = 0; i < 60; i++) {
           const f = (document.querySelector('.call-face .ai-face') ?? document.querySelector('.call-face'))!.getBoundingClientRect();
           const ln = document.querySelector('.call-lines')!.getBoundingClientRect();
-          out.push({ fx: f.x, fy: f.y, fw: f.width, st: document.querySelector('.call-status')!.getBoundingClientRect().top, ln: ln.top, lh: ln.height, en: document.querySelector('.call-end')!.getBoundingClientRect().top, wrap: document.querySelector('.call-face')!.getBoundingClientRect().top, scroll: de.scrollWidth - de.clientWidth, sy: window.scrollY });
+          out.push({ fx: f.x, fy: f.y, fw: f.width, st: document.querySelector('.call-status')!.getBoundingClientRect().top, ln: ln.top, lh: ln.height, en: document.querySelector('.call-end')!.getBoundingClientRect().top, wrap: document.querySelector('.call-face')!.getBoundingClientRect().top, scroll: de.scrollWidth - de.clientWidth, sy: window.scrollY, lvl: Number(((document.querySelector('.call-face .ai-avatar') as HTMLElement | null)?.style.getPropertyValue('--lvl')) || 0) });
           await new Promise((r) => setTimeout(r, 50));
         }
         return out;
@@ -384,6 +384,8 @@ try {
       // Egasi (2026-11-25): yuz ifodasini cheklama — o'rtadagi ustoz istalgan harakatni qilishi mumkin, faqat boshqa elementlar silkinmasin
       assert.ok(m.st <= 1 && m.ln <= 1 && m.lh <= 1 && m.en <= 1 && m.wrap <= 1, `${emo}: yuz harakati boshqa elementlarni qimirlatdi (holat ${m.st}, matn ${m.ln}/${m.lh}, tugma ${m.en}, yuz o‘rni ${m.wrap})`);
       assert.ok(m.scroll <= 1 && m.sy <= 1, `${emo}: yuz harakatidan sahifa yonga kengaydi yoki skrol bo‘ldi (${m.scroll}, ${m.sy})`);
+      // Og'iz ustoz ovozi eshitilayotganda ochiladi (chiqishdagi analizator; avval bo'lak kelganda o'rnatilib, oxirida qotib qolardi)
+      const lv = samples.map((x) => x.lvl); assert.ok(Math.max(...lv) > 0.1, `${emo}: gapirganda og‘iz ochilmadi (lvl max ${Math.max(...lv)})`);
       if (emo === 'ANGRY') assert.ok(m.moves >= 10, `jahl yuzda ko‘rinmayapti (${m.moves} ta harakat / 3 s)`);
       else assert.ok(m.fy >= 3, `kulgi yuzda ko‘rinmayapti (y ${m.fy})`);
       await waitStatus(p11, /Navbat sizda/, 15000);
