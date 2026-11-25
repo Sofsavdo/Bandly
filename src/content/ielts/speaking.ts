@@ -185,7 +185,7 @@ export const IE_SPEAKING_CORE: Unit = {
         { en: 'That said, life in the countryside is much less stressful.', uz: 'Shunga qaramay, qishloqda hayot ancha kam stressli.' },
         { en: 'So overall, it depends on what stage of life people are at.', uz: 'Umuman olganda, bu odamning hayotining qaysi bosqichida ekaniga bog‘liq.' },
       ],
-      vocab: [{ en: 'justify', uz: 'asoslamoq' }, { en: 'that said', uz: 'shunday bo‘lsa-da' }, { en: 'opportunity', uz: 'imkoniyat' }, { en: 'depend on', uz: 'ga tayanmoq (bog‘liq bo‘lmoq)' }],
+      vocab: [{ en: 'justify', uz: 'asoslamoq' }, { en: 'that said', uz: 'shunday bo‘lsa-da' }, { en: 'opportunity', uz: 'imkoniyat' }, { en: 'depend on', uz: '… ga bog‘liq bo‘lmoq' }],
       practice: [
         ch('Part 3 questions are mostly about…', ['your personal daily routine', 'general issues in society', 'your name'], 1, 'Umumiy masalalar.'),
         ch('Which phrase acknowledges the other side?', ['That said,', 'For instance,', 'I’d say'], 0, 'That said — shunga qaramay.'),
