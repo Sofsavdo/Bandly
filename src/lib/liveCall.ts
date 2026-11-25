@@ -25,7 +25,7 @@ export interface LiveHandlers {
   /** O'quvchi ilovada biror joyni ochishni buyurdi ("darsga o't"): ustoz javobini tugatgach mijoz o'tadi */
   onNavigate?(route: string): void;
   /** Ustoz hissiyoti (server ustoz matnidan aniqlaydi): ekrandagi effekt uchun */
-  onEmotion?(e: 'angry' | 'laugh' | 'happy' | 'impressed' | 'disappointed' | 'neutral'): void;
+  onEmotion?(e: 'angry' | 'laugh' | 'happy' | 'impressed' | 'disappointed' | 'serious' | 'sarcastic' | 'neutral'): void;
 }
 export interface LiveCall {
   end(): void;
@@ -178,7 +178,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     else if (m.type === 'noVoice') h.onNoVoice?.();
     else if (m.type === 'navigate' && typeof m.route === 'string') h.onNavigate?.(m.route);
     else if (m.type === 'limit') h.onLimit(m.message ?? '', m.kind === 'session' ? 'session' : 'quota');
-    else if (m.type === 'emotion' && (m.value === 'angry' || m.value === 'laugh' || m.value === 'happy' || m.value === 'impressed' || m.value === 'disappointed')) h.onEmotion?.(m.value);
+    else if (m.type === 'emotion' && (m.value === 'angry' || m.value === 'laugh' || m.value === 'happy' || m.value === 'impressed' || m.value === 'disappointed' || m.value === 'serious' || m.value === 'sarcastic')) h.onEmotion?.(m.value);
     else if (m.type === 'error') h.onError(m.message ?? L('Xato'), !ready);
   };
   ws.onerror = () => { if (!ended) h.onError(L('Aloqa yo‘q'), !ready); };
