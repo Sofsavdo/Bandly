@@ -108,6 +108,47 @@ assert.equal(nextInCourse(rt.start.lessons[0]!.id)!.lesson.id, rt.start.lessons[
 assert.equal(nextInCourse(rt.start.lessons.at(-1)!.id)!.lesson.id, rt.core.lessons[0]!.id, 'Start → Core');
 assert.equal(nextInCourse(ALL_LESSONS[0]!.lesson.id)!.lesson.id, ALL_LESSONS[1]!.lesson.id, 'GE darsidan keyin GE darsi');
 assert.ok(!isIeltsLesson(nextInCourse(ALL_LESSONS.at(-1)!.lesson.id)?.lesson.id ?? ''), 'GE oxiridan IELTS ga sakramaydi');
+// SAT kursi: tuzilma, kalitlar, so'zlar, ochilish va keyingi dars
+const { SAT_LESSONS, SAT_UNITS, satUnlocked, nextSatLesson, isSatLesson } = await import('./index');
+assert.equal(SAT_LESSONS.length, 29, 'SAT kursi: 29 dars (R&W 13 + Math 16)');
+assert.equal(SAT_UNITS.length, 8);
+for (const { lesson } of SAT_LESSONS) {
+  assert.deepEqual(validateLesson(lesson), [], lesson.id);
+  assert.ok(isSatLesson(lesson.id) && !isIeltsLesson(lesson.id), `${lesson.id}: id sat- bilan boshlanadi`);
+  assert.ok(lesson.skipSpeak, `${lesson.id}: SAT darsida gapirish bosqichi yo'q`);
+  assert.ok(lesson.practice.length >= 6 && lesson.check.length >= 6, `${lesson.id}: ≥6 mashq va ≥6 tekshiruv`);
+  assert.ok(lesson.examples.length >= 4 && lesson.explanationUz.length >= 3, `${lesson.id}: misol va tushuntirish yetarli`);
+  for (const it of [...lesson.practice, ...lesson.check]) {
+    const ans = it.kind === 'choice' ? it.answer : it.kind === 'gap' ? it.accept[0]! : it.kind === 'multi' ? it.answers : it.answer.split(' ');
+    assert.ok(checkItem(it, ans), `${lesson.id}: key fails "${correctAnswerText(it)}"`);
+  }
+  assert.equal(lessonWordIds(lesson.id).length, (lesson.vocab ?? []).length, `${lesson.id}: so'zlar umumiy ro'yxatda bor`);
+  assert.ok((lesson.vocab ?? []).length >= 3, `${lesson.id}: ≥3 so'z`);
+  assert.ok(lessonById(lesson.id)?.lesson === lesson, `${lesson.id}: lessonById topadi`);
+  const pr = [...lesson.practice, ...lesson.check].map((it) => `${it.kind}|${it.kind === 'order' ? it.words.join(' ') : it.prompt}|${it.kind === 'multi' || it.kind === 'choice' ? it.options.join('~') : ''}`); assert.equal(new Set(pr).size, pr.length, `${lesson.id}: savollar takrorlanmaydi`);
+}
+{ // to'g'ri javob variantlar orasida bir joyda to'planib qolmasin (choice kalitlari turli xil)
+  const idx = SAT_LESSONS.flatMap(({ lesson }) => [...lesson.practice, ...lesson.check]).filter((it) => it.kind === 'choice').map((it) => (it.kind === 'choice' ? it.answer : -1));
+  const share = [0, 1, 2, 3].map((k) => idx.filter((x) => x === k).length / idx.length);
+  assert.ok(share.every((x) => x > 0.12 && x < 0.5), `SAT kalitlari taqsimoti: ${share.map((x) => x.toFixed(2)).join(' / ')}`);
+}
+const ids2 = [...ALL_LESSONS, ...IELTS_LESSONS, ...SAT_LESSONS].map((x) => x.lesson.id);
+assert.equal(new Set(ids2).size, ids2.length, 'GE, IELTS va SAT dars id lari takrorlanmaydi');
+assert.ok(SAT_UNITS.every((u) => u.status === 'pilot'));
+{
+  const rwFirst = SAT_UNITS[0]!, rwSecond = SAT_UNITS[1]!, mathFirst = SAT_UNITS.find((u) => u.id === 'sat-m1')!;
+  assert.ok(satUnlocked(rwFirst, 0, {}) && satUnlocked(mathFirst, 0, {}), 'ikkala yo‘lning birinchi darsi ochiq');
+  assert.ok(!satUnlocked(rwFirst, 1, {}), 'bo‘lim ichida ketma-ket');
+  assert.ok(!satUnlocked(rwSecond, 0, {}), 'keyingi bo‘lim oldingisi tugagach ochiladi');
+  const done = Object.fromEntries(rwFirst.lessons.map((l) => [l.id, { attempts: 1, best: 1, passedAt: 1 }]));
+  assert.ok(satUnlocked(rwSecond, 0, done), 'oldingi bo‘lim tugagach keyingisi ochiladi');
+  assert.equal(nextSatLesson({})!.lesson.id, rwFirst.lessons[0]!.id);
+  assert.equal(nextSatLesson({}, 'math')!.lesson.id, mathFirst.lessons[0]!.id);
+  assert.equal(nextInCourse(rwFirst.lessons[0]!.id)!.lesson.id, rwFirst.lessons[1]!.id);
+  assert.equal(nextInCourse(rwFirst.lessons.at(-1)!.id)!.lesson.id, rwSecond.lessons[0]!.id, 'bo‘lim oxiridan keyingi bo‘lim boshiga');
+  assert.equal(nextInCourse(SAT_UNITS.find((u) => u.id === 'sat-rw4')!.lessons.at(-1)!.id), undefined, 'Reading & Writing dan Math ga sakramaydi');
+  assert.equal(nextInCourse(SAT_UNITS.at(-1)!.lessons.at(-1)!.id), undefined, 'kurs oxiri');
+}
 console.log(`lessons.test: IELTS ${IELTS_UNITS.length} units, ${IELTS_LESSONS.length} lessons`);
 // To'liq gap (fikr-mulohaza): bo'shliq to'ldiriladi, ishoralar olib tashlanadi, qisqartmalar yopishadi
 {

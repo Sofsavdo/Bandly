@@ -56,6 +56,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Creator = lazy(() => import('./pages/Creator'));
 const Leads = lazy(() => import('./pages/Leads'));
 const IeltsCourse = lazy(() => import('./pages/IeltsCourse'));
+const SatCourse = lazy(() => import('./pages/SatCourse'));
 const Certificates = lazy(() => import('./pages/Certificates'));
 const CertificateVerify = lazy(() => import('./pages/CertificateVerify'));
 const Loading = () => <div className="page-loading" role="status" aria-label={L('Yuklanmoqda…')}><div className="card skel" /><div className="card skel" /></div>; // sahifa joyini egallaydi — footer sakramaydi
@@ -75,6 +76,7 @@ const routes: Record<string, () => ReactNode> = {
   '#/challenge': () => <Challenge />,
   '#/exam': () => <Exam />,
   '#/ielts': () => <IeltsCourse />,
+  '#/sat': () => <SatCourse />,
   // B varianti: Writing/Speaking mashqi ochiq; AI baho obunasizlarga haftasiga 1 tadan (server tekshiradi)
   '#/exam/writing': () => <Writing />,
   '#/exam/speaking': () => <Speaking />,

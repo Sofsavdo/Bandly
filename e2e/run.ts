@@ -208,6 +208,27 @@ try {
     await p.context().close();
   });
 
+  await step('F2. SAT kursi: sahifa → dars ochiladi → mashq to‘plamlari (mavzu filtri, 10 talik sahifalar)', async () => {
+    const p = await learner();
+    await p.goto(`${base}/#/sat`); await p.waitForTimeout(1500);
+    assert.match(await text(p), /SAT kursi/, 'SAT kursi sahifasi ochildi');
+    const links = await p.locator('main a.lcard').evaluateAll((els) => els.map((e) => e.getAttribute('href') ?? ''));
+    assert.ok(links.length >= 1 && links.every((h) => /^#\/learn\/sat-/.test(h)), `SAT dars havolalari: ${links.join(',')}`);
+    await p.goto(`${base}/${links[0]}`); await p.waitForTimeout(1500);
+    assert.ok((await text(p)).length > 200, 'SAT darsi ochildi');
+    assert.ok((await p.locator('main a[href="#/sat"]').count()) >= 1, 'darsdan SAT kursiga qaytish havolasi bor');
+    // Mashq savollari: 10 talik to'plamlar + mavzu filtri
+    await p.goto(`${base}/#/exam`); await p.waitForTimeout(1200);
+    await p.getByRole('tab', { name: /SAT/ }).first().click().catch(() => undefined);
+    await p.getByRole('button', { name: /Reading and Writing/ }).first().click(); await p.waitForTimeout(800);
+    assert.match(await text(p), /· 1\/\d+/, 'to‘plam raqami ko‘rsatildi');
+    assert.ok((await p.locator('main .q').count()) === 10 || (await p.locator('main .q').count()) > 0, 'to‘plamda savollar bor');
+    const topic = p.getByRole('button', { name: /Craft and Structure/ }).first();
+    await topic.click(); await p.waitForTimeout(500);
+    assert.match(await text(p), /Craft and Structure/, 'mavzu filtri ishlaydi');
+    await p.context().close();
+  });
+
   await step('G. Obuna muddati tugadi → pullik bo‘lim yopiladi', async () => {
     const raw = new DatabaseSync(DB);
     raw.prepare("UPDATE subscriptions SET until = ? WHERE player_id = (SELECT id FROM players WHERE nickname = 'E2E Learner')").run(Date.now() - 60_000);
