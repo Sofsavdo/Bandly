@@ -47,6 +47,7 @@ const PRACTICE_TOPIC: Record<string, string> = {
   Artikllar: 'articles', Predloglar: 'prepositions', Miqdor: 'quantity', Taqqoslash: 'comparison', 'Present Perfect': 'tenses', 'Kelasi zamon': 'tenses',
   'Shart gaplar': 'conditionals', 'Third Conditional': 'conditionals', 'Majhul nisbat': 'passive', 'Nisbiy gap': 'relative-clauses', 'Which-gap': 'relative-clauses',
   Gerund: 'gerund-infinitive', Inversiya: 'complex-structures',
+  'Modal fe‘llar': 'modals', 'Ega va kesim moslashuvi': 'agreement', Inkor: 'present-simple', Savol: 'present-simple', 'Sanalmaydigan otlar': 'quantity',
 };
 export const nodeForGrammarTopic = (topic: string): string | undefined => { const s = SPECS.find((x) => x.topic === topic); return s ? id(s.slug) : undefined; };
 export const nodeForPracticeTopic = (topic: string): string | undefined => { const s = PRACTICE_TOPIC[topic]; return s ? id(s) : undefined; };
