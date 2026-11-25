@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { UNITS, ALL_LESSONS, LESSON_NODES, lessonById } from './index';
-import { validateLesson, checkItem, scoreCheck, normalize, isUnlocked, PASS_RATE, correctAnswerText, checkWriting, wordCount } from '../../lib/lessons';
+import { validateLesson, checkItem, scoreCheck, normalize, isUnlocked, PASS_RATE, correctAnswerText, checkWriting, wordCount, optionOrder } from '../../lib/lessons';
 import { validateGraph } from '../../lib/adaptive/graph';
 import { ALL_NODES } from '../curriculum/inventory';
 
@@ -165,5 +165,17 @@ console.log(`lessons.test: IELTS ${IELTS_UNITS.length} units, ${IELTS_LESSONS.le
   const bad = all.map((it) => fullSentence(it)).filter((f): f is string => !!f && /___|\(|\)|\s{2}/.test(f));
   assert.deepEqual(bad, [], 'barcha to‘liq gaplar toza');
   assert.ok(all.filter((it) => fullSentence(it)).length > all.length * 0.9, 'mashqlarning 90%+ i to‘liq gap bilan izohlanadi');
+}
+// Variantlar tartibi: aralashtirilgan, barqaror, to'g'ri javob ekranda "doim birinchi" emas (kontentda 90% gacha birinchi turgan bo'limlar bor)
+{
+  const items = ALL_LESSONS.flatMap((x) => [...x.lesson.practice, ...x.lesson.check]).filter((it) => it.kind === 'choice');
+  for (const it of items) { const o = optionOrder(it); assert.deepEqual([...o].sort((a, b) => a - b), it.options.map((_, i) => i), 'permutatsiya'); assert.deepEqual(optionOrder(it), o, 'barqaror'); }
+  const first = items.filter((it) => it.kind === 'choice' && optionOrder(it)[0] === it.answer).length / items.length;
+  assert.ok(first < 0.45, `to'g'ri javob ekranda birinchi: ${Math.round(first * 100)}%`);
+  for (const lv of ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']) {
+    const li = ALL_LESSONS.filter((x) => x.lesson.id.startsWith(lv.toLowerCase())).flatMap((x) => [...x.lesson.practice, ...x.lesson.check]).filter((it) => it.kind === 'choice');
+    const f = li.filter((it) => it.kind === 'choice' && optionOrder(it)[0] === it.answer).length / li.length;
+    assert.ok(f < 0.5, `${lv}: to'g'ri javob ekranda birinchi ${Math.round(f * 100)}%`);
+  }
 }
 console.log(`lessons.test: OK (${UNITS.length} units, ${ALL_LESSONS.length} lessons, ${ALL_LESSONS.reduce((s, x) => s + x.lesson.practice.length + x.lesson.check.length, 0)} items)`);

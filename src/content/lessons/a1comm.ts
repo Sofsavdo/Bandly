@@ -320,7 +320,7 @@ export const A1_U23: Unit = {
       ],
       examples: [
         { en: 'A return ticket to Samarkand, please.', uz: 'Samarqandga borib-qaytish chiptasi, iltimos.' },
-        { en: 'What time does the train leave? At 6.30.', uz: 'Poyezd soat nechada jo‘naydi? Oltidan o‘ttizda.' },
+        { en: 'What time does the train leave? At 6.30.', uz: 'Poyezd soat nechada jo‘naydi? Soat olti yarimda.' },
         { en: 'How long does it take? It takes two hours.', uz: 'Qancha vaqt ketadi? Ikki soat.' },
         { en: 'Which platform is it? Platform 3.', uz: 'Qaysi platforma? Uchinchi platforma.' },
       ],

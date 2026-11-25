@@ -1,7 +1,7 @@
 import { CheckCircle2, RotateCcw, Volume2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { Item } from '../content/lessons/types';
-import { checkItem, correctAnswerText, type ItemAnswer } from '../lib/lessons';
+import { checkItem, correctAnswerText, optionOrder, type ItemAnswer } from '../lib/lessons';
 import { say, stopSpeaking } from '../lib/speech';
 import { hasClip } from '../lib/clips';
 import { L } from '../i18n';
@@ -16,9 +16,9 @@ export function ItemView({ item, value, onChange, revealed, quiet = false }: { i
       <p><b>{item.kind === 'order' ? L('So‘zlardan to‘g‘ri gap tuzing:') : item.prompt}</b></p>
       {item.kind === 'choice' && (
         <div className="stack">
-          {item.options.map((o, i) => (
+          {optionOrder(item).map((i) => { const o = item.options[i]!; return (
             <button key={o} type="button" className={`opt ${revealed ? (i === item.answer ? 'right' : i === value ? 'bad' : '') : value === i ? 'sel' : ''}`} disabled={revealed} onClick={() => onChange(i)}>{o}</button>
-          ))}
+          ); })}
         </div>
       )}
       {item.kind === 'multi' && (() => {
@@ -27,7 +27,8 @@ export function ItemView({ item, value, onChange, revealed, quiet = false }: { i
         return (
           <div className="stack" role="group" aria-label={L('Bir nechta to‘g‘ri javob bor')}>
             <small className="muted">{L('Bir nechta to‘g‘ri javob bor')}</small>
-            {item.options.map((o, i) => {
+            {optionOrder(item).map((i) => {
+              const o = item.options[i]!;
               const right = item.answers.includes(i), on = sel.includes(i);
               return <button key={o} type="button" role="checkbox" aria-checked={on} className={`opt multi ${revealed ? (right ? 'right' : on ? 'bad' : '') : on ? 'sel' : ''}`} disabled={revealed} onClick={() => toggle(i)}><span className="mbox" aria-hidden="true">{on ? '✓' : ''}</span>{o}</button>;
             })}
