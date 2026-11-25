@@ -207,11 +207,12 @@ interface LiveDeps {
   auth: (token: string) => { id: number; staff: boolean; subscriberLeftSec: number } | null;
   prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string; style: 0 | 1 | 2 | 3; ptt: boolean; asr: boolean }) => string;
   /** O'quvchi uchun: birinchi qo'ng'iroqmi va xotira matni (ko'rsatmaga qo'shiladi) */
-  context?: (playerId: number) => { firstCall: boolean; memory: string };
+  context?: (playerId: number) => { firstCall: boolean; memory: string; followUp?: string };
   /** Qo'ng'iroq boshidagi ko'rsatma (o'quvchi hali gapirmagan) */
-  kickoff?: (o: { firstCall: boolean; hasMemory: boolean; plan?: string }) => string;
+  kickoff?: (o: { firstCall: boolean; hasMemory: boolean; plan?: string; followUp?: string }) => string;
   /** Nutqni tanish (ElevenLabs Scribe): navbat ovozi (WAV) → matn. Limit/xato — istisno: navbat Gemini'ga ovoz sifatida yuboriladi. Berilmasa — har doim ovoz yuboriladi. */
-  asr?: (playerId: number, wav: Buffer, lang: string) => Promise<{ text: string; lang: string | null; score?: number | null } | null>;
+  /** prefer: 'en' — o'quvchi oxirgi navbatlarda inglizcha gapirgan, Scribe avval inglizcha tanisin (ikki marta so'ramaslik uchun) */
+  asr?: (playerId: number, wav: Buffer, lang: string, prefer?: 'native' | 'en') => Promise<{ text: string; lang: string | null; score?: number | null } | null>;
   /** Qo'ng'iroq tugagach suhbat yozuvi (xotira uchun) */
   onTranscript?: (playerId: number, turns: { who: 'learner' | 'coach'; text: string }[], nativeCode: string) => void;
   native: (lang: string) => string;
@@ -256,7 +257,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   if (allowance < 5) { send({ type: 'limit', kind: 'quota', message: tr(lang, `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqa.`) }); client.close(); return; }
   const ptt = url.searchParams.get('ptt') === '1'; // bosib-gapirish rejimi
   const asrOn = ptt && !!d.asr; // gap serverda matnga aylantiriladi
-  const ctx = d.context?.(who.id) ?? { firstCall: false, memory: '' };
+  const ctx: { firstCall: boolean; memory: string; followUp?: string } = d.context?.(who.id) ?? { firstCall: false, memory: '' };
   const adult = url.searchParams.get('adult') === '1';
   // Xarakter (profil): 0 Yumshoq, 1 Hazil, 2 Qattiq, 3 Jallod; 2–3 faqat 18+ bilan
   const style = clampStyle(url.searchParams.get('style') ?? (adult ? 2 : 0), adult);
@@ -326,7 +327,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
         for (const b of pending.splice(0)) forward(b);
         void ctxWait.then(() => {
           if (closed || ws.readyState !== WebSocket.OPEN) return;
-          const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory, plan: ctxPrompt(learnerCtx) || undefined }) ?? `(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)${learnerCtx ? `\n${ctxPrompt(learnerCtx)}` : ''}`;
+          const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory, plan: ctxPrompt(learnerCtx) || undefined, followUp: ctx.followUp }) ?? `(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)${learnerCtx ? `\n${ctxPrompt(learnerCtx)}` : ''}`;
           ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: kick }] }], turnComplete: true } }));
         });
         return;
@@ -400,6 +401,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     for (let i = 0; i < audio.length; i += 3200) forward(audio.subarray(i, i + 3200));
     upstream.send(JSON.stringify({ realtimeInput: { activityEnd: {} } }));
   };
+  let enStreak = 0; // ketma-ket inglizcha tanilgan navbatlar
   const onUtterance = async (audio: Buffer): Promise<void> => {
     if (closed) return;
     const secs = audio.length / 32000; // 16 kHz × 2 bayt
@@ -408,8 +410,9 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     let text = '';
     let sure = true;
     try {
-      const r = await d.asr!(who.id, pcmToWav(audio), lang);
+      const r = await d.asr!(who.id, pcmToWav(audio), lang, enStreak >= 2 ? 'en' : 'native');
       text = (r?.text ?? '').trim();
+      if (text) enStreak = r?.lang === 'eng' ? enStreak + 1 : 0;
       sure = r?.score == null || r.score >= UNSURE_SCORE;
       if (text) st.asrOk++; else st.asrEmpty++;
     } catch (e) {

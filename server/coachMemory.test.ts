@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt, MAX_MISTAKES } from './coachMemory';
-import { buildLivePrompt, clampStyle, emotionOf, liveKickoff } from './coach';
+import { enqueueMemoryJob, ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, runMemoryJobs, saveMemory, summaryPrompt, MAX_MISTAKES } from './coachMemory';
+import { buildLivePrompt, clampStyle, emotionOf, liveKickoff, KICKOFF_MOVES } from './coach';
 
 // AI javobini qat'iy tekshirish: shaxsiy ma'lumot, bo'sh/teng juftlar, buzuq JSON — tashlanadi
 const p = parseSummary('Here: {"mistakes":[{"wrong":"I am agree","right":"I agree"},{"wrong":"he go","right":"he goes"},{"wrong":"call me 998901234567","right":"x"},{"wrong":"same","right":"same"}],"topics":["football","email me a@b.uz"]} ok');
@@ -70,4 +70,58 @@ assert.ok(first.includes('UZBEK QUALITY') && first.includes('adabiy') && !buildL
 assert.match(liveKickoff({ firstCall: true, hasMemory: false }), /Introduce yourself once/);
 assert.match(liveKickoff({ firstCall: false, hasMemory: true }), /Do NOT introduce yourself.*MEMORY/);
 assert.match(liveKickoff({ firstCall: false, hasMemory: false }), /Do NOT introduce yourself or say your name/);
+
+// 2026-11-25 (egasi: "hatolarni eslab qolib shu bo'yicha ishlash, fikrlash, bir xil ssenariy zeriktiradi")
+// Boy xotira: tuzatilgan xatolar, kuzatuv savoli, o'quvchi haqida eslatma
+const rich = parseSummary('{"mistakes":[{"wrong":"she don\'t","right":"she doesn\'t"}],"topics":[],"fixed":["he go"],"follow_up":"Ask how the football match on Sunday went","note":"Fluent but avoids past tense."}');
+assert.deepEqual(rich.fixed, ['he go']); assert.equal(rich.followUp, 'Ask how the football match on Sunday went'); assert.equal(rich.note, 'Fluent but avoids past tense.');
+assert.equal(parseSummary('{"mistakes":[],"topics":[],"follow_up":"call me at 998901234567"}').followUp, undefined, 'kuzatuvda shaxsiy ma’lumot yo‘q');
+const m3 = mergeMemory(m2, rich, 4000);
+assert.ok(!m3.mistakes.some((x) => x.wrong === 'he go'), 'tuzatilgan xato ro‘yxatdan chiqadi');
+assert.deepEqual(m3.mastered, ['he goes']); assert.equal(m3.followUp, rich.followUp); assert.equal(m3.note, rich.note);
+// xatoni yana takrorlasa — tuzatilgan hisoblanmaydi
+const m3b = mergeMemory(m2, { mistakes: [{ wrong: 'he go', right: 'he goes' }], topics: [], fixed: ['he go'] }, 4000);
+assert.equal(m3b.mistakes.find((x) => x.wrong === 'he go')!.count, 3); assert.equal(m3b.mastered, undefined);
+// kuzatuv bir martalik, eslatma saqlanadi
+const m4 = mergeMemory(m3, { mistakes: [], topics: [] }, 5000);
+assert.equal(m4.followUp, undefined); assert.equal(m4.note, rich.note); assert.deepEqual(m4.mastered, ['he goes']);
+const mp3 = memoryForPrompt(m3);
+assert.ok(mp3.startsWith('MEMORY from previous calls') && mp3.includes('already fixed') && mp3.includes('"he goes"') && mp3.includes('Follow up from last time: Ask how the football') && mp3.includes('avoids past tense'));
+assert.ok(mp3.includes('remind them that they made it before') && mp3.includes('praise that specific improvement'), 'takroriy xatoni eslatadi, tuzatilganini maqtaydi');
+assert.ok(summaryPrompt([{ who: 'learner', text: 'he goes home' }], 'Uzbek', m2).system.includes('KNOWN MISTAKES from earlier calls: "he go" → "he goes"'), 'tuzatilganini aniqlash uchun eski xatolar beriladi');
+
+// Xotira navbati: AI band bo'lsa yo'qolmaydi — keyinroq qayta uriniladi, 5-xatodan keyin tashlanadi; muvaffaqiyatda yozuv o'chadi
+{
+  const jdb = new DatabaseSync(':memory:'); ensureMemoryTable(jdb);
+  const turns = [{ who: 'learner' as const, text: 'he go to school' }, { who: 'coach' as const, text: 'He goes!' }];
+  enqueueMemoryJob(jdb, 9, [{ who: 'coach', text: 'hi' }], 'Uzbek'); // o'quvchi gapirmagan — navbatga qo'shilmaydi
+  enqueueMemoryJob(jdb, 9, turns, 'Uzbek', 0);
+  const count = () => (jdb.prepare('SELECT COUNT(*) n FROM coach_memory_jobs').get() as { n: number }).n;
+  assert.equal(count(), 1);
+  const logs: string[] = [];
+  const busy = async () => { throw new Error('Sellzen hozir juda band'); };
+  let r = await runMemoryJobs(jdb, busy, 0, (m) => logs.push(m)); assert.equal(r.failed, 1); assert.equal(count(), 1);
+  r = await runMemoryJobs(jdb, busy, 30_000, (m) => logs.push(m)); assert.equal(r.failed, 0, 'vaqti kelmagan — urinilmaydi');
+  r = await runMemoryJobs(jdb, async (sys, user) => { assert.ok(user.includes('<learner>he go to school</learner>') && sys.includes('untrusted')); return '{"mistakes":[{"wrong":"he go","right":"he goes"}],"topics":["school"]}'; }, 61_000, (m) => logs.push(m));
+  assert.equal(r.done, 1); assert.equal(count(), 0, 'suhbat matni qayta ishlangach o‘chadi');
+  assert.equal(getMemory(jdb, 9)!.mistakes[0]!.wrong, 'he go');
+  assert.ok(logs.some((l) => l.includes('xotira yangilandi') && l.includes('2-urinish')));
+  enqueueMemoryJob(jdb, 9, turns, 'Uzbek', 0);
+  for (const t of [0, 60_000, 240_000, 840_000, 2_640_000]) await runMemoryJobs(jdb, busy, t, () => undefined);
+  assert.equal(count(), 0, '5 urinishdan keyin tashlanadi');
+}
+
+// Fikrlash va xilma-xillik: ustoz har javobdan oldin o'ylaydi, harakatlarni almashtiradi
+for (const t of [first, again]) {
+  assert.ok(t.includes('THINK BEFORE YOU SPEAK') && t.includes('the most useful to fix right now') && t.includes('React to the CONTENT first'), 'fikrlash bo‘limi');
+  assert.ok(t.includes('mistakes they make in THIS call') && t.includes('make the next question harder'), 'qo‘ng‘iroq ichida xatoga qaytadi, qiyinlikni moslaydi');
+  assert.ok(t.includes('CONVERSATION MOVES') && t.includes('role-play') && t.includes('Never use the same move twice in a row'), 'bir xil ssenariy emas');
+}
+// Kickoff har safar boshqacha; kuzatuv savoli birinchi
+const kicks = new Set(KICKOFF_MOVES.map((_, i) => liveKickoff({ firstCall: false, hasMemory: false, rnd: () => (i + 0.5) / KICKOFF_MOVES.length })));
+assert.equal(kicks.size, KICKOFF_MOVES.length, 'har xil ochilish');
+for (const k of kicks) assert.ok(k.startsWith('(The learner') && /Do NOT introduce yourself or say your name/.test(k));
+const kf = liveKickoff({ firstCall: false, hasMemory: true, followUp: 'Ask how the football match went', rnd: () => 0 });
+assert.match(kf, /Do NOT introduce yourself.*First ask about this from last time: Ask how the football match went.*MEMORY/);
+assert.ok(!liveKickoff({ firstCall: true, hasMemory: false, followUp: 'x' }).includes('last time'), 'birinchi qo‘ng‘iroqda kuzatuv yo‘q');
 console.log('coachMemory: OK');

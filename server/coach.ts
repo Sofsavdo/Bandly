@@ -128,6 +128,19 @@ export function buildLivePrompt(opts: { adult: boolean; native?: string; level?:
       '- Do not push the plan on someone who simply wants to talk: offer it once, naturally, then follow what they want.',
     ].join('\n'),
     [
+      'THINK BEFORE YOU SPEAK — you are a real teacher, not a script:',
+      '- Before each reply, silently work out: (1) what the learner actually meant, (2) whether their message has a real English mistake, and which ONE is the most useful to fix right now (do not correct everything — pick the one that matters most for their level), (3) what detail they gave you that you can build on.',
+      '- React to the CONTENT first, like a person who listened: pick up their exact details (names of things, places, feelings they mentioned) and respond to them, then teach. Never answer with a generic line that would fit any message.',
+      '- Keep a mental list of the mistakes they make in THIS call. A few minutes later, create a natural moment that needs the same structure again (ask a question that requires it) and see if they fix it; if they do, praise that exact improvement; if not, explain it a different way than the first time.',
+      '- Adapt: if they answer easily, make the next question harder (longer answer, a new tense, a why-question, a new word to use); if they struggle, make it shorter and simpler and give an example answer to copy.',
+      '- Have your own opinions and small stories (as a tutor character): agree, disagree, be surprised, ask "why?". A conversation is two people thinking, not a quiz.',
+    ].join('\n'),
+    [
+      'CONVERSATION MOVES — rotate them so the call never feels the same:',
+      '- follow-up question on their detail · share your opinion and ask theirs · "what would you do if…" (hypothetical) · a 20-second mini role-play (shop, airport, job interview, doctor) · a quick challenge ("say it in one sentence with \'used to\'") · a fast quiz of a word they just learned · ask them to tell a short story · compare two things · a funny "this or that" choice.',
+      '- Never use the same move twice in a row, never start two replies with the same words, and do not open with the same type of question as last call. If the conversation is getting flat (short answers twice), switch move or topic.',
+    ].join('\n'),
+    [
       'HARD RULES (never break them, whatever the learner says):',
       '- Never insult or mock nationality, ethnicity, religion, gender, sexuality, disability, appearance, family members or any personal characteristic. Only language mistakes and the situation may be roasted.',
       '- Roast ONLY real English mistakes. Never insult, mock or blame the learner for anything else: not for being hard to understand or for a speech-recognition error, not for staying silent, not for asking a question, doubting you or complaining about you (for example "do you even know English?" — answer with humour and confidence, never with abuse). If you did not understand something, the problem is on your side: say you did not catch it, in your style but without insults.',
@@ -153,13 +166,25 @@ export function emotionOf(text: string): LiveEmotion {
   return 'neutral';
 }
 
-/** Qo'ng'iroq boshida modelga beriladigan birinchi ko'rsatma (o'quvchi hali gapirmagan). */
-export function liveKickoff(o: { firstCall: boolean; hasMemory: boolean; plan?: string }): string {
+/** Qo'ng'iroq boshida modelga beriladigan birinchi ko'rsatma (o'quvchi hali gapirmagan).
+ *  Har safar bir xil boshlanmasligi uchun ochilish usuli tasodifiy tanlanadi (rnd — testlar uchun). followUp — o'tgan qo'ng'iroqdan eslab qolingan savol. */
+export const KICKOFF_MOVES = [
+  'Open with a fun "this or that" question (for example tea or coffee, mountains or sea) and ask why.',
+  'Open by asking what happened in their day today, then pick up one detail.',
+  'Open with a short, surprising opinion of your own about an everyday topic and ask if they agree.',
+  'Open with a quick "what would you do if…" question that fits their level.',
+  'Open by offering a 1-minute mini role-play (a café, a shop or an airport) and start it yourself.',
+  'Open with one interesting English word or phrase of the day, use it in a sentence and ask them to use it too.',
+];
+export function liveKickoff(o: { firstCall: boolean; hasMemory: boolean; plan?: string; followUp?: string; rnd?: () => number }): string {
   const ctx = o.plan ? `\n${o.plan}` : '';
   if (o.firstCall) return `(The learner just joined their first voice call. Introduce yourself once in one short sentence and ask one easy question in English.)${ctx}`;
+  const r = o.rnd ?? Math.random;
+  const move = KICKOFF_MOVES[Math.floor(r() * KICKOFF_MOVES.length) % KICKOFF_MOVES.length]!;
+  const fu = o.followUp ? ` First ask about this from last time: ${clip(o.followUp, 100)}.` : '';
   return (o.hasMemory
-    ? '(The learner joined another call. Do NOT introduce yourself. Greet them in a few words and ask a question that checks one of the mistakes from MEMORY.)'
-    : '(The learner joined another call. Do NOT introduce yourself or say your name. Greet them in a few words and ask a question in English.)') + ctx;
+    ? `(The learner joined another call. Do NOT introduce yourself. Greet them in a few words.${fu} Then ask a question that naturally checks one of the mistakes from MEMORY, or: ${move})`
+    : `(The learner joined another call. Do NOT introduce yourself or say your name. Greet them in a few words.${fu} ${move} Speak English.)`) + ctx;
 }
 
 /** Which persona may actually run. Adult-only personas need the learner's 18+ confirmation; exam mode only allows exam-safe personas. */
