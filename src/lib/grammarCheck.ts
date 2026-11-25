@@ -13,7 +13,7 @@ const RULES: Rule[] = [
   { id: 'dont3', re: /\b(he|she|it) don't\b/i, fix: (m) => `${m[1].toLowerCase()} doesn't`, ruleUz: L('he/she/it bilan inkor: doesn\'t (don\'t emas).') },
   { id: 'more-adj', re: /\bmore (better|easier|bigger|cheaper|faster|worse|harder|cleaner|smaller|healthier)\b/i, fix: (m) => m[1].toLowerCase(), ruleUz: L('Qisqa sifatlarning qiyosiy darajasida -er qo\'shiladi, \'more\' kerak emas.') },
   { id: 'discuss-about', re: /\bdiscuss about\b/i, fix: () => 'discuss', ruleUz: L('\'discuss\' predlogsiz ishlatiladi: discuss the problem.') },
-  { id: 'years-old', re: /\bI have (\d+|\w+) years?(?: old)?\b/i, fix: (m) => `I am ${m[1]} years old`, ruleUz: L('Yosh \'to be\' bilan aytiladi: I am 20 years old (I have emas).') },
+  { id: 'years-old', re: /\bI have (\d+|\w+) years?(?: old)?\b(?!['’])/i, fix: (m) => `I am ${m[1]} years old`, ruleUz: L('Yosh \'to be\' bilan aytiladi: I am 20 years old (I have emas).') },
   { id: 'peoples', re: /\bpeoples\b/i, fix: () => 'people', ruleUz: L('\'people\' o\'zi ko\'plik; \'s\' qo\'shilmaydi.') },
   { id: 'informations', re: /\b(informations|advices|knowledges|furnitures|homeworks|equipments)\b/i, fix: (m) => m[1].toLowerCase().replace(/s$/, ''), ruleUz: L('Bu so\'z sanalmaydigan ot: ko\'plik -s olmaydi (information, advice, knowledge, furniture).') },
   { id: 'boring', re: /\bI(?: am|'m) boring\b/i, fix: () => 'I am bored', ruleUz: "'boring' = zerikarli (narsa/odam), 'bored' = zerikkan (his)." },
