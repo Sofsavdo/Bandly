@@ -320,7 +320,7 @@ export const A1_U17: Unit = {
       ],
       examples: [
         { en: 'There are three hundred students in our school.', uz: 'Maktabimizda uch yuz o‘quvchi bor.' },
-        { en: 'The population of Uzbekistan is about thirty-six million.', uz: 'O‘zbekiston aholisi taxminan o‘ttiz olti million.' },
+        { en: 'The population of Uzbekistan is more than thirty-five million.', uz: 'O‘zbekiston aholisi o‘ttiz besh milliondan ortiq.' },
         { en: 'My flat is on the fifth floor.', uz: 'Mening kvartiram beshinchi qavatda.' },
         { en: 'I was born in nineteen ninety-eight.', uz: 'Men 1998-yilda tug‘ilganman.' },
       ],
@@ -422,7 +422,7 @@ export const A1_U17: Unit = {
         ch('How ___ are you? — I’m 1.80 metres.', ['tall', 'far', 'heavy'], 0, 'Bo‘y — How tall?'),
         ch('Five ___ of water', ['litres', 'litre', 'litering'], 0, 'Birdan ko‘p — litres.'),
         ch('It is 30 ___ today. It’s very hot.', ['degrees', 'degree', 'degreed'], 0, '30 — ko‘plik: degrees.'),
-        gap('The shop is 20 ___ cheaper today. (foiz)', ['percent'], 'percent — foiz.'),
+        gap('Everything in the shop is 20 ___ cheaper today. (foiz)', ['percent', 'per cent'], 'percent (per cent) — foiz.'),
         gap('How ___ is this bag? — It’s three kilos. (og‘ir)', ['heavy'], 'Og‘irlik — How heavy?'),
         ord(['far', 'How', 'it', 'is'], 'How far is it', 'How far is it?'),
         multi('Choose ALL the correct sentences.', ['two kilometres', 'one litres', 'five kilos', 'ten percent', 'three metre'], [0, 2, 3], 'To‘g‘ri: “two kilometres”, “five kilos”, “ten percent”. Xato: “one litres” emas, “one litre”; “three metre” emas, “three metres”.'),
