@@ -30,7 +30,8 @@ export interface LiveHandlers {
 export interface LiveCall {
   end(): void;
   /** Bosib-gapirish: true — tugma bosildi (yozish boshlanadi), false — qo'yib yuborildi (ustoz javob beradi). Qo'lsiz rejimda ta'sir qilmaydi. */
-  talk(on: boolean): void;
+  /** discard — juda qisqa (tasodifiy) tegish: yig'ilgan ovoz yuborilmaydi, ustoz javob bermaydi */
+  talk(on: boolean, discard?: boolean): void;
 }
 
 export const liveSupported = (): boolean => typeof window !== 'undefined' && typeof WebSocket !== 'undefined' && typeof AudioWorkletNode !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
@@ -135,7 +136,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   // Gemini ovozni o'zi eshitsa: ovoz bor-yo'qligini past chegara bilan sezamiz (faqat butunlay jim mikrofon), 1 soniya bosib turgan bo'lsa — baribir yuboramiz.
   let talking = false, tail: ReturnType<typeof setTimeout> | null = null, started = false, voicedMs = 0, heldMs = 0, pre: Int16Array[] = [], preLen = 0;
   const capturing = () => talking || tail !== null;
-  const sendActivity = (on: boolean) => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'activity', on })); };
+  const sendActivity = (on: boolean, discard = false) => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(discard ? { type: 'activity', on, discard } : { type: 'activity', on })); };
   const begin = () => { // navbat ochiladi, yig'ilgan boshlanish yuboriladi
     started = true; sendActivity(true);
     for (const p of pre) push(p);
@@ -213,8 +214,16 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     parkMic();
   }
   return {
-    talk(on: boolean) {
+    talk(on: boolean, discard = false) {
       if (!ptt || !ready || ended) return;
+      if (!on && discard) { // tasodifiy qisqa tegish: navbat bekor — ovoz yuborilmaydi
+        if (tail) { clearTimeout(tail); tail = null; }
+        if (!talking) return;
+        talking = false; pendingPcm = []; pendingLen = 0;
+        if (started) sendActivity(false, true);
+        started = false; pre = []; preLen = 0; voicedMs = 0; heldMs = 0; rs.reset();
+        return;
+      }
       if (on) {
         if (tail) { clearTimeout(tail); tail = null; talking = true; return; } // qayta bosildi: o'sha navbat davom etadi
         if (talking) return;
