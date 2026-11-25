@@ -17,19 +17,18 @@ const run = (events: PttInput[]): { state: PttState; actions: PttAction[] } => {
   const r = run([{ type: 'down', at: 0 }, { type: 'down', at: 40 }, { type: 'down', at: 80 }, { type: 'up', at: 900 }]);
   assert.deepEqual(r.actions, ['start', null, null, 'stop']);
 }
-// Qisqa tegish — qulf: yozuv davom etadi; keyingi tegish tugatadi (tegib-qo'yib yuborishdagi "up" e'tiborsiz)
+// Qisqa (tasodifiy) tegish — "tap": tinglash bekor, hech narsa yuborilmaydi; qulf rejimi yo'q (qo'l olinsa — har doim to'xtaydi)
 {
   const r = run([{ type: 'down', at: 0 }, { type: 'up', at: TAP_MS - 1 }]);
-  assert.deepEqual(r.actions, ['start', null]); assert.equal(r.state.mode, 'latched');
-  const r2 = run([{ type: 'down', at: 0 }, { type: 'up', at: 100 }, { type: 'down', at: 5000 }, { type: 'up', at: 5080 }]);
-  assert.deepEqual(r2.actions, ['start', null, 'stop', null]); assert.equal(r2.state.mode, 'idle');
+  assert.deepEqual(r.actions, ['start', 'tap']); assert.equal(r.state.mode, 'idle');
+  const r2 = run([{ type: 'down', at: 0 }, { type: 'up', at: 100 }, { type: 'down', at: 5000 }, { type: 'up', at: 7000 }]);
+  assert.deepEqual(r2.actions, ['start', 'tap', 'start', 'stop'], 'keyingi bosish — yangi navbat');
 }
 // TAP_MS ning o'zi — hali qisqa emas (bosib turilgan)
 assert.deepEqual(run([{ type: 'down', at: 0 }, { type: 'up', at: TAP_MS }]).actions, ['start', 'stop']);
 // Bekor qilish (sahifa fonga o'tdi, barmoq ekrandan chiqdi): faqat yozuv bor bo'lsa stop
 assert.deepEqual(run([{ type: 'cancel' }]).actions, [null]);
 assert.deepEqual(run([{ type: 'down', at: 0 }, { type: 'cancel' }]).actions, ['start', 'stop']);
-assert.deepEqual(run([{ type: 'down', at: 0 }, { type: 'up', at: 50 }, { type: 'cancel' }]).actions, ['start', null, 'stop'], 'qulflangan yozuv ham bekor qilinadi');
 // Bosilmagan holatda "up" — hech narsa
 assert.deepEqual(run([{ type: 'up', at: 10 }]).actions, [null]);
 

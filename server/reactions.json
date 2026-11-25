@@ -1,0 +1,105 @@
+{
+ "uz": {
+  "annoyed": [
+   "Ie, nima bu?",
+   "Qo'ying-e!",
+   "Hoy, bunaqasi ketmaydi!",
+   "Ana xolos!",
+   "E, yo'g'-e!",
+   "Iya, yana-ya?",
+   "Shunaqa ham bo'ladimi?",
+   "Bo'ldi-da endi!",
+   "E, attang!",
+   "Tavba!",
+   "Uf-f!",
+   "Hay-hay-hay!",
+   "Obbo!",
+   "Ana endi-ya!",
+   "Ey, bu qanaqa gap?",
+   "To'xtang-to'xtang!",
+   "Kutmagandim buni!",
+   "Nima-nima?",
+   "Ie, ie, ie!",
+   "Voy tovba!",
+   "Yo'q, bunday emas!",
+   "Hm, bu yerda xato bor!"
+  ],
+  "praise": [
+   "Qoyil!",
+   "Ofarin!",
+   "Zo'r-ku!",
+   "Mana bu boshqa gap!",
+   "Ana shunaqa!",
+   "Gap yo'q!",
+   "Barakalla!",
+   "Yashang!",
+   "Ajoyib!",
+   "Mana, uddaladingiz!",
+   "Super!",
+   "Bo'ldi, tushundingiz!",
+   "Qoyilmaqom!",
+   "A'lo!",
+   "Ko'rdingizmi, qila olasiz!",
+   "Ana endi gaplashamiz!",
+   "Bu safar to'ppa-to'g'ri!",
+   "Rosa yaxshi!"
+  ],
+  "fun": [
+   "Kuldirdingiz-ku!",
+   "Hazilkashsiz-ku!",
+   "Ha-ha, zo'r bo'ldi!",
+   "Voy, kulgim qistadi!",
+   "Bu gapingiz yoqdi!",
+   "Qiziq chiqdi-ku!"
+  ],
+  "think": [
+   "Hmm, qani o'ylab ko'raylik…",
+   "Bir daqiqa…",
+   "Qiziq savol…",
+   "Keling, boshqacha aytamiz…",
+   "Mana bunday qilamiz…"
+  ]
+ },
+ "en": {
+  "annoyed": [
+   "Come on!",
+   "Seriously?",
+   "Hold on!",
+   "Oops!",
+   "Not quite!",
+   "Whoa, whoa!",
+   "Nope!",
+   "Oh boy!",
+   "Hang on a sec!",
+   "Wait, what?",
+   "Uh-oh!",
+   "Close, but no!"
+  ],
+  "praise": [
+   "Nailed it!",
+   "There you go!",
+   "Boom!",
+   "Nice one!",
+   "Spot on!",
+   "Brilliant!",
+   "Look at you!",
+   "Now we're talking!",
+   "Perfect!",
+   "Exactly!",
+   "Love it!",
+   "Well done!"
+  ],
+  "fun": [
+   "Ha, good one!",
+   "You crack me up!",
+   "That made me laugh!",
+   "Funny!"
+  ],
+  "think": [
+   "Hmm, let's see…",
+   "Okay, so…",
+   "Good question…",
+   "Let me put it another way…"
+  ]
+ }
+}

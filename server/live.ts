@@ -281,7 +281,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   let inAct = false, actTimer: NodeJS.Timeout | null = null, actMsgs = 0;
   // Tanish rejimi: navbat ovozi shu yerda yig'iladi; qo'yib yuborilganda Scribe → matn → Gemini. dropOld — o'quvchi ustozni bosib to'xtatdi: eski javobning qolgan ovozi tashlanadi.
   let viaAudio = false, actBuf: Buffer[] = [], actBytes = 0, modelBusy = false, dropOld = false, dropTimer: NodeJS.Timeout | null = null, asrChain: Promise<void> = Promise.resolve();
-  const st = { acts: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0 };
+  const st = { acts: 0, taps: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0, emo: {} as Record<string, number> };
   const started = Date.now();
   let upstream: WebSocket | null = null;
   let setupTimer: NodeJS.Timeout | null = null; // Gemini sozlash muddati (connect ichida)
@@ -299,7 +299,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (secs > 0) d.onEnd(who.id, secs, model, usage);
     if (turns.filter((t) => t.who === 'learner').length >= 3) { try { d.onTranscript?.(who.id, turns, lang); } catch { /* xotira ixtiyoriy */ } }
     const dbfs = st.acts && st.lvl > 0 ? ` lvl=${(20 * Math.log10(st.lvl / st.acts)).toFixed(0)}dB` : '';
-    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why}) javob=${st.replies}${wrongCount ? ` til-xato:${wrongCount}` : ''}${ptt ? ` navbat=${st.acts}${asrOn ? ` tanish=${st.asrOk}/${st.asrEmpty}/${st.asrFail} ishonchsiz=${st.unsure}` : ''} ${st.audioSec.toFixed(0)}s${dbfs}` : ''}`);
+    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why}) javob=${st.replies} hissiyot=${Object.entries(st.emo).map(([k, v]) => `${k}:${v}`).join(',') || '-'}${wrongCount ? ` til-xato:${wrongCount}` : ''}${ptt ? ` navbat=${st.acts}${asrOn ? ` tanish=${st.asrOk}/${st.asrEmpty}/${st.asrFail} ishonchsiz=${st.unsure} tegish=${st.taps}` : ''} ${st.audioSec.toFixed(0)}s${dbfs}` : ''}`);
   };
   // Chegara: sessiya cheklovi (10 daqiqa) yoki kunlik/oylik daqiqa tugashi — mijozga turi aytiladi (sessiya tugasa — obuna taklif qilinmaydi)
   const capKind = allowance >= d.cfg.maxSessionSec ? 'session' : 'quota';
@@ -356,7 +356,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
             send({ type: 'out', text: t }); addText('coach', t);
             // Ekrandagi hissiyot effekti (jahl — olov, kulgi, quvonch): faqat o'zgarganda yuboriladi
             const e = emotionOf(turnOut);
-            if (e !== 'neutral' && e !== emo) { emo = e; send({ type: 'emotion', value: e }); }
+            if (e !== 'neutral' && e !== emo) { emo = e; st.emo[e] = (st.emo[e] ?? 0) + 1; send({ type: 'emotion', value: e }); }
           }
         }
         if (!muted && !dropOld) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { modelBusy = true; if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
@@ -438,7 +438,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   };
   // Bosib-gapirish: "bosildi" → ustozni to'xtatadi (tanish rejimida: shu yerda ovoz yig'ila boshlaydi, aks holda activityStart);
   // "qo'yib yuborildi" → javob (tanish: Scribe → matn → Gemini; aks holda activityEnd). 60 soniyadan keyin o'zi tugaydi.
-  const setActivity = (on: boolean) => {
+  /** discard — o'quvchi tasodifan qisqa tekkan: yig'ilgan ovoz tashlanadi, Scribe'ga ham, ustozga ham bormaydi */
+  const setActivity = (on: boolean, discard = false) => {
     if (!ptt || !ready || upstream?.readyState !== WebSocket.OPEN || on === inAct || ++actMsgs > 400) return;
     inAct = on;
     if (actTimer) { clearTimeout(actTimer); actTimer = null; }
@@ -447,6 +448,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
         actBuf = []; actBytes = 0;
         if (modelBusy) { dropOld = true; if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; } send({ type: 'interrupted' }); } // ataylab to'xtatdi
         actTimer = setTimeout(() => setActivity(false), 60_000); actTimer.unref?.();
+      } else if (discard) {
+        actBuf = []; actBytes = 0; st.taps++;
       } else {
         const audio = Buffer.concat(actBuf); actBuf = []; actBytes = 0; st.acts++;
         asrChain = asrChain.then(() => onUtterance(audio)).catch(() => undefined);
@@ -469,9 +472,9 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       return;
     }
     try {
-      const m = JSON.parse(data.toString()) as { type?: string; on?: unknown; ctx?: unknown };
+      const m = JSON.parse(data.toString()) as { type?: string; on?: unknown; discard?: unknown; ctx?: unknown };
       if (m.type === 'end') finish('client');
-      else if (m.type === 'activity') setActivity(m.on === true);
+      else if (m.type === 'activity') setActivity(m.on === true, m.on !== true && m.discard === true);
       else if (m.type === 'ctx' && !learnerCtx) { learnerCtx = sanitizeCtx(m.ctx); ctxResolve(); }
     } catch { /* */ }
   });

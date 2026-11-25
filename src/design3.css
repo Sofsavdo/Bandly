@@ -1703,3 +1703,8 @@ table.data.plan-matrix td { white-space: normal; min-width: 0; }
 .mic-live { margin-top: 8px; display: grid; gap: 6px; }
 .mic-meter { display: block; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden; max-width: 280px; }
 .mic-meter i { display: block; height: 100%; width: calc(var(--lvl, 0) * 100%); min-width: 3px; border-radius: 999px; background: var(--brand); transition: width .08s linear; }
+
+/* Sellzen sahifasi (#/coach): bitta ekranga sig'adi — sayt footer'i yo'q, main to'liq balandlik talab qilmaydi, sahifa skrol bo'lmaydi */
+main.container.fit { min-height: 0; padding-bottom: 0; }
+main.container.fit .tutor { min-height: 0; }
+main.container.fit .idle-call { margin-block: 0; }

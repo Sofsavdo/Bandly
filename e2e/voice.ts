@@ -1,9 +1,10 @@
 // Ovozli ustoz E2E (Playwright): haqiqiy server + qurilgan sayt + SOXTA Gemini Live serveri + SOXTA Scribe (ElevenLabs) + fayldan soxta mikrofon.
 // Haqiqiy AI xarajati, haqiqiy foydalanuvchi ma'lumoti ishlatilmaydi.
-//   J1. Sellzen yuziga tegish — qo'ng'iroq boshlanadi; taymer "0:xx / 5:00"; tegilmaguncha Gemini'ga va Scribe'ga ovoz bormaydi
+//   J1. Sellzen sahifasi ochilishi bilan qo'ng'iroq o'zi boshlanadi (hech narsa bosilmaydi); taymer "0:xx / 5:00"; tegilmaguncha Gemini'ga va Scribe'ga ovoz bormaydi;
+//       tugatilgach qayta o'zi boshlanmaydi, yuzga tegib yana boshlash mumkin
 //   J2. Ekranga tegib turish → ovoz serverga → qo'yib yuborish → Scribe matni "Siz" qatorida, Gemini'ga MATN boradi (ovoz emas); ustoz javobi, hissiyot (yurak)
 //   J3. Ustoz gapirayotganda ataylab tegish ustozni to'xtatadi (eski ovoz tashlanadi); Probel (Space) ham shunday; ustoz fikrini tugatadi
-//   J4. Qisqa tegish — qulf; yana tegish tugatadi
+//   J4. Qisqa (tasodifiy) tegish — hech narsa yuborilmaydi; bosib turish — tinglaydi, qo'yib yuborish — javob (qulf rejimi yo'q)
 //   J5. Scribe bo'sh matn qaytardi (jim/tushunarsiz navbat) — "Ovoz eshitilmadi", Gemini'ga hech narsa bormaydi
 //   J6. "Darsga o'tamiz" desa — tugma emas, ilova o'zi dars sahifasini ochadi (qo'ng'iroq tugaydi)
 //   J7. Ekran: 6 xil o'lchamda sahifa skrol qilinmaydi, tugatish tugmasi ko'rinadi, holatlar almashganda yuz joyidan siljimaydi
@@ -137,11 +138,7 @@ async function openCall(f: string, token: string, viewport = { width: 390, heigh
   p.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
   p.on('response', (r) => { if (r.url().startsWith(base) && r.status() >= 500) problems.push(`${scenario}: HTTP ${r.status()} ${r.url().slice(base.length)}`); });
   await p.goto(`${base}/#/coach`);
-  const face = p.locator('.start-face');
-  await face.waitFor({ timeout: 15000 });
-  for (let i = 0; i < 50 && await face.isDisabled(); i++) await wait(100);
-  await shot(p, `start-${viewport.width}`);
-  await face.click({ force: true }); // Sellzen yuziga tegish — qo'ng'iroq boshlanadi (yuz doim "nafas oladi" — barqaror emas)
+  // Egasi (2026-11-25): Sellzen ochilishi bilan qo'ng'iroq o'zi boshlanadi — hech narsa bosilmaydi
   await p.locator('.call').waitFor({ timeout: 15000 });
   return p;
 }
@@ -197,7 +194,7 @@ try {
   assert.ok(token);
 
   let p!: Page;
-  await step('J1. Sellzen yuziga tegish — qo‘ng‘iroq; tegilmaguncha hech narsa yuborilmaydi', async () => {
+  await step('J1. Sellzen ochilishi bilan qo‘ng‘iroq o‘zi boshlanadi; tegilmaguncha hech narsa yuborilmaydi', async () => {
     p = await openCall(LOUD, token);
     await waitStatus(p, /Sellzen gapiryapti|Navbat sizda/);
     assert.match(await p.locator('.call-time').innerText(), /\/ 5:00/, 'taymer: o‘tgan / ruxsat etilgan vaqt');
@@ -248,16 +245,18 @@ try {
     await waitStatus(p, /Navbat sizda/, 12000); // ustoz fikrini oxirigacha aytdi (ustidan kesilmadi)
   });
 
-  await step('J4. Qisqa tegish — qulf; yana tegish tugatadi', async () => {
-    const c = await faceCenter(p); const s0 = scribeCalls.length;
+  await step('J4. Qisqa (tasodifiy) tegish — hech narsa yuborilmaydi; qo‘l olinsa tinglash doim to‘xtaydi', async () => {
+    const c = await faceCenter(p); const s0 = scribeCalls.length, t = now();
     await p.mouse.move(c.x, c.y); await p.mouse.down(); await wait(90); await p.mouse.up();
-    await waitStatus(p, /Tinglayapman/, 2000);
-    assert.match(await p.locator('.call-sub').innerText(), /yana tegining/, 'qulflangan: yana tegining');
-    await wait(1500);
-    assert.equal(scribeCalls.length, s0, 'qulflangan yozuv o‘zi tugamaydi');
-    await p.mouse.down(); await wait(60); await p.mouse.up();
+    await waitStatus(p, /Navbat sizda/, 3000);
+    await wait(1200);
+    assert.equal(scribeCalls.length, s0, 'qisqa tegish Scribe’ga yuborilmadi');
+    assert.equal(count('text', t), 0, 'ustozga hech narsa bormadi');
+    assert.doesNotMatch(await p.locator('.call-status').innerText(), /Ovoz eshitilmadi|Tinglayapman/, 'qulf yo‘q, "ovoz eshitilmadi" ham chiqmaydi');
+    // Bosib turish — tinglaydi; qo'yib yuborish — to'xtaydi va ustoz javob beradi
+    await p.mouse.down(); await waitStatus(p, /Tinglayapman/, 2000); await wait(1200); await p.mouse.up();
     for (let i = 0; i < 100 && scribeCalls.length === s0; i++) await wait(50);
-    assert.ok(scribeCalls.length - s0 >= 1);
+    assert.equal(scribeCalls.length - s0, 1, 'bosib turilgan gap bir marta yuborildi');
     await waitStatus(p, /Sellzen gapiryapti/, 6000); await waitStatus(p, /Navbat sizda/, 12000);
   });
 
@@ -309,6 +308,19 @@ try {
     await waitStatus(q, /Ovoz eshitilmadi/, 6000);
     assert.equal(count('text', t) - n0 + count('start', t) + count('audio', t), 0, 'ovoz yo‘q — Gemini’ga hech narsa yuborilmadi');
     await shot(q, 'j5-no-voice');
+    // Tugatilgan qo'ng'iroq o'zi qayta boshlanmaydi; Sellzen yuziga tegib yana boshlash mumkin; kutish sahifasi skrol bo'lmaydi
+    await q.locator('.call-end').click();
+    await q.locator('.start-face').waitFor({ timeout: 5000 }); await wait(1500);
+    assert.equal(await q.locator('.call').count(), 0, 'tugatilgan qo‘ng‘iroq o‘zi qayta boshlanmadi');
+    for (const [w, h] of [[320, 568], [360, 640], [390, 800], [1280, 720]] as const) {
+      await q.setViewportSize({ width: w, height: h }); await wait(300);
+      const sc = await q.evaluate(() => ({ h: document.documentElement.scrollHeight - innerHeight, w: document.documentElement.scrollWidth - innerWidth }));
+      assert.ok(sc.h <= 1 && sc.w <= 1, `Sellzen kutish sahifasi ${w}x${h} da skrol bo‘lmaydi (${JSON.stringify(sc)})`);
+      await shot(q, `j5-idle-${w}`);
+    }
+    await q.setViewportSize({ width: 390, height: 800 });
+    await q.locator('.start-face').click({ force: true });
+    await q.locator('.call').waitFor({ timeout: 10000 });
     scribeText = 'teach me English, I go to school yesterday';
   });
 

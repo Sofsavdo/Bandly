@@ -9,7 +9,8 @@ import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
 import { listenTurn, SpeechError, stopSpeaking, sttSupported } from '../lib/speech';
 import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
-import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn } from '../lib/voiceTurn';
+import { parkMic, recordTurn, recorderSupported, resumeAudio, SttError, transcribeTurn } from '../lib/voiceTurn';
+import { lockTelegramSwipes } from '../lib/telegram';
 import { MAX_TALK_MS, PTT_IDLE, pttStep, type PttInput, type PttState } from '../lib/ptt';
 import { personaLevel, useProfile } from '../lib/store';
 import { liveSupported, startLive, type LiveCall } from '../lib/liveCall';
@@ -102,7 +103,6 @@ export default function Coach() {
   const [secs, setSecs] = useState(0);
   const [capSec, setCapSec] = useState(0); // server ruxsat bergan qo'ng'iroq uzunligi (taymer: 03:12 / 10:00)
   const [talking, setTalking] = useState(false); // tugma bosib turilibdi (yoki qulflangan)
-  const [latched, setLatched] = useState(false);
   const [liveOn, setLiveOn] = useState(false);
   // Suhbat tarixi (Siz / Sellzen): chat kabi — eski gaplar yuqoriga chiqib ketadi, oxirgilari to'liq ko'rinadi (qisqartirilmaydi)
   const [msgs, setMsgs] = useState<{ id: number; who: 'you' | 'bot'; text: string }[]>([]);
@@ -198,7 +198,7 @@ export default function Coach() {
 
   const start = () => {
     liveRef.current = true; setLive(true); setSecs(0); setCapSec(0); setErr(''); setEmotion('happy'); resetCallVoice();
-    setLimitMsg(null); setLimitKind('quota'); setHint(''); setMsgs([]); youFresh.current = true; botFresh.current = true; pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false; setLatched(false);
+    setLimitMsg(null); setLimitKind('quota'); setHint(''); setMsgs([]); youFresh.current = true; botFresh.current = true; pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false;
     if (useLive) { void startLiveCall().then((ok) => { if (!ok && liveRef.current) startClassic(); }); return; }
     startClassic();
   };
@@ -215,7 +215,7 @@ export default function Coach() {
     sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.();
     stopSpeaking(); parkMic(); setPhase('idle'); setErr(''); setLvl(0); pending.current = null; turns.current = [];
     if (nav.current?.timer) clearTimeout(nav.current.timer); nav.current = null;
-    setLiveOn(false); setTalking(false); talkingRef.current = false; setLatched(false); pttState.current = PTT_IDLE; if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
+    setLiveOn(false); setTalking(false); talkingRef.current = false; pttState.current = PTT_IDLE; if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
     loadMinutes();
   };
 
@@ -291,22 +291,24 @@ export default function Coach() {
     if (phaseRef.current === 'speaking') { sig.current.cancelled = true; stopSpeaking(); } // ustozni ataylab to'xtatish
     void listen();
   };
-  const stopTalk = () => {
+  const stopTalk = (tap = false) => {
     talkingRef.current = false; setTalking(false);
     if (liveRefCall.current) {
-      liveRefCall.current.talk(false); setPhase('thinking'); setLvl(0);
+      liveRefCall.current.talk(false, tap); setPhase(tap ? 'idle' : 'thinking'); setLvl(0);
+      if (tap) return; // tasodifiy qisqa tegish: javob kutilmaydi
       // javob kelmasa (aloqa sust) — "o'ylayapman"da qotib qolmaymiz
       if (thinkTimer.current) clearTimeout(thinkTimer.current);
       thinkTimer.current = setTimeout(() => { thinkTimer.current = null; if (phaseRef.current === 'thinking') setPhase('idle'); }, 15_000);
       return;
     }
+    if (tap) listenSig.current.cancelled = true; // tasodifiy qisqa tegish: yozuv bekor, yuborilmaydi
     if (endRef.current) endRef.current(); else listenSig.current.cancelled = true; // mikrofon hali ochilmagan (ruxsat so'ralmoqda) — navbat bekor
   };
   const press = (e: PttInput) => {
+    if (e.type === 'down') resumeAudio(); // avtomatik boshlangan qo'ng'iroqda ovoz birinchi tegishda yoqiladi (iOS/Telegram)
     if (e.type === 'down') { const ph = phaseRef.current; if (!liveRef.current || ph === 'connecting' || (!liveRefCall.current && ph === 'thinking')) return; }
     const [n, a] = pttStep(pttState.current, e); pttState.current = n;
-    setLatched(n.mode === 'latched');
-    if (a === 'start') startTalk(); else if (a === 'stop') stopTalk();
+    if (a === 'start') startTalk(); else if (a === 'stop') stopTalk(); else if (a === 'tap') stopTalk(true);
   };
   const pressRef = useRef(press); pressRef.current = press;
   // Desktop: Probel — bosib turib gapirish (matn kiritish maydonida ishlamaydi). Sahifa fonga o'tsa yoki oyna fokusini yo'qotsa — yozish bekor.
@@ -335,8 +337,15 @@ export default function Coach() {
     onPointerCancel: () => press({ type: 'cancel' }),
     onContextMenu: (e: { preventDefault(): void }) => e.preventDefault(),
   };
-  // Qo'ng'iroq paytida sahifa orqada siljimasin
-  useEffect(() => { if (!live) return; const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = prev; }; }, [live]);
+  // Qo'ng'iroq paytida sahifa orqada siljimasin; Telegram oynasi ham pastga surilib yig'ilmasin
+  useEffect(() => { if (!live) return; const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; lockTelegramSwipes(true); return () => { document.body.style.overflow = prev; lockTelegramSwipes(false); }; }, [live]);
+  // Egasi (2026-11-25): "Sellzenga kirishim bilan boshlayversin — ichkariga ikki marta kirishga majbur bo'lyapman". Sahifa ochilishi bilan
+  // qo'ng'iroq o'zi boshlanadi (bir marta; o'quvchi tugatsa — qayta boshlanmaydi, yuzga tegib yana boshlash mumkin).
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current || live || !acc || !status?.coach || limitMsg) return;
+    autoStarted.current = true; start();
+  }, [acc, status, live, limitMsg]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase === 'connecting' ? 'thinking' : phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 'var(--face)' : 'min(46vw, 190px)'} look={personaLevel(p)} /></div>;
 
@@ -360,7 +369,7 @@ export default function Coach() {
   const canTalk = liveOn || canListen;
   const nearEnd = capSec > 0 && capSec - secs <= 30;
   const statusText = phase === 'idle' && hint ? hint : PHASE_UZ[phase];
-  const subHint = phase === 'listening' ? (latched ? L('Gapingiz tugagach yana tegining') : L('Gapingiz tugagach qo‘yib yuboring — Sellzen javob beradi'))
+  const subHint = phase === 'listening' ? L('Gapingiz tugagach qo‘yib yuboring — Sellzen javob beradi')
     : phase === 'speaking' ? L('Gapirmoqchi bo‘lsangiz — ekranga tegining, Sellzen to‘xtaydi')
     : phase === 'idle' && canTalk ? (finePointer ? L('Probelni (Space) bosib turib gapiring') : L('Ekranga tegib turib gapiring'))
     : '';

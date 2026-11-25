@@ -208,6 +208,10 @@ export async function serverTurn(o: TurnOptions): Promise<TurnResult> {
 }
 
 /** Ochiq mikrofon (ruxsat bir marta so'raladi) — Gemini Live qo'ng'irog'i ham shu oqimni ishlatadi. */
+/** Qo'ng'iroq avtomatik boshlanganda (foydalanuvchi bosmasdan) iOS/Telegram ovozni "suspended" holatda ushlab turishi mumkin:
+ *  birinchi tegishda (bosib-gapirish) shu yerdan uyg'otiladi — kutib turgan salom ovozi shunda eshitiladi. */
+export function resumeAudio(): void { if (mic?.ctx.state === 'suspended') void mic.ctx.resume().catch(() => undefined); }
+
 export async function micContext(): Promise<{ stream: MediaStream; ctx: AudioContext }> {
   const m = await openMic();
   return { stream: m.stream, ctx: m.ctx };
