@@ -93,5 +93,9 @@
   "\\b(unpossible|inlegal|unlegal|unresponsible|disresponsible|unhonest|unregular)\\b",
   "\\bhighly (likely|unlikely|effective|recommended|qualified|popular|valued|regarded)\\b",
   "the ball is in your court.",
-  "Text 1: Electric buses are cheaper to run than diesel buses. Text 2: Battery replacement costs have narrowed that gap. Which is the best description of Text 2’s relationship to Text 1?"
+  "Text 1: Electric buses are cheaper to run than diesel buses. Text 2: Battery replacement costs have narrowed that gap. Which is the best description of Text 2’s relationship to Text 1?",
+  "modal + (have) been + V3",
+  "modal + be.",
+  "modal + have been + V3.",
+  "similar to."
 ]

@@ -132,7 +132,7 @@ export const B2_U11: Unit = {
         ch('I’ll go ___ it rains. (yog‘masa)', ['unless', 'in case', 'otherwise'], 0, 'unless = if not.'),
         ch('Leave early ___ there is traffic. (ehtimolga qarshi)', ['in case', 'unless', 'as long as'], 0, 'in case.'),
         ch('She can stay ___ she doesn’t make noise.', ['as long as', 'unless', 'otherwise'], 0, 'as long as = sharti bilan.'),
-        gap('___ you don’t study, you won’t pass. (if bilan farqli)', ['Unless', 'If'], 'If you don’t / Unless you study.'),
+        gap('___ you don’t study, you won’t pass. (if bilan farqli)', ['If'], 'If you don’t / Unless you study.'),
         gap('Take a map ___ you get lost. (in case)', ['in case'], 'in case + Present Simple.'),
         multi('Choose ALL the correct sentences.', ['Unless you study, you will fail.', 'Unless you don’t study, you will fail.', 'Provided he comes, we will start.', 'Take a coat in case it gets cold.', 'I will help you unless I will be busy.'], [0, 2, 3], 'unless dan keyin inkor ham, will ham yo‘q.'),
       ],
