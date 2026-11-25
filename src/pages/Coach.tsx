@@ -9,7 +9,8 @@ import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
 import { listenTurn, SpeechError, stopSpeaking, sttSupported } from '../lib/speech';
 import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
-import { parkMic, recordTurn, recorderSupported, SttError, transcribeTurn } from '../lib/voiceTurn';
+import { parkMic, recordTurn, recorderSupported, resumeAudio, SttError, transcribeTurn } from '../lib/voiceTurn';
+import { lockTelegramSwipes } from '../lib/telegram';
 import { MAX_TALK_MS, PTT_IDLE, pttStep, type PttInput, type PttState } from '../lib/ptt';
 import { personaLevel, useProfile } from '../lib/store';
 import { liveSupported, startLive, type LiveCall } from '../lib/liveCall';
@@ -303,6 +304,7 @@ export default function Coach() {
     if (endRef.current) endRef.current(); else listenSig.current.cancelled = true; // mikrofon hali ochilmagan (ruxsat so'ralmoqda) — navbat bekor
   };
   const press = (e: PttInput) => {
+    if (e.type === 'down') resumeAudio(); // avtomatik boshlangan qo'ng'iroqda ovoz birinchi tegishda yoqiladi (iOS/Telegram)
     if (e.type === 'down') { const ph = phaseRef.current; if (!liveRef.current || ph === 'connecting' || (!liveRefCall.current && ph === 'thinking')) return; }
     const [n, a] = pttStep(pttState.current, e); pttState.current = n;
     setLatched(n.mode === 'latched');
@@ -335,8 +337,15 @@ export default function Coach() {
     onPointerCancel: () => press({ type: 'cancel' }),
     onContextMenu: (e: { preventDefault(): void }) => e.preventDefault(),
   };
-  // Qo'ng'iroq paytida sahifa orqada siljimasin
-  useEffect(() => { if (!live) return; const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = prev; }; }, [live]);
+  // Qo'ng'iroq paytida sahifa orqada siljimasin; Telegram oynasi ham pastga surilib yig'ilmasin
+  useEffect(() => { if (!live) return; const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; lockTelegramSwipes(true); return () => { document.body.style.overflow = prev; lockTelegramSwipes(false); }; }, [live]);
+  // Egasi (2026-11-25): "Sellzenga kirishim bilan boshlayversin — ichkariga ikki marta kirishga majbur bo'lyapman". Sahifa ochilishi bilan
+  // qo'ng'iroq o'zi boshlanadi (bir marta; o'quvchi tugatsa — qayta boshlanmaydi, yuzga tegib yana boshlash mumkin).
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current || live || !acc || !status?.coach || limitMsg) return;
+    autoStarted.current = true; start();
+  }, [acc, status, live, limitMsg]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase === 'connecting' ? 'thinking' : phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 'var(--face)' : 'min(46vw, 190px)'} look={personaLevel(p)} /></div>;
 

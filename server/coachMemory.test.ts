@@ -75,7 +75,12 @@ assert.equal(emotionOf('Almost! One small thing.'), 'disappointed');
 assert.equal(emotionOf('Listen carefully, this rule is important.'), 'serious');
 assert.equal(emotionOf('Are you serious? Again the same mistake.'), 'angry');
 assert.equal(emotionOf('Great! Perfect! Now say it again!'), 'happy', 'ko‘p undovli maqtov — jahl emas');
-assert.equal(emotionOf('No! No! Wrong again!'), 'angry');
+assert.equal(emotionOf('No, no, no! Wrong again!'), 'angry');
+// O'zbekcha dars matni jahl emas (egasi: "yuz asosan jahl holatida")
+for (const calm of ['Bu nima? Inglizchada «What is this?» deymiz.', 'Dahshat zo‘r gap bo‘ldi!', '«Qovoq» — pumpkin. Takrorlang!', 'Yana bir bor! Sekinroq! Endi siz!', 'Uyatchan bo‘lmang, gapiring.'])
+  assert.notEqual(emotionOf(calm), 'angry', calm);
+assert.equal(emotionOf('Necha marta aytaman?! Yana o‘sha xato!'), 'angry');
+assert.equal(emotionOf('What?! Really?! Again?!'), 'angry');
 assert.equal(emotionOf('Hello! How are you today?'), 'neutral', 'salom — jahl emas');
 assert.ok(buildLivePrompt({ adult: false, native: 'English' }).includes('Speak ONLY English'));
 assert.ok(first.includes('UZBEK QUALITY') && first.includes('adabiy') && !buildLivePrompt({ adult: false, native: 'Russian' }).includes('UZBEK QUALITY'), 'o‘zbekcha — adabiy til, shevasiz');

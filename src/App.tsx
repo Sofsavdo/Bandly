@@ -156,12 +156,14 @@ function MainApp() {
   const redirect = authRoute(hash, acc);
   useLayoutEffect(() => { if (redirect) window.location.replace(redirect); }, [redirect]);
   const wall = !acc ? redirect !== null || hash.startsWith('#/login') : hash.startsWith('#/login');
+  // Sellzen (ovozli ustoz) sahifasi ekranga sig'adi: sayt pastki qismi yo'q, skrol yo'q (egasi, 2026-11-25)
+  const fit = !wall && hash === '#/coach';
   const page = wall ? <Login /> : tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
   return (
     <>
       <Header hash={hash} />
-      <main className="container">{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.length > 1 && !lessonId && !tr && !bossUnit && !duelCode && <SubNav items={where.section.children} hash={hash} active={where.page.href} />}<Suspense fallback={<Loading />}>{page}</Suspense></main>
-      <Footer />
+      <main className={`container${fit ? ' fit' : ''}`}>{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.length > 1 && !lessonId && !tr && !bossUnit && !duelCode && <SubNav items={where.section.children} hash={hash} active={where.page.href} />}<Suspense fallback={<Loading />}>{page}</Suspense></main>
+      {!fit && <Footer />}
       <PlanRunBar hash={hash} />
       <TabBar hash={hash} />
       <Toasts />
