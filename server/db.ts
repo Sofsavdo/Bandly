@@ -3,6 +3,7 @@ import { tzDay } from './day';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { ensureXpTables } from './xp';
 import { ensureReminderColumns } from './reminders';
+import { ensureNudgeColumns } from './nudges';
 import { ensureI18nTables } from './i18n';
 import { ensureReferralColumns } from './referral';
 import { ensureCreatorTables } from './creatorSchema';
@@ -129,6 +130,7 @@ export function createDb(path = ':memory:'): DatabaseSync {
   db.exec('CREATE INDEX IF NOT EXISTS sessions_player ON sessions (player_id)');
   ensureXpTables(db);
   ensureReminderColumns(db);
+  ensureNudgeColumns(db);
   ensureI18nTables(db);
   ensureReferralColumns(db);
   ensureCreatorTables(db); // Creator Growth: faqat yangi jadvallar

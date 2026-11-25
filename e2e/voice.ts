@@ -245,6 +245,24 @@ try {
     await waitStatus(p, /Navbat sizda/, 12000); // ustoz fikrini oxirigacha aytdi (ustidan kesilmadi)
   });
 
+  await step('J3b. Fokus tugma/havolada bo‘lsa ham Probel bosib-gapirishni boshlaydi (suhbat tugamaydi)', async () => {
+    await waitStatus(p, /Navbat sizda/, 12000);
+    for (const sel of ['button.call-end', 'a']) {
+      const el = p.locator(sel).first(); if (!(await el.count())) continue;
+      await el.focus();
+      assert.ok(await p.evaluate(() => document.activeElement?.tagName === 'BUTTON' || document.activeElement?.tagName === 'A'), `${sel}: fokus tugma/havolada`);
+      const s0 = scribeCalls.length;
+      await p.keyboard.down('Space');
+      await waitStatus(p, /Tinglayapman/, 3000);
+      await wait(1200);
+      await p.keyboard.up('Space');
+      for (let i = 0; i < 100 && scribeCalls.length === s0; i++) await wait(50);
+      assert.ok(scribeCalls.length - s0 >= 1, `${sel}: fokusda Space → Scribe`);
+      assert.equal(await p.locator('button.call-end').count(), 1, `${sel}: Probel suhbatni tugatmadi`);
+      await waitStatus(p, /Sellzen gapiryapti/, 6000); await waitStatus(p, /Navbat sizda/, 12000);
+    }
+  });
+
   await step('J4. Qisqa (tasodifiy) tegish — hech narsa yuborilmaydi; qo‘l olinsa tinglash doim to‘xtaydi', async () => {
     const c = await faceCenter(p); const s0 = scribeCalls.length, t = now();
     await p.mouse.move(c.x, c.y); await p.mouse.down(); await wait(90); await p.mouse.up();

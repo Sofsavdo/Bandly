@@ -314,9 +314,12 @@ export default function Coach() {
   // Desktop: Probel — bosib turib gapirish (matn kiritish maydonida ishlamaydi). Sahifa fonga o'tsa yoki oyna fokusini yo'qotsa — yozish bekor.
   useEffect(() => {
     if (!live) return;
-    const skip = (t: EventTarget | null) => { const el = t as HTMLElement | null; if (!el?.tagName) return false; return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable || (el.tagName === 'BUTTON' && !el.dataset.ptt) || el.tagName === 'A'; };
-    const down = (e: KeyboardEvent) => { if (e.code !== 'Space' || skip(e.target)) return; e.preventDefault(); if (!e.repeat) pressRef.current({ type: 'down', at: performance.now() }); };
-    const up = (e: KeyboardEvent) => { if (e.code !== 'Space' || skip(e.target)) return; e.preventDefault(); pressRef.current({ type: 'up', at: performance.now() }); };
+    // Faqat matn kiritiladigan maydonlarda Probel odatdagidek ishlaydi. Tugma yoki havolada fokus qolgan bo'lsa ham (ekranga havola orqali kirilganda doim shunday)
+    // Probel — bosib-gapirish; tugmani Enter bosadi. preventDefault tugma/havola "bosilib" ketishini (masalan, suhbat tugashini) ham to'xtatadi.
+    const skip = (t: EventTarget | null) => { const el = t as HTMLElement | null; if (!el?.tagName) return false; return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable; };
+    const isSpace = (e: KeyboardEvent) => e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar' || e.keyCode === 32; // ba'zi klaviatura/masofaviy ish stoli code'ni yubormaydi
+    const down = (e: KeyboardEvent) => { if (!isSpace(e) || skip(e.target)) return; e.preventDefault(); if (!e.repeat) pressRef.current({ type: 'down', at: performance.now() }); };
+    const up = (e: KeyboardEvent) => { if (!isSpace(e) || skip(e.target)) return; e.preventDefault(); pressRef.current({ type: 'up', at: performance.now() }); };
     const cancel = () => pressRef.current({ type: 'cancel' });
     const vis = () => { if (document.hidden) cancel(); };
     window.addEventListener('keydown', down); window.addEventListener('keyup', up); window.addEventListener('blur', cancel); document.addEventListener('visibilitychange', vis);
