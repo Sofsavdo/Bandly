@@ -14,6 +14,17 @@ import { cefrListening1 } from './cefrListening1';
 import { cefrListening2 } from './cefrListening2';
 import { cefrListening3 } from './cefrListening3';
 import { cefrListening4 } from './cefrListening4';
+import { listeningFull6 } from './listeningFull6';
+import { listeningFull7 } from './listeningFull7';
+import { listeningFull8 } from './listeningFull8';
+import { listeningFull9 } from './listeningFull9';
+import { listeningFull10 } from './listeningFull10';
+import { cefrListening5 } from './cefrListening5';
+import { cefrListening6 } from './cefrListening6';
+import { cefrListening7 } from './cefrListening7';
+import { cefrListening8 } from './cefrListening8';
+import { cefrListening9 } from './cefrListening9';
+import { cefrListening10 } from './cefrListening10';
 import type { ListeningTest } from './types';
 
-export const listeningTests: ListeningTest[] = [listening5, listening6, listening7, listening10, listening11, listening1, listening8, listening2, listening12, listening13, listening3, listening9, listening14, listening15, listening16, listening4, listening17, listening18, listeningFull1, listeningFull2, listeningFull3, listeningFull4, listeningFull5, cefrListening1, cefrListening2, cefrListening3, cefrListening4];
+export const listeningTests: ListeningTest[] = [listening5, listening6, listening7, listening10, listening11, listening1, listening8, listening2, listening12, listening13, listening3, listening9, listening14, listening15, listening16, listening4, listening17, listening18, listeningFull1, listeningFull2, listeningFull3, listeningFull4, listeningFull5, listeningFull6, listeningFull7, listeningFull8, listeningFull9, listeningFull10, cefrListening1, cefrListening2, cefrListening3, cefrListening4, cefrListening5, cefrListening6, cefrListening7, cefrListening8, cefrListening9, cefrListening10];
