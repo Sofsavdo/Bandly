@@ -4,6 +4,8 @@ import { recordStt, sttAllowed, sttConfigFromEnv, transcribe, type SttConfig } f
 
 assert.equal(sttConfigFromEnv({}), null, 'kalitsiz — o‘chiq');
 assert.ok(sttConfigFromEnv({ ELEVENLABS_API_KEY: 'k' }));
+assert.equal(sttConfigFromEnv({ ELEVENLABS_API_KEY: 'k' })!.model, 'scribe_v2', 'standart — Scribe v2 (egasi rozi, 2026-11-25)');
+assert.equal(sttConfigFromEnv({ ELEVENLABS_API_KEY: 'k', STT_MODEL: 'scribe_v1' })!.model, 'scribe_v1', 'muhit o‘zgaruvchisi bilan qaytarish mumkin');
 let sent: FormData | null = null;
 const cfg: SttConfig = { key: 'k', model: 'scribe_v1', dailySecondsPerUser: 60, globalDailySeconds: 120, pricePerHour: 0.4,
   fetchImpl: (async (_u: string, init: { body: FormData }) => { sent = init.body; return new Response(JSON.stringify({ text: ' I  go to market yesterday ', language_code: 'eng', words: [{ type: 'word', end: 0.5 }, { type: 'spacing', end: 0.6 }, { type: 'word', end: 2.4 }] }), { status: 200 }); }) as never };

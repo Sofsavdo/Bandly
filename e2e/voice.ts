@@ -4,7 +4,7 @@
 //       tugatilgach qayta o'zi boshlanmaydi, yuzga tegib yana boshlash mumkin
 //   J2. Ekranga tegib turish → ovoz serverga → qo'yib yuborish → Scribe matni "Siz" qatorida, Gemini'ga MATN boradi (ovoz emas); ustoz javobi, hissiyot (yurak)
 //   J3. Ustoz gapirayotganda ataylab tegish ustozni to'xtatadi (eski ovoz tashlanadi); Probel (Space) ham shunday; ustoz fikrini tugatadi
-//   J4. Qisqa tegish — qulf; yana tegish tugatadi
+//   J4. Qisqa (tasodifiy) tegish — hech narsa yuborilmaydi; bosib turish — tinglaydi, qo'yib yuborish — javob (qulf rejimi yo'q)
 //   J5. Scribe bo'sh matn qaytardi (jim/tushunarsiz navbat) — "Ovoz eshitilmadi", Gemini'ga hech narsa bormaydi
 //   J6. "Darsga o'tamiz" desa — tugma emas, ilova o'zi dars sahifasini ochadi (qo'ng'iroq tugaydi)
 //   J7. Ekran: 6 xil o'lchamda sahifa skrol qilinmaydi, tugatish tugmasi ko'rinadi, holatlar almashganda yuz joyidan siljimaydi
@@ -245,16 +245,18 @@ try {
     await waitStatus(p, /Navbat sizda/, 12000); // ustoz fikrini oxirigacha aytdi (ustidan kesilmadi)
   });
 
-  await step('J4. Qisqa tegish — qulf; yana tegish tugatadi', async () => {
-    const c = await faceCenter(p); const s0 = scribeCalls.length;
+  await step('J4. Qisqa (tasodifiy) tegish — hech narsa yuborilmaydi; qo‘l olinsa tinglash doim to‘xtaydi', async () => {
+    const c = await faceCenter(p); const s0 = scribeCalls.length, t = now();
     await p.mouse.move(c.x, c.y); await p.mouse.down(); await wait(90); await p.mouse.up();
-    await waitStatus(p, /Tinglayapman/, 2000);
-    assert.match(await p.locator('.call-sub').innerText(), /yana tegining/, 'qulflangan: yana tegining');
-    await wait(1500);
-    assert.equal(scribeCalls.length, s0, 'qulflangan yozuv o‘zi tugamaydi');
-    await p.mouse.down(); await wait(60); await p.mouse.up();
+    await waitStatus(p, /Navbat sizda/, 3000);
+    await wait(1200);
+    assert.equal(scribeCalls.length, s0, 'qisqa tegish Scribe’ga yuborilmadi');
+    assert.equal(count('text', t), 0, 'ustozga hech narsa bormadi');
+    assert.doesNotMatch(await p.locator('.call-status').innerText(), /Ovoz eshitilmadi|Tinglayapman/, 'qulf yo‘q, "ovoz eshitilmadi" ham chiqmaydi');
+    // Bosib turish — tinglaydi; qo'yib yuborish — to'xtaydi va ustoz javob beradi
+    await p.mouse.down(); await waitStatus(p, /Tinglayapman/, 2000); await wait(1200); await p.mouse.up();
     for (let i = 0; i < 100 && scribeCalls.length === s0; i++) await wait(50);
-    assert.ok(scribeCalls.length - s0 >= 1);
+    assert.equal(scribeCalls.length - s0, 1, 'bosib turilgan gap bir marta yuborildi');
     await waitStatus(p, /Sellzen gapiryapti/, 6000); await waitStatus(p, /Navbat sizda/, 12000);
   });
 

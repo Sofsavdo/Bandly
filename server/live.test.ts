@@ -379,6 +379,11 @@ http.close(); upstream.close();
   // 4) "darsga o'tamiz" — tanilgan matn bo'yicha navigatsiya (bir marta)
   asrMode = 'nav'; await press(10); await until(() => msgs.some((m) => m.type === 'navigate'));
   assert.equal(msgs.find((m) => m.type === 'navigate')!.route, '#/learn');
+  // 4b) Tasodifiy qisqa tegish (discard): yig'ilgan ovoz tashlanadi — Scribe'ga ham, ustozga ham bormaydi
+  { const n0 = asrCalls.length, c0 = upCount((m) => !!m.clientContent);
+    ws.send(JSON.stringify({ type: 'activity', on: true })); for (let i = 0; i < 10; i++) ws.send(Buffer.alloc(3200), { binary: true }); await wait(40);
+    ws.send(JSON.stringify({ type: 'activity', on: false, discard: true })); await wait(300);
+    assert.equal(asrCalls.length, n0, 'qisqa tegish Scribe’ga yuborilmadi'); assert.equal(upCount((m) => !!m.clientContent), c0, 'ustozga hech narsa bormadi'); }
   // 5) Moslashuvchan Scribe tartibi: o'zbekcha navbat (3b) streakni nolga tushirdi; ketma-ket 2 ta inglizcha navbatdan keyin — avval inglizcha
   assert.deepEqual(asrCalls.slice(-2).map((c) => c.prefer), ['native', 'native'], 'o‘zbekchadan keyin yana ona tili birinchi');
   asrMode = 'text'; const in0 = msgs.filter((m) => m.type === 'in').length;

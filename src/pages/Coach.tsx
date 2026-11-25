@@ -103,7 +103,6 @@ export default function Coach() {
   const [secs, setSecs] = useState(0);
   const [capSec, setCapSec] = useState(0); // server ruxsat bergan qo'ng'iroq uzunligi (taymer: 03:12 / 10:00)
   const [talking, setTalking] = useState(false); // tugma bosib turilibdi (yoki qulflangan)
-  const [latched, setLatched] = useState(false);
   const [liveOn, setLiveOn] = useState(false);
   // Suhbat tarixi (Siz / Sellzen): chat kabi — eski gaplar yuqoriga chiqib ketadi, oxirgilari to'liq ko'rinadi (qisqartirilmaydi)
   const [msgs, setMsgs] = useState<{ id: number; who: 'you' | 'bot'; text: string }[]>([]);
@@ -199,7 +198,7 @@ export default function Coach() {
 
   const start = () => {
     liveRef.current = true; setLive(true); setSecs(0); setCapSec(0); setErr(''); setEmotion('happy'); resetCallVoice();
-    setLimitMsg(null); setLimitKind('quota'); setHint(''); setMsgs([]); youFresh.current = true; botFresh.current = true; pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false; setLatched(false);
+    setLimitMsg(null); setLimitKind('quota'); setHint(''); setMsgs([]); youFresh.current = true; botFresh.current = true; pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false;
     if (useLive) { void startLiveCall().then((ok) => { if (!ok && liveRef.current) startClassic(); }); return; }
     startClassic();
   };
@@ -216,7 +215,7 @@ export default function Coach() {
     sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.();
     stopSpeaking(); parkMic(); setPhase('idle'); setErr(''); setLvl(0); pending.current = null; turns.current = [];
     if (nav.current?.timer) clearTimeout(nav.current.timer); nav.current = null;
-    setLiveOn(false); setTalking(false); talkingRef.current = false; setLatched(false); pttState.current = PTT_IDLE; if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
+    setLiveOn(false); setTalking(false); talkingRef.current = false; pttState.current = PTT_IDLE; if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
     loadMinutes();
   };
 
@@ -292,23 +291,24 @@ export default function Coach() {
     if (phaseRef.current === 'speaking') { sig.current.cancelled = true; stopSpeaking(); } // ustozni ataylab to'xtatish
     void listen();
   };
-  const stopTalk = () => {
+  const stopTalk = (tap = false) => {
     talkingRef.current = false; setTalking(false);
     if (liveRefCall.current) {
-      liveRefCall.current.talk(false); setPhase('thinking'); setLvl(0);
+      liveRefCall.current.talk(false, tap); setPhase(tap ? 'idle' : 'thinking'); setLvl(0);
+      if (tap) return; // tasodifiy qisqa tegish: javob kutilmaydi
       // javob kelmasa (aloqa sust) — "o'ylayapman"da qotib qolmaymiz
       if (thinkTimer.current) clearTimeout(thinkTimer.current);
       thinkTimer.current = setTimeout(() => { thinkTimer.current = null; if (phaseRef.current === 'thinking') setPhase('idle'); }, 15_000);
       return;
     }
+    if (tap) listenSig.current.cancelled = true; // tasodifiy qisqa tegish: yozuv bekor, yuborilmaydi
     if (endRef.current) endRef.current(); else listenSig.current.cancelled = true; // mikrofon hali ochilmagan (ruxsat so'ralmoqda) — navbat bekor
   };
   const press = (e: PttInput) => {
     if (e.type === 'down') resumeAudio(); // avtomatik boshlangan qo'ng'iroqda ovoz birinchi tegishda yoqiladi (iOS/Telegram)
     if (e.type === 'down') { const ph = phaseRef.current; if (!liveRef.current || ph === 'connecting' || (!liveRefCall.current && ph === 'thinking')) return; }
     const [n, a] = pttStep(pttState.current, e); pttState.current = n;
-    setLatched(n.mode === 'latched');
-    if (a === 'start') startTalk(); else if (a === 'stop') stopTalk();
+    if (a === 'start') startTalk(); else if (a === 'stop') stopTalk(); else if (a === 'tap') stopTalk(true);
   };
   const pressRef = useRef(press); pressRef.current = press;
   // Desktop: Probel — bosib turib gapirish (matn kiritish maydonida ishlamaydi). Sahifa fonga o'tsa yoki oyna fokusini yo'qotsa — yozish bekor.
@@ -369,7 +369,7 @@ export default function Coach() {
   const canTalk = liveOn || canListen;
   const nearEnd = capSec > 0 && capSec - secs <= 30;
   const statusText = phase === 'idle' && hint ? hint : PHASE_UZ[phase];
-  const subHint = phase === 'listening' ? (latched ? L('Gapingiz tugagach yana tegining') : L('Gapingiz tugagach qo‘yib yuboring — Sellzen javob beradi'))
+  const subHint = phase === 'listening' ? L('Gapingiz tugagach qo‘yib yuboring — Sellzen javob beradi')
     : phase === 'speaking' ? L('Gapirmoqchi bo‘lsangiz — ekranga tegining, Sellzen to‘xtaydi')
     : phase === 'idle' && canTalk ? (finePointer ? L('Probelni (Space) bosib turib gapiring') : L('Ekranga tegib turib gapiring'))
     : '';
