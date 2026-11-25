@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DIGITAL_SAT as F } from '../content/examFormats';
 import { SAT_MATH, SAT_RW, type SatItem } from '../content/satPractice';
 import { checkItem, type ItemAnswer } from '../lib/lessons';
@@ -8,7 +8,7 @@ import { DailyLimit } from './DailyLimit';
 import { requestUnlock } from '../lib/freeQuota';
 import { L } from '../i18n';
 
-function Practice({ items, title }: { items: SatItem[]; title: string }) {
+function Batch({ items, title, onNext }: { items: SatItem[]; title: string; onNext?: () => void }) {
   const [ans, setAns] = useState<ItemAnswer[]>([]);
   const [done, setDone] = useState(false);
   const correct = items.filter((x, i) => checkItem(x.item, ans[i])).length;
@@ -30,9 +30,46 @@ function Practice({ items, title }: { items: SatItem[]; title: string }) {
         : (
           <div style={{ marginTop: 12 }}>
             <p className="row"><span className="pill">{correct}/{items.length}  {L('to‘g‘ri')}</span>{byDomain.map((b) => <span key={b.d} className="pill" style={{ whiteSpace: 'normal' }}>{b.d}: {b.ok}/{b.n}</span>)}</p>
-            <button className="btn" onClick={() => { setAns([]); setDone(false); }}>{L('Qayta ishlash')}</button>
+            <p className="row">
+              <button className="btn" onClick={() => { setAns([]); setDone(false); }}>{L('Qayta ishlash')}</button>
+              {onNext && <button className="btn primary" onClick={onNext}>{L('Keyingi to‘plam')}</button>}
+            </p>
           </div>
         )}
+    </div>
+  );
+}
+
+const PAGE = 10;
+
+/** Savollar ro'yxati: mavzu bo'yicha filtr + 10 tadan to'plamlar. "Hammasi"da mavzular navbat bilan aralashtiriladi. */
+function Practice({ items, title }: { items: SatItem[]; title: string }) {
+  const domains = useMemo(() => [...new Set(items.map((x) => x.domain))], [items]);
+  const [domain, setDomain] = useState<string>('all');
+  const [page, setPage] = useState(0);
+  const list = useMemo(() => {
+    if (domain !== 'all') return items.filter((x) => x.domain === domain);
+    const groups = domains.map((d) => items.filter((x) => x.domain === d));
+    const out: SatItem[] = [];
+    for (let i = 0; out.length < items.length; i++) for (const g of groups) if (g[i]) out.push(g[i]!);
+    return out;
+  }, [items, domains, domain]);
+  const pages = Math.max(1, Math.ceil(list.length / PAGE));
+  const cur = Math.min(page, pages - 1);
+  const batch = list.slice(cur * PAGE, cur * PAGE + PAGE);
+  return (
+    <div>
+      <p className="row"><span className="muted">{L('Mavzu:')}</span>
+        {['all', ...domains].map((d) => (
+          <button key={d} type="button" className={`chipbtn ${domain === d ? 'on' : ''}`} onClick={() => { setDomain(d); setPage(0); }}>{d === 'all' ? L('Hammasi') : d} ({d === 'all' ? items.length : items.filter((x) => x.domain === d).length})</button>
+        ))}
+      </p>
+      <p className="row"><span className="muted">{L('To‘plam (10 savoldan):')}</span>
+        {Array.from({ length: pages }, (_, i) => (
+          <button key={i} type="button" className={`chipbtn ${cur === i ? 'on' : ''}`} onClick={() => setPage(i)}>{i + 1}</button>
+        ))}
+      </p>
+      <Batch key={`${domain}-${cur}`} items={batch} title={`${title} · ${cur + 1}/${pages}`} onNext={cur + 1 < pages ? () => setPage(cur + 1) : undefined} />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 // Kontent chuqurligi pol (floor) tekshiruvi: tasodifan kontent yo'qolib ketmasin va yupqa joylar qaytmasin.
 // Raqamlar 2026-11-24 holatidan (docs/SELLZEN_MARKET_REVIEW_2026-11-24.md) — kontent faqat ko'payishi kerak; kamaytirish ongli qaror bo'lsin.
 import assert from 'node:assert/strict';
-import { ALL_LESSONS, UNITS } from './lessons';
+import { ALL_LESSONS, SAT_LESSONS, UNITS } from './lessons';
+import { SAT_MATH, SAT_RW } from './satPractice';
 import { vocab } from './vocab';
 import { grammar } from './grammar';
 import { readingTests } from './readingTests';
@@ -29,4 +30,8 @@ assert.ok(vocab.length >= 1280 && wl('A1') >= 240 && wl('B2') >= 300, `so‘zlar
 assert.ok(grammar.length >= 80, `grammatika savollari: ${grammar.length}`);
 assert.ok(readingTests.length >= 21 && listeningTests.length >= 20, `mock: ${readingTests.length}/${listeningTests.length}`);
 for (const lv of ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']) assert.ok(CAN_DO[lv]?.startsWith('I can'), `${lv}: can-do sarlavha`);
+// Digital SAT: to'liq darslik (R&W + Math) va savollar banki
+assert.ok(SAT_LESSONS.length >= 29, `SAT darslar: ${SAT_LESSONS.length}`);
+for (const { lesson } of SAT_LESSONS) assert.ok(lesson.practice.length >= 5 && lesson.check.length >= 4 && lesson.examples.length >= 4 && lesson.explanationUz.length >= 3, `${lesson.id}: SAT dars chuqurligi`);
+assert.ok(SAT_RW.length >= 85 && SAT_MATH.length >= 85, `SAT banki: R&W ${SAT_RW.length}, Math ${SAT_MATH.length}`);
 console.log(`depth.test: OK (${ALL_LESSONS.length} dars, ${vocab.length} so‘z)`);

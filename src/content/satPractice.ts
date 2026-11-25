@@ -1,10 +1,13 @@
 import type { Item } from './lessons/types';
 import { ch, gap } from './lessons/helpers';
+import { balanceChoices } from './balance';
+import { SAT_RW_BANK } from './satBankRw';
+import { SAT_MATH_BANK } from './satBankMath';
 
 // ORIGINAL Sellzen practice items in the style of the Digital SAT domains. Not official College Board material. No SAT score is estimated from them.
 export interface SatItem { domain: string; item: Item }
 
-export const SAT_RW: SatItem[] = [
+const BASE_RW: SatItem[] = [
   { domain: 'Standard English Conventions', item: ch('The museum’s collection, which includes over 3,000 manuscripts, ___ visited by thousands of researchers every year.', ['are', 'is', 'have been', 'were'], 1, 'Ega — “The collection” (birlik); vergullar orasidagi qism egaga ta’sir qilmaydi: is.') },
   { domain: 'Standard English Conventions', item: ch('Neither the students nor the teacher ___ aware of the schedule change.', ['were', 'was', 'are', 'have been'], 1, '“neither … nor” da fe’l yaqin turgan egaga moslashadi: the teacher → was.') },
   { domain: 'Standard English Conventions', item: ch('Each of the volunteers ___ a certificate at the end of the program.', ['receive', 'receives', 'are receiving', 'have received'], 1, '“Each” birlik hisoblanadi: receives.') },
@@ -15,7 +18,7 @@ export const SAT_RW: SatItem[] = [
   { domain: 'Information and Ideas', item: ch('A 2020 survey of 500 small businesses in Tashkent found that 62% had started selling online that year. Among businesses with fewer than five employees, the share was 48%; among those with more than twenty employees, it was 81%. Which choice is best supported by the data?', ['Larger businesses in the survey were more likely to sell online than smaller ones.', 'Most businesses with fewer than five employees sold online.', 'Online sales doubled for every business in the survey.', 'Businesses with more than twenty employees stopped selling in stores.'], 0, '81% > 48% — kattaroq korxonalarda ulush yuqori. 48% “ko‘pchilik” emas; qolgan variantlar haqida ma’lumot yo‘q.') },
 ];
 
-export const SAT_MATH: SatItem[] = [
+const BASE_MATH: SatItem[] = [
   { domain: 'Algebra', item: ch('If 3x + 7 = 22, what is the value of x?', ['3', '5', '7', '15'], 1, '3x = 15 → x = 5.') },
   { domain: 'Algebra', item: gap('A phone plan costs $12 per month plus $0.05 per text message. One month’s bill was $15.50. How many text messages were sent? ___', ['70', '70.0'], '(15.50 − 12) / 0.05 = 3.50 / 0.05 = 70.') },
   { domain: 'Algebra', item: gap('The lines y = 2x + 1 and y = −x + 7 intersect at the point (x, y). What is the value of x? ___', ['2', '2.0'], '2x + 1 = −x + 7 → 3x = 6 → x = 2.') },
@@ -26,3 +29,11 @@ export const SAT_MATH: SatItem[] = [
   { domain: 'Geometry and Trigonometry', item: ch('A right triangle has legs of length 6 and 8. What is the length of the hypotenuse?', ['10', '12', '14', '48'], 0, '√(6² + 8²) = √100 = 10.') },
   { domain: 'Geometry and Trigonometry', item: ch('In a right triangle, angle A is acute and sin A = 3/5. What is cos A?', ['3/4', '4/5', '5/3', '5/4'], 1, 'sin²A + cos²A = 1 → cos A = √(1 − 9/25) = 4/5.') },
 ];
+
+/** Reading & Writing: 8 ta asosiy + 80 ta bank savoli; to'g'ri javob o'rni teng taqsimlanadi. Math: 9 + 80. */
+const rwAll = [...BASE_RW, ...SAT_RW_BANK];
+const rwItems = balanceChoices(rwAll.map((x) => x.item));
+export const SAT_RW: SatItem[] = rwAll.map((x, i) => ({ domain: x.domain, item: rwItems[i]! }));
+const mathAll = [...BASE_MATH, ...SAT_MATH_BANK];
+const mathItems = balanceChoices(mathAll.map((x) => x.item));
+export const SAT_MATH: SatItem[] = mathAll.map((x, i) => ({ domain: x.domain, item: mathItems[i]! }));

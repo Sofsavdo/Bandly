@@ -27,6 +27,7 @@ import { A2_U9, A2_U10, B1_U9, B1_U10 } from './midplus';
 import { B2_U9, B2_U10, C1_U9, C1_U10 } from './upperplus';
 import { C2_U9, C2_U10 } from './c2plus';
 import { IELTS_UNITS, IELTS_TRACKS } from '../ielts';
+import { SAT_UNITS, satSectionOf } from '../sat';
 
 /** General English path (pilot slice A1–C2). Order matters: units and lessons follow the learning sequence. */
 const withWriting = (u: Unit): Unit => ({ ...u, lessons: u.lessons.map((l) => {
@@ -43,7 +44,11 @@ export const ALL_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flat
 export { IELTS_UNITS };
 export const IELTS_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(IELTS_UNITS);
 export const isIeltsLesson = (id: string): boolean => id.startsWith('ie-');
-export const lessonById = (id: string) => ALL_LESSONS.find((x) => x.lesson.id === id) ?? IELTS_LESSONS.find((x) => x.lesson.id === id);
+/** SAT kursi darslari (alohida yo'l: Reading & Writing va Math, har bir bo'lim ichida ketma-ket). */
+export { SAT_UNITS };
+export const SAT_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(SAT_UNITS);
+export const isSatLesson = (id: string): boolean => id.startsWith('sat-');
+export const lessonById = (id: string) => ALL_LESSONS.find((x) => x.lesson.id === id) ?? IELTS_LESSONS.find((x) => x.lesson.id === id) ?? SAT_LESSONS.find((x) => x.lesson.id === id);
 
 type Progress = Record<string, { passedAt: number | null } | undefined>;
 const LV = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -55,12 +60,27 @@ export function ieltsUnlocked(unit: Unit, index: number, progress: Progress, lev
   if (!track) return true;
   return LV.indexOf(level ?? 'A1') >= LV.indexOf('B2') || track.start.lessons.every((l) => !!progress[l.id]?.passedAt);
 }
-/** Keyingi dars shu kurs ichida: GE darsidan keyin GE darsi, IELTS darsidan keyin shu ko'nikmaning keyingi darsi. */
+/** SAT darsining ochiqligi: Reading & Writing va Math — ikki mustaqil yo'l; har birida dars ketma-ket (oldingi dars o'tilgach ochiladi), birinchi dars doim ochiq. */
+export function satUnlocked(unit: Unit, index: number, progress: Progress): boolean {
+  if (index > 0) return !!progress[unit.lessons[index - 1]!.id]?.passedAt;
+  const section = satSectionOf(unit.id);
+  const units = SAT_UNITS.filter((u) => satSectionOf(u.id) === section);
+  const k = units.findIndex((u) => u.id === unit.id);
+  if (k <= 0) return true;
+  const prev = units[k - 1]!;
+  return !!progress[prev.lessons[prev.lessons.length - 1]!.id]?.passedAt;
+}
+/** SAT kursidagi keyingi ochiq, o'tilmagan dars (berilgan bo'lim ichida; bo'lim berilmasa — Reading & Writing, so'ng Math). */
+export function nextSatLesson(progress: Progress, section?: 'rw' | 'math'): { unit: Unit; lesson: Lesson; index: number } | undefined {
+  return SAT_LESSONS.find((x) => (!section || satSectionOf(x.unit.id) === section) && !progress[x.lesson.id]?.passedAt && satUnlocked(x.unit, x.index, progress));
+}
+/** Keyingi dars shu kurs ichida: GE darsidan keyin GE darsi, IELTS darsidan keyin shu ko'nikmaning keyingi darsi, SAT darsidan keyin shu bo'limning keyingi darsi. */
 export function nextInCourse(id: string) {
-  const list = isIeltsLesson(id) ? IELTS_LESSONS : ALL_LESSONS;
+  const list = isIeltsLesson(id) ? IELTS_LESSONS : isSatLesson(id) ? SAT_LESSONS : ALL_LESSONS;
   const i = list.findIndex((x) => x.lesson.id === id);
   if (i < 0) return undefined;
   const n = list[i + 1];
+  if (n && isSatLesson(id)) return satSectionOf(n.unit.id) === satSectionOf(list[i]!.unit.id) ? n : undefined; // Reading & Writing dan Math ga sakramaydi
   if (!n || !isIeltsLesson(id)) return n;
   return n.unit.id.slice(0, 4) === list[i]!.unit.id.slice(0, 4) ? n : undefined; // ie-r* → faqat Reading ichida
 }

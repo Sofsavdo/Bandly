@@ -3,7 +3,7 @@ import { trackUser } from '../lib/track';
 import { ClipButton } from '../components/ClipButton';
 import { ItemView } from '../components/LessonItem';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { lessonById, lessonNodeId, lessonWordIds, nextInCourse, isIeltsLesson, ieltsUnlocked, UNITS } from '../content/lessons';
+import { lessonById, lessonNodeId, lessonWordIds, nextInCourse, isIeltsLesson, ieltsUnlocked, isSatLesson, satUnlocked, UNITS } from '../content/lessons';
 import { checkItem, correctAnswerText, fullSentence, isUnlocked, loadProgress, PASS_RATE, saveAttempt, scoreCheck, type ItemAnswer } from '../lib/lessons';
 import { advanceQueue, bossHp, lessonStars } from '../lib/lessonGame';
 import { BossBar, DiscoverDeck, FeedbackSheet, MissionIntro } from '../components/LessonGames';
@@ -81,11 +81,13 @@ export default function LessonPage({ id }: { id: string }) {
   useEffect(() => { window.scrollTo({ top: 0 }); }, [step, started]);
   const next = useMemo(() => nextInCourse(id), [id]);
   const ielts = isIeltsLesson(id);
-  const back = ielts ? '#/ielts' : '#/learn';
+  const sat = isSatLesson(id);
+  const back = ielts ? '#/ielts' : sat ? '#/sat' : '#/learn';
+  const course = ielts ? 'ielts' : sat ? 'sat' : 'ge';
 
   if (!found) return <div className="card"><h2>{L('Dars topilmadi')}</h2><a className="btn" href={back}>{L('Darslar ro‘yxati')}</a></div>;
   const { unit, lesson, index } = found;
-  if (!(ielts ? ieltsUnlocked(unit, index, loadProgress(), getProfile().level) : isUnlocked(unit, index, loadProgress(), { units: UNITS, level: getProfile().level }))) return <div className="card"><h2>{lesson.titleUz}</h2><p>{ielts && index === 0 ? L('Bu bo‘lim Start darslarini tugatganingizdan keyin (yoki darajangiz B2 bo‘lsa) ochiladi.') : L('Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.')}</p><a className="btn" href={back}>{L('Darslar ro‘yxati')}</a></div>;
+  if (!(ielts ? ieltsUnlocked(unit, index, loadProgress(), getProfile().level) : sat ? satUnlocked(unit, index, loadProgress()) : isUnlocked(unit, index, loadProgress(), { units: UNITS, level: getProfile().level }))) return <div className="card"><h2>{lesson.titleUz}</h2><p>{ielts && index === 0 ? L('Bu bo‘lim Start darslarini tugatganingizdan keyin (yoki darajangiz B2 bo‘lsa) ochiladi.') : L('Bu dars avvalgi darsdan o‘tganingizdan keyin ochiladi.')}</p><a className="btn" href={back}>{L('Darslar ro‘yxati')}</a></div>;
 
   const ORDER: Step[] = ['learn', 'practice', ...(lesson.skipSpeak ? [] : ['speak' as const]), ...(lesson.writing ? ['write' as const] : []), 'check', 'result'];
   /** Qadamga o'tish: faqat ochilgan qadamlar yoki navbatdagisi. */
@@ -166,20 +168,20 @@ export default function LessonPage({ id }: { id: string }) {
 
   return (
     <div>
-      <a className="btn sm" href={back}><ArrowLeft size={14} />  {ielts ? L('IELTS kursi') : L('Darslar')}</a>
+      <a className="btn sm" href={back}><ArrowLeft size={14} />  {ielts ? L('IELTS kursi') : sat ? L('SAT kursi') : L('Darslar')}</a>
       <div className="lesson-hud sticky" aria-label={L('Dars holati')}>
         <div className="seg-progress" role="img" aria-label={L('{0} / {1} qadam', [Math.min(stepIdx + 1, steps.length), steps.length])}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
         <span className="hud-hearts" role="img" aria-label={L('{0} ta jon', [play.hearts])}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>
         {play.combo >= 2 && <span className="hud-combo" role="img" aria-label={`Combo ${play.combo}`}><Flame size={16} /> ×{play.combo}</span>}
       </div>
       {!started && limitAt !== null ? (
-        <DailyLimit course={ielts ? 'ielts' : 'ge'} resetAt={limitAt} back={back} />
+        <DailyLimit course={course} resetAt={limitAt} back={back} />
       ) : !started ? (
         <MissionIntro unit={unit} lesson={lesson} steps={steps.map((st) => STEP_UZ[st])} onStart={() => {
           // Bepul tarif: o'tilgan dars — takrorlash bepul; yangi dars — kunlik kvotadan (obunachiga cheklov yo'q)
           trackUser('lesson_start'); startedAt.current = Date.now(); tally.current = emptyTally();
           if (loadProgress()[lesson.id]?.passedAt) { setStarted(true); return; }
-          void requestUnlock(ielts ? 'ielts' : 'ge', lesson.id).then((r) => { if (r.ok) setStarted(true); else setLimitAt(r.resetAt); });
+          void requestUnlock(course, lesson.id).then((r) => { if (r.ok) setStarted(true); else setLimitAt(r.resetAt); });
         }} />
       ) : (
       <section className="card page-head lesson-head" style={{ marginTop: 10 }}>
@@ -282,6 +284,7 @@ export default function LessonPage({ id }: { id: string }) {
             <button className="btn" onClick={retry}><RotateCcw size={14} />  {L('Qayta jang')}</button>
             {result.passed && next && <a className="btn primary" href={`#/learn/${next.lesson.id}`}>{L('Keyingi dars:')} {next.lesson.titleUz} <ArrowRight size={14} /></a>}
             {result.passed && !next && ielts && <a className="btn primary" href="#/ielts">{L('IELTS kursiga qaytish')} <ArrowRight size={14} /></a>}
+            {result.passed && !next && sat && <a className="btn primary" href="#/sat">{L('SAT kursiga qaytish')} <ArrowRight size={14} /></a>}
             {!result.passed && <button className="btn" onClick={() => setStep('learn')}>{L('Qoidani qayta ko‘rish')}</button>}
           </div>
         </section>

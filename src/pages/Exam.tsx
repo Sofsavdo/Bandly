@@ -10,6 +10,7 @@ import { SatPrep } from '../components/SatPrep';
 import { Illo } from '../components/Illo';
 import { takeExamTab, type ExamTab } from '../lib/examTab';
 import { IeltsCourseCard } from './IeltsCourse';
+import { SatCourseCard } from './SatCourse';
 import { L } from '../i18n';
 import { ExamPath } from '../components/ExamPath';
 import { FREE_INFO } from '../config';
@@ -37,6 +38,7 @@ export default function Exam() {
       {tab === 'cefr' && <ExamPath exam="cefr" />}
       {tab === 'cefr' && <CefrPrep />}
       {tab === 'sat' && <ExamPath exam="sat" />}
+      {tab === 'sat' && <SatCourseCard />}
       {tab === 'sat' && <SatPrep />}
       {tab === 'ielts' && <IeltsCourseCard />}
       {tab === 'ielts' && <BandProgress compact />}
