@@ -26,6 +26,7 @@ import { TTS_DAILY_LIMIT, TtsError, VOICE_DAILY_ANSWERS, cleanText, estimateCost
 import { backupStatus, startAutoBackup } from './autoBackup';
 import { AttemptLimiter, hashPassword, loginGoogle, normPhone, passwordProblem, phoneRecord, registerPhone, sessionFor, verifyPassword } from './credentials';
 import { GoogleAuthError, verifyGoogleIdToken } from './google';
+import { erasePlayer } from './erase';
 import { PHOTO_MAX, auditLog, audit, claimAll, composeFull, issueFor, myCertificates, profileOf, publicCertificate, recordResult, revokeCertificate, rules as certRules, savePhoto, searchCertificates, setFullName, setRule, setSettings as setCertSettings, settings as certSettings } from './certificates';
 import { gradeRequest } from './mockGrade';
 import { aiDraftLessons, extractText, isVideo, MAX_VIDEO, saveMedia } from './importer';
@@ -257,6 +258,14 @@ const httpServer = createServer(async (req, res) => {
       const r = loginGoogle(db, g.sub, g.name ?? '', typeof b.link === 'string' ? b.link : undefined);
       if (r.created) attachAttribution(db, byToken(db, r.token).id, { ref: b.ref, ref0: b.ref0, cid: b.cid }, clientFingerprint(db, ip, String(req.headers['user-agent'] ?? '')));
       return send(res, 200, { token: r.token, nickname: r.nickname, linked: r.linked, created: r.created, photo: null });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/me/erase') {
+      const me = byToken(db, String(req.headers['x-token'] ?? ''));
+      const b = await readJson(req);
+      if (b.confirm !== true) throw new ApiError(400, 'Tasdiqlash kerak');
+      const r = erasePlayer(db, me.id);
+      audit(db, null, 'account.erase', `player:${me.id}`, { tables: Object.keys(r.tables).length });
+      return send(res, 200, { ok: true });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
       revokeSession(db, String(req.headers['x-token'] ?? '')); // shu qurilma tokeni endi ishlamaydi

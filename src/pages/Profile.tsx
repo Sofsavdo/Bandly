@@ -1,7 +1,7 @@
 import { Lock, LogOut, Trophy } from 'lucide-react';
 import { UserAvatar } from '../components/UserAvatar';
 import { useEffect, useState } from 'react';
-import { getAccount, onAccountChange } from '../lib/account';
+import { eraseAccount, getAccount, onAccountChange } from '../lib/account';
 import { JoinForm } from '../components/JoinForm';
 import { SignOutDialog } from '../components/SignOutDialog';
 import { fmtDate, refreshEntitlements } from '../lib/pay';
@@ -30,6 +30,8 @@ export default function Profile() {
   const [snd, setSnd] = useState(soundOn());
   const [acc, setAcc] = useState(getAccount());
   const [bye, setBye] = useState(false);
+  const [erasing, setErasing] = useState(false);
+  const [eraseErr, setEraseErr] = useState('');
   useEffect(() => onAccountChange(() => setAcc(getAccount())), []);
   const earned = ACHIEVEMENTS.filter((a) => p.achievements.includes(a.id));
   const lp = levelProgress(p.xp);
@@ -65,6 +67,18 @@ export default function Profile() {
           <button className="btn sm" onClick={() => setBye(true)}><LogOut size={14} />  {L('Chiqish')}</button>
         </div>
         {bye && <SignOutDialog onClose={() => setBye(false)} />}
+        {acc && (
+          <details className="fold" style={{ marginTop: 10 }}>
+            <summary>{L('Hisobni o‘chirish')}</summary>
+            <p className="evidence">{L('Hisobingiz va barcha shaxsiy ma’lumotlaringiz (progress, natijalar, xatolar, telefon) o‘chiriladi. Bu amalni qaytarib bo‘lmaydi. To‘lov yozuvlari hisob-kitob uchun anonim holda qoladi.')}</p>
+            <button className="btn sm danger" disabled={erasing} onClick={() => {
+              if (!window.confirm(L('Hisob butunlay o‘chiriladi. Bu amalni qaytarib bo‘lmaydi. Davom etasizmi?'))) return;
+              setErasing(true); setEraseErr('');
+              eraseAccount().catch((e: unknown) => { setErasing(false); setEraseErr(e instanceof Error ? e.message : L('Hisobni o‘chirib bo‘lmadi. Qayta urinib ko‘ring.')); });
+            }}>{L('Hisobni butunlay o‘chirish')}</button>
+            {eraseErr && <p className="err" role="alert">{eraseErr}</p>}
+          </details>
+        )}
         {acc && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} text={L('Hisobingizni bog‘lang (Telegram, Google yoki telefon raqam) — shunda qayta kira olasiz.')} /></div>}
         <h4 style={{ margin: '14px 0 4px' }}>{L('Obunalar')}</h4>
         {(() => {

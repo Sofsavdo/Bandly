@@ -51,6 +51,25 @@ export async function signOut(wipe: boolean): Promise<void> {
   location.reload();
 }
 
+/**
+ * Hisobni butunlay o'chirish (serverdagi shaxsiy ma'lumotlar + shu qurilmadagi barcha Sellzen ma'lumotlari).
+ * To'lov yozuvlari hisob-kitob uchun anonim holda serverda qoladi. Muvaffaqiyatli bo'lsa sahifa qayta yuklanadi.
+ */
+export async function eraseAccount(): Promise<void> {
+  const tok = getAccount()?.token;
+  if (!tok) return;
+  const r = await fetch('/api/me/erase', { method: 'POST', headers: { 'x-token': tok, 'content-type': 'application/json' }, body: JSON.stringify({ confirm: true }) });
+  if (!r.ok) { const j = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(j.error ?? L('Hisobni o‘chirib bo‘lmadi. Qayta urinib ko‘ring.')); }
+  logout();
+  clearFinishedAttempts();
+  stageClear();
+  for (const st of [localStorage, sessionStorage]) {
+    try { Object.keys(st).filter((k) => k.startsWith('bandly.') && !KEEP.has(k)).forEach((k) => st.removeItem(k)); } catch { /* */ }
+  }
+  location.replace(`${location.pathname}${location.search}#/`);
+  location.reload();
+}
+
 // ---------------- Telegram orqali kirish (OD-05) ----------------
 export interface AuthConfig { telegram: { bot: string; host?: string | null } | null; phone?: boolean; google?: { clientId: string } | null } // host — BotFather domeni: vidjet faqat shu manzilda ishlaydi
 let cfg: Promise<AuthConfig> | null = null;

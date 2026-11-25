@@ -45,6 +45,23 @@ function pathD(pts: { x: number; y: number }[]): string {
 
 function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; progress: ProgressMap; currentId: string | null; level: string | null; onPick: (s: Sel) => void; curRef: React.MutableRefObject<HTMLButtonElement | null> }) {
   const t: ZoneTheme = ZONES[lv]!;
+  const nodesRef = useRef<HTMLOListElement>(null);
+  // Bo'lim nomi (unit-sign) ekran chetidan chiqib ketmasin: uzun nom (ru/kk/ky/tg) qatorga bo'linadi va chetga yaqin bo'lsa ichkariga suriladi.
+  useLayoutEffect(() => {
+    const ol = nodesRef.current; if (!ol) return;
+    const fit = () => {
+      const box = ol.getBoundingClientRect(); const pad = 8;
+      ol.querySelectorAll<HTMLElement>('.unit-sign').forEach((el) => {
+        el.style.setProperty('--shift', '0px');
+        const r = el.getBoundingClientRect();
+        const shift = r.left < box.left + pad ? box.left + pad - r.left : r.right > box.right - pad ? box.right - pad - r.right : 0;
+        if (shift) el.style.setProperty('--shift', `${Math.round(shift)}px`);
+      });
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  });
   const saved = loadAdaptive();
   const bosses = loadBoss();
   const now = Date.now();
@@ -105,7 +122,7 @@ function Zone({ lv, progress, currentId, level, onPick, curRef }: { lv: string; 
         </svg>
       </header>
 
-      <ol className="zone-nodes" aria-label={L('{0} darslari', [lv])}>
+      <ol ref={nodesRef} className="zone-nodes" aria-label={L('{0} darslari', [lv])}>
         {items.map((it) => {
           if (it.kind === 'trophy') {
             return (
