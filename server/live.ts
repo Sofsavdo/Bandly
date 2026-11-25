@@ -216,7 +216,7 @@ interface LiveDeps {
   /** O'quvchi uchun: birinchi qo'ng'iroqmi va xotira matni (ko'rsatmaga qo'shiladi) */
   context?: (playerId: number) => { firstCall: boolean; memory: string; followUp?: string };
   /** Qo'ng'iroq boshidagi ko'rsatma (o'quvchi hali gapirmagan) */
-  kickoff?: (o: { firstCall: boolean; hasMemory: boolean; plan?: string; followUp?: string }) => string;
+  kickoff?: (o: { firstCall: boolean; hasMemory: boolean; plan?: string; followUp?: string; level?: string | null; native?: string }) => string;
   /** Nutqni tanish (ElevenLabs Scribe): navbat ovozi (WAV) → matn. Limit/xato — istisno: navbat Gemini'ga ovoz sifatida yuboriladi. Berilmasa — har doim ovoz yuboriladi. */
   /** prefer: 'en' — o'quvchi oxirgi navbatlarda inglizcha gapirgan, Scribe avval inglizcha tanisin (ikki marta so'ramaslik uchun) */
   asr?: (playerId: number, wav: Buffer, lang: string, prefer?: 'native' | 'en') => Promise<{ text: string; lang: string | null; score?: number | null } | null>;
@@ -334,7 +334,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
         for (const b of pending.splice(0)) forward(b);
         void ctxWait.then(() => {
           if (closed || ws.readyState !== WebSocket.OPEN) return;
-          const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory, plan: ctxPrompt(learnerCtx) || undefined, followUp: ctx.followUp }) ?? `(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)${learnerCtx ? `\n${ctxPrompt(learnerCtx)}` : ''}`;
+          const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory, plan: ctxPrompt(learnerCtx) || undefined, followUp: ctx.followUp, level: url.searchParams.get('level'), native: d.native(lang) }) ?? `(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)${learnerCtx ? `\n${ctxPrompt(learnerCtx)}` : ''}`;
           ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: kick }] }], turnComplete: true } }));
         });
         return;

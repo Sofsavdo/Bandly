@@ -136,4 +136,27 @@ for (const k of kicks) assert.ok(k.startsWith('(The learner') && /Do NOT introdu
 const kf = liveKickoff({ firstCall: false, hasMemory: true, followUp: 'Ask how the football match went', rnd: () => 0 });
 assert.match(kf, /Do NOT introduce yourself.*First ask about this from last time: Ask how the football match went.*MEMORY/);
 assert.ok(!liveKickoff({ firstCall: true, hasMemory: false, followUp: 'x' }).includes('last time'), 'birinchi qo‘ng‘iroqda kuzatuv yo‘q');
+// 2026-11-25 (egasi: "juda ko'p inglizcha gapiryapti, 0 yoki A1 dan kirgan odam qiynaladi; tushuntirishlar ham inglizchada")
+{
+  const uzA1 = buildLivePrompt({ adult: false, native: 'Uzbek (Latin script)', level: 'A1' });
+  const uzNone = buildLivePrompt({ adult: false, native: 'Uzbek (Latin script)' });
+  for (const t of [uzA1, uzNone]) {
+    assert.ok(t.includes('speak MOSTLY Uzbek, at least 3 of every 4 sentences') && t.includes('never hold a conversation or explain anything in English'), 'boshlovchi: asosan o‘zbekcha');
+    assert.ok(t.includes('at most ONE short English sentence') && t.includes('immediately followed by its Uzbek meaning'), 'inglizcha — faqat o‘rgatilayotgan ibora, tarjimasi bilan');
+  }
+  assert.ok(uzNone.includes('beginner (level not known yet)'), 'daraja noma’lum — boshlovchi kabi');
+  const b1 = buildLivePrompt({ adult: false, native: 'Uzbek (Latin script)', level: 'B1' });
+  assert.ok(b1.includes('about half Uzbek, half English') && b1.includes('Never explain grammar in English') && !b1.includes('speak MOSTLY Uzbek'));
+  assert.ok(buildLivePrompt({ adult: false, native: 'Uzbek (Latin script)', level: 'B2' }).includes('mostly English'));
+  assert.ok(uzA1.includes('"tushunmadim"') && uzA1.includes('switch to Uzbek at once'), 'tushunmasa — darhol o‘zbekchaga');
+  const ruA1 = buildLivePrompt({ adult: false, native: 'Russian', level: 'A1' });
+  assert.ok(ruA1.includes('speak MOSTLY Russian') && !/tushunmadim|maktabga/.test(ruA1), 'rus tilida o‘zbekcha namuna yo‘q');
+  assert.ok(!buildLivePrompt({ adult: false, native: 'English', level: 'A1' }).includes('LANGUAGE MIX'), 'ona tili ingliz — aralash yo‘q');
+  // Qo'ng'iroq boshlanishi ham darajaga mos
+  const k1 = liveKickoff({ firstCall: true, hasMemory: false, level: 'A1', native: 'Uzbek (Latin script)' });
+  assert.ok(/Introduce yourself once/.test(k1) && k1.includes('easy question in Uzbek') && !k1.includes('in English.'), 'boshlovchi birinchi qo‘ng‘iroq — o‘zbekcha');
+  const k2 = liveKickoff({ firstCall: false, hasMemory: false, level: 'A2', native: 'Uzbek (Latin script)', rnd: () => 0 });
+  assert.ok(/Do NOT introduce yourself or say your name/.test(k2) && k2.includes('Speak Uzbek (this learner is a beginner)') && !k2.includes('Speak English.'));
+  assert.ok(liveKickoff({ firstCall: false, hasMemory: false, level: 'C1', native: 'Uzbek (Latin script)', rnd: () => 0 }).includes('Speak English.'));
+}
 console.log('coachMemory: OK');

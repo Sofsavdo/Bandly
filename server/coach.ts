@@ -74,6 +74,24 @@ const LIVE_PERSONA: Record<LiveStyle, string> = {
 /** Ovozli suhbat (Gemini Live): model to'g'ridan-to'g'ri gapiradi. Foydalanuvchi shikoyatlari asosida (2026-11-21):
  *  boshqa tillarda gapirardi, eshitmaganda o'ylab topib gapirardi, keyin esa juda ko'p "qattiqroq gapir" derdi,
  *  har safar tanishtirardi, xarakter tanlovini e'tiborsiz qoldirardi, o'tgan xatolarni eslamasdi. */
+/** Ovozli suhbatda ona tili va ingliz tili ulushi daraja bo'yicha. Egasi (2026-11-25): "juda ko'p jumlalarni inglizchada gapiryapti — 0 yoki A1 dan
+ *  kirgan odam qiynaladi; tushuntirishlarni ham inglizchada qilyapti". Daraja noma'lum bo'lsa — boshlovchi kabi (o'quvchi ingliz tilida ravon
+ *  gapirsa, ustoz asta-sekin inglizchani ko'paytiradi). */
+export function languageMix(lvl: string | null, nativeName: string): string {
+  const up = lvl ? lvl.toUpperCase() : '';
+  if (!up || up === 'A0' || up === 'A1' || up === 'A2') return [
+    `- LANGUAGE MIX for this ${up || 'beginner (level not known yet)'} learner — the most important teaching rule: speak MOSTLY ${nativeName}, at least 3 of every 4 sentences.`,
+    `  All explanations, instructions, corrections, praise, questions about the task and small talk are in ${nativeName}. A beginner does not understand English sentences, so never hold a conversation or explain anything in English.`,
+    `  English appears only as the short words or phrases you are teaching or asking them to say — at most ONE short English sentence (up to about 8 words) per turn — and every English word or sentence is immediately followed by its ${nativeName} meaning${/^uzbek/i.test(nativeName) ? ' (e.g. the learner hears «I went to school» — «Men maktabga bordim»)' : ''}.`,
+    `  If they answer in English, praise them in ${nativeName} and continue in ${nativeName}. Only if they clearly speak fluent English for several turns in a row, use a little more English.`,
+  ].join('\n');
+  if (up === 'B1') return [
+    `- LANGUAGE MIX for this B1 learner: about half ${nativeName}, half English. Practise conversation in simple English (short sentences, everyday words), but give every explanation, grammar point, correction and instruction in ${nativeName}.`,
+    `  Never explain grammar in English. If an English sentence of yours is longer than about 12 words, add its ${nativeName} meaning.`,
+  ].join('\n');
+  return `- LANGUAGE MIX for this ${up} learner: mostly English. Use ${nativeName} for a tricky explanation, when they ask for it, or when they clearly did not understand.`;
+}
+
 export function buildLivePrompt(opts: { adult: boolean; native?: string; level?: string | null; firstCall?: boolean; memory?: string; style?: LiveStyle; /** bosib-gapirish rejimi (mijoz tugmani bosib turib gapiradi) */ ptt?: boolean; /** o'quvchi gapi serverda Scribe bilan matnga aylantirilib, ustozga matn bo'lib keladi */ asr?: boolean }): string {
   const native = opts.native ?? 'Uzbek (Latin script)';
   const nativeIsEnglish = /^english/i.test(native);
@@ -91,7 +109,9 @@ export function buildLivePrompt(opts: { adult: boolean; native?: string; level?:
       nativeIsEnglish
         ? '- Speak ONLY English. Never any other language.'
         : `- You may speak ONLY two languages: English and ${native}. Never Spanish, Portuguese, Chinese, French, Turkish, Arabic, Hindi or any other language — not a single word, not even a greeting.`,
-      nativeIsEnglish ? '' : `- FOLLOW THE CONVERSATION: answer in the language the learner is speaking right now. If they speak ${nativeName}, talk ${nativeName} for the WHOLE thought and finish it completely; do not hop to English half-way through. If they speak English, answer in English.`,
+      nativeIsEnglish ? '' : languageMix(lvl, nativeName),
+      nativeIsEnglish ? '' : `- FOLLOW THE CONVERSATION: answer in the language the learner is speaking right now, within the LANGUAGE MIX for their level. If they speak ${nativeName}, talk ${nativeName} for the WHOLE thought and finish it completely; do not hop to English half-way through. If they speak English, you may answer in English as far as their level allows.`,
+      nativeIsEnglish ? '' : `- If the learner says they did not understand (${/^uzbek/i.test(native) ? 'the learner may say "tushunmadim", "nima dedingiz" or "sekinroq"' : `the ${nativeName} for "I don't understand"`}, or "I don't understand") or suddenly answers in ${nativeName}, switch to ${nativeName} at once and say the idea again, simpler and shorter.`,
       nativeIsEnglish ? '' : `- Change language only on purpose: when the learner asks for it, or when you start an English practice round (say so in one short ${nativeName} sentence first, then stay in English until the learner changes it back or clearly struggles${low ? '; this learner is a beginner, so give the key point in ' + nativeName + ' every time' : ''}). Never switch language in the middle of a sentence or a thought. English words and phrases you are teaching may be quoted inside ${nativeName} sentences.`,
       nativeIsEnglish ? '' : `- When the learner makes an English mistake: say the correct English version, then explain why in ${nativeName} in one complete sentence${low ? '' : ' (only if it is not obvious)'}, and let them say it again. Instructions and encouragement may be in ${nativeName}.`,
       /^uzbek/i.test(native) ? '- UZBEK QUALITY: speak correct, standard literary Uzbek (adabiy o‘zbek tili, as on national TV news) in short, simple, grammatical sentences. Never use regional dialect words, never Turkish, Kazakh, Tajik or Russian words, never invent words. Good examples: "To‘g‘ri varianti: «I went». O‘tgan zamon bo‘lgani uchun «went» deymiz." / "Zo‘r! Endi shu gapni to‘liq ayting." / "Bu so‘z inglizchada «experience» bo‘ladi." If you are not sure of the correct Uzbek word, say the English word instead of guessing.' : '',
@@ -183,15 +203,20 @@ export const KICKOFF_MOVES = [
   'Open by offering a 1-minute mini role-play (a café, a shop or an airport) and start it yourself.',
   'Open with one interesting English word or phrase of the day, use it in a sentence and ask them to use it too.',
 ];
-export function liveKickoff(o: { firstCall: boolean; hasMemory: boolean; plan?: string; followUp?: string; rnd?: () => number }): string {
+export function liveKickoff(o: { firstCall: boolean; hasMemory: boolean; plan?: string; followUp?: string; rnd?: () => number; level?: string | null; native?: string }): string {
   const ctx = o.plan ? `\n${o.plan}` : '';
-  if (o.firstCall) return `(The learner just joined their first voice call. Introduce yourself once in one short sentence and ask one easy question in English.)${ctx}`;
+  const nat = (o.native ?? 'Uzbek (Latin script)').replace(/\s*\(.*\)\s*$/, '');
+  const natEn = /^english/i.test(nat);
+  const up = (o.level ?? '').toUpperCase();
+  const beginner = !natEn && (!up || up === 'A0' || up === 'A1' || up === 'A2');
+  const speak = natEn ? 'Speak English.' : beginner ? `Speak ${nat} (this learner is a beginner): ${nat} sentences, with only a short English word or phrase to learn, translated.` : up === 'B1' ? `Use simple English, explanations in ${nat}.` : 'Speak English.';
+  if (o.firstCall) return `(The learner just joined their first voice call. Introduce yourself once in one short sentence and ask one easy question${beginner ? ` in ${nat}` : ' in English'}. ${speak})${ctx}`;
   const r = o.rnd ?? Math.random;
   const move = KICKOFF_MOVES[Math.floor(r() * KICKOFF_MOVES.length) % KICKOFF_MOVES.length]!;
   const fu = o.followUp ? ` First ask about this from last time: ${clip(o.followUp, 100)}.` : '';
   return (o.hasMemory
-    ? `(The learner joined another call. Do NOT introduce yourself. Greet them in a few words.${fu} Then ask a question that naturally checks one of the mistakes from MEMORY, or: ${move})`
-    : `(The learner joined another call. Do NOT introduce yourself or say your name. Greet them in a few words.${fu} ${move} Speak English.)`) + ctx;
+    ? `(The learner joined another call. Do NOT introduce yourself. Greet them in a few words.${fu} Then ask a question that naturally checks one of the mistakes from MEMORY, or: ${move} ${speak})`
+    : `(The learner joined another call. Do NOT introduce yourself or say your name. Greet them in a few words.${fu} ${move} ${speak})`) + ctx;
 }
 
 /** Which persona may actually run. Adult-only personas need the learner's 18+ confirmation; exam mode only allows exam-safe personas. */

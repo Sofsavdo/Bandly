@@ -1533,6 +1533,23 @@ main.container { min-height: 100vh; }
 @keyframes av-rock { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-2px); } }
 @keyframes av-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
 @keyframes av-nod { 0%, 100% { transform: rotate(0) translateY(0); } 30% { transform: rotate(-2.5deg) translateY(1px); } 65% { transform: rotate(2deg) translateY(-1px); } }
+.ai-avatar { isolation: isolate; }
+.ai-avatar .emo-fx svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ai-avatar .emo-fx.behind { z-index: -1; }
+.ai-avatar .fx-glow { animation: fx-glow .9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ai-avatar .fx-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: fx-flame .42s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * -.13s); }
+.ai-avatar .fx-steam { fill: #e2e8f0; stroke: #94a3b8; stroke-width: 1.2; opacity: 0; transform-box: fill-box; transform-origin: center; animation: fx-steam 1.3s ease-out infinite; animation-delay: calc(var(--i, 0) * .2s); }
+.ai-avatar .fx-cloud path { fill: #94a3b8; stroke: #64748b; stroke-width: 1.2; }
+.ai-avatar .fx-cloud { animation: fx-cloud 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ai-avatar .fx-rain { stroke: #60a5fa; stroke-width: 2; stroke-linecap: round; animation: fx-rain .7s linear infinite; animation-delay: calc(var(--i, 0) * .14s); }
+.ai-avatar .av-tears .av-tear { animation-delay: calc(var(--i, 0) * .5s); }
+.ai-avatar .av-stream { fill: none; stroke: #93c5fd; stroke-width: 3.5; stroke-linecap: round; opacity: .75; }
+@keyframes fx-flame { 0% { transform: scale(.85, .8) skewX(-6deg); opacity: .85; } 100% { transform: scale(1.05, 1.2) skewX(6deg); opacity: 1; } }
+@keyframes fx-glow { 0%, 100% { opacity: .75; transform: scale(.97); } 50% { opacity: 1; transform: scale(1.03); } }
+@keyframes fx-steam { 0% { opacity: 0; transform: translateY(4px) scale(.5); } 30% { opacity: .95; } 100% { opacity: 0; transform: translateY(-20px) scale(1.5); } }
+@keyframes fx-cloud { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+@keyframes fx-rain { 0% { transform: translateY(-3px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(9px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ai-avatar .fx-flame, .ai-avatar .fx-glow, .ai-avatar .fx-steam, .ai-avatar .fx-cloud, .ai-avatar .fx-rain { animation: none !important; } .ai-avatar .fx-steam { opacity: .8; } }
 .fx-heart { left: calc(10% + var(--i) * 19%); bottom: 60%; color: #f43f5e; font-size: 20px; animation: emo-float 1.6s ease-out infinite; animation-delay: calc(var(--i) * .3s); }
 @media (prefers-reduced-motion: reduce) { .ai-avatar .av-head, .ai-avatar .av-glance, .ai-avatar .av-pop, .ai-avatar .av-steam circle, .ai-avatar .av-vein, .ai-avatar .av-joy path, .ai-avatar .av-heart-eye, .ai-avatar .av-wobble { animation: none !important; } }
 .tutor-call.emo-impressed { background: linear-gradient(180deg, rgba(252, 231, 243, .95), var(--surface) 60%); }
