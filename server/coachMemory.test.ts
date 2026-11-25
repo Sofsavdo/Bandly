@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { enqueueMemoryJob, ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, runMemoryJobs, saveMemory, summaryPrompt, MAX_MISTAKES } from './coachMemory';
-import { buildLivePrompt, clampStyle, emotionOf, liveKickoff, KICKOFF_MOVES } from './coach';
+import { buildLivePrompt, clampStyle, emotionOf, liveKickoff, reactionWords, KICKOFF_MOVES } from './coach';
 
 // AI javobini qat'iy tekshirish: shaxsiy ma'lumot, bo'sh/teng juftlar, buzuq JSON — tashlanadi
 const p = parseSummary('Here: {"mistakes":[{"wrong":"I am agree","right":"I agree"},{"wrong":"he go","right":"he goes"},{"wrong":"call me 998901234567","right":"x"},{"wrong":"same","right":"same"}],"topics":["football","email me a@b.uz"]} ok');
@@ -163,5 +163,20 @@ assert.ok(!liveKickoff({ firstCall: true, hasMemory: false, followUp: 'x' }).inc
   const k2 = liveKickoff({ firstCall: false, hasMemory: false, level: 'A2', native: 'Uzbek (Latin script)', rnd: () => 0 });
   assert.ok(/Do NOT introduce yourself or say your name/.test(k2) && k2.includes('Speak Uzbek (this learner is a beginner)') && !k2.includes('Speak English.'));
   assert.ok(liveKickoff({ firstCall: false, hasMemory: false, level: 'C1', native: 'Uzbek (Latin script)', rnd: () => 0 }).includes('Speak English.'));
+}
+// 2026-11-25 (egasi: "ko'p hollarda voy tovba deb qaytaryapti, so'z boyligini ko'paytir")
+{
+  let seed = 1; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const r1 = reactionWords('uz', rnd), r2 = reactionWords('uz', rnd);
+  assert.ok(r1.startsWith('REACTION WORDS') && r1.includes('each at most once') && r1 !== r2, 'har qo‘ng‘iroqda boshqa iboralar to‘plami');
+  assert.ok((r1.match(/"/g) ?? []).length / 2 >= 30, 'kamida 30 ta xilma-xil ibora (o‘zbekcha + inglizcha)');
+  const uz = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', level: 'A2', style: 2 });
+  assert.ok(uz.includes('REACTION WORDS') && uz.includes('at most ONCE per call'), 'bir ibora qo‘ng‘iroqda ko‘pi bilan bir marta');
+  assert.ok(!/voy tovba, bu nima dedi/.test(uz), 'eski "voy tovba" namunasi qattiq uslub ro‘yxatida yo‘q');
+  // 50 ta qo'ng'iroqda "Voy tovba" iborasi ko'pchilikda umuman berilmaydi
+  let withTovba = 0; for (let i = 0; i < 50; i++) if (/Voy tovba/.test(reactionWords('uz', rnd))) withTovba++;
+  assert.ok(withTovba < 25, `"Voy tovba" kam tanlanadi (${withTovba}/50)`);
+  const ru = buildLivePrompt({ adult: false, native: 'Russian', level: 'A2' });
+  assert.ok(ru.includes('REACTION WORDS') && !/Qoyil|Ofarin|Barakalla/.test(ru), 'rus o‘quvchiga o‘zbekcha ibora berilmaydi');
 }
 console.log('coachMemory: OK');
