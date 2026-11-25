@@ -1,0 +1,286 @@
+import type { Item, Unit } from './types';
+import { ch, gap, ord } from './helpers';
+
+/** "Barcha to‘g‘ri gaplarni tanlang": to‘g‘ri variantlarning aynan o‘zi tanlanishi kerak. */
+const multi = (prompt: string, options: string[], answers: number[], explainUz: string): Item => ({ kind: 'multi', prompt, options, answers, explainUz });
+
+// C2 to‘ldirish (3): kasbiy va madaniy muloqot, leksik aniqlik. Original kontent (Sellzen), status 'pilot'.
+export const C2_U17: Unit = {
+  id: 'c2-u17', level: 'C2', title: 'Cultural and professional communication', titleUz: 'Madaniy va kasbiy muloqot',
+  situationUz: 'Madaniyatlar farqini hisobga olib muloqot qilasiz, ish muzokarasini boshqarasiz va elektron xat hamda hisobotda to‘g‘ri ohangni tanlaysiz.',
+  status: 'pilot',
+  lessons: [
+    {
+      id: 'c2-u17-l1', title: 'Register and pragmatics across cultures', titleUz: 'Madaniyatlar bo‘ylab uslub va pragmatika',
+      objectiveUz: 'To‘g‘ridan-to‘g‘rilik va bilvosita ifodani (direct vs indirect), rasmiylik darajasini, kichik suhbat (small talk) va hazil tuzoqlarini madaniy kontekstga qarab tanlaysiz.',
+      objective: 'You choose directness or indirectness, the level of formality, small talk and humour according to the cultural context.',
+      taxonomyIds: ['S.coherence', 'V.word_choice'], minutes: 10,
+      explanationUz: [
+        'Ingliz tilidagi muloqotda mazmun va ohang farqli bo‘lishi mumkin. Britaniya uslubi ko‘pincha bilvosita: “That’s quite interesting” (aslida: qiziq emas), “I’ll bear it in mind” (ehtimol qilmayman), “With the greatest respect …” (men rozi emasman). Amerika uslubi ochiqroq: “That won’t work.” Tinglovchi tonna va kontekstga qarab tushunadi (high-context va low-context madaniyatlar).',
+        'Rasmiylik: sarlavha va ism: “Dr Khan”, “Ms Brown”, “Mr Aliyev”; keyin ism bilan murojaat qilish taklif qilinishi mumkin. Kichik suhbat (small talk): ob-havo, safar, tushlik, shaharlar; shaxsiy savollar (maosh, yosh, siyosat) odatda noo‘rin. Hazil: istehzo va kamsitish tez-tez; begonalarga nisbatan ehtiyot bo‘ling, matnda esa hazilni qisqa tuting.',
+        'Strategiya: kuzating (qanchalik rasmiy?), ayni uslubni aks ettiring (mirroring), noaniq bo‘lsa aniqlashtiring: “Just to check I’ve understood — do you mean …?” Xato: o‘z tilingizdagi so‘zma-so‘z iboralarni olib o‘tish; haddan tashqari ochiqlik yoki haddan tashqari rasmiylik. Madaniy kamchilikni tan olish: “Please forgive me if I’m too direct.”',
+      ],
+      table: [
+        { form: 'bilvosita: That’s quite interesting. / I’ll bear it in mind.', example: 'I’ll bear it in mind.' },
+        { form: 'ochiq: That won’t work. / I disagree.', example: 'I’m afraid that won’t work.' },
+        { form: 'aniqlashtirish: Just to check I’ve understood — do you mean …?', example: 'Just to check I’ve understood, do you mean next week?' },
+      ],
+      examples: [
+        { en: 'In British English, “with the greatest respect” often introduces strong disagreement.', uz: 'Britaniya ingliz tilida “with the greatest respect” ko‘pincha kuchli kelishmovchilikni boshlaydi.' },
+        { en: 'Small talk usually avoids questions about salary, age or politics.', uz: 'Kichik suhbat odatda maosh, yosh yoki siyosat haqidagi savollardan qochadi.' },
+        { en: 'Just to check I’ve understood, do you mean we should meet next week?', uz: 'To‘g‘ri tushunganimni tekshirib olay: kelasi hafta uchrashaylik demoqchimisiz?' },
+        { en: 'Please forgive me if I sound too direct; it is simply my style.', uz: 'Juda ochiq eshitilsam, uzr; bu mening uslubim.' },
+      ],
+      vocab: [{ en: 'pragmatics', uz: 'pragmatika' }, { en: 'indirect', uz: 'bilvosita' }, { en: 'etiquette', uz: 'odob' }, { en: 'mirror', uz: 'aks ettirmoq' }],
+      practice: [
+        ch('In British English “That’s quite interesting” often means…', ['I am not very impressed.', 'I am delighted.', 'I agree strongly.'], 0, 'bilvosita.'),
+        gap('Questions about salary are usually avoided in small ___ . (talk)', ['talk'], 'noo‘rin.'),
+        ch('To check understanding say…', ['Just to check I’ve understood, do you mean …?', 'You are unclear.', 'Repeat.'], 0, 'aniqlashtirish.'),
+        gap('I’ll ___ it in mind. (bear)', ['bear'], 'bear in mind.'),
+        gap('In a ___ -context culture, much meaning is implied. (high)', ['high'], 'high-context.'),
+        ord(['please', 'forgive', 'me', 'if', 'i', 'sound', 'too', 'direct'], 'Please forgive me if I sound too direct', 'uzr.'),
+      ],
+      check: [
+        gap('Mirroring means matching the other person’s level of ___ . (formality)', ['formality'], 'aks ettirish.'),
+        ch('“With the greatest respect, …” often introduces…', ['disagreement', 'thanks', 'a joke'], 0, 'kelishmovchilik.'),
+        gap('A safe topic for small talk is the ___ here. (journey)', ['journey', 'weather', 'trip'], 'xavfsiz.'),
+        gap('I’m afraid that ___ work. (won’t)', ['won’t'], 'ochiq rad.'),
+        gap('Just to ___ I’ve understood, do you mean next week? (check)', ['check'], 'aniqlashtirish.'),
+        multi('Choose ALL the polite strategies.', ['observing the level of formality', 'mirroring the style', 'checking understanding', 'asking about salary at once', 'avoiding personal topics'], [0, 1, 2, 4], 'muloyim usullar.'),
+      ],
+      writing: {
+        promptUz: 'Chet ellik hamkasbga ingliz ish madaniyati haqida 5 maslahat yozing (7–8 gap): bilvosita ifoda, kichik suhbat, rasmiylik, hazil va aniqlashtirish. Misol iboralar keltiring.', minWords: 75,
+        require: [{ re: String.raw`\b(indirect|direct|small talk|formality|formal|humou?r|context)\b`, labelUz: 'madaniy atama bor' }, { re: String.raw`\b(bear it in mind|with the greatest respect|quite interesting|just to check|do you mean)\b`, labelUz: 'misol ibora bor' }, { re: String.raw`\b(avoid|usually|often|tend to|it is best)\b`, labelUz: 'maslahat tili bor' }],
+        model: 'Working in an English-speaking office, you will often meet indirect communication. For example, when someone says that is quite interesting, they may not be impressed, and with the greatest respect usually introduces disagreement. It is best to listen to the tone and the context. Small talk is common, so talk about the journey or the weather, and avoid personal topics such as income. Formality varies, so observe how colleagues address each other. Humour is welcome, but be careful with irony. If you are unsure, say just to check I’ve understood, do you mean next week?',
+      },
+    },
+    {
+      id: 'c2-u17-l2', title: 'Negotiating at work: concessions and closing', titleUz: 'Ishdagi muzokara: yon berish va yakunlash',
+      objectiveUz: 'Muzokarada boshlang‘ich pozitsiyani aytasiz, shartli takliflar (If you …, we could …) va yon berishlar bilan harakat qilasiz, e’tirozlarga javob berasiz va kelishuvni yakunlaysiz.',
+      objective: 'In a negotiation you state an opening position, move with conditional offers (If you …, we could …) and concessions, respond to objections and close the agreement.',
+      taxonomyIds: ['S.coherence', 'G.conditional'], minutes: 10,
+      explanationUz: [
+        'Boshlash: “Our starting point is …”, “What we have in mind is …”, “Ideally, we would like to …”. Savol: “What would it take for you to …?”, “How flexible are you on …?”. Tinglash: “If I’ve understood correctly, your main concern is …”. Boshlang‘ich talab biroz yuqori qo‘yiladi (anchoring), lekin asosli bo‘lsin.',
+        'Shartli taklif: “If you could commit to a longer contract, we could offer a lower rate.” “We’d be prepared to … provided that …”. Yon berish: “We could meet you halfway on …”, “That’s something we might be able to accommodate.” E’tiroz: “I appreciate that, but from our side …”. Paket: bir nechta masala birgalikda — “Let’s look at the package as a whole.”',
+        'Yakunlash: “So, to summarise what we’ve agreed: …”, “Shall we put that in writing?”, “I think we have a deal.” Xato: yon berishni bepul bermaslik (har yon berishga qarshi talab), shoshilish, xulosasiz yakunlash. Til: shartli gap (If + Past Simple, would), modal (could, might), rasmiy yumshatgichlar.',
+      ],
+      table: [
+        { form: 'shartli: If you could …, we could …', example: 'If you could commit to a longer contract, we could offer a lower rate.' },
+        { form: 'yon berish: We could meet you halfway on …', example: 'We could meet you halfway on the price.' },
+        { form: 'yakun: To summarise what we’ve agreed, …', example: 'To summarise what we’ve agreed, the price is fixed for a year.' },
+      ],
+      examples: [
+        { en: 'If you could commit to a longer contract, we could offer a lower rate.', uz: 'Agar uzoqroq shartnomaga rozi bo‘lsangiz, past narx taklif qila olamiz.' },
+        { en: 'We could meet you halfway on the delivery date.', uz: 'Yetkazib berish muddatida sizga o‘rtadan kelishimiz mumkin.' },
+        { en: 'I appreciate that, but from our side the budget is fixed.', uz: 'Buni tushunaman, lekin bizning tomondan byudjet qat’iy.' },
+        { en: 'To summarise what we’ve agreed, the price is fixed for twelve months.', uz: 'Kelishganimizni xulosa qilsak: narx o‘n ikki oyga qat’iy.' },
+      ],
+      vocab: [{ en: 'negotiate', uz: 'muzokara qilmoq' }, { en: 'concession', uz: 'yon berish' }, { en: 'commit', uz: 'majburiyat olmoq' }, { en: 'accommodate', uz: 'moslashtirmoq' }],
+      practice: [
+        ch('Which is a conditional offer?', ['If you could commit to a longer contract, we could offer a lower rate.', 'We want a lower rate.', 'No.'], 0, 'shartli taklif.'),
+        ch('Which phrase closes a negotiation?', ['To summarise what we’ve agreed, …', 'By the way, …', 'I disagree.'], 0, 'yakun.'),
+        gap('To meet someone halfway means to ___ . (compromise)', ['compromise'], 'o‘rtadan.'),
+        gap('How ___ are you on the delivery date? (flexible)', ['flexible'], 'moslashuvchanlik.'),
+        gap('We’d be prepared to lower the price ___ that you order more. (provided)', ['provided'], 'shart.'),
+        ord(['shall', 'we', 'put', 'that', 'in', 'writing'], 'Shall we put that in writing', 'yozma kelishuv.'),
+      ],
+      check: [
+        gap('A good negotiator asks for something in ___ for a concession. (return)', ['return', 'exchange'], 'qarshi talab.'),
+        gap('Looking at the package as a whole means considering several ___ together. (issues)', ['issues', 'points'], 'paket.'),
+        ch('Which phrase checks understanding?', ['If I’ve understood correctly, your main concern is the price.', 'Your concern is silly.', 'Repeat it.'], 0, 'aniqlashtirish.'),
+        gap('That’s something we might be able to ___ . (accommodate)', ['accommodate'], 'accommodate.'),
+        gap('What would it ___ for you to agree? (take)', ['take'], 'What would it take.'),
+        multi('Choose ALL the negotiation phrases.', ['What would it take for you to agree?', 'We could meet you halfway.', 'Shall we put that in writing?', 'I refuse to listen.', 'Let’s look at the package as a whole.'], [0, 1, 2, 4], 'muzokara iboralari.'),
+      ],
+      writing: {
+        promptUz: 'Yetkazib beruvchi bilan muzokara dialogini yozing (8 qator, “A:” va “B:”): narx va yetkazish muddati. Shartli taklif, yon berish, e’tiroz va yakuniy xulosa bo‘lsin.', minWords: 85,
+        require: [{ re: String.raw`\bif (you|we)\b[^.]*\b(could|would|can)\b`, labelUz: 'shartli taklif bor' }, { re: String.raw`\b(meet you halfway|we could|we['’]d be prepared|that['’]s something we)\b`, labelUz: 'yon berish bor' }, { re: String.raw`\b(i appreciate that|from our side|if i['’]ve understood)\b`, labelUz: 'e’tiroz / aniqlash bor' }, { re: String.raw`\b(to summarise|shall we put that in writing|i think we have a deal)\b`, labelUz: 'yakun bor' }],
+        model: 'A: Our starting point is a price of 20 pounds per unit. B: I appreciate that, but from our side the budget is fixed at 17 pounds. A: If you could order twice as many units, we could reduce the price to 18 pounds. B: If I’ve understood correctly, that would include free delivery? A: We could meet you halfway on delivery: the first order would be free. B: That’s something we might be able to accept, provided that the delivery date is firm. A: Agreed. To summarise what we’ve agreed, 18 pounds per unit, free delivery on the first order. Shall we put that in writing?',
+      },
+    },
+    {
+      id: 'c2-u17-l3', title: 'Professional writing: tone in emails and reports', titleUz: 'Kasbiy yozuv: xat va hisobotda ohang',
+      objectiveUz: 'Elektron xat va hisobotda ohangni (iliq-rasmiy, aniq, hurmatli) to‘g‘ri tanlaysiz, noaniq yoki passiv-agressiv iboralardan qochasiz va bajarilishi kerak bo‘lgan ishni aniq ko‘rsatasiz.',
+      objective: 'You choose the right tone in emails and reports (warm but formal, precise, respectful), avoid vague or passive-aggressive phrases and state clearly what action is needed.',
+      taxonomyIds: ['W.task_response', 'V.word_choice'], minutes: 10,
+      explanationUz: [
+        'Ohang: iliq, lekin rasmiy; aniq; hurmatli. Mavzu qatori aniq: “Action needed: budget approval by Friday”. Ochilish: “Thank you for your prompt reply.” “I hope you are well.” Maqsad birinchi gapda: “I am writing to confirm …”. Bitta xat — bitta asosiy iltimos; ro‘yxat uchun bullet.',
+        'Passiv-agressiv iboralardan qoching: “As I already said …”, “Per my last email …”, “Please advise” (ba’zan sovuq), “As you may know …”. Muqobil: “As mentioned earlier, …” → “To recap, …”; “I’m following up on …”; “Could you let me know by Thursday?” Muddat va mas’ul aniq: “Could you send the figures by 5 pm on Thursday?”',
+        'Hisobotda: Executive summary (3–4 gap: muammo, topilma, tavsiya), aniq raqam, hurmatli ohang, “we” va “I” ni kam ishlatish. Ohangni tekshirish: xat yuborishdan oldin o‘qiydigan odam o‘rniga qo‘yib o‘qing; haqorat yoki kinoya yo‘qmi? Xato: juda qisqa buyruq, juda uzun kirish, bir nechta maqsad, hissiyotli so‘z (“disappointed”) asossiz ishlatilishi.',
+      ],
+      table: [
+        { form: 'mavzu: Action needed: … by Friday', example: 'Action needed: budget approval by Friday' },
+        { form: 'maqsad: I am writing to confirm …', example: 'I am writing to confirm our meeting on Monday.' },
+        { form: 'iltimos: Could you … by Thursday?', example: 'Could you send the figures by 5 pm on Thursday?' },
+      ],
+      examples: [
+        { en: 'I am writing to confirm our meeting on Monday at ten.', uz: 'Dushanba kuni soat o‘nda uchrashuvimizni tasdiqlash uchun yozyapman.' },
+        { en: 'To recap, we agreed to review the budget by Friday.', uz: 'Qisqa takrorlasak, byudjetni juma kungacha ko‘rib chiqishga kelishdik.' },
+        { en: 'Could you send the figures by 5 pm on Thursday?', uz: 'Raqamlarni payshanba kuni soat 17:00 gacha yubora olasizmi?' },
+        { en: 'I’m following up on the proposal I sent last week.', uz: 'O‘tgan hafta yuborgan taklifim bo‘yicha qayta murojaat qilyapman.' },
+      ],
+      vocab: [{ en: 'recap', uz: 'qisqacha takrorlamoq' }, { en: 'prompt', uz: 'tezkor' }, { en: 'executive', uz: 'rahbariy' }, { en: 'confirm', uz: 'tasdiqlamoq' }],
+      practice: [
+        ch('Which subject line is the most useful?', ['Action needed: budget approval by Friday', 'Hi', 'Urgent!!!'], 0, 'aniq mavzu.'),
+        ch('Which phrase can sound passive-aggressive?', ['Per my last email, …', 'To recap, …', 'I’m following up on …'], 0, 'passiv-agressiv.'),
+        gap('The purpose of the email should come in the first ___ . (sentence)', ['sentence', 'line'], 'birinchi gap.'),
+        gap('I am writing to ___ our meeting on Monday. (confirm)', ['confirm'], 'maqsad.'),
+        gap('Could you let me know ___ Thursday? (by)', ['by'], 'muddat.'),
+        ord(['to', 'recap', 'we', 'agreed', 'to', 'review', 'the', 'budget'], 'To recap we agreed to review the budget', 'takrorlash.'),
+      ],
+      check: [
+        gap('An executive summary contains the problem, the finding and the ___ . (recommendation)', ['recommendation'], 'executive summary.'),
+        ch('Which request is clear?', ['Could you send the figures by 5 pm on Thursday?', 'Send it soon.', 'Whenever you can.'], 0, 'aniq muddat.'),
+        gap('Before sending a sensitive email you should ___ it. (reread)', ['reread', 'check', 'review'], 'ohang.'),
+        gap('Thank you for your ___ reply. (prompt)', ['prompt'], 'tezkor javob.'),
+        gap('I’m following ___ on the proposal. (up)', ['up'], 'follow up.'),
+        multi('Choose ALL the features of a professional email.', ['a clear subject line', 'the purpose in the first sentence', 'a specific deadline', 'sarcasm', 'a polite closing'], [0, 1, 2, 4], 'kasbiy xat.'),
+      ],
+      writing: {
+        promptUz: 'Hamkasbga eslatma xati yozing (7–8 gap): u yuborishi kerak bo‘lgan hisobot kechikdi. Aniq mavzu qatori (Subject:), iliq ochilish, maqsad, aniq muddat va muloyim yakun. Passiv-agressiv iboralardan qoching.', minWords: 75,
+        require: [{ re: String.raw`\bsubject:`, labelUz: 'mavzu qatori bor' }, { re: String.raw`\b(i am writing to|i['’]m following up|to recap|i wanted to check)\b`, labelUz: 'maqsad iborasi bor' }, { re: String.raw`\bby (monday|tuesday|wednesday|thursday|friday|\d+(:\d+)? ?(am|pm)|the end of)\b`, labelUz: 'aniq muddat bor' }, { re: String.raw`\b(thank you|thanks|kind regards|best wishes|many thanks)\b`, labelUz: 'minnatdorchilik / yakun bor' }],
+        model: 'Subject: Quarterly report — reminder for Thursday. Dear Malika, I hope you are well. I’m following up on the quarterly report we discussed last week. I understand that the figures took longer than expected, so I wanted to check whether you need any support. Could you send the final version by 5 pm on Thursday? That would give me enough time to prepare the summary for the director. If there is any problem, please let me know and we can adjust the plan. Thank you for your help. Kind regards, Aziz',
+      },
+    },
+  ],
+};
+
+export const C2_U18: Unit = {
+  id: 'c2-u18', level: 'C2', title: 'Lexical precision and control', titleUz: 'Leksik aniqlik va nazorat',
+  situationUz: 'Yaqin ma’noli so‘zlar orasidagi nozik farqni, mavhum otlar bilan kuchli kollokatsiyalarni va german hamda lotin so‘zlarining uslub farqini aniq ishlatasiz.',
+  status: 'pilot',
+  lessons: [
+    {
+      id: 'c2-u18-l1', title: 'Near-synonyms and connotation', titleUz: 'Yaqin ma’noli so‘zlar va ularning konnotatsiyasi',
+      objectiveUz: 'Yaqin ma’noli so‘zlarning (stubborn / determined / resolute; cheap / inexpensive / stingy) denotatsiya va konnotatsiya farqini ajratasiz va kontekstga mosini tanlaysiz.',
+      objective: 'You separate the denotation and connotation of near-synonyms (stubborn / determined / resolute; cheap / inexpensive / stingy) and choose the one that suits the context.',
+      taxonomyIds: ['V.word_choice', 'V.collocation'], minutes: 10,
+      explanationUz: [
+        'Yaqin ma’noli so‘zlar bir xil emas: denotatsiya (asosiy ma’no) o‘xshash, konnotatsiya (his-tuyg‘u) farq qiladi. Qat’iyatli odam: stubborn (salbiy, o‘jar), determined (ijobiy, qat’iyatli), resolute (rasmiy, ijobiy), obstinate (salbiy, rasmiy), tenacious (qat’iyat bilan ushlab turuvchi). Tejamkor: thrifty (ijobiy), economical (neytral), frugal (neytral-ijobiy), stingy / miserly (salbiy).',
+        'Boshqa misol: slim / slender (ijobiy), thin (neytral), skinny (salbiy), lean (sportchi), gaunt (kasal, charchagan). Kichik: compact (ijobiy), tiny (juda), petite (nafis), cramped (salbiy joy). Katta: substantial (rasmiy, qiymat), considerable, vast (hajm), bulky (noqulay). “Big problem” o‘rniga “a serious / major / acute problem”.',
+        'Qanday tanlash: 1) ma’no (aniq nimani ifodalayman?), 2) his-tuyg‘u (ijobiy / salbiy / neytral), 3) uslub (rasmiy / norasmiy), 4) kollokatsiya (“substantial evidence”, “vast majority”). Xato: lug‘atdan birinchi sinonimni tanlash. “Cheap” mahsulotga salbiy ma’no berishi mumkin, “inexpensive” — neytral. Doimo misol gaplar bilan tekshiring.',
+      ],
+      table: [
+        { form: 'stubborn (−) / determined (+) / resolute (rasmiy +)', example: 'She is determined; he is stubborn.' },
+        { form: 'thrifty (+) / frugal (neutral) / stingy (−)', example: 'He is thrifty, not stingy.' },
+        { form: 'slim (+) / thin (neutral) / skinny (−)', example: 'She is slim; the dog looks skinny.' },
+      ],
+      examples: [
+        { en: 'She is determined to win, but her brother is simply stubborn.', uz: 'U g‘alaba qozonishga qat’iyatli, ukasi esa shunchaki o‘jar.' },
+        { en: 'He is thrifty with money, though some call him stingy.', uz: 'U pulni tejaydi, ba’zilar esa uni xasis deydi.' },
+        { en: 'There is substantial evidence that exercise improves memory.', uz: 'Mashq xotirani yaxshilashiga oid katta dalil bor.' },
+        { en: 'The flat was inexpensive but cramped.', uz: 'Kvartira arzon, lekin tor edi.' },
+      ],
+      vocab: [{ en: 'stubborn', uz: 'o‘jar' }, { en: 'thrifty', uz: 'tejamkor' }, { en: 'cramped', uz: 'tor' }, { en: 'substantial', uz: 'ancha katta' }],
+      practice: [
+        ch('Which word has a negative connotation?', ['stubborn', 'determined', 'resolute'], 0, 'salbiy.'),
+        gap('The word thrifty has a ___ connotation, while stingy is negative. (positive)', ['positive'], 'ijobiy.'),
+        ch('Which collocation is correct?', ['substantial evidence', 'big evidence', 'strong-big evidence'], 0, 'kollokatsiya.'),
+        gap('He is ___ with money, not stingy. (thrifty)', ['thrifty', 'frugal'], 'ijobiy konnotatsiya.'),
+        gap('The room was small and ___ . (cramped)', ['cramped'], 'salbiy joy.'),
+        ord(['there', 'is', 'substantial', 'evidence', 'of', 'a', 'link'], 'There is substantial evidence of a link', 'rasmiy kollokatsiya.'),
+      ],
+      check: [
+        gap('The word “skinny” is usually ___ . (negative)', ['negative'], 'salbiy.'),
+        gap('The choice of a near-synonym depends on meaning, feeling and ___ . (style)', ['style', 'register'], 'tanlov.'),
+        ch('Which pair is neutral rather than negative?', ['thin', 'skinny', 'gaunt'], 0, 'neytral.'),
+        gap('There is a ___ majority in favour. (vast)', ['vast'], 'vast majority.'),
+        gap('The product is ___ but good. (inexpensive)', ['inexpensive'], 'neytral.'),
+        multi('Choose ALL the words with a positive connotation.', ['determined', 'thrifty', 'slender', 'miserly', 'compact'], [0, 1, 2, 4], 'ijobiy konnotatsiya.'),
+      ],
+      writing: {
+        promptUz: 'Ikki xarakterni (o‘zingiz tanlagan) 7–8 gapda tasvirlang: bittasini ijobiy, ikkinchisini salbiy konnotatsiyali so‘zlar bilan (determined / stubborn, thrifty / stingy, slim / skinny). Farqni ham bir gapda tushuntiring.', minWords: 70,
+        require: [{ re: String.raw`\b(determined|resolute|thrifty|frugal|slim|slender|compact|generous)\b`, labelUz: 'ijobiy so‘z bor' }, { re: String.raw`\b(stubborn|obstinate|stingy|miserly|skinny|gaunt|cramped)\b`, labelUz: 'salbiy so‘z bor' }, { re: String.raw`\b(connotation|whereas|while|although|rather than|not|unlike)\b`, labelUz: 'farq iborasi bor' }],
+        model: 'My grandmother is a determined woman who never gives up, and she is thrifty with money, so she saves every month. My uncle, in contrast, is stubborn, because he refuses to listen to advice, and some relatives call him stingy for the same reason. The words determined and stubborn describe similar behaviour, but their connotation is different: the first admires, whereas the second criticises. My grandmother is slim and active, while my uncle looks gaunt and tired. I prefer to choose words carefully because they show my attitude.',
+      },
+    },
+    {
+      id: 'c2-u18-l2', title: 'Abstract nouns and strong collocations', titleUz: 'Mavhum otlar va kuchli kollokatsiyalar',
+      objectiveUz: 'Mavhum otlar bilan kuchli kollokatsiyalarni (mounting evidence, widespread concern, overwhelming majority, deep-seated prejudice, sweeping reforms) tanlab, yozuvni aniq va tabiiy qilasiz.',
+      objective: 'You choose strong collocations with abstract nouns (mounting evidence, widespread concern, overwhelming majority, deep-seated prejudice, sweeping reforms) and make writing precise and natural.',
+      taxonomyIds: ['V.collocation', 'V.word_choice'], minutes: 10,
+      explanationUz: [
+        'Mavhum otlar bilan sifat va fe’l birikmalari C2 uslubini beradi. Dalil: mounting evidence, compelling evidence, circumstantial evidence. Xavotir: widespread concern, growing unease, mounting pressure. Ko‘pchilik: overwhelming majority, narrow majority, the vast majority. Qattiq xurofiy qarash: deep-seated prejudice, ingrained habits, entrenched views.',
+        'Fe’l + ot: raise awareness, voice concern, draw attention to, bear responsibility, pose a threat, meet a need, strike a balance, shed light on, gain momentum, reach a consensus. Islohot: sweeping reforms, radical change, gradual progress, a marked improvement, a steep decline, a sharp rise.',
+        'Qoida: kollokatsiyani bir butun o‘rganing; “big evidence”, “strong prejudice” (aniq: deep-seated), “make awareness” (raise) kabi xatolardan qoching. Murakkab kollokatsiyani o‘z jumlangizda 2–3 marta ishlatib mustahkamlang. Me’yor: bir abzatsda 2–3 kuchli kollokatsiya — ortiqcha bo‘lsa, uslub sun’iy bo‘ladi.',
+      ],
+      table: [
+        { form: 'mounting evidence / widespread concern', example: 'There is mounting evidence of the damage.' },
+        { form: 'the overwhelming majority / deep-seated prejudice', example: 'The overwhelming majority voted in favour.' },
+        { form: 'raise awareness / shed light on / reach a consensus', example: 'The study sheds light on the problem.' },
+      ],
+      examples: [
+        { en: 'There is mounting evidence that plastic harms marine life.', uz: 'Plastik dengiz hayotiga zarar yetkazishiga doir dalillar ortib bormoqda.' },
+        { en: 'The overwhelming majority of voters supported the reform.', uz: 'Saylovchilarning mutlaq ko‘pchiligi islohotni qo‘llab-quvvatladi.' },
+        { en: 'Deep-seated prejudice cannot be removed overnight.', uz: 'Chuqur ildiz otgan xurofiy qarash bir kechada yo‘qotib bo‘lmaydi.' },
+        { en: 'The report sheds light on a problem that many people ignore.', uz: 'Hisobot ko‘pchilik e’tiborsiz qoldiradigan muammoga oydinlik kiritadi.' },
+      ],
+      vocab: [{ en: 'mounting', uz: 'ortib borayotgan' }, { en: 'prejudice', uz: 'xurofiy qarash' }, { en: 'consensus', uz: 'konsensus' }, { en: 'entrenched', uz: 'mustahkam o‘rnashgan' }],
+      practice: [
+        ch('There is ___ evidence of damage.', ['mounting', 'big', 'tall'], 0, 'mounting evidence.'),
+        ch('The ___ majority supported the plan.', ['overwhelming', 'wide', 'heavy'], 0, 'overwhelming majority.'),
+        ch('We must ___ awareness of the problem.', ['raise', 'make', 'put'], 0, 'raise awareness.'),
+        gap('The study sheds ___ on the causes. (light)', ['light'], 'shed light on.'),
+        gap('They finally reached a ___ . (consensus)', ['consensus'], 'reach a consensus.'),
+        ord(['deep', 'seated', 'prejudice', 'is', 'hard', 'to', 'remove'], 'Deep seated prejudice is hard to remove', 'kollokatsiya.'),
+      ],
+      check: [
+        gap('We say “raise awareness”, not “make ___”. (awareness)', ['awareness'], 'xato kollokatsiya.'),
+        gap('“Sweeping reforms” are ___ reforms. (wide-ranging)', ['wide-ranging', 'far-reaching', 'radical'], 'keng ko‘lamli.'),
+        gap('Instead of “a big rise” you can say “a ___ rise”. (sharp)', ['sharp', 'steep', 'dramatic'], 'aniq.'),
+        gap('Growing ___ about safety led to new rules. (unease)', ['unease', 'concern'], 'xavotir.'),
+        gap('The two sides struck a ___ . (balance)', ['balance', 'compromise'], 'strike a balance.'),
+        multi('Choose ALL the natural collocations.', ['voice concern', 'pose a threat', 'meet a need', 'do a threat', 'gain momentum'], [0, 1, 2, 4], 'tabiiy kollokatsiyalar.'),
+      ],
+      writing: {
+        promptUz: 'Mavzu: “Climate change and public attitudes.” 7–8 gapli abzats yozing va kamida 5 ta kuchli kollokatsiyani (mounting evidence, widespread concern, overwhelming majority, deep-seated prejudice, raise awareness, shed light on, reach a consensus) ishlating.', minWords: 80,
+        require: [{ re: String.raw`\b(mounting|compelling|growing) (evidence|unease|pressure)\b`, labelUz: 'dalil / xavotir kollokatsiyasi bor' }, { re: String.raw`\b(overwhelming|vast|narrow) majority\b|\bwidespread (concern|support|belief)\b`, labelUz: 'majority / widespread bor' }, { re: String.raw`\b(raise awareness|shed light|reach a consensus|voice concern|pose a (threat|risk)|gain momentum|strike a balance)\b`, labelUz: 'fe’l kollokatsiyasi bor' }],
+        model: 'There is mounting evidence that the climate is changing faster than expected, and widespread concern is reflected in public opinion. The overwhelming majority of citizens now say that governments must act. However, deep-seated attitudes about cars and cheap energy remain strong, and they pose a threat to progress. Schools and the media can raise awareness and shed light on the causes, but a real change needs political courage. If leaders can reach a consensus and strike a balance between growth and protection, the movement will gain momentum.',
+      },
+    },
+    {
+      id: 'c2-u18-l3', title: 'Germanic and Latinate vocabulary: register and style', titleUz: 'German va lotin kelib chiqishli so‘zlar: uslub va registr',
+      objectiveUz: 'Kundalik german (ask, start, buy, show) va rasmiy lotin (enquire, commence, purchase, demonstrate) so‘zlar farqini bilasiz va kontekstga mos registrni tanlaysiz.',
+      objective: 'You know the difference between everyday Germanic words (ask, start, buy, show) and formal Latinate words (enquire, commence, purchase, demonstrate) and choose the register that suits the context.',
+      taxonomyIds: ['V.word_choice', 'V.form'], minutes: 10,
+      explanationUz: [
+        'Ingliz tilida ko‘p so‘zlar juft: kundalik (german, qisqa, ko‘pincha phrasal verb) va rasmiy (lotin / fransuz, uzunroq). Misol: ask — enquire / interrogate; start — commence / initiate; buy — purchase / acquire; show — demonstrate / illustrate; help — assist; get — obtain / receive; need — require; end — terminate / conclude; enough — sufficient; try — attempt.',
+        'Phrasal verb va rasmiy ekvivalent: put up with — tolerate; find out — discover; look into — investigate; carry on — continue; set up — establish; turn down — reject; get rid of — eliminate; come up with — devise. Kundalik so‘zlashuvda rasmiy so‘z kulgili yoki sun’iy eshitiladi: “I shall commence my breakfast.”',
+        'Tanlash: auditoriya va maqsad: do‘stga xat — german; hisobot, qonun, akademik matn — lotin; ochiq nutq — aralash. Lotin so‘zlar mavhum tushunchani aniq beradi, german so‘zlar kuchli, qisqa va hissiy. Yaxshi stilist ikkalasini aralashtiradi: “We will commence the project when we have obtained sufficient funds” — rasmiy; “We’ll start when we’ve got enough money” — oddiy. Xato: bir gapda ikki registr: “We shall purchase some grub.”',
+      ],
+      table: [
+        { form: 'ask — enquire; start — commence; buy — purchase', example: 'We will commence the project next week.' },
+        { form: 'put up with — tolerate; look into — investigate', example: 'The committee will investigate the complaint.' },
+        { form: 'get — obtain; need — require; enough — sufficient', example: 'Applicants must obtain sufficient funds.' },
+      ],
+      examples: [
+        { en: 'We will commence the project when we have obtained sufficient funds.', uz: 'Yetarli mablag‘ni qo‘lga kiritgach, loyihani boshlaymiz.' },
+        { en: 'We’ll start when we’ve got enough money.', uz: 'Yetarli pul bo‘lgach boshlaymiz.' },
+        { en: 'The committee will investigate the complaint and reject any false claims.', uz: 'Qo‘mita shikoyatni tekshiradi va noto‘g‘ri da’volarni rad etadi.' },
+        { en: 'I can’t put up with the noise any longer.', uz: 'Shovqinga endi chidolmayman.' },
+      ],
+      vocab: [{ en: 'commence', uz: 'boshlamoq' }, { en: 'tolerate', uz: 'chidamoq' }, { en: 'obtain', uz: 'qo‘lga kiritmoq' }, { en: 'sufficient', uz: 'yetarli' }],
+      practice: [
+        ch('Which word is the most formal?', ['commence', 'start', 'begin'], 0, 'rasmiy.'),
+        gap('The formal equivalent of “put up with” is ___ . (tolerate)', ['tolerate'], 'phrasal.'),
+        ch('Which sentence is the most natural in a chat?', ['I’ll start when I’ve got enough money.', 'I shall commence when I have obtained sufficient funds.', 'I shall purchase sustenance.'], 0, 'norasmiy.'),
+        gap('Applicants must ___ a visa. (obtain)', ['obtain'], 'rasmiy fe’l.'),
+        gap('We have ___ funds to begin. (sufficient)', ['sufficient', 'enough'], 'rasmiy sifat.'),
+        ord(['the', 'committee', 'will', 'investigate', 'the', 'complaint'], 'The committee will investigate the complaint', 'rasmiy fe’l.'),
+      ],
+      check: [
+        gap('Latinate words are usually more ___ than Germanic ones. (formal)', ['formal'], 'rasmiyroq.'),
+        ch('Which is the formal verb for “find out”?', ['discover', 'get', 'find'], 0, 'rasmiy.'),
+        gap('Mixing registers in one sentence can sound odd or ___ . (comic)', ['comic', 'funny', 'strange'], 'aralash.'),
+        gap('The firm will ___ the contract next month. (terminate)', ['terminate', 'end'], 'rasmiy fe’l.'),
+        gap('They decided to ___ the offer. (reject)', ['reject', 'turn down'], 'turn down — reject.'),
+        multi('Choose ALL the formal words.', ['commence', 'purchase', 'require', 'get rid of', 'demonstrate'], [0, 1, 2, 4], 'rasmiy so‘zlar.'),
+      ],
+      writing: {
+        promptUz: 'Bir mazmunni ikki xil registrda yozing: 3 gapni (1) norasmiy (do‘stga) va (2) rasmiy (hisobotda). Kamida 3 ta rasmiy fe’l (commence, obtain, require, investigate, demonstrate…) va 3 ta kundalik muqobilini ishlating.', minWords: 70,
+        require: [{ re: String.raw`\b(commence|obtain|require|investigate|demonstrate|purchase|terminate|assist|sufficient)\b`, labelUz: 'rasmiy so‘z bor' }, { re: String.raw`\b(start|get|need|look into|show|buy|help|enough)\b`, labelUz: 'kundalik so‘z bor' }, { re: String.raw`\b(informal|formal|register|friend|report)\b`, labelUz: 'registr haqida bor' }],
+        model: 'Informal (to a friend): We’ll start the project next week, but we need to get some more money first. I’ll look into the details and show you the plan. Formal (in a report): The project will commence next week; however, the team must obtain additional funds before it proceeds. The manager will investigate the details and demonstrate the plan at the next meeting. The two versions share the same meaning, but the register is different, because the friend letter uses short everyday words and the report uses more formal vocabulary.',
+      },
+    },
+  ],
+};

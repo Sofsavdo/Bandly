@@ -43,6 +43,9 @@ import { C1_U11, C1_U12, C1_U13 } from './c1x1';
 import { C1_U14, C1_U15, C1_U16 } from './c1x2';
 import { C1_U17, C1_U18, C1_U19 } from './c1x3';
 import { C1_U20 } from './c1x4';
+import { C2_U11, C2_U12, C2_U13 } from './c2x1';
+import { C2_U14, C2_U15, C2_U16 } from './c2x2';
+import { C2_U17, C2_U18 } from './c2x3';
 import { IELTS_UNITS, IELTS_TRACKS } from '../ielts';
 import { SAT_UNITS, satSectionOf } from '../sat';
 
@@ -53,7 +56,7 @@ const withWriting = (u: Unit): Unit => ({ ...u, lessons: u.lessons.map((l) => {
   const listen = listeningFromExamples(v); // darsning o'z misollaridan eshitib tushunish mashqlari
   return listen.length ? { ...v, practice: [...v.practice, ...listen] } : v;
 }) });
-export const UNITS: Unit[] = [A1_S1, A1_S2, A1_U1, A1_U2, A1_U3, A1_U4, A1_U11, A1_U5, A1_U6, A1_U7, A1_U8, A1_U9, A1_U10, A1_U12, A1_U13, A1_U14, A1_U15, A1_U16, A1_U17, A1_U18, A1_U19, A1_U20, A1_U21, A1_U22, A1_U23, A1_U24, A2_U1, A2_U2, A2_U3, A2_U4, A2_U5, A2_U6, A2_U7, A2_U8, A2_U9, A2_U10, A2_U11, A2_U12, A2_U13, A2_U14, A2_U15, A2_U16, A2_U17, A2_U18, A2_U19, A2_U20, A2_U21, A2_U22, A2_U23, A2_U24, B1_U1, B1_U2, B1_U3, B1_U4, B1_U5, B1_U6, B1_U7, B1_U8, B1_U9, B1_U10, B1_U11, B1_U12, B1_U13, B1_U14, B1_U15, B1_U16, B1_U17, B1_U18, B1_U19, B1_U20, B1_U21, B1_U22, B2_U1, B2_U2, B2_U3, B2_U4, B2_U5, B2_U6, B2_U7, B2_U8, B2_U9, B2_U10, B2_U11, B2_U12, B2_U13, B2_U14, B2_U15, B2_U16, B2_U17, B2_U18, B2_U19, B2_U20, B2_U21, B2_U22, C1_U1, C1_U2, C1_U3, C1_U4, C1_U5, C1_U6, C1_U7, C1_U8, C1_U9, C1_U10, C1_U11, C1_U12, C1_U13, C1_U14, C1_U15, C1_U16, C1_U17, C1_U18, C1_U19, C1_U20, C2_U1, C2_U2, C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8, C2_U9, C2_U10].map(withWriting);
+export const UNITS: Unit[] = [A1_S1, A1_S2, A1_U1, A1_U2, A1_U3, A1_U4, A1_U11, A1_U5, A1_U6, A1_U7, A1_U8, A1_U9, A1_U10, A1_U12, A1_U13, A1_U14, A1_U15, A1_U16, A1_U17, A1_U18, A1_U19, A1_U20, A1_U21, A1_U22, A1_U23, A1_U24, A2_U1, A2_U2, A2_U3, A2_U4, A2_U5, A2_U6, A2_U7, A2_U8, A2_U9, A2_U10, A2_U11, A2_U12, A2_U13, A2_U14, A2_U15, A2_U16, A2_U17, A2_U18, A2_U19, A2_U20, A2_U21, A2_U22, A2_U23, A2_U24, B1_U1, B1_U2, B1_U3, B1_U4, B1_U5, B1_U6, B1_U7, B1_U8, B1_U9, B1_U10, B1_U11, B1_U12, B1_U13, B1_U14, B1_U15, B1_U16, B1_U17, B1_U18, B1_U19, B1_U20, B1_U21, B1_U22, B2_U1, B2_U2, B2_U3, B2_U4, B2_U5, B2_U6, B2_U7, B2_U8, B2_U9, B2_U10, B2_U11, B2_U12, B2_U13, B2_U14, B2_U15, B2_U16, B2_U17, B2_U18, B2_U19, B2_U20, B2_U21, B2_U22, C1_U1, C1_U2, C1_U3, C1_U4, C1_U5, C1_U6, C1_U7, C1_U8, C1_U9, C1_U10, C1_U11, C1_U12, C1_U13, C1_U14, C1_U15, C1_U16, C1_U17, C1_U18, C1_U19, C1_U20, C2_U1, C2_U2, C2_U3, C2_U4, C2_U5, C2_U6, C2_U7, C2_U8, C2_U9, C2_U10, C2_U11, C2_U12, C2_U13, C2_U14, C2_U15, C2_U16, C2_U17, C2_U18].map(withWriting);
 
 const flatten = (units: Unit[]) => units.flatMap((unit) => unit.lessons.map((lesson, index) => ({ unit, lesson, index })));
 export const ALL_LESSONS: { unit: Unit; lesson: Lesson; index: number }[] = flatten(UNITS);
