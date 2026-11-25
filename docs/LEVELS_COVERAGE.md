@@ -5,7 +5,7 @@ Tahlil (2026-11-25): A1 da 78 dars / 26 bo‘lim bor edi, A2, B1, B2, C1 va C2 d
 | Daraja | Avval | Reja | Hozir |
 |---|---|---|---|
 | A2 | 30 dars / 10 bo‘lim | 72 dars / 24 bo‘lim | **72 dars / 24 bo‘lim** (bajarildi) |
-| B1 | 30 / 10 | ~66 / 22 | navbatda |
+| B1 | 30 / 10 | 66 / 22 | **66 dars / 22 bo‘lim** (bajarildi) |
 | B2 | 30 / 10 | ~66 / 22 | navbatda |
 | C1 | 30 / 10 | ~60 / 20 | navbatda |
 | C2 | 30 / 10 | ~54 / 18 | navbatda |
@@ -32,3 +32,22 @@ Yangi bo‘limlar a2-u11 … a2-u24 (42 dars). Har bir dars: 3 ta tushuntirish a
 | Iboraviy fe’llar, kollokatsiyalar (make/do/have/take/go), so‘z yasash | a2-u24 |
 
 Eslatma: kontent holati `pilot` (professional metodist ko‘rigidan o‘tmagan); tarjimalar (ru, kk, ky, tg) ona tili egasi tomonidan tekshirilmagan.
+
+## B1 (66 dars / 22 bo‘lim)
+
+Yangi bo‘limlar b1-u11 … b1-u22 (36 dars). Tuzilishi A2 dagidek; yozma topshiriqlar qoida asosida tekshiriladi.
+
+| Mavzu | Bo‘lim |
+|---|---|
+| Majhul nisbat: hozirgi, o‘tgan, belgi / yangilik / jarayon | b1-u11 |
+| O‘zlashtirma gap: darak, savol, iltimos va buyruq | b1-u12 |
+| Ikkinchi shart gap, If I were you…, birinchi va ikkinchi shart, wish | b1-u13 |
+| Nisbiy gaplar: qo‘shimcha ma’lumot, that ni tushirish, which butun fikrga | b1-u14 |
+| so … that / such … that, quite / rather / fairly, sabab va natija bog‘lovchilari | b1-u15 |
+| be able to, manage to / succeed in, get ning ma’nolari | b1-u16 |
+| Sayohat muammolari, muloyim shikoyat, sayohat hikoyasi | b1-u17 |
+| Shifokor qabuli, sog‘lom odatlar, jarohat va voqealar | b1-u18 |
+| Ta’lim, CV va ariza xati, ish suhbati | b1-u19 |
+| Ijtimoiy tarmoq, yangilik sarlavhalari, onlayn xavfsizlik | b1-u20 |
+| Hikoya, sharh va fikr inshosi | b1-u21 |
+| Rasmni tasvirlash va taqqoslash, aniqlashtirish va suhbatni davom ettirish | b1-u22 |
