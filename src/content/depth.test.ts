@@ -10,12 +10,13 @@ import { listeningTests } from './listeningTests';
 import { CAN_DO } from '../components/mapArt';
 
 const byLevel = (lv: string) => ALL_LESSONS.filter((x) => x.unit.level === lv).length;
-assert.ok(ALL_LESSONS.length >= 342, `darslar: ${ALL_LESSONS.length}`);
+assert.ok(ALL_LESSONS.length >= 372, `darslar: ${ALL_LESSONS.length}`);
 assert.ok(byLevel('A1') >= 78, `A1 darslar: ${byLevel('A1')}`);
 assert.ok(byLevel('A2') >= 72, `A2 darslar: ${byLevel('A2')}`);
 assert.ok(byLevel('B1') >= 66, `B1 darslar: ${byLevel('B1')}`);
 assert.ok(byLevel('B2') >= 66, `B2 darslar: ${byLevel('B2')}`);
-for (const lv of ['C1', 'C2']) assert.ok(byLevel(lv) >= 30, `${lv} darslar: ${byLevel(lv)}`);
+assert.ok(byLevel('C1') >= 60, `C1 darslar: ${byLevel('C1')}`);
+assert.ok(byLevel('C2') >= 30, `C2 darslar: ${byLevel('C2')}`);
 
 for (const { lesson } of ALL_LESSONS) {
   assert.ok(lesson.practice.length >= 5 && lesson.check.length >= 6, `${lesson.id}: mashq/nazorat soni`);
