@@ -1,0 +1,150 @@
+import type { ListeningTest } from './types';
+
+// To'liq formatli IELTS Listening mashq testi 2: 4 qism, 40 savol (≈ 30 daqiqa).
+// Original mashq skripti (Sellzen). Rasmiy IELTS materiali emas; metodist tekshiruvini kutmoqda.
+type L = { speaker: 'A' | 'B' | 'C' | 'D'; text: string };
+
+const PART1: L[] = [
+  { speaker: 'A', text: 'Good morning, Riverside Tennis Club, Rachel speaking. How can I help you?' },
+  { speaker: 'B', text: "Hi. I've just moved to the area and I'm interested in joining the club. Could you tell me a bit about membership?" },
+  { speaker: 'A', text: 'Of course. We have three types: junior, adult and family. Which would you need?' },
+  { speaker: 'B', text: "Just adult, for myself. I used to play at university, but I haven't played for a few years." },
+  { speaker: 'A', text: "That's no problem. Adult membership is two hundred and forty pounds a year, or you can pay monthly, which works out at twenty-two pounds a month." },
+  { speaker: 'B', text: "I think I'll pay monthly. Is there a joining fee?" },
+  { speaker: 'A', text: "Normally there's a fee of thirty pounds, but this month it's free, as we're running a special offer." },
+  { speaker: 'B', text: 'Great. What do I get for that?' },
+  { speaker: 'A', text: "You can book courts up to seven days in advance, and you get free use of the gym. The swimming pool isn't included, I'm afraid; that's run by the council." },
+  { speaker: 'B', text: "OK. And are there any coaching sessions? I'd like to improve my backhand." },
+  { speaker: 'A', text: "Yes, there's a group session for adults every Tuesday evening at seven. It costs eight pounds per session for members. Our head coach, Mr Dalton, runs it." },
+  { speaker: 'B', text: 'Sounds good. Could I sign up now?' },
+  { speaker: 'A', text: 'Certainly. Can I take your name?' },
+  { speaker: 'B', text: "Peter Whitlock. That's W, H, I, T, L, O, C, K." },
+  { speaker: 'A', text: 'Thank you. And your address?' },
+  { speaker: 'B', text: 'Flat four, forty-one Harbour Road, in Westbury.' },
+  { speaker: 'A', text: "And what's the best phone number for you?" },
+  { speaker: 'B', text: 'Oh seven seven one two, five five three, eight two oh.' },
+  { speaker: 'A', text: 'Thanks. Do you have any medical conditions we should know about?' },
+  { speaker: 'B', text: "Well, I had a knee injury two years ago, but it's fine now." },
+  { speaker: 'A', text: "I'll make a note of that. Finally, you'll need to bring a photo for your membership card when you first come in." },
+  { speaker: 'B', text: 'No problem. When is reception open?' },
+  { speaker: 'A', text: 'From eight in the morning until nine at night, every day except Sunday, when we close at six.' },
+  { speaker: 'B', text: "Perfect. I'll come in on Saturday." },
+];
+
+const PART2: L[] = [
+  { speaker: 'B', text: "Hello everyone, and thank you for volunteering at Oakfield Wildlife Centre. I'm Mike, the volunteer coordinator, and I'm going to tell you how the centre works and what you'll be doing over the next few weeks." },
+  { speaker: 'B', text: 'The centre was opened in 1985 by a retired teacher who started by caring for injured birds in her garden. Today we treat around three thousand animals a year, mostly birds and hedgehogs, and about two thirds of them are eventually released back into the wild.' },
+  { speaker: 'B', text: 'Most of our money comes from donations from the public. We receive a small amount from the local council, but that covers less than ten per cent of our costs, so fundraising is very important.' },
+  { speaker: 'B', text: "Let me explain the layout. When you come in through the main gate, the visitor centre is directly in front of you. The animal hospital is behind it, and visitors are not allowed in there, because noise and people can stress the animals. To the right of the hospital are the outdoor enclosures, and beyond them is the pond, which we use for water birds." },
+  { speaker: 'B', text: "Now, your duties. For the first two weeks, all new volunteers work in the kitchen, preparing food for the animals. It isn't glamorous, but it's the best way to learn about their needs. After that, some of you will move on to cleaning the enclosures, and others will help in the visitor centre." },
+  { speaker: 'B', text: "A few rules. Please wear the boots we provide, not your own shoes, because this stops diseases spreading between areas. Always wash your hands when you move from one area to another. And please never give an animal a name. It sounds strange, but we don't want people to become too attached, because our aim is to release them." },
+  { speaker: 'B', text: "Each shift lasts four hours, and there's a break in the middle. Tea and coffee are free in the staff room, but you'll need to bring your own lunch." },
+  { speaker: 'B', text: "Finally, if you find an injured animal outside the centre, please don't pick it up. Phone our helpline, and one of our trained staff will tell you what to do." },
+];
+
+const PART3: L[] = [
+  { speaker: 'C', text: 'Sam, have you had a chance to look at the results of our library survey?' },
+  { speaker: 'D', text: 'Yes, I went through them last night. We had more responses than I expected, just over two hundred.' },
+  { speaker: 'C', text: "That's great. I was worried that sending it by email wouldn't work. Last year's group only got fifty." },
+  { speaker: 'D', text: 'I think offering a free coffee voucher helped. Although that might mean some people answered without thinking very carefully.' },
+  { speaker: 'C', text: 'True. We should mention that in the limitations section. So what were the main findings?' },
+  { speaker: 'D', text: 'The most surprising thing was that most students said they come to the library to work in groups, not to borrow books. Only about a fifth said borrowing was their main reason.' },
+  { speaker: 'C', text: 'That fits with what the librarian told us. She said book loans have fallen every year for the last decade.' },
+  { speaker: 'D', text: 'The biggest complaint was about the lack of power sockets. People want to charge their laptops.' },
+  { speaker: 'C', text: 'I thought it would be noise.' },
+  { speaker: 'D', text: 'Noise came second. Mainly in the group study area on the ground floor.' },
+  { speaker: 'C', text: 'So what recommendations should we make? I think the obvious one is more sockets.' },
+  { speaker: 'D', text: "Yes, but that's expensive. Maybe we could suggest something cheaper as well." },
+  { speaker: 'C', text: 'The second floor is already supposed to be silent, but nobody enforces it. Perhaps clearer signs would help.' },
+  { speaker: 'D', text: 'Good idea. Now, how should we split the writing? The report is due on the twelfth.' },
+  { speaker: 'C', text: "I'd like to write the methodology section, since I designed the questionnaire." },
+  { speaker: 'D', text: "Fine. Then I'll do the analysis of the results. I've already started on the graphs." },
+  { speaker: 'C', text: "Who's going to write the recommendations?" },
+  { speaker: 'D', text: "Could you do those? You've got better ideas than me about what's practical." },
+  { speaker: 'C', text: 'All right. And you can write the introduction, then, as you did most of the background reading.' },
+  { speaker: 'D', text: 'OK. Should we show the report to Dr Hughes before we submit it?' },
+  { speaker: 'C', text: "She said she'd only look at a draft if we sent it a week in advance. Let's aim for that." },
+];
+
+const PART4: L[] = [
+  { speaker: 'A', text: "Good afternoon. In today's lecture I'm going to look at the bicycle and the surprising effect it had on society in the late nineteenth century." },
+  { speaker: 'A', text: "The earliest ancestor of the bicycle appeared in Germany in 1817. It had no pedals at all: the rider sat on a wooden frame and pushed it along with his feet. It was sometimes called the running machine, and for a short time it was fashionable among wealthy young men." },
+  { speaker: 'A', text: 'Pedals were added in the 1860s, and soon afterwards came the high-wheeler, with an enormous front wheel. It was fast, but extremely dangerous, because the rider sat so high that a small stone could throw him over the handlebars.' },
+  { speaker: 'A', text: 'The real breakthrough was the so-called safety bicycle of the 1880s. It had two wheels of the same size and a chain that drove the back wheel, which is essentially the design we still use today. When air-filled tyres were added a few years later, cycling became far more comfortable, and a cycling craze swept through Europe and North America.' },
+  { speaker: 'A', text: 'The social effects were remarkable. For the first time, ordinary working people had a cheap form of personal transport. They could live further from their place of work, and they could travel to the countryside at weekends. Some historians even argue that the bicycle widened the choice of marriage partners, as young people could easily meet people from neighbouring villages.' },
+  { speaker: 'A', text: 'The bicycle was particularly important for women. It gave them a new kind of independence, and it also changed fashion: long, heavy skirts were impractical, so many women began to wear shorter skirts or even trousers, which was considered shocking at the time.' },
+  { speaker: 'A', text: 'The bicycle also had an influence on later technology. Many of the techniques used in its manufacture, such as ball bearings, were later used in cars, and the Wright brothers, who built the first successful aeroplane, ran a bicycle shop.' },
+  { speaker: 'A', text: "Today, of course, the bicycle is enjoying a revival, as cities try to reduce traffic and pollution. Next week we'll look at the history of the motor car, and at how it replaced the bicycle for most of the twentieth century." },
+];
+
+const SCRIPT = [...PART1, ...PART2, ...PART3, ...PART4];
+
+export const listeningFull2: ListeningTest = {
+  id: 'listening-full-2',
+  level: 'C1',
+  title: 'IELTS Listening — to‘liq mock 2',
+  minutes: 35,
+  names: { A: 'Rachel / Lecturer', B: 'Peter / Mike', C: 'Kate', D: 'Sam' },
+  context: '4 qism: 1) tennis klubiga a’zo bo‘lish (telefon); 2) yovvoyi hayvonlar markazida ko‘ngillilarga yo‘riqnoma; 3) ikki talabaning kutubxona so‘rovnomasi muhokamasi; 4) velosipedning jamiyatga ta’siri haqida ma’ruza.',
+  script: SCRIPT,
+  sections: [
+    { at: 0, title: 'Part 1 — Questions 1–10' },
+    { at: PART1.length, title: 'Part 2 — Questions 11–20' },
+    { at: PART1.length + PART2.length, title: 'Part 3 — Questions 21–30' },
+    { at: PART1.length + PART2.length + PART3.length, title: 'Part 4 — Questions 31–40' },
+  ],
+  groups: [
+    { instruction: 'Part 1 — Questions 1–10: Complete the form. Write ONE WORD AND/OR A NUMBER for each answer.', questionIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+    { instruction: 'Part 2 — Questions 11–15: Choose the correct letter.', questionIds: [11, 12, 13, 14, 15] },
+    { instruction: 'Part 2 — Questions 16–20: Complete the notes. Write ONE WORD ONLY for each answer.', questionIds: [16, 17, 18, 19, 20] },
+    { instruction: 'Part 3 — Questions 21–26: Choose the correct letter.', questionIds: [21, 22, 23, 24, 25, 26] },
+    { instruction: 'Part 3 — Questions 27–30: Who will write each section? Choose Kate or Sam.', questionIds: [27, 28, 29, 30] },
+    { instruction: 'Part 4 — Questions 31–40: Complete the notes. Write ONE WORD ONLY for each answer.', questionIds: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40] },
+  ],
+  questions: [
+    // Part 1
+    { id: 1, type: 'fill', text: 'Type of membership: ______', answers: ['adult'], evidence: 'Part 1: "Just adult, for myself."' },
+    { id: 2, type: 'fill', text: 'Monthly payment: £______', answers: ['22', 'twenty-two'], evidence: 'Part 1: "twenty-two pounds a month".' },
+    { id: 3, type: 'fill', text: 'Joining fee this month: ______', answers: ['free'], evidence: 'Part 1: "this month it\'s free, as we\'re running a special offer".' },
+    { id: 4, type: 'fill', text: 'Courts can be booked up to ______ days in advance', answers: ['7', 'seven'], evidence: 'Part 1: "book courts up to seven days in advance".' },
+    { id: 5, type: 'fill', text: 'Adult group coaching: every ______ evening', answers: ['tuesday'], evidence: 'Part 1: "every Tuesday evening at seven".' },
+    { id: 6, type: 'fill', text: 'Head coach: Mr ______', answers: ['dalton'], evidence: 'Part 1: "Our head coach, Mr Dalton, runs it."' },
+    { id: 7, type: 'fill', text: 'Surname: ______', answers: ['whitlock'], evidence: 'Part 1: "Peter Whitlock. That\'s W, H, I, T, L, O, C, K."' },
+    { id: 8, type: 'fill', text: 'Address: Flat 4, 41 ______ Road, Westbury', answers: ['harbour', 'harbor'], evidence: 'Part 1: "Flat four, forty-one Harbour Road, in Westbury".' },
+    { id: 9, type: 'fill', text: 'Medical note: old ______ injury', answers: ['knee'], evidence: 'Part 1: "I had a knee injury two years ago".' },
+    { id: 10, type: 'fill', text: 'Bring a ______ for the membership card', answers: ['photo', 'photograph'], evidence: 'Part 1: "bring a photo for your membership card".' },
+    // Part 2
+    { id: 11, type: 'mcq', text: 'Who started the wildlife centre?', options: ['A vet', 'A retired teacher', 'A local farmer', 'The council'], answer: 1, evidence: 'Part 2: "opened in 1985 by a retired teacher".' },
+    { id: 12, type: 'mcq', text: 'What proportion of animals are released back into the wild?', options: ['About a third', 'About half', 'About two thirds', 'Almost all'], answer: 2, evidence: 'Part 2: "about two thirds of them are eventually released back into the wild".' },
+    { id: 13, type: 'mcq', text: 'Where does most of the centre’s money come from?', options: ['Donations from the public', 'The local council', 'Visitor tickets', 'A national charity'], answer: 0, evidence: 'Part 2: "Most of our money comes from donations from the public."' },
+    { id: 14, type: 'mcq', text: 'Why are visitors not allowed in the animal hospital?', options: ['It is too small.', 'The staff are too busy.', 'It is being rebuilt.', 'Noise and people can stress the animals.'], answer: 3, evidence: 'Part 2: "because noise and people can stress the animals".' },
+    { id: 15, type: 'mcq', text: 'Why should volunteers not give animals names?', options: ['It confuses the animals.', 'People may become too attached.', 'It takes too much time.', 'The animals already have numbers.'], answer: 1, evidence: 'Part 2: "we don\'t want people to become too attached, because our aim is to release them".' },
+    { id: 16, type: 'fill', text: 'The ______ is used for water birds.', answers: ['pond'], evidence: 'Part 2: "the pond, which we use for water birds".' },
+    { id: 17, type: 'fill', text: 'For the first two weeks, new volunteers work in the ______.', answers: ['kitchen'], evidence: 'Part 2: "all new volunteers work in the kitchen".' },
+    { id: 18, type: 'fill', text: 'Volunteers must wear the ______ provided.', answers: ['boots'], evidence: 'Part 2: "Please wear the boots we provide".' },
+    { id: 19, type: 'fill', text: 'Each shift lasts four ______.', answers: ['hours'], evidence: 'Part 2: "Each shift lasts four hours".' },
+    { id: 20, type: 'fill', text: 'Volunteers need to bring their own ______.', answers: ['lunch'], evidence: 'Part 2: "you\'ll need to bring your own lunch".' },
+    // Part 3
+    { id: 21, type: 'mcq', text: 'How many responses did the survey get?', options: ['About fifty', 'About a hundred', 'Just over two hundred'], answer: 2, evidence: 'Part 3: "just over two hundred".' },
+    { id: 22, type: 'mcq', text: 'What problem might the coffee voucher have caused?', options: ['Some people answered without thinking carefully.', 'It was too expensive.', 'Only one department replied.'], answer: 0, evidence: 'Part 3: "some people answered without thinking very carefully".' },
+    { id: 23, type: 'mcq', text: 'What is the main reason most students use the library?', options: ['To borrow books', 'To work in groups', 'To use the computers'], answer: 1, evidence: 'Part 3: "most students said they come to the library to work in groups".' },
+    { id: 24, type: 'mcq', text: 'What did the librarian say?', options: ['The library is too crowded.', 'More students visit every year.', 'Book loans have fallen every year.'], answer: 2, evidence: 'Part 3: "book loans have fallen every year for the last decade".' },
+    { id: 25, type: 'mcq', text: 'What was the biggest complaint?', options: ['Noise', 'The lack of power sockets', 'The opening hours'], answer: 1, evidence: 'Part 3: "The biggest complaint was about the lack of power sockets."' },
+    { id: 26, type: 'mcq', text: 'What do they say about the second floor?', options: ['It is meant to be silent, but this is not enforced.', 'It should become a group study area.', 'It is closed in the evenings.'], answer: 0, evidence: 'Part 3: "The second floor is already supposed to be silent, but nobody enforces it."' },
+    { id: 27, type: 'mcq', text: 'Methodology', options: ['Kate', 'Sam'], answer: 0, evidence: 'Part 3: Kate: "I\'d like to write the methodology section".' },
+    { id: 28, type: 'mcq', text: 'Analysis of the results', options: ['Kate', 'Sam'], answer: 1, evidence: 'Part 3: Sam: "Then I\'ll do the analysis of the results."' },
+    { id: 29, type: 'mcq', text: 'Recommendations', options: ['Kate', 'Sam'], answer: 0, evidence: 'Part 3: Sam: "Could you do those?" — Kate: "All right."' },
+    { id: 30, type: 'mcq', text: 'Introduction', options: ['Kate', 'Sam'], answer: 1, evidence: 'Part 3: Kate: "you can write the introduction, then" — Sam: "OK."' },
+    // Part 4
+    { id: 31, type: 'fill', text: 'The earliest ancestor of the bicycle appeared in ______ in 1817.', answers: ['germany'], evidence: 'Part 4: "appeared in Germany in 1817".' },
+    { id: 32, type: 'fill', text: 'It had no ______.', answers: ['pedals'], evidence: 'Part 4: "It had no pedals at all".' },
+    { id: 33, type: 'fill', text: 'The high-wheeler was fast but extremely ______.', answers: ['dangerous'], evidence: 'Part 4: "It was fast, but extremely dangerous".' },
+    { id: 34, type: 'fill', text: 'In the safety bicycle, a ______ drove the back wheel.', answers: ['chain'], evidence: 'Part 4: "a chain that drove the back wheel".' },
+    { id: 35, type: 'fill', text: 'Air-filled ______ made cycling more comfortable.', answers: ['tyres', 'tires'], evidence: 'Part 4: "When air-filled tyres were added".' },
+    { id: 36, type: 'fill', text: 'Workers could live further from their place of ______.', answers: ['work'], evidence: 'Part 4: "They could live further from their place of work".' },
+    { id: 37, type: 'fill', text: 'Young people could meet people from neighbouring ______.', answers: ['villages'], evidence: 'Part 4: "meet people from neighbouring villages".' },
+    { id: 38, type: 'fill', text: 'The bicycle gave women a new kind of ______.', answers: ['independence'], evidence: 'Part 4: "It gave them a new kind of independence".' },
+    { id: 39, type: 'fill', text: 'Ball ______ were later used in cars.', answers: ['bearings'], evidence: 'Part 4: "such as ball bearings, were later used in cars".' },
+    { id: 40, type: 'fill', text: 'The Wright brothers ran a bicycle ______.', answers: ['shop'], evidence: 'Part 4: "ran a bicycle shop".' },
+  ],
+};
