@@ -65,6 +65,15 @@ assert.equal(emotionOf('What the hell was that? Again!'), 'angry');
 assert.equal(emotionOf('Perfect! Barakalla.'), 'happy');
 assert.equal(emotionOf('Oh no, not again.'), 'disappointed');
 assert.equal(emotionOf('Tell me about your weekend.'), 'neutral');
+// 2026-11-25: ko'proq hissiyot taniladi (yuz neytral qolib ketmasin); o'zbekcha apostrof turlari bir xil
+assert.equal(emotionOf('Zo‘r! Endi yana bir gap ayting.'), 'happy');
+assert.equal(emotionOf('Voy-bo‘, qoyil!'), 'impressed');
+assert.equal(emotionOf('Wow, that was a great sentence.'), 'impressed');
+assert.equal(emotionOf('Oh, great, the past tense again.'), 'sarcastic');
+assert.equal(emotionOf('Hehe, nice one.'), 'laugh');
+assert.equal(emotionOf('Almost! One small thing.'), 'disappointed');
+assert.equal(emotionOf('Listen carefully, this rule is important.'), 'serious');
+assert.equal(emotionOf('Are you serious? Again the same mistake.'), 'angry');
 assert.ok(buildLivePrompt({ adult: false, native: 'English' }).includes('Speak ONLY English'));
 assert.ok(first.includes('UZBEK QUALITY') && first.includes('adabiy') && !buildLivePrompt({ adult: false, native: 'Russian' }).includes('UZBEK QUALITY'), 'o‘zbekcha — adabiy til, shevasiz');
 assert.match(liveKickoff({ firstCall: true, hasMemory: false }), /Introduce yourself once/);

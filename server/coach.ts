@@ -154,15 +154,20 @@ export function buildLivePrompt(opts: { adult: boolean; native?: string; level?:
 }
 
 /** Ustoz javobi matnidan hissiyot (ekrandagi effekt uchun: jahl — olov, kulgi, quvonch). Sof funksiya, oddiy belgilar bo'yicha. */
-export type LiveEmotion = 'neutral' | 'angry' | 'laugh' | 'happy' | 'impressed' | 'disappointed';
+export type LiveEmotion = 'neutral' | 'angry' | 'laugh' | 'happy' | 'impressed' | 'disappointed' | 'serious' | 'sarcastic';
 export function emotionOf(text: string): LiveEmotion {
-  const t = text.toLowerCase();
-  if (/\b(?:ha){2,}\b|\bhah+a\b|\blol\b|\bxa-?xa|kulgili|😂/.test(t)) return 'laugh';
-  if (/what the hell|\bdamn\b|\bhell\b|seriously\?|are you kidding|uyat|dahshat|tentak|eshak|ahmoq|kallavaram|qovoq|bu nima|nima endi|g'o'ldira|voy tovba|\bugh\b|for god'?s sake|again\?!|\bno,? no,? no\b/.test(t) || (t.match(/!/g) ?? []).length >= 3) return 'angry';
-  // Iliq maqtov / g'urur — ekranda yurak; oddiy maqtov va tasdiq — tabassum
-  if (/\b(?:proud of you|so proud|brilliant|wonderful|fantastic|love it|bravo)\b|qoyil|ofarin|g'ururlanaman|ajoyib/.test(t)) return 'impressed';
-  if (/\b(?:great|perfect|excellent|amazing|awesome|well done|good job|nice|correct|exactly|yes!)\b|zo'r|barakalla|to'ppa-to'g'ri|aynan|to'g'ri/.test(t)) return 'happy';
-  if (/\b(?:oh no|sigh|disappointing|not again)\b|afsus|eh+,|attang/.test(t)) return 'disappointed';
+  // Apostrof turlari bir xil qilinadi: ovoz matnida zo‘r / zo’r / zoʻr keladi
+  const t = text.toLowerCase().replace(/[‘’ʻʼ`]/g, "'");
+  if (/\b(?:ha){2,}\b|\bhah+a\b|\bhe(?:he)+\b|\bhi(?:hi)+\b|\blol\b|\bxa-?xa|kulgili|kuldirding|kulib yubordim|😂|😄/.test(t)) return 'laugh';
+  if (/what the hell|\bdamn\b|\bhell\b|seriously\?|are you kidding|are you serious|\bno way\b|come on!|uyat|dahshat|tentak|eshak|ahmoq|kallavaram|qovoq|bu nima|nima endi|g'o'ldira|voy tovba|qanaqasiga|jahlim|\bugh\b|for god'?s sake|again\?!|\bno,? no,? no\b/.test(t) || (t.match(/!/g) ?? []).length >= 3) return 'angry';
+  // Kinoya: "oh, great", "sure, sure", "genius" — yarim tabassum, ko'tarilgan qosh
+  if (/\boh,? (?:great|wonderful|really|sure)\b|\bsure,? sure\b|\bgenius\b|\bwow,? (?:just )?wow\b|\bnice try\b|\byeah,? right\b|ha-ha,? juda|qoyil-e/.test(t)) return 'sarcastic';
+  // Iliq maqtov / g'urur / hayrat — ekranda yurak; oddiy maqtov va tasdiq — tabassum
+  if (/\b(?:proud of you|so proud|brilliant|wonderful|fantastic|love it|bravo|wow|incredible|impressive|outstanding|amazing job)\b|qoyil|ofarin|g'ururlanaman|ajoyib|voy-bo'|zo'r-ku/.test(t)) return 'impressed';
+  if (/\b(?:great|perfect|excellent|amazing|awesome|well done|good job|nice|correct|exactly|yes!|super|good)\b|zo'r|barakalla|to'ppa-to'g'ri|aynan|to'g'ri|a'lo|yaxshi/.test(t)) return 'happy';
+  if (/\b(?:oh no|sigh|disappointing|not again|not quite|almost|close,? but)\b|afsus|eh+,|attang|deyarli|unchalik emas/.test(t)) return 'disappointed';
+  // Jiddiy: diqqat talab qilinadi
+  if (/\b(?:listen carefully|focus|pay attention|important|remember this|rule)\b|diqqat|yaxshilab eshit|esda tut|qoida/.test(t)) return 'serious';
   return 'neutral';
 }
 
