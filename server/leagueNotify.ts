@@ -38,7 +38,7 @@ export async function runLeagueNotices(db: DatabaseSync, send: (b: Record<string
   const last = weekStart(now) - 7 * 86_400_000;
   let n = 0;
   for (const r of pendingLeagueResults(db, now)) {
-    db.prepare('UPDATE players SET league_notified = ? WHERE id = ?').run(last, r.playerId);
+    db.prepare('UPDATE players SET league_notified = ?, last_bot_msg = ? WHERE id = ?').run(last, now, r.playerId);
     try { await send(leagueMessage(r, appUrl, (s) => tr(r.lang, s))); n++; }
     catch (e) { if (/403|blocked|deactivated|chat not found/i.test((e as Error).message)) db.prepare('UPDATE players SET remind = 0 WHERE id = ?').run(r.playerId); }
     await new Promise((res) => setTimeout(res, 40));

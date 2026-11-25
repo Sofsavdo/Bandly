@@ -28,7 +28,7 @@ export function dueReminders(db: DatabaseSync, now: number, limit = BATCH): Due[
       ORDER BY p.streak DESC LIMIT ?`).all(day, since, limit) as unknown as Due[]);
 }
 
-export const markReminded = (db: DatabaseSync, id: number, now: number): void => { db.prepare('UPDATE players SET reminded_day = ? WHERE id = ?').run(tzDay(now), id); };
+export const markReminded = (db: DatabaseSync, id: number, now: number): void => { db.prepare('UPDATE players SET reminded_day = ?, last_bot_msg = ? WHERE id = ?').run(tzDay(now), now, id); };
 export const setRemind = (db: DatabaseSync, tgId: number, on: boolean): boolean => Number(db.prepare('UPDATE players SET remind = ? WHERE tg_id = ?').run(on ? 1 : 0, tgId).changes) > 0;
 
 export function reminderMessage(chatId: number, streak: number, appUrl: string, tr: (s: string) => string = (s) => s): Record<string, unknown> {

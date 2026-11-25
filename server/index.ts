@@ -41,6 +41,7 @@ import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, nickFrom, setBotPhoto, setupBot, tgApi, tgUpload, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { checkMember, CHANNEL, handleBot } from './botFlow';
 import { runReminders, setRemind } from './reminders';
+import { runNudges } from './nudges';
 import { runLeagueNotices } from './leagueNotify';
 import { MAX_AUDIO, NATIVE_STT_CODE, recordStt, sttAllowed, sttConfigFromEnv, transcribeLearner } from './stt';
 import { analytics } from './analytics';
@@ -931,6 +932,8 @@ httpServer.listen(PORT, HOST, () => console.log(`Sellzen: http://${HOST}:${PORT}
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)
 if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runLeagueNotices(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/league'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Liga natijasi yuborildi: %s ta', n); }).catch((e) => console.warn('liga xabari xato', (e as Error).message)); }, 10 * 60_000);
 if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
+// Aloqa xabarlari (Telegram): har bir ulangan o'quvchiga kamida 2–3 kunda bitta (18:00–21:00 Toshkent). O'chirish: TG_NUDGES=0
+if (bot?.publicUrl && process.env.TG_NUDGES !== '0') setInterval(() => { runNudges(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), (route) => appUrl(bot.publicUrl!, route), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t), process.env.TG_REMINDERS === '1').then((n) => { if (n) console.log('nudges sent: %s', n); }).catch((e) => console.warn('nudge failed', (e as Error).message)); }, 10 * 60_000);
 setInterval(() => { void runMemoryJobs(db, summarizeMemory); }, 60_000).unref(); // xotira navbati: qayta urinishlar
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
 
