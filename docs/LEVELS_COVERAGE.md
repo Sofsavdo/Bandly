@@ -7,7 +7,7 @@ Tahlil (2026-11-25): A1 da 78 dars / 26 bo‘lim bor edi, A2, B1, B2, C1 va C2 d
 | A2 | 30 dars / 10 bo‘lim | 72 dars / 24 bo‘lim | **72 dars / 24 bo‘lim** (bajarildi) |
 | B1 | 30 / 10 | 66 / 22 | **66 dars / 22 bo‘lim** (bajarildi) |
 | B2 | 30 / 10 | 66 / 22 | **66 dars / 22 bo‘lim** (bajarildi) |
-| C1 | 30 / 10 | ~60 / 20 | navbatda |
+| C1 | 30 / 10 | 60 / 20 | **60 dars / 20 bo‘lim** (bajarildi) |
 | C2 | 30 / 10 | ~54 / 18 | navbatda |
 
 ## A2 (72 dars / 24 bo‘lim)
@@ -70,5 +70,24 @@ Yangi bo‘limlar b2-u11 … b2-u22 (36 dars). Tuzilishi A2 / B1 dagidek; yozma 
 | Gapirish: munozara, muzokara, uzun javob (long turn) | b2-u20 |
 | Tinglash va o‘qish: munosabat, xulosa chiqarish, havola, qisqartirish (summary) | b2-u21 |
 | So‘z boyligi: bog‘liq predloglar, adashtiruvchi so‘zlar, so‘z yasash | b2-u22 |
+
+Eslatma: kontent holati `pilot`; tarjimalar ona tili egasi tomonidan tekshirilmagan.
+
+## C1 (60 dars / 20 bo‘lim)
+
+Yangi bo‘limlar c1-u11 … c1-u20 (30 dars). Tuzilishi B2 dagidek; yozma topshiriqlar qoida asosida tekshiriladi. Yangi lug‘at so‘zlari (58 ta) umumiy ro‘yxatga qo‘shilgan.
+
+| Mavzu | Bo‘lim |
+|---|---|
+| Modal fe’llar: o‘tmish haqida xulosa (must have, can’t have), tanqid va afsus (should have, needn’t have), will / would / be bound to nozikliklari | c1-u11 |
+| Hikoya va tasviriy yozuv: hikoya zamonlari, used to / would / was always -ing, gap boshidagi to‘ldiruvchilar va sezgi tafsilotlari | c1-u12 |
+| Xabar berish: xabar fe’llari va tuzilmalari, akademik yozuvda manba ko‘rsatish, o‘zlashtirma gap va zamon siljishi | c1-u13 |
+| Gapirish: taqdimot tuzilishi, grafik va tendensiyani tasvirlash, qiyin savollarga muloyim javob | c1-u14 |
+| Gapirish: intervyu (STAR), mavhum mavzularda taxmin va tarozilash, navbat, gap bo‘lish va tuzatish | c1-u15 |
+| Tinglash: ma’ruza tuzilishi va yozuv, yashirin ma’no va istehzo, bog‘langan nutq | c1-u16 |
+| O‘qish: skimming / scanning, muallif pozitsiyasi va ohangi, kontekstdagi so‘z | c1-u17 |
+| Yozuv: rasmiy xat, ishontiruvchi hisobot va taklif, sharh va maqola | c1-u18 |
+| Mavzuli lug‘at: texnologiya va axloq, fan va tadqiqot, media va siyosat | c1-u19 |
+| Aniqlik: murakkab holatlarda artikllar, tinish belgilari, xatolarni tuzatish | c1-u20 |
 
 Eslatma: kontent holati `pilot`; tarjimalar ona tili egasi tomonidan tekshirilmagan.
