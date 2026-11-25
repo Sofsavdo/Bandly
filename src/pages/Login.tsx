@@ -11,6 +11,7 @@ export default function Login() {
       <h2>{L('Davom etish uchun kiring')}</h2>
       <p className="muted">{L('Bepul. Progressingiz har qanday qurilmada saqlanadi.')}</p>
       <JoinForm onJoined={() => { /* hisob o'zgarishi App'ni qayta chizadi */ }} />
+      <p className="muted legal-note">{L('Davom etish orqali quyidagilarga rozilik bildirasiz:')} <a href="/shartlar">{L('Foydalanish shartlari')}</a> · <a href="/maxfiylik">{L('Maxfiylik siyosati')}</a></p>
     </div>
   );
 }

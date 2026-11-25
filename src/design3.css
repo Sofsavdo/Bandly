@@ -707,7 +707,7 @@ body.has-planrun main.container { padding-bottom: 96px; }
 .zn-label { font-size: 12px; font-weight: 650; padding: 4px 10px; border-radius: 12px; background: color-mix(in srgb, var(--surface) 94%, transparent); box-shadow: 0 6px 14px -8px rgba(20, 22, 43, .3); }
 .zone.night .zn-label { background: rgba(255, 255, 255, .92); color: #14162b; }
 /* Bo'lim nomi: qadamning ostida (yo'l pastdan tepaga boradi — bo'lim shu yerdan boshlanadi) */
-.unit-sign { bottom: auto; top: calc(100% + 6px); transform: translateX(-50%); padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--inv); color: var(--on-inv); box-shadow: 0 8px 18px -10px rgba(20, 22, 43, .5); }
+.unit-sign { bottom: auto; top: calc(100% + 6px); transform: translateX(calc(-50% + var(--shift, 0px))); white-space: normal; width: max-content; max-width: min(250px, 76vw); text-align: center; line-height: 1.25; padding: 6px 12px; border-radius: 14px; font-size: 12px; font-weight: 700; background: var(--inv); color: var(--on-inv); box-shadow: 0 8px 18px -10px rgba(20, 22, 43, .5); }
 .zn:has(.unit-sign) .zn-label { margin-bottom: 0; }
 .trophy { border-radius: 22px; background: rgba(255, 255, 255, .75); color: #9aa3b5; box-shadow: 0 10px 22px -14px rgba(20, 22, 43, .35); backdrop-filter: blur(6px); }
 .trophy.done { background: linear-gradient(150deg, #ffe9a6, var(--butter) 50%, #e9b830); color: #14162b; box-shadow: 0 14px 26px -12px rgba(233, 184, 48, .8); }

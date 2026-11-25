@@ -49,15 +49,17 @@ const pairOf = (lang: Lang, slug: string): { uz: string; ru: string } | null => 
   return uz?.ru ? { uz: uz.slug, ru: uz.ru } : null;
 };
 const UI = {
-  uz: { all: 'Barcha vositalar', app: 'Ilovani ochish', groups: { level: 'Darajangizni bilib oling', score: 'Ballni hisoblash', prep: 'Imtihonga tayyorgarlik' }, open: 'Ochish', fTools: 'Bepul vositalar', fApp: 'Sellzen', fLinks: [['/#/', 'Ilova'], ['/#/placement', 'Daraja testi'], ['/#/pricing', 'Narxlar'], ['https://t.me/Sellzenbot', 'Telegram bot'], ['https://t.me/Sellzen_AI', 'Telegram kanal']], tag: 'Ingliz tili, IELTS, CEFR va SAT — AI ustoz bilan.', nav: 'Vositalar', ctaH: 'Ingliz tili darajangizni bepul aniqlang', ctaP: '3 daqiqalik test: A1 dan C1 gacha darajangiz, maqsadingizga mos kunlik reja, darslar va mock testlar.', ctaB: 'Testni boshlash', foot: 'Sellzen — o‘zbek tilida ingliz tili va IELTS, CEFR, SAT tayyorgarligi. Bu vositalar bepul va ro‘yxatdan o‘tishsiz ishlaydi. Sellzen IELTS, Cambridge yoki UzBMB’ning rasmiy hamkori emas; natijalar taxminiy.' },
-  ru: { all: 'Все инструменты', app: 'Открыть приложение', groups: { level: 'Узнайте свой уровень', score: 'Расчёт баллов', prep: 'Подготовка к экзамену' }, open: 'Открыть', fTools: 'Бесплатные инструменты', fApp: 'Sellzen', fLinks: [['/#/', 'Приложение'], ['/#/placement', 'Тест уровня'], ['/#/pricing', 'Тарифы'], ['https://t.me/Sellzenbot', 'Telegram-бот'], ['https://t.me/Sellzen_AI', 'Telegram-канал']], tag: 'Английский, IELTS, CEFR и SAT — с AI-наставником.', nav: 'Инструменты', ctaH: 'Узнайте свой уровень английского бесплатно', ctaP: 'Тест на 3 минуты: уровень от A1 до C1, ежедневный план под вашу цель, уроки и пробные экзамены.', ctaB: 'Начать тест', foot: 'Sellzen — английский язык и подготовка к IELTS, CEFR, SAT. Инструменты бесплатны и работают без регистрации. Sellzen не является официальным партнёром IELTS, Cambridge или UzBMB; результаты приблизительные.' },
+  uz: { all: 'Barcha vositalar', app: 'Ilovani ochish', groups: { level: 'Darajangizni bilib oling', score: 'Ballni hisoblash', prep: 'Imtihonga tayyorgarlik' }, open: 'Ochish', fTools: 'Bepul vositalar', fApp: 'Sellzen', fLinks: [['/#/', 'Ilova'], ['/#/placement', 'Daraja testi'], ['/#/pricing', 'Narxlar'], ['https://t.me/Sellzenbot', 'Telegram bot'], ['https://t.me/Sellzen_AI', 'Telegram kanal'], ['/shartlar', 'Foydalanish shartlari'], ['/maxfiylik', 'Maxfiylik siyosati']], tag: 'Ingliz tili, IELTS, CEFR va SAT — AI ustoz bilan.', nav: 'Vositalar', ctaH: 'Ingliz tili darajangizni bepul aniqlang', ctaP: '3 daqiqalik test: A1 dan C1 gacha darajangiz, maqsadingizga mos kunlik reja, darslar va mock testlar.', ctaB: 'Testni boshlash', foot: 'Sellzen — o‘zbek tilida ingliz tili va IELTS, CEFR, SAT tayyorgarligi. Bu vositalar bepul va ro‘yxatdan o‘tishsiz ishlaydi. Sellzen IELTS, Cambridge yoki UzBMB’ning rasmiy hamkori emas; natijalar taxminiy.' },
+  ru: { all: 'Все инструменты', app: 'Открыть приложение', groups: { level: 'Узнайте свой уровень', score: 'Расчёт баллов', prep: 'Подготовка к экзамену' }, open: 'Открыть', fTools: 'Бесплатные инструменты', fApp: 'Sellzen', fLinks: [['/#/', 'Приложение'], ['/#/placement', 'Тест уровня'], ['/#/pricing', 'Тарифы'], ['https://t.me/Sellzenbot', 'Telegram-бот'], ['https://t.me/Sellzen_AI', 'Telegram-канал'], ['/ru/usloviya', 'Условия использования'], ['/ru/konfidentsialnost', 'Политика конфиденциальности']], tag: 'Английский, IELTS, CEFR и SAT — с AI-наставником.', nav: 'Инструменты', ctaH: 'Узнайте свой уровень английского бесплатно', ctaP: 'Тест на 3 минуты: уровень от A1 до C1, ежедневный план под вашу цель, уроки и пробные экзамены.', ctaB: 'Начать тест', foot: 'Sellzen — английский язык и подготовка к IELTS, CEFR, SAT. Инструменты бесплатны и работают без регистрации. Sellzen не является официальным партнёром IELTS, Cambridge или UzBMB; результаты приблизительные.' },
 } as const;
 
-function layout(o: { slug: string; title: string; description: string; body: string; script?: string; lang?: Lang; kind?: 'tool' | 'page'; faq?: { q: string; a: string }[] }): string {
+function layout(o: { slug: string; title: string; description: string; body: string; script?: string; lang?: Lang; kind?: 'tool' | 'page'; faq?: { q: string; a: string }[]; langPaths?: { uz: string; ru: string } }): string {
   const lang: Lang = o.lang ?? 'uz';
-  const url = `${SITE}${pathOf(lang, o.slug)}`; // indeks sahifalari — slash bilan (sitemap va hreflang bilan bir xil)
-  const pair = o.slug ? pairOf(lang, o.slug) : { uz: '', ru: '' };
-  const alt = pair ? [`<link rel="alternate" hreflang="uz" href="${SITE}${pathOf('uz', pair.uz)}">`, `<link rel="alternate" hreflang="ru" href="${SITE}${pathOf('ru', pair.ru)}">`, `<link rel="alternate" hreflang="x-default" href="${SITE}${pathOf('uz', pair.uz)}">`].join('\n') : '';
+  const url = `${SITE}${o.langPaths ? o.langPaths[lang] : pathOf(lang, o.slug)}`; // indeks sahifalari — slash bilan (sitemap va hreflang bilan bir xil)
+  const pair = o.langPaths ? o.langPaths : o.slug ? pairOf(lang, o.slug) : { uz: '', ru: '' };
+  /** Boshqa tildagi juft sahifaning yo'li (huquqiy sahifalarda to'g'ridan-to'g'ri yo'l, vositalarda slug orqali). */
+  const hl = (l: Lang): string => (o.langPaths ? o.langPaths[l] : pathOf(l, pair![l]));
+  const alt = pair ? [`<link rel="alternate" hreflang="uz" href="${SITE}${hl('uz')}">`, `<link rel="alternate" hreflang="ru" href="${SITE}${hl('ru')}">`, `<link rel="alternate" hreflang="x-default" href="${SITE}${hl('uz')}">`].join('\n') : '';
   const pages = lang === 'ru' ? RU_PAGES : PAGES;
   const ui = UI[lang];
   const ld: unknown[] = [o.kind === 'page'
@@ -105,7 +107,7 @@ footer{margin-top:28px;padding-top:26px;padding-bottom:40px;font-size:14px;color
 ${ld.map((x) => `<script type="application/ld+json">${json(x)}</script>`).join('\n')}
 </head>
 <body>
-<header><a class="logo" href="/" aria-label="Sellzen">${LOGO}<span class="word">SELLZEN<em>.UZ</em></span></a><div class="hright">${pair ? `<a class="lang" href="${pathOf(lang === 'uz' ? 'ru' : 'uz', o.slug ? (lang === 'uz' ? pair.ru : pair.uz) : '')}" hreflang="${lang === 'uz' ? 'ru' : 'uz'}">${lang === 'uz' ? 'RU' : 'UZ'}</a>` : ''}<a class="btn sm" href="/#/">${ui.app}</a></div></header>
+<header><a class="logo" href="/" aria-label="Sellzen">${LOGO}<span class="word">SELLZEN<em>.UZ</em></span></a><div class="hright">${pair ? `<a class="lang" href="${hl(lang === 'uz' ? 'ru' : 'uz')}" hreflang="${lang === 'uz' ? 'ru' : 'uz'}">${lang === 'uz' ? 'RU' : 'UZ'}</a>` : ''}<a class="btn sm" href="/#/">${ui.app}</a></div></header>
 ${o.slug ? `<nav class="tools" aria-label="${ui.nav}"><a href="${pathOf(lang, '')}">← ${ui.all}</a>${pages.map((p) => `<a href="${pathOf(lang, p.slug)}"${p.slug === o.slug ? ' class="on" aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}</nav>` : ''}
 <main>
 ${o.body}
@@ -307,6 +309,153 @@ ${[...groups].map(([k, list]) => `<section class="card"><h2 style="margin-top:0"
   return layout({ slug: 'ielts-writing-task-2-savollari', title: `IELTS Writing Task 2 savollari: ${w2.length} ta mavzu insho turlari bo‘yicha`, description: `IELTS Writing Task 2 uchun ${w2.length} ta mashq savoli: agree/disagree, discuss, advantages/disadvantages, problem/solution. Bepul, o‘zbek tilida.`, body, kind: 'page' });
 }
 
+
+// ---- Huquqiy sahifalar: Maxfiylik siyosati va Foydalanish shartlari (reklama platformalari va foydalanuvchi uchun ochiq havola kerak) ----
+interface Sec { h: string; p?: string[]; ul?: string[] }
+const LEGAL_DATE = { uz: '2026-yil 25-noyabr', ru: '25 ноября 2026 г.' };
+const secHtml = (secs: Sec[]) => secs.map((x) => `<section class="card"><h2 style="margin-top:0">${esc(x.h)}</h2>${(x.p ?? []).map((t) => `<p>${esc(t)}</p>`).join('')}${x.ul ? `<ul>${x.ul.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}</section>`).join('\n');
+const LEGAL: Record<'privacy' | 'terms', Record<Lang, { title: string; desc: string; lead: string; secs: Sec[] }>> = {
+  privacy: {
+    uz: {
+      title: 'Maxfiylik siyosati',
+      desc: 'Sellzen qanday ma’lumotlarni yig‘adi, nima uchun foydalanadi, kimlarga uzatadi va ularni qanday o‘chirish yoki o‘zgartirish mumkin.',
+      lead: 'Bu sahifada Sellzen (sellzen.uz va Telegram: @Sellzenbot) ma’lumotlaringiz bilan qanday ishlashini oddiy tilda tushuntiramiz.',
+      secs: [
+        { h: '1. Qaysi ma’lumotlarni yig‘amiz', ul: [
+          'Hisob: laqab; telefon raqami (telefon va parol bilan kirsangiz yoki Telegram orqali ulashsangiz); Telegram identifikatori va ismi (Telegram orqali kirsangiz). Parolingiz saqlanmaydi — faqat qaytarib bo‘lmaydigan xesh (scrypt) saqlanadi.',
+          'O‘quv ma’lumotlari: daraja testi, dars, mashq va mock test natijalari; XP va seriya; xatolaringiz; Writing va Speaking uchun yozgan yoki aytgan matnlaringiz va ularning baholari; maqsad va o‘quv rejangiz.',
+          'Ovozli ustoz: suhbat paytida mikrofon ovozi nutqni tanish va javob berish uchun xizmat ko‘rsatuvchilarga real vaqtda uzatiladi. Ovoz yozuvini serverimizda saqlamaymiz. Ustoz sizni eslab qolishi uchun suhbatdan muhim faktlar (maqsad, qiziqish, qiyinchilik) qisqa matn ko‘rinishida saqlanadi.',
+          'To‘lov: tarif, muddat, summa va to‘lov holati. Karta ma’lumotlaringiz bizga ko‘rinmaydi: to‘lov Hamyon xizmati orqali kartadan kartaga o‘tkazma sifatida amalga oshadi.',
+          'Aloqa: telefon raqamingizni faqat «men bilan bog‘laning» rozilik belgisini qo‘ysangiz, maslahat berish uchun ishlatamiz.',
+          'Texnik ma’lumotlar: qurilma va brauzer turi, IP manzil, xatolar jurnali, ilova ichidagi harakatlar (qaysi sahifa ochildi, dars tugadimi) — xizmatni ishonchli saqlash va yaxshilash uchun. Hozircha uchinchi tomon reklama piksellarini ishlatmaymiz; ishlatsak, bu sahifani yangilaymiz.',
+          'Qurilmangizda saqlanadigan ma’lumotlar (brauzer xotirasi): til, daraja va progress nusxasi.',
+        ] },
+        { h: '2. Nima uchun foydalanamiz', ul: [
+          'Xizmatni ko‘rsatish: darslar, reja, AI ustoz, baholash.',
+          'Progressni qurilmalaringiz o‘rtasida sinxronlash.',
+          'To‘lovni tasdiqlash va obunani ochish.',
+          'Xavfsizlik va suiiste’molning oldini olish.',
+          'Mahsulotni yaxshilash (umumiy statistika).',
+          'Rozilik bergan bo‘lsangiz — siz bilan bog‘lanish.',
+        ] },
+        { h: '3. Kimlarga uzatiladi', p: ['Xizmat ishlashi uchun quyidagi ishonchli xizmatlardan foydalanamiz. Ma’lumotlaringizni sotmaymiz va reklama uchun uzatmaymiz.'], ul: [
+          'Google (Gemini) — AI ustoz va baholash uchun matn va ovoz.',
+          'ElevenLabs — nutqni tanish va ovoz sintezi.',
+          'Telegram — kirish va xabarlar.',
+          'Hamyon — to‘lovni qabul qilish.',
+          'Railway — hosting (serverlar Yevropada joylashgan), zaxira nusxalar xavfsiz omborda.',
+          'Qonun talab qilgan hollarda vakolatli organlarga.',
+        ] },
+        { h: '4. Saqlash muddati', p: ['Ma’lumotlar hisobingiz mavjud bo‘lguncha saqlanadi. O‘chirishni so‘rasangiz, ularni o‘chiramiz; qonun talab qiladigan hisob-kitob yozuvlari (to‘lovlar) kerakli muddatga saqlanib qolishi mumkin.'] },
+        { h: '5. Huquqlaringiz', p: ['O‘z ma’lumotlaringizning nusxasini olish, tuzatish yoki o‘chirishni so‘rash, rozilikni qaytarib olish huquqingiz bor. Buning uchun Telegram’da @Sellzenbot ga yozing — so‘rovni ko‘rib chiqamiz va javob beramiz.'] },
+        { h: '6. Bolalar', p: ['14 yoshdan kichik bolalar xizmatdan faqat ota-onasi yoki vasiysining roziligi bilan foydalanishi mumkin.'] },
+        { h: '7. Xavfsizlik', p: ['Aloqa HTTPS bilan himoyalangan, parollar xesh ko‘rinishida saqlanadi, kirish urinishlari cheklanadi, zaxira nusxalar olinadi. Shunga qaramay, hech bir tizim mutlaq xavfsizlikni kafolatlay olmaydi.'] },
+        { h: '8. Boshqa mamlakatlarda qayta ishlash', p: ['Yuqoridagi xizmatlar O‘zbekiston tashqarisida joylashgan bo‘lishi mumkin. Sellzen’dan foydalanib, ma’lumotlaringiz shu xizmatlarda qayta ishlanishiga rozilik bildirasiz.'] },
+        { h: '9. O‘zgarishlar va aloqa', p: ['Siyosat o‘zgarsa, shu sahifada yangilaymiz. Savollar uchun: Telegram @Sellzenbot yoki kanal @Sellzen_AI.'] },
+      ],
+    },
+    ru: {
+      title: 'Политика конфиденциальности',
+      desc: 'Какие данные собирает Sellzen, зачем использует, кому передаёт и как их можно удалить или изменить.',
+      lead: 'На этой странице простым языком объясняем, как Sellzen (sellzen.uz и Telegram: @Sellzenbot) работает с вашими данными.',
+      secs: [
+        { h: '1. Какие данные мы собираем', ul: [
+          'Аккаунт: никнейм; номер телефона (если входите по телефону и паролю или делитесь им через Telegram); идентификатор и имя в Telegram (если входите через Telegram). Пароль не хранится — хранится только необратимый хеш (scrypt).',
+          'Учебные данные: результаты теста уровня, уроков, упражнений и мок-тестов; XP и серия; ваши ошибки; тексты, которые вы пишете или говорите для Writing и Speaking, и их оценки; цель и учебный план.',
+          'Голосовой наставник: во время разговора звук микрофона передаётся сервисам-исполнителям в реальном времени для распознавания речи и ответа. Аудиозапись на нашем сервере не сохраняется. Чтобы наставник вас помнил, важные факты из беседы (цель, интересы, трудности) сохраняются в виде короткого текста.',
+          'Оплата: тариф, срок, сумма и статус платежа. Данные вашей карты нам не видны: оплата проходит через сервис Hamyon как перевод с карты на карту.',
+          'Связь: номер телефона используется для консультации только если вы поставили отметку согласия «свяжитесь со мной».',
+          'Технические данные: тип устройства и браузера, IP-адрес, журнал ошибок, действия в приложении (какая страница открыта, завершён ли урок) — чтобы поддерживать и улучшать сервис. Сторонние рекламные пиксели пока не используются; если начнём, обновим эту страницу.',
+          'Данные на вашем устройстве (память браузера): язык, уровень и копия прогресса.',
+        ] },
+        { h: '2. Зачем мы их используем', ul: [
+          'Предоставление сервиса: уроки, план, AI-наставник, оценивание.',
+          'Синхронизация прогресса между вашими устройствами.',
+          'Подтверждение оплаты и открытие подписки.',
+          'Безопасность и предотвращение злоупотреблений.',
+          'Улучшение продукта (общая статистика).',
+          'Связь с вами — если вы дали согласие.',
+        ] },
+        { h: '3. Кому передаются данные', p: ['Для работы сервиса мы используем следующие сервисы. Мы не продаём ваши данные и не передаём их для рекламы.'], ul: [
+          'Google (Gemini) — текст и голос для AI-наставника и оценивания.',
+          'ElevenLabs — распознавание речи и синтез голоса.',
+          'Telegram — вход и сообщения.',
+          'Hamyon — приём платежей.',
+          'Railway — хостинг (серверы в Европе), резервные копии в защищённом хранилище.',
+          'Уполномоченные органы — в случаях, предусмотренных законом.',
+        ] },
+        { h: '4. Срок хранения', p: ['Данные хранятся, пока существует ваш аккаунт. По вашей просьбе мы их удалим; учётные записи, которые обязаны храниться по закону (платежи), могут сохраняться необходимый срок.'] },
+        { h: '5. Ваши права', p: ['Вы вправе получить копию своих данных, попросить исправить или удалить их, отозвать согласие. Для этого напишите в Telegram @Sellzenbot — мы рассмотрим запрос и ответим.'] },
+        { h: '6. Дети', p: ['Дети младше 14 лет могут пользоваться сервисом только с согласия родителей или опекунов.'] },
+        { h: '7. Безопасность', p: ['Соединение защищено HTTPS, пароли хранятся в виде хеша, попытки входа ограничиваются, создаются резервные копии. Тем не менее ни одна система не гарантирует абсолютной безопасности.'] },
+        { h: '8. Обработка в других странах', p: ['Перечисленные сервисы могут находиться за пределами Узбекистана. Пользуясь Sellzen, вы соглашаетесь на обработку данных в этих сервисах.'] },
+        { h: '9. Изменения и контакты', p: ['Если политика изменится, мы обновим эту страницу. Вопросы: Telegram @Sellzenbot или канал @Sellzen_AI.'] },
+      ],
+    },
+  },
+  terms: {
+    uz: {
+      title: 'Foydalanish shartlari',
+      desc: 'Sellzen’dan foydalanish qoidalari: hisob, bepul va pullik tariflar, to‘lov tartibi, AI ustoz va natijalar haqida muhim shartlar.',
+      lead: 'Sellzen’dan foydalanishni boshlab, quyidagi shartlarga rozilik bildirasiz.',
+      secs: [
+        { h: '1. Xizmat haqida', p: ['Sellzen — ingliz tili (A1–C2), IELTS, CEFR/Multilevel va SAT tayyorgarligi uchun onlayn platforma: darslar, mashqlar, mock testlar va Sellzen AI ustoz.'] },
+        { h: '2. Hisob', ul: ['Hisob laqab, telefon raqami va parol yoki Telegram orqali ochiladi; ma’lumotlar to‘g‘ri bo‘lishi kerak.', 'Hisobingizni boshqalarga bermang va parolni sir saqlang.', '14 yoshdan kichiklar faqat ota-ona yoki vasiy roziligi bilan foydalanadi.'] },
+        { h: '3. Bepul va pullik tariflar', ul: [
+          'Bepul tarifda kunlik va haftalik limitlar bor; joriy qiymatlar «Tariflar» sahifasida ko‘rsatilgan.',
+          'Pullik tariflar: General English, Exam va All Access; muddatlar 30, 90 va 365 kun; narxlar so‘mda «Tariflar» sahifasida.',
+          'To‘lov bir martalik va avtomatik yangilanmaydi. Muddat tugagach pullik imkoniyatlar yopiladi, bepul tarif va saqlangan progress qoladi.',
+        ] },
+        { h: '4. To‘lov tartibi', ul: [
+          'To‘lov Hamyon orqali kartadan kartaga o‘tkazma bilan amalga oshadi: ilovada ko‘rsatilgan aniq summani ko‘rsatilgan kartaga o‘tkazing (band summa bo‘lsa, summa 1–2 so‘mga farq qilishi mumkin).',
+          'To‘lov tasdiqlangach obuna avtomatik ochiladi. Muammo bo‘lsa, Telegram’da @Sellzenbot ga yozing.',
+          'To‘lovni qaytarish so‘rovlari alohida ko‘rib chiqiladi va qonunchilikka muvofiq hal qilinadi.',
+        ] },
+        { h: '5. Natijalar kafolatlanmaydi', p: ['Sellzen o‘qishga yordam beradi, lekin aniq imtihon ballini kafolatlamaydi. Ilovadagi ball va daraja baholari taxminiy. IELTS, CEFR, Cambridge, SAT va Multilevel nomlari tegishli tashkilotlarga tegishli; Sellzen ular bilan bog‘liq emas va ularning rasmiy mahsuloti emas.'] },
+        { h: '6. AI ustoz', p: ['AI ustoz va baholash xato qilishi mumkin; ularni tavsiya sifatida qabul qiling. AI ga parol, karta raqami kabi maxfiy ma’lumotlarni yozmang.'] },
+        { h: '7. Foydalanish qoidalari', p: ['Quyidagilar taqiqlanadi: qonunga zid harakatlar, boshqalarni haqorat qilish, tizimga hujum qilish yoki avtomatik skriptlar bilan yuklama berish, kontentni ommaviy nusxalash yoki qayta sotish. Qoida buzilsa, hisob cheklanishi mumkin.'] },
+        { h: '8. Intellektual mulk', p: ['Darslar, mashqlar, testlar va dizayn Sellzen’ga tegishli. Ularni shaxsiy o‘qish uchun ishlatish mumkin.'] },
+        { h: '9. Mas’uliyat', p: ['Xizmat «mavjud holda» taqdim etiladi; texnik uzilishlar bo‘lishi mumkin. Qonunchilik ruxsat bergan doirada Sellzen bilvosita zararlar uchun javobgar emas.'] },
+        { h: '10. O‘zgarishlar va aloqa', p: ['Shartlar o‘zgarsa, shu sahifada yangilaymiz. Maxfiylik masalalari uchun «Maxfiylik siyosati» sahifasiga qarang. Savollar: Telegram @Sellzenbot yoki kanal @Sellzen_AI.'] },
+      ],
+    },
+    ru: {
+      title: 'Условия использования',
+      desc: 'Правила использования Sellzen: аккаунт, бесплатные и платные тарифы, порядок оплаты, AI-наставник и важные условия о результатах.',
+      lead: 'Начиная пользоваться Sellzen, вы соглашаетесь со следующими условиями.',
+      secs: [
+        { h: '1. О сервисе', p: ['Sellzen — онлайн-платформа для изучения английского (A1–C2), подготовки к IELTS, CEFR/Multilevel и SAT: уроки, упражнения, мок-тесты и AI-наставник Sellzen.'] },
+        { h: '2. Аккаунт', ul: ['Аккаунт создаётся через никнейм, номер телефона и пароль или через Telegram; данные должны быть верными.', 'Не передавайте аккаунт другим и храните пароль в тайне.', 'Дети младше 14 лет пользуются сервисом только с согласия родителей или опекунов.'] },
+        { h: '3. Бесплатные и платные тарифы', ul: [
+          'В бесплатном тарифе действуют дневные и недельные лимиты; текущие значения указаны на странице «Тарифы».',
+          'Платные тарифы: General English, Exam и All Access; сроки 30, 90 и 365 дней; цены в сумах — на странице «Тарифы».',
+          'Оплата разовая и не продлевается автоматически. По окончании срока платные возможности закрываются, бесплатный тариф и сохранённый прогресс остаются.',
+        ] },
+        { h: '4. Порядок оплаты', ul: [
+          'Оплата проходит через Hamyon переводом с карты на карту: переведите точную сумму, указанную в приложении, на указанную карту (если сумма занята, она может отличаться на 1–2 сума).',
+          'После подтверждения платежа подписка открывается автоматически. При проблемах напишите в Telegram @Sellzenbot.',
+          'Запросы на возврат платежа рассматриваются отдельно и решаются в соответствии с законодательством.',
+        ] },
+        { h: '5. Результаты не гарантируются', p: ['Sellzen помогает учиться, но не гарантирует конкретный балл на экзамене. Оценки баллов и уровня в приложении приблизительные. Названия IELTS, CEFR, Cambridge, SAT и Multilevel принадлежат соответствующим организациям; Sellzen не связан с ними и не является их официальным продуктом.'] },
+        { h: '6. AI-наставник', p: ['AI-наставник и оценивание могут ошибаться; воспринимайте их как рекомендации. Не пишите в AI пароли, номера карт и другие конфиденциальные данные.'] },
+        { h: '7. Правила использования', p: ['Запрещено: противозаконные действия, оскорбления, атаки на систему или создание нагрузки автоматическими скриптами, массовое копирование или перепродажа контента. При нарушении аккаунт может быть ограничен.'] },
+        { h: '8. Интеллектуальная собственность', p: ['Уроки, упражнения, тесты и дизайн принадлежат Sellzen. Их можно использовать для личного обучения.'] },
+        { h: '9. Ответственность', p: ['Сервис предоставляется «как есть»; возможны технические перерывы. В пределах, разрешённых законом, Sellzen не отвечает за косвенные убытки.'] },
+        { h: '10. Изменения и контакты', p: ['Если условия изменятся, мы обновим эту страницу. По вопросам конфиденциальности см. «Политику конфиденциальности». Вопросы: Telegram @Sellzenbot или канал @Sellzen_AI.'] },
+      ],
+    },
+  },
+};
+export const LEGAL_PATHS = {
+  privacy: { uz: '/maxfiylik', ru: '/ru/konfidentsialnost' },
+  terms: { uz: '/shartlar', ru: '/ru/usloviya' },
+} as const;
+function legalPage(kind: 'privacy' | 'terms', lang: Lang): string {
+  const c = LEGAL[kind][lang];
+  const body = `<h1>${esc(c.title)}</h1><p class="lead">${esc(c.lead)}</p><p class="muted">${lang === 'ru' ? 'Последнее обновление' : 'Oxirgi yangilanish'}: ${LEGAL_DATE[lang]}</p>\n${secHtml(c.secs)}`;
+  return layout({ slug: '', title: c.title, description: c.desc, body, lang, kind: 'page', langPaths: LEGAL_PATHS[kind] });
+}
+
 export function generate(): Record<string, string> {
   const files: Record<string, string> = {
     'vositalar/index.html': indexPage('uz'),
@@ -322,11 +471,15 @@ export function generate(): Record<string, string> {
     'ru/vositalar/test-urovnya-angliyskogo.html': placementLanding('ru'),
     'ru/vositalar/multilevel-bally.html': multilevelPage('ru'),
     'ru/vositalar/urovni-cefr.html': cefrLevelsPage('ru'),
+    'maxfiylik.html': legalPage('privacy', 'uz'),
+    'shartlar.html': legalPage('terms', 'uz'),
+    'ru/konfidentsialnost.html': legalPage('privacy', 'ru'),
+    'ru/usloviya.html': legalPage('terms', 'ru'),
     'robots.txt': `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /r/\nSitemap: ${SITE}/sitemap.xml\n`,
   };
   // lastmod — qidiruv tizimlari yangilangan sahifalarni tezroq qayta o'qishi uchun (kontent o'zgarganda yangilang)
-  const LASTMOD = '2026-11-23';
-  const urls = ['/', '/vositalar/', ...PAGES.map((p) => pathOf('uz', p.slug)), '/ru/vositalar/', ...RU_PAGES.map((p) => pathOf('ru', p.slug))];
+  const LASTMOD = '2026-11-25';
+  const urls = ['/', '/vositalar/', ...PAGES.map((p) => pathOf('uz', p.slug)), '/ru/vositalar/', ...RU_PAGES.map((p) => pathOf('ru', p.slug)), ...Object.values(LEGAL_PATHS).flatMap((v) => [v.uz, v.ru])];
   files['sitemap.xml'] = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${SITE}${u}</loc><lastmod>${LASTMOD}</lastmod>${u === '/' ? '<changefreq>weekly</changefreq><priority>1.0</priority>' : ''}</url>`).join('\n')}\n</urlset>\n`;
   return files;
 }
