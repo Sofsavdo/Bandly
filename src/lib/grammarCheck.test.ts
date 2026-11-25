@@ -35,7 +35,7 @@ for (const [bad, good] of cases) {
   assert.equal(fix(bad).toLowerCase(), good.toLowerCase(), `tuzatish: ${bad}`);
 }
 // To'g'ri gaplar tegilmaydi (yolg'on signal yo'q)
-for (const ok of ['I agree with you.', 'She goes to school.', 'He doesn\'t like tea.', 'I have two brothers.', 'This is better than that.', 'There are many students here.', 'I am interested in art.', 'People are friendly here.', 'I listen to music.', 'He has a car.', 'She studies law.', 'I live here for three years.', 'I have lived here since 2020.', 'We can discuss the problem.', 'We have two cats.', 'They have a car.', 'You work hard.', 'People like it.', 'My parents live in Samarkand.']) {
+for (const ok of ['I agree with you.', 'She goes to school.', 'He doesn\'t like tea.', 'I have two brothers.', 'This is better than that.', 'There are many students here.', 'I am interested in art.', 'People are friendly here.', 'I listen to music.', 'He has a car.', 'She studies law.', 'I live here for three years.', 'I have lived here since 2020.', 'We can discuss the problem.', 'We have two cats.', 'They have a car.', 'You work hard.', 'People like it.', 'My parents live in Samarkand.', 'How long does it take?', 'Does she work here?', 'Does my brother like tea?', 'Can he play chess?', 'What time does she get up?']) {
   assert.deepEqual(findIssues(ok), [], `yolg‘on signal: ${ok}`);
 }
 // Tushuntirish bor

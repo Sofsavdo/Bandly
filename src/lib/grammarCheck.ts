@@ -9,7 +9,7 @@ const BASE: Record<string, string> = { went: 'go', saw: 'see', ate: 'eat', took:
 
 const RULES: Rule[] = [
   { id: 'am-agree', re: /\bI(?: am|'m) agree\b/i, fix: () => 'I agree', ruleUz: L('\'agree\' fe\'l, sifat emas: \'am\' kerak emas. O\'zbekchada \'roziman\' deyiladi, inglizcha esa \'I agree\'.') },
-  { id: '3sg', re: /\b(he|she|it|my (?:brother|sister|mother|father|friend|teacher|uncle|aunt|cousin|wife|husband)) (go|like|want|live|work|study|have|do|play|need|think|love|know|speak|watch|enjoy|live|prefer|help|make|take)\b(?! to be)/gi, fix: (m) => `${m[1]} ${third(m[2].toLowerCase())}`, ruleUz: L('he/she/it (yoki bitta shaxs) bilan Present Simple da fe\'lga -s/-es qo\'shiladi.') },
+  { id: '3sg', re: /(?<!\b(?:does|did|do|can|could|will|would|should|must|may|might|let's)\s)\b(he|she|it|my (?:brother|sister|mother|father|friend|teacher|uncle|aunt|cousin|wife|husband)) (go|like|want|live|work|study|have|do|play|need|think|love|know|speak|watch|enjoy|live|prefer|help|make|take)\b(?! to be)/gi, fix: (m) => `${m[1]} ${third(m[2].toLowerCase())}`, ruleUz: L('he/she/it (yoki bitta shaxs) bilan Present Simple da fe\'lga -s/-es qo\'shiladi.') },
   { id: 'dont3', re: /\b(he|she|it) don't\b/i, fix: (m) => `${m[1].toLowerCase()} doesn't`, ruleUz: L('he/she/it bilan inkor: doesn\'t (don\'t emas).') },
   { id: 'more-adj', re: /\bmore (better|easier|bigger|cheaper|faster|worse|harder|cleaner|smaller|healthier)\b/i, fix: (m) => m[1].toLowerCase(), ruleUz: L('Qisqa sifatlarning qiyosiy darajasida -er qo\'shiladi, \'more\' kerak emas.') },
   { id: 'discuss-about', re: /\bdiscuss about\b/i, fix: () => 'discuss', ruleUz: L('\'discuss\' predlogsiz ishlatiladi: discuss the problem.') },
