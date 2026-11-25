@@ -26,6 +26,7 @@ Bu hujjat reklama boshlashdan oldingi tekshiruv natijasi: nima tekshirildi, nima
 2. **O‘quv xaritasi**: bo‘lim nomi (masalan «Dalil va manbalarni tanqidiy tahlil qilish») telefon ekranidan chiqib ketardi — endi qatorga bo‘linadi va chetga surilmaydi.
 3. **Aniqlik**: bosh sahifadagi «Ovozim saqlanadimi?» javobi «faqat matn yuboriladi» degan edi, vaholanki ovozli ustoz bilan gaplashganda ovoz AI xizmatlariga real vaqtda uzatiladi (yozib saqlanmaydi). Javob to‘g‘rilandi.
 4. **Huquqiy sahifalar**: `/maxfiylik`, `/shartlar` (o‘zbekcha) va `/ru/konfidentsialnost`, `/ru/usloviya` (ruscha); pastki qism va kirish sahifasida havola; sitemap’da.
+5. **Hisobni o‘chirish** (maxfiylik huquqi). Ilgari foydalanuvchi o‘z ma’lumotlarini o‘chirishning hech qanday yo‘li yo‘q edi. Endi `Profil → Hisobni o‘chirish`: shaxsiy ma’lumotlar (progress, natijalar, ustoz xotirasi, telefon, sessiyalar, hodisalar) o‘chiriladi, hisob anonimlashtiriladi, to‘lov va obuna yozuvlari hisob-kitob uchun anonim holda qoladi. Xodim hisobini o‘chirib bo‘lmaydi. `server/erase.ts` + `server/erase.test.ts`.
 
 ## 3. Reklamadan oldin egasi hal qilishi kerak
 
