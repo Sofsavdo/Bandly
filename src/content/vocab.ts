@@ -42,7 +42,7 @@ const ieltsWords: Word[] = [
   w('graduate', 'graduate', 'v', 'universitetni bitirmoq', 'to complete a university degree', 'He graduated in economics last year.', 'Education'),
   w('assignment', 'assignment', 'n', 'topshiriq', 'a piece of work given to a student', 'The assignment is due on Friday.', 'Education'),
   w('enrol', 'enrol', 'v', 'o‘qishga yozilmoq', 'to officially join a course or school', 'She enrolled in an evening course.', 'Education'),
-  w('lecture', 'lecture', 'n', 'ma‘ruza', 'a talk given to students about a subject', 'The lecture lasted two hours.', 'Education'),
+  w('lecture', 'lecture', 'n', 'ma’ruza', 'a talk given to students about a subject', 'The lecture lasted two hours.', 'Education'),
   w('dissertation', 'dissertation', 'n', 'dissertatsiya', 'a long piece of writing for a university degree', 'He spent a year on his dissertation.', 'Education'),
   // Technology
   w('innovation', 'innovation', 'n', 'yangilik, innovatsiya', 'a new idea, method or invention', 'Innovation drives economic growth.', 'Technology'),

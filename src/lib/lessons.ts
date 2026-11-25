@@ -26,6 +26,20 @@ export function checkItem(item: Item, a: ItemAnswer): boolean {
   }
 }
 
+/** Variantlarni ko‘rsatish tartibi (asl indekslar). Kontentda to‘g‘ri javob ko‘pincha birinchi turadi — o‘quvchi
+ * «doim birinchisi» deb o‘tib ketmasligi uchun har bir savol o‘z matnidan hosil qilingan barqaror tartibda aralashtiriladi
+ * (sahifa yangilansa ham, qayta urinishda ham bir xil). Javob asl indeks bilan saqlanadi va tekshiriladi. */
+export function optionOrder(item: Item): number[] {
+  if (item.kind !== 'choice' && item.kind !== 'multi') return [];
+  const idx = item.options.map((_, i) => i);
+  let h = 2166136261;
+  for (const ch of item.prompt + '\u0001' + item.options.join('\u0001')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  let st = h >>> 0;
+  const rnd = () => { st = (st + 0x6d2b79f5) >>> 0; let t = st; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [idx[i], idx[j]] = [idx[j]!, idx[i]!]; }
+  return idx;
+}
+
 export function correctAnswerText(item: Item): string {
   if (item.kind === 'multi') return item.answers.map((i) => item.options[i]!).join(' · ');
   return item.kind === 'choice' ? item.options[item.answer]! : item.kind === 'gap' ? item.accept[0]! : item.answer;

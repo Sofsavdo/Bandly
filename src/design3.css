@@ -1458,6 +1458,9 @@ main.container { min-height: 100vh; }
 .ai-avatar .av-look-up { transform: translate(5px, -5px); }
 .ai-avatar .av-blink { transform-box: fill-box; transform-origin: center; animation: av-blink 4.2s infinite; }
 .ai-avatar .av-dots circle { animation: av-dot 1s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .18s); fill: var(--ring); }
+/* Yuz — xarakter: jahlda titraydi, kulganda sakraydi, istalgancha ifodali. Faqat transform ishlatiladi —
+   bu boshqa elementlarni (holat, matn, tugmalar) hech qachon siljitmaydi (e2e J11 shuni tekshiradi). */
+.ai-avatar .ai-face { will-change: transform; }
 .ai-avatar.listening .ai-face { transform: scale(calc(1 + var(--lvl, 0) * .08)); transition: transform .1s; }
 .ai-avatar.speaking .ai-face { animation: av-talk 1s ease-in-out infinite; }
 .ai-avatar.emo-angry.speaking .ai-face { animation: emo-shake .28s ease-in-out infinite; filter: drop-shadow(0 0 22px rgba(239, 68, 68, .6)); }

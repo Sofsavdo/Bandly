@@ -287,7 +287,7 @@ export const scenes: Scene[] = [
     },
   },
   {
-    id: 'lecture-sleep', title: 'Ma‘ruza: uyqu va xotira', genre: 'Akademik ma‘ruza', level: 'C1',
+    id: 'lecture-sleep', title: 'Ma’ruza: uyqu va xotira', genre: 'Akademik ma‘ruza', level: 'C1',
     about: 'Universitet ma’ruzasidan parcha: uyqu xotirani qanday mustahkamlaydi.',
     brief: 'Akademik nutq: uzun gaplar, bog‘lovchilar va aniq terminlar. Birinchi tinglashda g‘oyani, ikkinchisida iboralarni ushlang.',
     names: { A: 'Lecturer' }, voices: { A: 'bm_george' },

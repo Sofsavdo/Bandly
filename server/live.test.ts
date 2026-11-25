@@ -318,7 +318,7 @@ http.close(); upstream.close();
     });
   });
   await new Promise((r) => up.once('listening', r));
-  const asrCalls: { wavBytes: number; lang: string }[] = []; const prompts: { ptt: boolean; asr: boolean }[] = [];
+  const asrCalls: { wavBytes: number; lang: string; prefer?: string }[] = []; const prompts: { ptt: boolean; asr: boolean }[] = [];
   let asrMode: 'text' | 'empty' | 'fail' | 'nav' | 'unsure' = 'text';
   const h = createServer((_q, s2) => { s2.end(); });
   attachLive(h, {
@@ -326,7 +326,7 @@ http.close(); upstream.close();
     auth: () => ({ id: 31, staff: true, subscriberLeftSec: 0 }),
     prompt: (o) => { prompts.push({ ptt: o.ptt, asr: o.asr }); return 'SYS'; },
     native: () => 'Uzbek (Latin script)',
-    asr: async (_pid, wav, lang) => { asrCalls.push({ wavBytes: wav.length, lang }); if (asrMode === 'fail') throw new Error('limit'); if (asrMode === 'empty') return { text: '', lang: null }; if (asrMode === 'unsure') return { text: "darsga o'tamiz", lang: 'uzb', score: -0.38 }; return { text: asrMode === 'nav' ? "darsga o'tamiz" : 'I go to school yesterday', lang: 'eng', score: -0.05 }; },
+    asr: async (_pid, wav, lang, prefer) => { asrCalls.push({ wavBytes: wav.length, lang, prefer }); if (asrMode === 'fail') throw new Error('limit'); if (asrMode === 'empty') return { text: '', lang: null }; if (asrMode === 'unsure') return { text: "darsga o'tamiz", lang: 'uzb', score: -0.38 }; return { text: asrMode === 'nav' ? "darsga o'tamiz" : 'I go to school yesterday', lang: 'eng', score: -0.05 }; },
     onEnd: () => undefined, log: () => undefined,
   });
   await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
@@ -375,6 +375,12 @@ http.close(); upstream.close();
   // 4) "darsga o'tamiz" — tanilgan matn bo'yicha navigatsiya (bir marta)
   asrMode = 'nav'; await press(10); await until(() => msgs.some((m) => m.type === 'navigate'));
   assert.equal(msgs.find((m) => m.type === 'navigate')!.route, '#/learn');
+  // 5) Moslashuvchan Scribe tartibi: o'zbekcha navbat (3b) streakni nolga tushirdi; ketma-ket 2 ta inglizcha navbatdan keyin — avval inglizcha
+  assert.deepEqual(asrCalls.slice(-2).map((c) => c.prefer), ['native', 'native'], 'o‘zbekchadan keyin yana ona tili birinchi');
+  asrMode = 'text'; const in0 = msgs.filter((m) => m.type === 'in').length;
+  await press(10); await until(() => msgs.filter((m) => m.type === 'in').length > in0);
+  await press(10); await until(() => msgs.filter((m) => m.type === 'in').length > in0 + 1);
+  assert.deepEqual(asrCalls.slice(-2).map((c) => c.prefer), ['native', 'en'], 'ikki inglizcha navbatdan keyin Scribe avval inglizcha taniydi');
   ws.send(JSON.stringify({ type: 'end' })); await new Promise((r) => ws.on('close', r));
   h.close(); up.close();
 }
@@ -400,5 +406,11 @@ http.close(); upstream.close();
   const lim = msgs.find((m) => m.type === 'limit')!;
   assert.equal(lim.kind, 'session'); assert.match(String(lim.message), /^\[tr\] Suhbat vaqti tugadi/, 'sessiya tugashi — obuna taklif qilinmaydi, xabar tarjima qilinadi');
   h.close(); up.close();
+}
+// 2026-11-25: ishonchsiz navbatda ustoz javob beradi (eng ehtimolli ma'no), ketma-ket ikkinchi marta qayta so'ramaydi
+{
+  const u1 = unsureTurn('men kecha bozor bordim'), u2 = unsureTurn('men kecha bozor bordim', true);
+  assert.ok(/most likely meant and ANSWER that/.test(u1) && /Do NOT correct grammar from this turn/.test(u1) && /Only if it makes no sense at all/.test(u1));
+  assert.ok(/do NOT ask again/.test(u2) && !/Only if it makes no sense at all/.test(u2), 'ikkinchi ishonchsiz navbatda qayta so‘ramaydi');
 }
 console.log('live: OK');

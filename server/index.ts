@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt, liveKickoff } from './coach';
-import { ensureMemoryTable, getMemory, memoryForPrompt, mergeMemory, parseSummary, saveMemory, summaryPrompt } from './coachMemory';
+import { enqueueMemoryJob, ensureMemoryTable, getMemory, memoryForPrompt, runMemoryJobs } from './coachMemory';
 import { tzDay, tzDayStart } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { ApiError, PROGRESS_BODY_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
@@ -64,6 +64,8 @@ const COACH_GLOBAL_DAILY = () => settingValue('AI_GLOBAL_DAILY_CALLS');
 const STUDIO_VOICE_DAILY_CHARS = Number(process.env.STUDIO_VOICE_DAILY_CHARS ?? 20_000);
 const stt = sttConfigFromEnv();
 const coachAi = coachConfig(ai);
+// Suhbat xotirasi tezkor model (Flash-Lite) bilan: asosiy Flash har safar 9 s da qotib zaxiraga o'tardi (jurnal 2026-11-24)
+const summarizeMemory = (system: string, user: string, playerId: number) => withAiCtx({ playerId, feature: 'live-memory' }, () => complete(coachAi, system, user, { maxTokens: 500, timeoutMs: 20_000 }));
 const live = liveConfigFromEnv(ai.provider === 'gemini' ? ai.key : null); // Gemini Live: ovozdan-ovozga Sellzen // ovozli suhbat uchun tez model (Gemini: Flash-Lite birinchi) // ElevenLabs Scribe (Sellzen uchun nutqni tanish); bo'lmasa brauzer tanishi
 const COACH_DAILY_LIMIT = () => settingValue('AI_COACH_DAILY_LIMIT');
 const HOST = process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
@@ -885,28 +887,25 @@ if (live) attachLive(httpServer, {
   native: (lang) => nativeOf(lang),
   tr: (lang, text) => trServer(db, lang, text),
   // Birinchi qo'ng'iroq — server bo'yicha (boshqa qurilmada ham to'g'ri); xotira — o'tgan qo'ng'iroqlardagi xatolar
-  context: (pid) => ({ firstCall: !db.prepare('SELECT 1 FROM live_usage WHERE player_id = ? LIMIT 1').get(pid), memory: memoryForPrompt(getMemory(db, pid)) }),
+  context: (pid) => { const m = getMemory(db, pid); return { firstCall: !db.prepare('SELECT 1 FROM live_usage WHERE player_id = ? LIMIT 1').get(pid), memory: memoryForPrompt(m), followUp: m?.followUp }; },
   kickoff: liveKickoff,
   // Ovozli suhbatda o'quvchi gapini ElevenLabs Scribe tanidi (o'zbekcha va aksentli inglizchani Gemini'dan yaxshi tushunadi), Gemini'ga matn boradi.
   // Mavjud STT integratsiyasi va uning kunlik limitlari (STT_DAILY_MINUTES / STT_GLOBAL_DAILY_MINUTES) ishlatiladi; LIVE_ASR=gemini — eski usul (ovoz Gemini'ga).
   // Limit tugasa yoki Scribe xato bersa — shu navbat ovozi Gemini'ga yuboriladi (o'quvchi javobsiz qolmaydi). Qo'ng'iroq daqiqalari qayta sanalmaydi (onEnd hisoblaydi).
-  asr: stt && (process.env.LIVE_ASR ?? 'scribe').trim().toLowerCase() !== 'gemini' ? async (pid, wav, lang) => {
+  asr: stt && (process.env.LIVE_ASR ?? 'scribe').trim().toLowerCase() !== 'gemini' ? async (pid, wav, lang, prefer) => {
     sttAllowed(db, stt, pid);
-    const r = await transcribeLearner(stt, wav, 'audio/wav', NATIVE_STT_CODE[lang] ?? 'uzb', 'any');
+    const r = await transcribeLearner(stt, wav, 'audio/wav', NATIVE_STT_CODE[lang] ?? 'uzb', prefer === 'en' ? 'en-first' : 'any');
     const secs = r.seconds || wav.length / 32000;
     recordStt(db, pid, secs);
-    console.log(`[stt] live ${secs.toFixed(1)}s til=${r.lang ?? '?'}${r.forced ? ' (inglizcha qayta tanildi)' : ''} ishonch=${r.score === null || r.score === undefined ? '?' : r.score.toFixed(2)} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
+    console.log(`[stt] live ${secs.toFixed(1)}s til=${r.lang ?? '?'}${prefer === 'en' ? ' (avval inglizcha)' : ''}${r.forced && prefer !== 'en' ? ' (inglizcha qayta tanildi)' : ''} ishonch=${r.score === null || r.score === undefined ? '?' : r.score.toFixed(2)} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
     recordAiCost(db, { playerId: pid, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
     return { text: r.text, lang: r.lang, score: r.score ?? null };
   } : undefined,
   onTranscript: (pid, turns, lang) => {
     if (ai.provider === 'none') return;
-    // Suhbat xotirasi tezkor model (Flash-Lite) bilan: asosiy Flash har safar 9 s da qotib zaxiraga o'tardi (jurnal 2026-11-24)
-    const q = summaryPrompt(turns, nativeOf(lang));
-    void withAiCtx({ playerId: pid, feature: 'live-memory' }, () => complete(coachAi, q.system, q.user, { maxTokens: 400, timeoutMs: 20_000 })).then((raw) => {
-      const add = parseSummary(raw);
-      if (add.mistakes.length || add.topics.length) saveMemory(db, pid, mergeMemory(getMemory(db, pid), add));
-    }).catch((e) => console.warn('[live] xotira yozilmadi:', (e as Error).message));
+    // Xotira navbat orqali yoziladi: AI band bo'lsa (jurnal 2026-11-24: "AI xizmatida navbat") 1/3/10/30 daqiqadan keyin qayta uriniladi
+    enqueueMemoryJob(db, pid, turns, nativeOf(lang));
+    void runMemoryJobs(db, summarizeMemory);
   },
   onEnd: (pid, secs, model, usage) => {
     recordLive(db, pid, secs); addCall(db, pid, secs);
@@ -923,6 +922,7 @@ httpServer.listen(PORT, HOST, () => console.log(`Sellzen: http://${HOST}:${PORT}
 // Seriya eslatmalari (Telegram): TG_REMINDERS=1 bo'lsa, har 10 daqiqada tekshiradi (20:00–23:00 Toshkent)
 if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runLeagueNotices(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/league'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Liga natijasi yuborildi: %s ta', n); }).catch((e) => console.warn('liga xabari xato', (e as Error).message)); }, 10 * 60_000);
 if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runReminders(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), appUrl(bot.publicUrl!, '/learn'), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t)).then((n) => { if (n) console.log('Eslatma yuborildi: %s ta', n); }).catch((e) => console.warn('eslatma xato', (e as Error).message)); }, 10 * 60_000);
+setInterval(() => { void runMemoryJobs(db, summarizeMemory); }, 60_000).unref(); // xotira navbati: qayta urinishlar
 if (hapi && hcfg) setInterval(() => { reconcile(db, hapi, hcfg.shopId).then((n) => { if (n) console.log('Hamyon reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
 
 // Railway yangi versiyani ishga tushirganda eskisiga SIGTERM yuboradi: so'rovlarni tugatib, bazani yopib, toza chiqamiz
