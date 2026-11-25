@@ -8,7 +8,7 @@ Tahlil (2026-11-25): A1 da 78 dars / 26 bo‘lim bor edi, A2, B1, B2, C1 va C2 d
 | B1 | 30 / 10 | 66 / 22 | **66 dars / 22 bo‘lim** (bajarildi) |
 | B2 | 30 / 10 | 66 / 22 | **66 dars / 22 bo‘lim** (bajarildi) |
 | C1 | 30 / 10 | 60 / 20 | **60 dars / 20 bo‘lim** (bajarildi) |
-| C2 | 30 / 10 | ~54 / 18 | navbatda |
+| C2 | 30 / 10 | 54 / 18 | **54 dars / 18 bo‘lim** (bajarildi) |
 
 ## A2 (72 dars / 24 bo‘lim)
 
@@ -89,5 +89,22 @@ Yangi bo‘limlar c1-u11 … c1-u20 (30 dars). Tuzilishi B2 dagidek; yozma topsh
 | Yozuv: rasmiy xat, ishontiruvchi hisobot va taklif, sharh va maqola | c1-u18 |
 | Mavzuli lug‘at: texnologiya va axloq, fan va tadqiqot, media va siyosat | c1-u19 |
 | Aniqlik: murakkab holatlarda artikllar, tinish belgilari, xatolarni tuzatish | c1-u20 |
+
+Eslatma: kontent holati `pilot`; tarjimalar ona tili egasi tomonidan tekshirilmagan.
+
+## C2 (54 dars / 18 bo‘lim)
+
+Yangi bo‘limlar c2-u11 … c2-u18 (24 dars). Tuzilishi C1 dagidek; ta’rif savollari to‘liq gapli bo‘sh joy mashqlariga aylantirilgan, yozma topshiriqlar qoida asosida tekshiriladi. Yangi lug‘at so‘zlari (61 ta) umumiy ro‘yxatga qo‘shilgan; 619 ta yangi matn 5 tilga tarjima qilingan.
+
+| Mavzu | Bo‘lim |
+|---|---|
+| Notiqlik va ishontiruvchi nutq: ochilish, takror va uch bosqichli tuzilma, ritm, urg‘u va to‘xtash, auditoriya bilan aloqa | c2-u11 |
+| Nozik ma’no va diplomatiya: ehtiyotkor so‘rov va tanqid, kuchaytirgich, yumshatgich va kamsitish, yomon xabar va muloyim rad | c2-u12 |
+| Gap me’morchiligi va bog‘liqlik: uzun gaplar, parallellik, apozitsiya, kiritma, gap boshiga olib chiqish, ma’lumot oqimi (given–new) | c2-u13 |
+| Badiiy va ko‘chma til: metafora, simile, personifikatsiya, ohang va kayfiyat, PEE tahliliy abzats | c2-u14 |
+| Dalil va manbalarni tanqidiy tahlil qilish: mantiqiy xatolar, manba ishonchliligi, bir nechta manbani sintez qilish | c2-u15 |
+| Akademik muloqot: seminar munozarasi, tadqiqotni taqdim etish, annotatsiya va adabiyotlar sharhi | c2-u16 |
+| Madaniy va kasbiy muloqot: madaniyatlar bo‘ylab uslub, ish muzokarasi, xat va hisobotda ohang | c2-u17 |
+| Leksik aniqlik: yaqin ma’noli so‘zlar va konnotatsiya, mavhum otlar bilan kuchli kollokatsiyalar, german va lotin so‘zlari (registr) | c2-u18 |
 
 Eslatma: kontent holati `pilot`; tarjimalar ona tili egasi tomonidan tekshirilmagan.
