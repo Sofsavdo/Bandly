@@ -159,7 +159,9 @@ export function emotionOf(text: string): LiveEmotion {
   // Apostrof turlari bir xil qilinadi: ovoz matnida zo‘r / zo’r / zoʻr keladi
   const t = text.toLowerCase().replace(/[‘’ʻʼ`]/g, "'");
   if (/\b(?:ha){2,}\b|\bhah+a\b|\bhe(?:he)+\b|\bhi(?:hi)+\b|\blol\b|\bxa-?xa|kulgili|kuldirding|kulib yubordim|😂|😄/.test(t)) return 'laugh';
-  if (/what the hell|\bdamn\b|\bhell\b|seriously\?|are you kidding|are you serious|\bno way\b|come on!|uyat|dahshat|tentak|eshak|ahmoq|kallavaram|qovoq|bu nima|nima endi|g'o'ldira|voy tovba|qanaqasiga|jahlim|\bugh\b|for god'?s sake|again\?!|\bno,? no,? no\b/.test(t) || (t.match(/!/g) ?? []).length >= 3) return 'angry';
+  const praise = /\b(?:great|perfect|excellent|amazing|awesome|well done|good job|nice|correct|exactly|proud|brilliant|wonderful|fantastic|bravo|wow|super)\b|zo'r|barakalla|qoyil|ofarin|ajoyib|to'g'ri/.test(t);
+  // Ko'p undov belgisi jahl belgisi faqat maqtov bo'lmasa: "Great! Perfect! Again!" — quvonch, jahl emas
+  if (/what the hell|\bdamn\b|\bhell\b|seriously\?|are you kidding|are you serious|\bno way\b|come on!|uyat|dahshat|tentak|eshak|ahmoq|kallavaram|qovoq|bu nima|nima endi|g'o'ldira|voy tovba|qanaqasiga|jahlim|\bugh\b|for god'?s sake|again\?!|\bno,? no,? no\b/.test(t) || (!praise && (t.match(/!/g) ?? []).length >= 3)) return 'angry';
   // Kinoya: "oh, great", "sure, sure", "genius" — yarim tabassum, ko'tarilgan qosh
   if (/\boh,? (?:great|wonderful|really|sure)\b|\bsure,? sure\b|\bgenius\b|\bwow,? (?:just )?wow\b|\bnice try\b|\byeah,? right\b|ha-ha,? juda|qoyil-e/.test(t)) return 'sarcastic';
   // Iliq maqtov / g'urur / hayrat — ekranda yurak; oddiy maqtov va tasdiq — tabassum

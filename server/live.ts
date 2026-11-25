@@ -188,8 +188,13 @@ export function pcmToWav(pcm: Buffer, rate = 16000): Buffer {
   return Buffer.concat([h, pcm]);
 }
 /** PCM16 balandligi (RMS, 0..1) — jurnal diagnostikasi uchun (ovozning o'zi saqlanmaydi). */
-/** Tanish ishonchi (so'zlarning o'rtacha logprobi) shundan past bo'lsa, matn ehtimol noto'g'ri tanilgan. */
-export const UNSURE_SCORE = -0.25;
+/** Tanish ishonchi (so'zlarning o'rtacha logprobi) uch bosqichda. Jurnal 2026-11-25: aksentli inglizcha ko'pincha -0.3…-0.7 oralig'ida tanilardi
+ *  va eski -0.25 chegarasi bilan navbatlarning 64% "ishonchsiz" bo'lib, ustoz ularda grammatikani umuman tuzatmasdi (asosiy vazifasi).
+ *  Endi: ≥ -0.4 — ishonchli; -0.4…-0.75 — "asosan ishonchli" (javob beradi, faqat aniq grammatik xatoni tuzatadi); < -0.75 — ishonchsiz. */
+export const UNSURE_SCORE = -0.75;
+export const PARTLY_SCORE = -0.4;
+/** "Asosan ishonchli" navbat: odatdagidek javob, lekin bitta g'alati so'z tanish xatosi bo'lishi mumkin — uni tuzatmaydi, tabiiy tekshiradi. */
+export const partlyTurn = (text: string): string => `(System: speech recognition is fairly confident about this turn, but one or two words may be misheard. Heard: «${text}». Answer it normally. Correct a grammar mistake only when the whole sentence clearly shows it (a wrong verb form, a missing article, wrong word order); never treat one odd or unexpected word as the learner's mistake — it may be a recognition error, so check it naturally if it matters ("You mean ...?").)`;
 /** Past ishonchli tanish: ustozga "ba'zi so'zlar noto'g'ri eshitilgan bo'lishi mumkin" deyiladi. Avval ustoz "tushunmadim, qaytaring" deb javob berardi —
  *  jurnal 2026-11-25: ishonch -0.4…-0.7 bo'lgan 3 navbatning hammasida o'quvchi javob ololmadi. Endi ustoz eng ehtimolli ma'noni topib javob beradi,
  *  noaniq so'zni gap ichida tabiiy tekshiradi; qayta so'rash faqat matn mutlaqo ma'nosiz bo'lsa va ketma-ket emas. */
@@ -411,12 +416,13 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     st.audioSec += secs; st.lvl += pcmRms(audio);
     if (secs < 0.3) { send({ type: 'noVoice' }); return; }
     let text = '';
-    let sure = true;
+    let sure = true, partly = false;
     try {
       const r = await d.asr!(who.id, pcmToWav(audio), lang, enStreak >= 2 ? 'en' : 'native');
       text = (r?.text ?? '').trim();
       if (text) enStreak = r?.lang === 'eng' ? enStreak + 1 : 0;
       sure = r?.score == null || r.score >= UNSURE_SCORE;
+      partly = sure && r?.score != null && r.score < PARTLY_SCORE;
       if (text) st.asrOk++; else st.asrEmpty++;
       if (text && !sure) st.unsure++;
     } catch (e) {
@@ -427,7 +433,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (!text) { send({ type: 'noVoice' }); return; }
     send({ type: 'in', text }); addText('learner', text);
     if (sure) maybeNavigate(text);
-    sendText(sure ? text : unsureTurn(text, lastUnsure));
+    sendText(!sure ? unsureTurn(text, lastUnsure) : partly ? partlyTurn(text) : text);
     lastUnsure = !sure;
   };
   // Bosib-gapirish: "bosildi" → ustozni to'xtatadi (tanish rejimida: shu yerda ovoz yig'ila boshlaydi, aks holda activityStart);
