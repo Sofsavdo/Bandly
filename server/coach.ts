@@ -181,7 +181,10 @@ export function emotionOf(text: string): LiveEmotion {
   if (/\b(?:ha){2,}\b|\bhah+a\b|\bhe(?:he)+\b|\bhi(?:hi)+\b|\blol\b|\bxa-?xa|kulgili|kuldirding|kulib yubordim|😂|😄/.test(t)) return 'laugh';
   const praise = /\b(?:great|perfect|excellent|amazing|awesome|well done|good job|nice|correct|exactly|proud|brilliant|wonderful|fantastic|bravo|wow|super)\b|zo'r|barakalla|qoyil|ofarin|ajoyib|to'g'ri/.test(t);
   // Ko'p undov belgisi jahl belgisi faqat maqtov bo'lmasa: "Great! Perfect! Again!" — quvonch, jahl emas
-  if (/what the hell|\bdamn\b|\bhell\b|seriously\?|are you kidding|are you serious|\bno way\b|come on!|uyat|dahshat|tentak|eshak|ahmoq|kallavaram|qovoq|bu nima|nima endi|g'o'ldira|voy tovba|qanaqasiga|jahlim|\bugh\b|for god'?s sake|again\?!|\bno,? no,? no\b/.test(t) || (!praise && (t.match(/!/g) ?? []).length >= 3)) return 'angry';
+  // Jahl — faqat aniq jahl iboralari. Egasi (2026-11-25): "yuz asosan bir xil jahl holatida". Sabab: ustoz ko'proq o'zbekcha gapira boshlagach,
+  // ro'yxatdagi oddiy so'zlar ("bu nima?" — dars savoli, "dahshat" — "zo'r" ma'nosida ham, "qovoq" — lug'at so'zi, "uyat") va 3 ta "!" har javobda jahl berardi.
+  const indignant = (t.match(/\?!|!\?/g) ?? []).length >= 2;
+  if (/what the hell|\bdamn\b|\bhell\b|seriously\?|are you kidding|are you serious|\bno way\b|come on!|for god'?s sake|again\?!|\bno,? no,? no\b|\bugh\b|tentak|eshak|ahmoq|kallavaram|g'o'ldira|voy tovba|uyat-ey|uyat emasmi|qanaqasiga|jahlim|necha marta aytaman|yana o'sha xato/.test(t) || (!praise && indignant)) return 'angry';
   // Kinoya: "oh, great", "sure, sure", "genius" — yarim tabassum, ko'tarilgan qosh
   if (/\boh,? (?:great|wonderful|really|sure)\b|\bsure,? sure\b|\bgenius\b|\bwow,? (?:just )?wow\b|\bnice try\b|\byeah,? right\b|ha-ha,? juda|qoyil-e/.test(t)) return 'sarcastic';
   // Iliq maqtov / g'urur / hayrat — ekranda yurak; oddiy maqtov va tasdiq — tabassum

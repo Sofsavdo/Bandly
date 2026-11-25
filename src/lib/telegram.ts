@@ -7,6 +7,7 @@ interface TgWebApp {
   initData: string; colorScheme?: 'light' | 'dark'; ready(): void; expand(): void;
   BackButton: { show(): void; hide(): void; onClick(cb: () => void): void };
   setHeaderColor?(c: string): void; setBackgroundColor?(c: string): void;
+  disableVerticalSwipes?(): void; enableVerticalSwipes?(): void;
 }
 declare global { interface Window { Telegram?: { WebApp?: TgWebApp }; sellzenTgAuth?: (u: unknown) => void } }
 
@@ -41,6 +42,9 @@ export async function bootTelegram(): Promise<void> {
     try { sessionStorage.setItem('bandly.tg.auth', '1'); await loginTelegram('webapp', wa.initData); } catch { try { sessionStorage.removeItem('bandly.tg.auth'); } catch { /* */ } /* server Telegram'ni hali sozlamagan bo'lishi mumkin — sayt baribir ishlaydi */ }
   }
 }
+
+/** Qo'ng'iroq paytida Telegram oynasi pastga surib yig'ilmasin (bosib-gapirishda barmoq siljisa oyna "skrol" bo'lib ketardi). Bot API 7.7+. */
+export function lockTelegramSwipes(on: boolean): void { const wa = webApp(); try { if (on) wa?.disableVerticalSwipes?.(); else wa?.enableVerticalSwipes?.(); } catch { /* eski Telegram */ } }
 
 /** Telegram ichida avtomatik kirish qayta urinishi. */
 export async function retryWebAppLogin(): Promise<void> { const wa = webApp(); if (wa) await loginTelegram('webapp', wa.initData); }
