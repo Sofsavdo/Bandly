@@ -1,4 +1,5 @@
 import type { Cefr } from '../lib/levels';
+import { bankExercises } from './practiceBank';
 
 export type Kind = 'translate' | 'build' | 'fix' | 'use' | 'upgrade';
 
@@ -28,7 +29,7 @@ export interface Exercise {
 
 const ex = (e: Exercise): Exercise => e;
 
-export const exercises: Exercise[] = [
+const core: Exercise[] = [
   // ---------- Tarjima (translate) ----------
   ex({ id: 't1', level: 'A1', kind: 'translate', topic: 'To be', promptUz: 'Mening ismim Ali.', model: 'My name is Ali.', explainUz: "Ism aytishda 'My name is ...' qolipi ishlatiladi." }),
   ex({ id: 't2', level: 'A1', kind: 'translate', topic: 'Artikllar', promptUz: 'Men talabaman.', model: 'I am a student.', accept: ["I'm a student."], explainUz: "Kasb yoki shaxs turi oldidan 'a' qo'yiladi: a student. O'zbekchada artikl yo'q, shuning uchun uni unutish odatiy xato." }),
@@ -93,3 +94,6 @@ export const exercises: Exercise[] = [
   ex({ id: 'b9', level: 'B2', kind: 'build', topic: 'Gerund', promptUz: 'U (ayol) kinoga borishni taklif qildi.', model: 'She suggested going to the cinema.', extra: ['to'], explainUz: "'suggest' dan keyin gerund (going) keladi." }),
   ex({ id: 'b10', level: 'C1', kind: 'build', topic: 'Inversiya', promptUz: 'U nafaqat kech keldi, balki hujjatlarni ham unutdi.', model: 'Not only did he arrive late, but he also forgot the documents.', explainUz: "'Not only' gap boshida: did + ega + fe'l (arrive), keyin 'but he also ...'." }),
 ];
+
+/** Asosiy 54 mashq + kengaytirilgan bank (practiceBank.ts). */
+export const exercises: Exercise[] = [...core, ...bankExercises];

@@ -4,10 +4,15 @@ import { CEFR } from './levels';
 import { check, diffTokens, normalize, xpFor } from './practice';
 
 // Yaxlitlik
-assert.ok(exercises.length >= 50);
+assert.ok(exercises.length >= 540, `mashq banki: ${exercises.length}`);
 assert.equal(new Set(exercises.map((e) => e.id)).size, exercises.length);
-for (const k of ['translate', 'build', 'fix', 'use', 'upgrade'] as const) assert.ok(exercises.filter((e) => e.kind === k).length >= 4, `${k}: yetarli mashq`);
+const FLOOR: Record<string, number> = { translate: 80, build: 70, fix: 200, use: 60, upgrade: 45 };
+for (const k of ['translate', 'build', 'fix', 'use', 'upgrade'] as const) assert.ok(exercises.filter((e) => e.kind === k).length >= FLOOR[k]!, `${k}: yetarli mashq`);
 for (const l of CEFR) assert.ok(exercises.filter((e) => e.level === l).length >= 6, `${l}: yetarli mashq`);
+for (const l of ['A1', 'A2', 'B1', 'B2'] as const) assert.ok(exercises.filter((e) => e.level === l).length >= 60, `${l}: bankda kamida 60 mashq`);
+// Takroriy topshiriq bo'lmasin (bir xil gap bir turda ikki marta chiqmasin)
+for (const k of ['fix', 'upgrade'] as const) { const keys = exercises.filter((e) => e.kind === k).map((e) => normalize(e.shown!)); assert.equal(new Set(keys).size, keys.length, `${k}: takroriy gap`); }
+for (const k of ['translate', 'build', 'use'] as const) { const keys = exercises.filter((e) => e.kind === k).map((e) => normalize(e.promptUz)); assert.equal(new Set(keys).size, keys.length, `${k}: takroriy topshiriq`); }
 for (const e of exercises) {
   assert.ok(e.promptUz.length > 5 && e.explainUz.length > 10 && e.model.length > 3, e.id);
   if (e.kind === 'fix' || e.kind === 'upgrade') assert.ok(e.shown, `${e.id}: shown`);
