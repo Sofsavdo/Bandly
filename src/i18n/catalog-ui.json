@@ -2292,7 +2292,7 @@
 "Yo‘lingizdagi keyingi qadam.",
 "Yo‘lingizdagi keyingi qadam: «{0}».",
 "Yo‘nalishlar",
-"Yo‘q. Ovoz yozib olinmaydi; AI yoqilganda faqat suhbat matni yuboriladi.",
+"Yo‘q. Ovoz yozuvi serverimizda saqlanmaydi. Ovozli ustoz bilan gaplashganda ovoz nutqni tanish uchun AI xizmatlariga real vaqtda uzatiladi (batafsil — Maxfiylik siyosatida).",
 "Yuborish",
 "Yuklanmoqda…",
 "Yulduz",

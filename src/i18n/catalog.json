@@ -10371,7 +10371,7 @@
 "Yo‘naltirish: “Does that answer your question?” “Would anyone like to add to that?” Xushmuomalalik: tanqidni shaxsga emas, fikrga qarating, qisqa va aniq javob bering, bahsga kirmang. Xatolar: “I don’t know” bilan to‘xtash, himoyaga o‘tish, savolni takrorlamaslik, uzoq va aylana javob.",
 "Yo‘naltirish: “Let’s come back to the main question.” “Perhaps we could hear from someone who hasn’t spoken yet.” “To sum up where we are, …”. Madaniyat: akademik tortishuv fikrga qaratiladi, shaxsga emas. Xato: “You are wrong”, uzun monologlar, boshqalarning gapini bo‘lish, manbasiz da’vo. Dalil bilan: “According to …”, “the data suggest …”.",
 "Yo‘q — javobni darhol yozing.",
-"Yo‘q. Ovoz yozib olinmaydi; AI yoqilganda faqat suhbat matni yuboriladi.",
+"Yo‘q. Ovoz yozuvi serverimizda saqlanmaydi. Ovozli ustoz bilan gaplashganda ovoz nutqni tanish uchun AI xizmatlariga real vaqtda uzatiladi (batafsil — Maxfiylik siyosatida).",
 "Yuborish",
 "Yukim kelmadi. Buni xabar qilmoqchiman.",
 "Yuklanmoqda…",

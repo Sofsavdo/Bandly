@@ -31,7 +31,7 @@ const SIGNUP = `#/login?next=${encodeURIComponent('#/start')}`;
 const faq: [string, string][] = [
   [L('Nima bepul?'), L('Darajani aniqlash testi, Mock Arena (Listening va Reading), so‘z o‘yinlari va darslarning bir qismi.')],
   [L('Qanday kiraman?'), L('Telegram orqali, bir bosishda. Progress, reyting va obuna boshqa qurilmada ham ochiladi.')],
-  [L('Ovozim saqlanadimi?'), L('Yo‘q. Ovoz yozib olinmaydi; AI yoqilganda faqat suhbat matni yuboriladi.')],
+  [L('Ovozim saqlanadimi?'), L('Yo‘q. Ovoz yozuvi serverimizda saqlanmaydi. Ovozli ustoz bilan gaplashganda ovoz nutqni tanish uchun AI xizmatlariga real vaqtda uzatiladi (batafsil — Maxfiylik siyosatida).')],
 ];
 
 /** preview=true — #/welcome: yangi foydalanuvchi ko'radigan sahifa (progressdan qat'i nazar; reklama havolasi uchun ham). */
