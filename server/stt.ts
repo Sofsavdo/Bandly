@@ -48,15 +48,22 @@ export const LOW_CONFIDENCE = -0.2;
  *  kirill yozuvda yozib yuboradi (2026-11-24 haqiqiy sinov, "Darsga o'tamiz" → «Дарске ўтамиz»). Ona tili ko'rsatmasi (masalan uzb) bilan esa o'zbekcha ham,
  *  aksentli inglizcha va aralash gap ham to'g'ri lotin yozuvida chiqadi. Shuning uchun odatda BITTA so'rov; faqat natija bo'sh yoki ishonchsiz bo'lsa ingliz
  *  ko'rsatmasi bilan ikkinchi marta sinab, ishonchlisi olinadi. Mashqlar (expect='en') — faqat inglizcha. */
-export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb', expect: 'en' | 'any' = 'any'): Promise<SttResult & { forced: boolean }> {
-  if (expect === 'en') return { ...(await transcribe(cfg, audio, mime, 'eng')), forced: false };
-  const a = await transcribe(cfg, audio, mime, native);
-  if (a.text && (a.score === null || a.score === undefined || a.score >= LOW_CONFIDENCE)) return { ...a, forced: false };
-  const e = await transcribe(cfg, audio, mime, 'eng').catch(() => null);
+/** expect: 'en' — faqat inglizcha; 'any' — avval ona tili, ishonch past bo'lsa inglizcha; 'en-first' — o'quvchi oxirgi navbatlarda inglizcha gapirgan:
+ *  avval inglizcha (ko'p hollarda bitta so'rov yetadi — jurnal 2026-11-25: ko'p navbatda ikki marta tanilardi), ishonch past bo'lsa ona tili. */
+export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb', expect: 'en' | 'any' | 'en-first' = 'any'): Promise<SttResult & { forced: boolean }> {
+  if (expect === 'en' || native === 'eng') return { ...(await transcribe(cfg, audio, mime, 'eng')), forced: false };
+  const firstEn = expect === 'en-first';
+  const sure = (r: SttResult) => !!r.text && (r.score === null || r.score === undefined || r.score >= LOW_CONFIDENCE) && !(firstEn && /[\u0400-\u04FF]/.test(r.text));
+  const a = await transcribe(cfg, audio, mime, firstEn ? 'eng' : native);
+  if (sure(a)) return { ...a, forced: firstEn };
+  const e = await transcribe(cfg, audio, mime, firstEn ? native : 'eng').catch(() => null);
   const secs = a.seconds + (e?.seconds ?? 0); // ikkala so'rov ham to'lanadi
-  if (!e || !e.text) return { ...a, seconds: secs, forced: false };
-  if (!a.text || (e.score ?? Number.NEGATIVE_INFINITY) > (a.score ?? Number.NEGATIVE_INFINITY)) return { ...e, seconds: secs, forced: true };
-  return { ...a, seconds: secs, forced: false };
+  const aIsEn = firstEn;
+  if (!e || !e.text) return { ...a, seconds: secs, forced: aIsEn };
+  // inglizcha so'rovdagi kirill matn — noto'g'ri tanilgan (o'quvchi ona tilida gapirgan)
+  const aScore = firstEn && /[\u0400-\u04FF]/.test(a.text) ? Number.NEGATIVE_INFINITY : (a.score ?? Number.NEGATIVE_INFINITY);
+  if (!a.text || (e.score ?? Number.NEGATIVE_INFINITY) > aScore || aScore === Number.NEGATIVE_INFINITY) return { ...e, seconds: secs, forced: !aIsEn };
+  return { ...a, seconds: secs, forced: aIsEn };
 }
 
 export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, language?: string): Promise<SttResult> {

@@ -57,5 +57,17 @@ console.log('stt: OK');
   const c7: (string | null)[] = [];
   const r7 = await transcribeLearner({ ...base, fetchImpl: mk({ eng: { text: 'I go to school', lp: -0.01 } }, c7) }, audio, 'audio/wav', 'uzb', 'en');
   assert.deepEqual(c7, ['eng'], 'bitta so‘rov, ingliz tili majburiy'); assert.equal(r7.text, 'I go to school');
+  // 7) Moslashuvchan tartib: o'quvchi inglizcha gapirayotgan bo'lsa avval inglizcha — ishonchli bo'lsa BITTA so'rov
+  const c8: (string | null)[] = [];
+  const r8 = await transcribeLearner({ ...base, fetchImpl: mk({ eng: { text: 'I went to the market', lp: -0.04 } }, c8) }, audio, 'audio/wav', 'uzb', 'en-first');
+  assert.deepEqual(c8, ['eng']); assert.equal(r8.text, 'I went to the market'); assert.equal(r8.forced, true);
+  // o'quvchi o'zbekchaga o'tdi: inglizcha ishonchsiz → ona tili ham sinaladi va yaxshirog'i olinadi
+  const c9: (string | null)[] = [];
+  const r9 = await transcribeLearner({ ...base, fetchImpl: mk({ eng: { text: 'men bugun bozorga bordim', lp: -0.7 }, uzb: { text: 'Men bugun bozorga bordim', lp: -0.05 } }, c9) }, audio, 'audio/wav', 'uzb', 'en-first');
+  assert.deepEqual(c9, ['eng', 'uzb']); assert.equal(r9.text, 'Men bugun bozorga bordim'); assert.equal(r9.forced, false);
+  // kirill harfli "inglizcha" natija ishonchli hisoblanmaydi
+  const c10: (string | null)[] = [];
+  const r10 = await transcribeLearner({ ...base, fetchImpl: mk({ eng: { text: 'Дарске ўтамиз', lp: -0.05 }, uzb: { text: 'Darsga o‘tamiz', lp: -0.1 } }, c10) }, audio, 'audio/wav', 'uzb', 'en-first');
+  assert.deepEqual(c10, ['eng', 'uzb']); assert.equal(r10.text, 'Darsga o‘tamiz');
   console.log('stt (til): OK');
 }

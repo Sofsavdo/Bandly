@@ -9,6 +9,7 @@
 //   J7. Ekran: 6 xil o'lchamda sahifa skrol qilinmaydi, tugatish tugmasi ko'rinadi, holatlar almashganda yuz joyidan siljimaydi
 //   J9. Uzun javob: matn qisilmaydi (qisqartirilmaydi), oxirgi gap to'liq ko'rinadi, eski gaplar yuqoriga chiqib ketadi; 2 xil ekranda
 //   J8. Sensorli ekran: ekranning istalgan joyiga (yuqori burchak ham) tegib gapirish; tugatish tugmasi gapirishni boshlamaydi
+//   J11. Silkinish yo'q: ustoz jahl qilib yoki kulib gapirganda yuz uzluksiz titramaydi, matn va tugmalar qimirlamaydi
 //   J10. IELTS darsi "Gapir": ovoz ko'rsatkichi, gap serverga boradi va natija chiqadi; jim mikrofon aniq aytiladi, ikki urinishdan keyin o'tkazib yuborish mumkin
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
@@ -83,6 +84,9 @@ up.on('connection', (ws) => {
       seen.push({ t: Date.now() - T0, kind: 'text', text });
       if (speakingTimer) { clearInterval(speakingTimer); speakingTimer = null; ws.send(JSON.stringify({ serverContent: { interrupted: true } })); }
       const LONGREPLY = 'Present perfect zamoni o‘tgan paytda boshlangan, lekin natijasi hozirgi paytga bog‘liq bo‘lgan ishlarni bildiradi. Masalan: I have finished my homework — men uy vazifamni tugatdim va u endi tayyor. Yasalishi: have yoki has va fe’lning uchinchi shakli. Endi o‘zingiz bitta gap tuzing: I have already visited Samarkand — va shu gapni to‘liq ayting.';
+      const EMO: Record<string, string> = { ANGRY: 'What the hell was that?! Seriously? «I go yesterday»?! It is «I went» — say it again, properly this time!', LAUGH: 'Hahaha! Oh come on, you said you ate the homework? Hahaha, say it again!' };
+      const emo = /^(ANGRY|LAUGH)/.exec(text)?.[1];
+      if (emo) { setTimeout(() => say(EMO[emo]!, 12), 150); return; }
       setTimeout(() => say(/LONG/.test(text) ? LONGREPLY : /darsga/i.test(text) ? 'Mayli, hozir ochamiz!' : 'Qoyil! Juda zo‘r gapirdingiz, endi shu gapni to‘liq ayting.', /LONG/.test(text) ? 3 : /darsga/i.test(text) ? 2 : 9), 150); // uzun javob (~3.4 s): gapirayotganda bosib to'xtatish mumkin
       return;
     }
@@ -350,6 +354,37 @@ try {
     await touch('pointerdown', end.x + end.width / 2, end.y + end.height / 2); await touch('pointerup', end.x + end.width / 2, end.y + end.height / 2);
     await wait(300); assert.ok(!/Tinglayapman/.test(await statusText(t0)), 'tugatish tugmasi gapirishni boshlamadi');
     await t0.locator('.call-end').click(); await t0.locator('.start-face').waitFor({ timeout: 5000 });
+  });
+
+  await step('J11. Silkinish yo‘q: jahl va kulgi paytida yuz, matn va tugmalar titramaydi', async () => {
+    const p11 = await openCall(LOUD, token, { width: 390, height: 800 });
+    await waitStatus(p11, /Navbat sizda/, 12000);
+    for (const emo of ['ANGRY', 'LAUGH']) {
+      scribeText = `${emo} I go school yesterday`;
+      const c = await faceCenter(p11);
+      await p11.mouse.move(c.x, c.y); await p11.mouse.down(); await wait(1200); await p11.mouse.up();
+      await waitStatus(p11, /Sellzen gapiryapti/, 8000); await wait(300);
+      // 3 soniya davomida har 50 ms: yuz rasmi (aylanish/siljish bilan), holat qatori, matn oynasi va tugatish tugmasi
+      const samples = await p11.evaluate(async () => {
+        const out: { fx: number; fy: number; fw: number; st: number; ln: number; en: number }[] = [];
+        for (let i = 0; i < 60; i++) {
+          const f = (document.querySelector('.call-face .ai-face') ?? document.querySelector('.call-face'))!.getBoundingClientRect();
+          out.push({ fx: f.x, fy: f.y, fw: f.width, st: document.querySelector('.call-status')!.getBoundingClientRect().top, ln: document.querySelector('.call-lines')!.getBoundingClientRect().top, en: document.querySelector('.call-end')!.getBoundingClientRect().top });
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        return out;
+      });
+      const span = (k: keyof typeof samples[number]) => Math.max(...samples.map((s) => s[k])) - Math.min(...samples.map((s) => s[k]));
+      const moves = samples.slice(1).filter((s, i) => Math.abs(s.fx - samples[i]!.fx) > 1.5).length; // yuzning gorizontal sakrashlari soni
+      const m = { fx: span('fx'), fy: span('fy'), fw: span('fw'), st: span('st'), ln: span('ln'), en: span('en'), moves };
+      console.log(`    ${emo}: ${JSON.stringify(Object.fromEntries(Object.entries(m).map(([k, v]) => [k, Math.round(v * 10) / 10])))}`);
+      await shot(p11, `j11-${emo.toLowerCase()}`);
+      assert.ok(m.st <= 1 && m.ln <= 1 && m.en <= 1, `${emo}: holat/matn/tugma qimirladi (${m.st}, ${m.ln}, ${m.en})`);
+      assert.ok(m.moves <= 8, `${emo}: yuz uzluksiz titraydi (${m.moves} ta sakrash / 3 s)`);
+      assert.ok(m.fx <= 8 && m.fy <= 16, `${emo}: yuz juda ko‘p siljiydi (x ${m.fx}, y ${m.fy})`);
+      await waitStatus(p11, /Navbat sizda/, 15000);
+    }
+    scribeText = 'teach me English, I go to school yesterday';
   });
 
   await step('J10. IELTS darsi "Gapir": ovoz ko‘rsatkichi + gap serverga boradi; jim mikrofon aniq aytiladi, ikki urinishdan keyin o‘tkazib yuborish', async () => {
