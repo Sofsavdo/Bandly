@@ -9,8 +9,8 @@ import { listeningTests } from './listeningTests';
 import { CAN_DO } from '../components/mapArt';
 
 const byLevel = (lv: string) => ALL_LESSONS.filter((x) => x.unit.level === lv).length;
-assert.ok(ALL_LESSONS.length >= 189, `darslar: ${ALL_LESSONS.length}`);
-assert.ok(byLevel('A1') >= 39, `A1 darslar: ${byLevel('A1')}`);
+assert.ok(ALL_LESSONS.length >= 228, `darslar: ${ALL_LESSONS.length}`);
+assert.ok(byLevel('A1') >= 78, `A1 darslar: ${byLevel('A1')}`);
 for (const lv of ['A2', 'B1', 'B2', 'C1', 'C2']) assert.ok(byLevel(lv) >= 30, `${lv} darslar: ${byLevel(lv)}`);
 
 for (const { lesson } of ALL_LESSONS) {
@@ -25,7 +25,7 @@ for (const k of ['choice', 'gap', 'order', 'multi']) assert.ok(kinds.has(k as ne
 assert.ok(UNITS.every((u) => !!u.situationUz?.trim()), 'har bo‘limda vaziyat tavsifi');
 
 const wl = (lv: string) => vocab.filter((w) => w.level === lv).length;
-assert.ok(vocab.length >= 1190 && wl('A1') >= 150 && wl('B2') >= 300, `so‘zlar: ${vocab.length} (A1 ${wl('A1')})`);
+assert.ok(vocab.length >= 1280 && wl('A1') >= 240 && wl('B2') >= 300, `so‘zlar: ${vocab.length} (A1 ${wl('A1')})`);
 assert.ok(grammar.length >= 80, `grammatika savollari: ${grammar.length}`);
 assert.ok(readingTests.length >= 21 && listeningTests.length >= 20, `mock: ${readingTests.length}/${listeningTests.length}`);
 for (const lv of ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']) assert.ok(CAN_DO[lv]?.startsWith('I can'), `${lv}: can-do sarlavha`);
