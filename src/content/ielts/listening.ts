@@ -29,7 +29,7 @@ export const IE_LISTENING_START: Unit = {
         { en: 'Part four is a lecture on an academic subject.', uz: 'To‘rtinchi qism — ilmiy mavzudagi ma’ruza.' },
         { en: 'Check your spelling when you transfer your answers.', uz: 'Javoblarni ko‘chirayotganda imloni tekshiring.' },
       ],
-      vocab: [{ en: 'recording', uz: 'audio yozuv' }, { en: 'lecture', uz: 'ma‘ruza' }, { en: 'transfer', uz: 'ko‘chirmoq (javoblarni)' }, { en: 'spelling', uz: 'imlo' }],
+      vocab: [{ en: 'recording', uz: 'audio yozuv' }, { en: 'lecture', uz: 'ma’ruza' }, { en: 'transfer', uz: 'ko‘chirmoq (javoblarni)' }, { en: 'spelling', uz: 'imlo' }],
       practice: [
         ch('How many times do you hear each recording?', ['Once', 'Twice', 'Three times'], 0, 'Faqat bir marta — shuning uchun oldindan o‘qish muhim.'),
         ch('Which part is usually a lecture?', ['Part 1', 'Part 2', 'Part 4'], 2, '4-qism — ilmiy ma’ruza.'),
@@ -100,7 +100,7 @@ export const IE_LISTENING_START: Unit = {
       examples: [
         { en: 'The fee for the course is ninety pounds.', uz: 'Kurs to‘lovi to‘qson funt.' },
         { en: 'Please bring a photo to the first class.', uz: 'Birinchi darsga rasm olib keling.' },
-        { en: 'The bus leaves at half past seven.', uz: 'Avtobus yettiyu o‘ttizda jo‘naydi.' },
+        { en: 'The bus leaves at half past seven.', uz: 'Avtobus soat yetti yarimda jo‘naydi.' },
         { en: 'Classes take place in the main hall.', uz: 'Darslar asosiy zalda o‘tadi.' },
       ],
       vocab: [{ en: 'fee', uz: 'to‘lov (xizmat uchun)' }, { en: 'take place', uz: 'bo‘lib o‘tmoq' }, { en: 'bring', uz: 'olib kelmoq' }, { en: 'predict', uz: 'bashorat qilmoq' }],
@@ -296,7 +296,7 @@ export const IE_LISTENING_CORE: Unit = {
         { en: 'However, this changes in winter.', uz: 'Biroq bu qishda o‘zgaradi.' },
         { en: 'To sum up, the species is now protected.', uz: 'Xulosa qilib aytganda, bu tur hozir himoyada.' },
       ],
-      vocab: [{ en: 'signpost', uz: 'yo‘naltiruvchi so‘z (nutqda)' }, { en: 'lecture', uz: 'ma‘ruza' }, { en: 'notes', uz: 'konspekt, qaydlar' }, { en: 'species', uz: 'tur (hayvon yoki o‘simlik turi)' }],
+      vocab: [{ en: 'signpost', uz: 'yo‘naltiruvchi so‘z (nutqda)' }, { en: 'lecture', uz: 'ma’ruza' }, { en: 'notes', uz: 'konspekt, qaydlar' }, { en: 'species', uz: 'tur (hayvon yoki o‘simlik turi)' }],
       practice: [
         lch('Turning now to the economic effects of tourism, the most obvious one is employment.', 'What is the next section of the lecture about?', ['Environmental effects', 'Economic effects', 'History of tourism'], 1, '“Turning now to” — yangi bo‘lim: economic effects.'),
         lgap('Turning now to the economic effects, the most obvious one is employment.', 'Main economic effect: ___', ['employment'], 'most obvious one is employment.'),

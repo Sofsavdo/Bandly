@@ -502,7 +502,6 @@
  "Akademik matnda ham ishlatiladigan phrasal verblarni (carry out, account for, rule out, bring about, point out) norasmiylaridan (get rid of, come up with) farqlab, to‘g‘ri ishlatasiz.": "You’ll tell phrasal verbs that also work in academic writing (carry out, account for, rule out, bring about, point out) from informal ones (get rid of, come up with) and use them correctly.",
  "Akademik matnda harakatlar ko‘pincha ot shaklida beriladi: The government decided to … → The government’s decision to … ; Prices increased rapidly. → There was a rapid increase in prices.": "In academic writing, actions are often expressed as nouns: The government decided to … → The government’s decision to … ; Prices increased rapidly. → There was a rapid increase in prices.",
  "Akademik matnda qisqartmalar yozilmaydi: do not.": "Contractions aren't written in academic texts: do not.",
- "Akademik ma‘ruza": "An academic lecture",
  "Akademik nutq: uzun gaplar, bog‘lovchilar va aniq terminlar. Birinchi tinglashda g‘oyani, ikkinchisida iboralarni ushlang.": "Academic speech: long sentences, connectors and precise terms. Catch the idea on the first listen and the phrases on the second.",
  "Akademik o‘qish va IELTS Writing Task 2: tadqiqot natijalarini to‘g‘ri kuchda yetkazish, manbaning zaif tomonini ko‘rsatish va qarshi fikrga asosli javob berish.": "Academic reading and IELTS Writing Task 2: reporting research findings with the right strength, pointing out a source’s weaknesses and answering a counterargument with good reasons.",
  "Akademik phrasal verblar: carry out, account for, rule out": "Academic Phrasal Verbs: carry out, account for, rule out",
@@ -687,7 +686,6 @@
  "Aviachipta narxlari 2015–2019-yillar oralig‘ida keskin oshdi.": "Air fares rose sharply between 2015 and 2019.",
  "Avtobus bozor yonida to‘xtadi.": "The bus stopped next to the market.",
  "Avtobus uzun tunnel ichidan o‘tdi.": "The bus went through a long tunnel.",
- "Avtobus yettiyu o‘ttizda jo‘naydi.": "The bus leaves at seven thirty.",
  "Avtobusim sakkizga chorak kam jo‘naydi.": "My bus leaves at a quarter to eight.",
  "Avtomatik zaxira o‘chiq.": "Automatic backup is off.",
  "Avtomobildan foydalanish ortishini yoqilg‘i narxining pasayishi bilan izohlash mumkin.": "The rise in car use can be explained by the fall in fuel prices.",
@@ -4102,7 +4100,7 @@
  "Maya ertaga sinab ko‘radi": "Maya will try it tomorrow",
  "Mayli, shu safar ma‘qullayman.": "Fine, I'll accept it this time.",
  "Mazmunni ham taxmin qiling: “Bring your ___ to the first class” — ehtimol hujjat yoki narsa (passport, photo, ID card). Taxmin qilgan so‘z to‘g‘ri chiqmasligi mumkin, lekin quloq nimani kutishni biladi.": "Guess the content too: “Bring your ___ to the first class” — probably a document or item (passport, photo, ID card). The word you guess may turn out wrong, but your ears will know what to expect.",
- "Ma‘ruza: uyqu va xotira": "Lecture: sleep and memory",
+ "Ma’ruza: uyqu va xotira": "Lecture: sleep and memory",
  "Ma’lum muddatgacha tugaydigan o‘zgarish uchun future perfect: “By 2030, the figure will have doubled.” by + yil = “… yilga kelib”. IELTS da zamon xatosi butun javob bo‘ylab takrorlanadi va Grammatical Range and Accuracy bahosini tushiradi, shuning uchun yozishdan oldin grafikning vaqt oralig‘ini tekshiring.": "For a change that will be complete by a certain time, use the future perfect: “By 2030, the figure will have doubled.” by + year = “by that year”. In IELTS a tense mistake repeats throughout the answer and lowers your Grammatical Range and Accuracy score, so check the time period of the graph before you write.",
  "Ma’lum musiqa — The.": "Specific music — The.",
  "Ma’lum muzey — the.": "A known museum — the.",
@@ -9681,7 +9679,7 @@
  "may well / be likely to + fe’l": "may well / be likely to + verb",
  "maza qilmoq": "to have fun",
  "ma‘lumotlar bazasi": "database",
- "ma‘ruza": "lecture",
+ "ma’ruza": "lecture",
  "ma’lum darajada": "to a certain extent",
  "ma’lumot": "information",
  "ma’ruza, nutq": "talk (speech)",
@@ -11843,5 +11841,8 @@
  "5 qism: 1) sakkizta qisqa suhbat; 2) kitob yarmarkasi haqida e’lon; 3) ofis uchun jamoaviy kun rejasi; 4) plastikdan qurilish materiali yasaydigan tadbirkor bilan intervyu; 5) taqvim tarixi haqida ma’ruza.": "5 parts: 1) eight short conversations; 2) an announcement about a book fair; 3) planning a team day for the office; 4) an interview with an entrepreneur who makes building materials from plastic; 5) a lecture on the history of the calendar.",
  "O‘zbekiston aholisi o‘ttiz besh milliondan ortiq.": "The population of Uzbekistan is more than thirty-five million.",
  "Poyezd soat nechada jo‘naydi? Soat olti yarimda.": "What time does the train leave? At half past six.",
- "percent (per cent) — foiz.": "percent (per cent) — percentage."
+ "percent (per cent) — foiz.": "percent (per cent) — percentage.",
+ "Akademik ma‘ruza": "An academic lecture",
+ "Avtobus soat yetti yarimda jo‘naydi.": "The bus leaves at seven thirty.",
+ "… ga bog‘liq bo‘lmoq": "to depend on …"
 }
