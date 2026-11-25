@@ -190,8 +190,10 @@ export function pcmToWav(pcm: Buffer, rate = 16000): Buffer {
 /** PCM16 balandligi (RMS, 0..1) — jurnal diagnostikasi uchun (ovozning o'zi saqlanmaydi). */
 /** Tanish ishonchi (so'zlarning o'rtacha logprobi) shundan past bo'lsa, matn ehtimol noto'g'ri tanilgan. */
 export const UNSURE_SCORE = -0.25;
-/** Past ishonchli tanish: ustozga "bu matn xato bo'lishi mumkin" deyiladi — o'quvchini ayblamasin, tushunmasa muloyim so'rasin. */
-export const unsureTurn = (text: string): string => `(System: the speech recognizer is NOT sure about this turn. It heard: «${text}». That may be wrong or mixed-up words, so do NOT treat it as what the learner really said, and NEVER mock, insult or blame the learner for it. If it makes no sense, say ONE short friendly line that you did not catch it and ask them to say it again; otherwise just answer naturally.)`;
+/** Past ishonchli tanish: ustozga "ba'zi so'zlar noto'g'ri eshitilgan bo'lishi mumkin" deyiladi. Avval ustoz "tushunmadim, qaytaring" deb javob berardi —
+ *  jurnal 2026-11-25: ishonch -0.4…-0.7 bo'lgan 3 navbatning hammasida o'quvchi javob ololmadi. Endi ustoz eng ehtimolli ma'noni topib javob beradi,
+ *  noaniq so'zni gap ichida tabiiy tekshiradi; qayta so'rash faqat matn mutlaqo ma'nosiz bo'lsa va ketma-ket emas. */
+export const unsureTurn = (text: string, askedBefore = false): string => `(System: the speech recognizer is NOT sure about this turn — some words may be misheard. Its best guess: «${text}». Use the conversation so far to work out what the learner most likely meant and ANSWER that, like a teacher who listens to accented speech every day. If one word is unclear, check it naturally inside your answer ("You mean the market, right?"). Do NOT correct grammar from this turn (the words may be wrong), and NEVER mock, insult or blame the learner for it. ${askedBefore ? 'You already asked them to repeat last time: do NOT ask again — answer your best guess or ask a simple question they can answer easily.' : 'Only if it makes no sense at all, say ONE short friendly line that you did not catch it and ask them to say it again.'})`;
 
 export function pcmRms(pcm: Buffer): number {
   const n = Math.floor(pcm.length / 2); if (!n) return 0;
@@ -274,7 +276,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   let inAct = false, actTimer: NodeJS.Timeout | null = null, actMsgs = 0;
   // Tanish rejimi: navbat ovozi shu yerda yig'iladi; qo'yib yuborilganda Scribe → matn → Gemini. dropOld — o'quvchi ustozni bosib to'xtatdi: eski javobning qolgan ovozi tashlanadi.
   let viaAudio = false, actBuf: Buffer[] = [], actBytes = 0, modelBusy = false, dropOld = false, dropTimer: NodeJS.Timeout | null = null, asrChain: Promise<void> = Promise.resolve();
-  const st = { acts: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, audioSec: 0, lvl: 0 };
+  const st = { acts: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0 };
   const started = Date.now();
   let upstream: WebSocket | null = null;
   let setupTimer: NodeJS.Timeout | null = null; // Gemini sozlash muddati (connect ichida)
@@ -292,7 +294,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (secs > 0) d.onEnd(who.id, secs, model, usage);
     if (turns.filter((t) => t.who === 'learner').length >= 3) { try { d.onTranscript?.(who.id, turns, lang); } catch { /* xotira ixtiyoriy */ } }
     const dbfs = st.acts && st.lvl > 0 ? ` lvl=${(20 * Math.log10(st.lvl / st.acts)).toFixed(0)}dB` : '';
-    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why})${wrongCount ? ` til-xato:${wrongCount}` : ''}${ptt ? ` navbat=${st.acts}${asrOn ? ` tanish=${st.asrOk}/${st.asrEmpty}/${st.asrFail}` : ''} ${st.audioSec.toFixed(0)}s${dbfs}` : ''}`);
+    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why}) javob=${st.replies}${wrongCount ? ` til-xato:${wrongCount}` : ''}${ptt ? ` navbat=${st.acts}${asrOn ? ` tanish=${st.asrOk}/${st.asrEmpty}/${st.asrFail} ishonchsiz=${st.unsure}` : ''} ${st.audioSec.toFixed(0)}s${dbfs}` : ''}`);
   };
   // Chegara: sessiya cheklovi (10 daqiqa) yoki kunlik/oylik daqiqa tugashi — mijozga turi aytiladi (sessiya tugasa — obuna taklif qilinmaydi)
   const capKind = allowance >= d.cfg.maxSessionSec ? 'session' : 'quota';
@@ -358,7 +360,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
           learnerBuf = (learnerBuf + ' ' + t).slice(-300); maybeNavigate(learnerBuf); // Gemini o'zi eshitgan gap (tanish o'chiq bo'lsa)
         }
         if (sc.interrupted) { send({ type: 'interrupted' }); turnOut = ''; muted = false; modelBusy = false; viaAudio = false; clearDrop(); }
-        if (sc.turnComplete) { send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); }
+        if (sc.turnComplete) { st.replies++; send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); }
       }
       if (m.goAway) { send({ type: 'error', code: 503, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
     });
@@ -402,6 +404,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     upstream.send(JSON.stringify({ realtimeInput: { activityEnd: {} } }));
   };
   let enStreak = 0; // ketma-ket inglizcha tanilgan navbatlar
+  let lastUnsure = false; // oldingi navbat ham ishonchsiz edi — ustoz yana qayta so'ramasin
   const onUtterance = async (audio: Buffer): Promise<void> => {
     if (closed) return;
     const secs = audio.length / 32000; // 16 kHz × 2 bayt
@@ -415,6 +418,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       if (text) enStreak = r?.lang === 'eng' ? enStreak + 1 : 0;
       sure = r?.score == null || r.score >= UNSURE_SCORE;
       if (text) st.asrOk++; else st.asrEmpty++;
+      if (text && !sure) st.unsure++;
     } catch (e) {
       st.asrFail++; log(`[live] tanish ishlamadi (${(e as Error).message.slice(0, 80)}) — ovoz Gemini'ga yuboriladi`);
       sendAudioToGemini(audio); return;
@@ -423,7 +427,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (!text) { send({ type: 'noVoice' }); return; }
     send({ type: 'in', text }); addText('learner', text);
     if (sure) maybeNavigate(text);
-    sendText(sure ? text : unsureTurn(text));
+    sendText(sure ? text : unsureTurn(text, lastUnsure));
+    lastUnsure = !sure;
   };
   // Bosib-gapirish: "bosildi" → ustozni to'xtatadi (tanish rejimida: shu yerda ovoz yig'ila boshlaydi, aks holda activityStart);
   // "qo'yib yuborildi" → javob (tanish: Scribe → matn → Gemini; aks holda activityEnd). 60 soniyadan keyin o'zi tugaydi.

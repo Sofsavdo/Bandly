@@ -9,7 +9,7 @@
 //   J7. Ekran: 6 xil o'lchamda sahifa skrol qilinmaydi, tugatish tugmasi ko'rinadi, holatlar almashganda yuz joyidan siljimaydi
 //   J9. Uzun javob: matn qisilmaydi (qisqartirilmaydi), oxirgi gap to'liq ko'rinadi, eski gaplar yuqoriga chiqib ketadi; 2 xil ekranda
 //   J8. Sensorli ekran: ekranning istalgan joyiga (yuqori burchak ham) tegib gapirish; tugatish tugmasi gapirishni boshlamaydi
-//   J11. Silkinish yo'q: ustoz jahl qilib yoki kulib gapirganda yuz uzluksiz titramaydi, matn va tugmalar qimirlamaydi
+//   J11. Yuz ifodasi erkin (jahlda titraydi, kulganda sakraydi), lekin ekrandagi boshqa elementlar (holat, matn, tugma) qimirlamaydi, sahifa skrol bo'lmaydi
 //   J10. IELTS darsi "Gapir": ovoz ko'rsatkichi, gap serverga boradi va natija chiqadi; jim mikrofon aniq aytiladi, ikki urinishdan keyin o'tkazib yuborish mumkin
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
@@ -356,7 +356,7 @@ try {
     await t0.locator('.call-end').click(); await t0.locator('.start-face').waitFor({ timeout: 5000 });
   });
 
-  await step('J11. Silkinish yo‘q: jahl va kulgi paytida yuz, matn va tugmalar titramaydi', async () => {
+  await step('J11. Jahl va kulgi: yuz ifodali harakatlanadi, matn va tugmalar qimirlamaydi', async () => {
     const p11 = await openCall(LOUD, token, { width: 390, height: 800 });
     await waitStatus(p11, /Navbat sizda/, 12000);
     for (const emo of ['ANGRY', 'LAUGH']) {
@@ -366,22 +366,26 @@ try {
       await waitStatus(p11, /Sellzen gapiryapti/, 8000); await wait(300);
       // 3 soniya davomida har 50 ms: yuz rasmi (aylanish/siljish bilan), holat qatori, matn oynasi va tugatish tugmasi
       const samples = await p11.evaluate(async () => {
-        const out: { fx: number; fy: number; fw: number; st: number; ln: number; en: number }[] = [];
+        const out: { fx: number; fy: number; fw: number; st: number; ln: number; lh: number; en: number; wrap: number; scroll: number; sy: number }[] = [];
+        const de = document.documentElement;
         for (let i = 0; i < 60; i++) {
           const f = (document.querySelector('.call-face .ai-face') ?? document.querySelector('.call-face'))!.getBoundingClientRect();
-          out.push({ fx: f.x, fy: f.y, fw: f.width, st: document.querySelector('.call-status')!.getBoundingClientRect().top, ln: document.querySelector('.call-lines')!.getBoundingClientRect().top, en: document.querySelector('.call-end')!.getBoundingClientRect().top });
+          const ln = document.querySelector('.call-lines')!.getBoundingClientRect();
+          out.push({ fx: f.x, fy: f.y, fw: f.width, st: document.querySelector('.call-status')!.getBoundingClientRect().top, ln: ln.top, lh: ln.height, en: document.querySelector('.call-end')!.getBoundingClientRect().top, wrap: document.querySelector('.call-face')!.getBoundingClientRect().top, scroll: de.scrollWidth - de.clientWidth, sy: window.scrollY });
           await new Promise((r) => setTimeout(r, 50));
         }
         return out;
       });
       const span = (k: keyof typeof samples[number]) => Math.max(...samples.map((s) => s[k])) - Math.min(...samples.map((s) => s[k]));
       const moves = samples.slice(1).filter((s, i) => Math.abs(s.fx - samples[i]!.fx) > 1.5).length; // yuzning gorizontal sakrashlari soni
-      const m = { fx: span('fx'), fy: span('fy'), fw: span('fw'), st: span('st'), ln: span('ln'), en: span('en'), moves };
+      const m = { fx: span('fx'), fy: span('fy'), fw: span('fw'), st: span('st'), ln: span('ln'), lh: span('lh'), en: span('en'), wrap: span('wrap'), moves, scroll: Math.max(...samples.map((s) => s.scroll)), sy: span('sy') };
       console.log(`    ${emo}: ${JSON.stringify(Object.fromEntries(Object.entries(m).map(([k, v]) => [k, Math.round(v * 10) / 10])))}`);
       await shot(p11, `j11-${emo.toLowerCase()}`);
-      assert.ok(m.st <= 1 && m.ln <= 1 && m.en <= 1, `${emo}: holat/matn/tugma qimirladi (${m.st}, ${m.ln}, ${m.en})`);
-      assert.ok(m.moves <= 8, `${emo}: yuz uzluksiz titraydi (${m.moves} ta sakrash / 3 s)`);
-      assert.ok(m.fx <= 8 && m.fy <= 16, `${emo}: yuz juda ko‘p siljiydi (x ${m.fx}, y ${m.fy})`);
+      // Egasi (2026-11-25): yuz ifodasini cheklama — o'rtadagi ustoz istalgan harakatni qilishi mumkin, faqat boshqa elementlar silkinmasin
+      assert.ok(m.st <= 1 && m.ln <= 1 && m.lh <= 1 && m.en <= 1 && m.wrap <= 1, `${emo}: yuz harakati boshqa elementlarni qimirlatdi (holat ${m.st}, matn ${m.ln}/${m.lh}, tugma ${m.en}, yuz o‘rni ${m.wrap})`);
+      assert.ok(m.scroll <= 1 && m.sy <= 1, `${emo}: yuz harakatidan sahifa yonga kengaydi yoki skrol bo‘ldi (${m.scroll}, ${m.sy})`);
+      if (emo === 'ANGRY') assert.ok(m.moves >= 10, `jahl yuzda ko‘rinmayapti (${m.moves} ta harakat / 3 s)`);
+      else assert.ok(m.fy >= 3, `kulgi yuzda ko‘rinmayapti (y ${m.fy})`);
       await waitStatus(p11, /Navbat sizda/, 15000);
     }
     scribeText = 'teach me English, I go to school yesterday';
