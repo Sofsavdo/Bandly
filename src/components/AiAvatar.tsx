@@ -3,7 +3,7 @@
 // gapirish — nutq pufagi (shaftoli; ovoz balandligiga qarab og'iz ochiladi), quvonch — oval, qattiq maqtov — yurak (pushti),
 // kulgi — pufak (sariq), jahl — qizil tabletka (silkinadi, olovsiz), hafsala — bulut (kulrang-ko'k, ko'z yoshi).
 // Ustoz xarakteri (look: 0 yumshoq … 3 jallod) — dam olish holatidagi nigohni belgilaydi: qattiq xarakterlarda yarim yumuq, mensimagan ko'z.
-import type { CSSProperties } from 'react';
+import { useId, type CSSProperties } from 'react';
 import type { CoachEmotion } from '../content/personas';
 import { L } from '../i18n';
 
@@ -64,7 +64,7 @@ export function AiAvatar({ phase, emotion = 'neutral', level = 0, size = 200, lo
             <g key={`e-${lk.mood}-${lidded}`} className="av-eyes av-pop"><Eyes mood={lk.mood} lidded={lidded} /></g>
             <g key={`m-${lk.mood}-${speaking}`} className="av-mouth-g av-pop"><Mouth mood={lk.mood} speaking={speaking} level={lvl} look={look} /></g>
             {lk.mood === 'thinking' && <g className="av-dots" fill="currentColor">{[[40, -30, 3], [50, -42, 4.2], [62, -56, 5.6]].map(([x, y, r], i) => <circle key={i} cx={x} cy={y} r={r} style={{ ['--i' as string]: String(i) } as CSSProperties} />)}</g>}
-            {lk.mood === 'sad' && <path className="av-tear" d="M-30 8 Q-34 18 -30 22 Q-26 18 -30 8 Z" />}
+            {lk.mood === 'sad' && <g className="av-tears">{[-26, 26].map((x, i) => <g key={x} style={{ ['--i' as string]: String(i) } as CSSProperties}><path className="av-stream" d={`M${x} 8 Q${x + (x < 0 ? -3 : 3)} 18 ${x + (x < 0 ? -1 : 1)} 30`} /><path className="av-tear" d={`M${x} 8 Q${x - 4} 18 ${x} 22 Q${x + 4} 18 ${x} 8 Z`} /></g>)}</g>}
             {lk.mood === 'laugh' && <g className="av-joy">{[-36, 36].map((x, i) => <path key={x} style={{ ['--i' as string]: String(i) } as CSSProperties} d={`M${x} 0 Q${x - 4} 9 ${x} 12 Q${x + 4} 9 ${x} 0 Z`} />)}</g>}
             {lk.mood === 'angry' && <AngerMarks />}
             {lk.mood === 'error' && <path className="av-sweat" d="M38 -26 Q33 -16 38 -12 Q43 -16 38 -26 Z" />}
@@ -158,8 +158,44 @@ export function Mouth({ mood, speaking, level, look }: { mood: AvatarMood; speak
   return look >= 2 ? <path className="av-mouth" d="M-10 24 Q0 28 12 21" /> : <path className="av-mouth" d="M-12 20 Q0 32 12 20" />;
 }
 
-/** Hissiyot effektlari (faqat CSS): kulgi — "ha-ha", quvonch — uchqunlar, iliq maqtov — yuraklar. */
+/** Hissiyot effektlari yuz atrofida (ekranda emas — egasi, 2026-11-25): jahl — yuz ortida olov, boshdan bug'; hafsala — bosh ustida yomg'ir buluti;
+ *  kulgi — "ha-ha"; quvonch — uchqunlar; iliq maqtov — yuraklar. Hammasi absolyut qatlamda — ekrandagi boshqa elementlarni siljitmaydi. */
 function EmotionFx({ emotion }: { emotion: CoachEmotion }) {
+  const id = useId().replace(/:/g, '');
+  if (emotion === 'angry') {
+    // Olov tillari bosh atrofida (yuqori yarim va yon tomonlar), yuz ortida; bug' — ikki chakkadan yuqoriga
+    const flames = [[30, 74, 0.9], [27, 60, 1], [32, 47, 1.15], [42, 40, 1.35], [53, 37, 1.55], [64, 36, 1.7], [75, 37, 1.55], [86, 40, 1.35], [96, 47, 1.15], [101, 60, 1], [98, 74, 0.9]]
+      .map(([x, y, sc], i) => ({ x, y, s: sc!, i }));
+    return (
+      <>
+        <span className="emo-fx behind" aria-hidden="true">
+          <svg viewBox="0 0 128 128">
+            <defs>
+              <linearGradient id={`fl${id}`} x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor="#dc2626" /><stop offset=".55" stopColor="#f97316" /><stop offset="1" stopColor="#fde047" /></linearGradient>
+              <radialGradient id={`gl${id}`}><stop offset=".45" stopColor="#f97316" stopOpacity=".55" /><stop offset="1" stopColor="#ef4444" stopOpacity="0" /></radialGradient>
+            </defs>
+            <circle className="fx-glow" cx="64" cy="62" r="62" fill={`url(#gl${id})`} />
+            {flames.map((f) => <g key={f.i} transform={`translate(${f.x} ${f.y! + 6}) scale(${f.s})`}><path className="fx-flame" style={{ ['--i' as string]: String(f.i) } as CSSProperties} fill={`url(#fl${id})`} d="M0 2 C-7 -2 -7 -12 0 -24 C2 -16 7 -12 6 -5 C5 0 3 2 0 2 Z" /></g>)}
+          </svg>
+        </span>
+        <span className="emo-fx" aria-hidden="true">
+          <svg viewBox="0 0 128 128">
+            {[[30, 38, -1], [98, 38, 1]].map(([x, y, sd], k) => <g key={k} transform={`translate(${x} ${y})`}>{[0, 1, 2].map((i) => <circle key={i} className="fx-steam" cx={sd! * i * 4} cy={-i * 3} r={5 + i * 2} style={{ ['--i' as string]: String(i + k * 3) } as CSSProperties} />)}</g>)}
+          </svg>
+        </span>
+      </>
+    );
+  }
+  if (emotion === 'disappointed') return (
+    <span className="emo-fx" aria-hidden="true">
+      <svg viewBox="0 0 128 128">
+        <g className="fx-cloud">
+          <path d="M50 30 a6 6 0 0 1 5 -8 a9 9 0 0 1 16 -2 a7 7 0 0 1 10 6 a6 6 0 0 1 -1 11 H54 a6 6 0 0 1 -4 -7 Z" />
+           {[56, 62, 68, 74].map((x, i) => <line key={x} className="fx-rain" x1={x} y1="41" x2={x - 1.5} y2="47" style={{ ['--i' as string]: String(i) } as CSSProperties} />)}
+        </g>
+      </svg>
+    </span>
+  );
   if (emotion === 'laugh') return <span className="emo-fx" aria-hidden="true">{['ha', 'ha-ha', 'ha!'].map((t, i) => <i key={i} className="fx-laugh" style={{ ['--i' as string]: String(i) } as CSSProperties}>{t}</i>)}</span>;
   if (emotion === 'impressed') return <span className="emo-fx" aria-hidden="true">{[0, 1, 2, 3, 4].map((i) => <i key={i} className="fx-heart" style={{ ['--i' as string]: String(i) } as CSSProperties}>♥</i>)}</span>;
   if (emotion === 'happy') return <span className="emo-fx" aria-hidden="true">{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} className="fx-spark" style={{ ['--i' as string]: String(i) } as CSSProperties}>✦</i>)}</span>;

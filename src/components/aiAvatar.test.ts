@@ -34,6 +34,9 @@ assert.equal(sp('sarcastic').mood, 'smug');
   assert.ok(face('laugh').includes('av-tongue') && face('laugh').includes('av-joy'), 'kulgi: katta og‘iz, til, quvonch yoshi');
   assert.ok(face('impressed').includes('av-heart-eye') && face('impressed').includes('fx-heart'), 'maqtov: yurak ko‘zlar');
   assert.ok(face('disappointed').includes('av-tear'), 'hafsala: ko‘z yoshi');
+  // 2026-11-25 (egasi: "jahl chiqsa bug', olov — ekrandan emas, yuz qismidan; ko'z yosh, hafsalani bildiruvchi elementlar")
+  assert.ok(face('angry').includes('fx-flame') && face('angry').includes('emo-fx behind') && face('angry').includes('fx-steam'), 'jahl: yuz ortida olov, boshdan bug‘');
+  assert.ok(face('disappointed').includes('fx-cloud') && face('disappointed').includes('fx-rain') && (face('disappointed').match(/av-stream/g) ?? []).length === 2, 'hafsala: yomg‘ir buluti, ikki ko‘zdan yosh');
   // og'iz ovoz balandligi bilan ochiladi
   assert.notEqual(inner(face('neutral', 0)), inner(face('neutral', 1)), 'og‘iz ovozga qarab ochiladi');
   assert.notEqual(inner(face('angry', 0)), inner(face('angry', 1)));
