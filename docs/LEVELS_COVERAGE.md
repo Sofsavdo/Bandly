@@ -6,7 +6,7 @@ Tahlil (2026-11-25): A1 da 78 dars / 26 bo‘lim bor edi, A2, B1, B2, C1 va C2 d
 |---|---|---|---|
 | A2 | 30 dars / 10 bo‘lim | 72 dars / 24 bo‘lim | **72 dars / 24 bo‘lim** (bajarildi) |
 | B1 | 30 / 10 | 66 / 22 | **66 dars / 22 bo‘lim** (bajarildi) |
-| B2 | 30 / 10 | ~66 / 22 | navbatda |
+| B2 | 30 / 10 | 66 / 22 | **66 dars / 22 bo‘lim** (bajarildi) |
 | C1 | 30 / 10 | ~60 / 20 | navbatda |
 | C2 | 30 / 10 | ~54 / 18 | navbatda |
 
@@ -51,3 +51,24 @@ Yangi bo‘limlar b1-u11 … b1-u22 (36 dars). Tuzilishi A2 dagidek; yozma topsh
 | Ijtimoiy tarmoq, yangilik sarlavhalari, onlayn xavfsizlik | b1-u20 |
 | Hikoya, sharh va fikr inshosi | b1-u21 |
 | Rasmni tasvirlash va taqqoslash, aniqlashtirish va suhbatni davom ettirish | b1-u22 |
+
+## B2 (66 dars / 22 bo‘lim)
+
+Yangi bo‘limlar b2-u11 … b2-u22 (36 dars). Tuzilishi A2 / B1 dagidek; yozma topshiriqlar qoida asosida tekshiriladi. Yangi lug‘at so‘zlari (74 ta) umumiy ro‘yxatga qo‘shilgan.
+
+| Mavzu | Bo‘lim |
+|---|---|
+| Aralash shart gap, wish va if only, if o‘rniga unless / provided / in case / otherwise | b2-u11 |
+| Kengaytirilgan majhul: xabar fe’llari (It is said that…), passive infinitive / gerund, modal majhul, ikki to‘ldiruvchili majhul | b2-u12 |
+| Inversiya va ta’kid: Never have I…, cleft gaplar, ta’kidlovchi do, so / such inversiyasi | b2-u13 |
+| Sifatdosh gaplar (-ing / -ed), predlogli nisbiy gap, whom va whose | b2-u14 |
+| Infinitiv va gerund: nozik farqlar, predlog + -ing, would rather / had better / it’s time | b2-u15 |
+| Qarama-qarshilik, rasmiy bog‘lovchilar, sabab va maqsad | b2-u16 |
+| Akademik yozuv: insho tuzilishi, hisobot va taklif, rasmiy uslub va hedging | b2-u17 |
+| Ish va martaba: kollokatsiyalar, ish joyida muloqot, rasmiy elektron xat | b2-u18 |
+| Jamiyat va atrof-muhit: ishonch darajasi, sabab–oqibat–yechim, umumlashtirish va statistika | b2-u19 |
+| Gapirish: munozara, muzokara, uzun javob (long turn) | b2-u20 |
+| Tinglash va o‘qish: munosabat, xulosa chiqarish, havola, qisqartirish (summary) | b2-u21 |
+| So‘z boyligi: bog‘liq predloglar, adashtiruvchi so‘zlar, so‘z yasash | b2-u22 |
+
+Eslatma: kontent holati `pilot`; tarjimalar ona tili egasi tomonidan tekshirilmagan.
