@@ -301,4 +301,10 @@ export const lessonWords: Word[] = [
   g('president', 'n', 'prezident', 'the leader of a country', 'The president visited our city.', 'A2'),
   g('on sale', 'phr', 'chegirmada', 'offered at a lower price', 'These shoes are on sale.', 'A2'),
   g('try on', 'phr', 'kiyib ko‘rmoq', 'to put on clothes to see if they fit', 'Can I try on this jacket?', 'A2'),
+  g('hope', 'v', 'umid qilmoq', 'to want something to happen and think it may', 'I hope you have a good trip.', 'A2'),
+  g('ball', 'n', 'to‘p', 'a round object used in games', 'The children are playing with a ball.', 'A2'),
+  g('put on', 'v', 'kiymoq', 'to dress yourself in clothes', 'Put on your coat, it is cold.', 'A2'),
+  g('helpful', 'adj', 'yordamchi', 'giving help or useful', 'The teacher is very helpful.', 'A2'),
+  g('quickly', 'adv', 'tez, tezda', 'in a short time or at high speed', 'She walks quickly to school.', 'A2'),
+  g('unhappy', 'adj', 'xafa, baxtsiz', 'not happy; sad', 'He is unhappy because he lost his phone.', 'A2'),
 ];
