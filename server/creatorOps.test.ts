@@ -46,7 +46,7 @@ assert.equal(normalizePostUrl('https://example.org/video/1', 'other').norm, 'exa
 // ---- Post topshirish ----
 const full = { platform: 'instagram', url: 'https://www.instagram.com/reel/ABC123/', lang: 'uz', postedOn: '2026-11-19', caption: 'IELTS uchun foydali maslahatlar — #reklama', linkCode: cl.code, campaignId: camp.id, claimedViews: 12000 };
 const draft = savePost(db, A, { platform: 'tiktok' }, T); assert.equal(draft.status, 'draft', 'qoralama qisman to‘ldirilgan bo‘lishi mumkin');
-for (const [k, re] of [['url', /havolasi majburiy/], ['lang', /Til majburiy/], ['postedOn', /sana majburiy/], ['caption', /Caption/], ['linkCode', /Tracking link tanlash/]] as const)
+for (const [k, re] of [['url', /havolasi majburiy/], ['lang', /Til majburiy/], ['postedOn', /sana majburiy/], ['linkCode', /Tracking link tanlash/]] as const)
   throwsMsg(() => savePost(db, A, { ...full, id: draft.id, [k]: '', submit: true }, T), re, `topshirishda ${k} majburiy`);
 throwsMsg(() => savePost(db, A, { ...full, linkCode: bl.code, submit: true }, T), /Tracking link topilmadi/, 'boshqa creator linki');
 throwsMsg(() => savePost(db, A, { ...full, postedOn: '2027-12-01', submit: true }, T), /Sana/, 'kelajak sanasi'); throwsMsg(() => savePost(db, A, { ...full, platform: 'myspace' }), /Platforma/, 'platforma');
@@ -94,4 +94,6 @@ const fl = listFlags(db); assert.equal(fl.length, 1); assert.equal(fl[0]!.creato
 assert.equal(adminCreators(db, { from: 0, to: T + 99 * DAY }, T).find((r) => r.nickname === 'Bloger A')!.openFlags, 1);
 resolveFlag(db, admin, fl[0]!.id, T); assert.equal(listFlags(db).length, 0); assert.equal(listFlags(db, true).length, 1); throwsMsg(() => resolveFlag(db, admin, fl[0]!.id), /topilmadi/, 'ikki marta hal qilinmaydi');
 void plain;
+// Caption ixtiyoriy (kabinet soddalashtirildi): havola, til, sana va video havolasi yetarli
+assert.equal(savePost(db, A, { ...full, url: 'https://www.instagram.com/reel/NOCAP1/', campaignId: null, caption: '', submit: true }, T).status, 'submitted', 'caption ixtiyoriy');
 console.log('creatorOps.test: OK');

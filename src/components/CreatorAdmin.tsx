@@ -33,7 +33,7 @@ export function CreatorAdmin() {
   return (
     <div>
       <div className="seg" role="tablist" aria-label={L('Hamkorlar bo‘limlari')}>
-        {([['apps', L('Arizalar')], ['creators', L('Hamkorlar')], ['campaigns', L('Kampaniyalar')], ['posts', L('Postlar')], ['videos', L('Video to‘lovlari')], ['flags', L('Gumonli holatlar')], ['ledger', L('Mukofot daftari')]] as const).map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={sec === k} className={sec === k ? 'on' : ''} onClick={() => setSec(k)}>{l}</button>)}
+        {([['apps', L('Arizalar')], ['videos', L('Video to‘lovlari')], ['creators', L('Hamkorlar')], ['ledger', L('Mukofot daftari')], ['posts', L('Postlar')], ['campaigns', L('Kampaniyalar')], ['flags', L('Gumonli holatlar')]] as const).map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={sec === k} className={sec === k ? 'on' : ''} onClick={() => setSec(k)}>{l}</button>)}
       </div>
       {err && <p className="notice" role="alert">{err}</p>}{msg && <p className="evidence" role="status">{msg}</p>}
       {sec === 'apps' ? <Applications run={run} /> : sec === 'creators' ? <Creators run={run} /> : sec === 'campaigns' ? <Campaigns run={run} /> : sec === 'posts' ? <Posts run={run} /> : sec === 'videos' ? <VideoPay run={run} /> : sec === 'flags' ? <Flags run={run} /> : <Ledger run={run} />}
@@ -138,7 +138,7 @@ function Posts({ run }: { run: Run }) {
             <b>{p.creator}</b> · {p.platform} · {p.lang} · {p.postedOn} · {st[p.status]}
             <p style={{ margin: '4px 0' }}>{p.url ? <a href={p.url} target="_blank" rel="noreferrer noopener">{p.url}</a> : '—'}</p>
             <p className="muted" style={{ margin: 0 }}>{p.caption}</p>
-            <p className="evidence" style={{ margin: '4px 0' }}>{L('Creator yozgan ko‘rishlar: {0} (tasdiqlanmagan)', [p.claimedViews ?? '—'])}</p>
+            <p className="evidence" style={{ margin: '4px 0' }}>{L('Bloger yozgan ko‘rishlar: {0} (tasdiqlanmagan)', [p.claimedViews ?? '—'])}</p>
             {p.status === 'submitted' && (
               <div className="row">
                 <input className="input" value={fm.note} placeholder={L('Izoh (rad/o‘zgartirishda majburiy)')} onChange={(e) => set({ note: e.target.value })} />
@@ -154,7 +154,7 @@ function Posts({ run }: { run: Run }) {
 interface Tier { min: number; som: number }
 interface VTerms { enabled: boolean; baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
 interface VCalc { baseSom: number; views: number; viewBonusSom: number; learners: number; learnerBonusSom: number; totalSom: number }
-interface VItem { postId: number; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: { id: number; amountMinor: number; status: string; basis: VCalc | null; payBy: number | null; overdue: boolean } | null }
+interface VItem { postId: number; status: string; caption?: string | null; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: { id: number; amountMinor: number; status: string; basis: VCalc | null; payBy: number | null; overdue: boolean } | null }
 const bonus = (t: Tier[], n: number): number => t.reduce((s, x) => (n >= x.min ? x.som : s), 0);
 const day = (t: number | null): string => (t === null ? '—' : new Date(t).toISOString().slice(0, 10));
 
@@ -170,9 +170,9 @@ function VideoPay({ run }: { run: Run }) {
   const tierRows = (k: 'viewTiers' | 'learnerTiers', unit: string) => (
     <div>
       {t[k].map((x, i) => (
-        <div className="row" key={i}>
-          <input className="input" type="number" min={1} value={x.min} aria-label={L('Norma ({0})', [unit])} onChange={(e) => setT({ ...t, [k]: t[k].map((y, j) => (j === i ? { ...y, min: Number(e.target.value) } : y)) })} />
-          <input className="input" type="number" min={1} value={x.som} aria-label={L('Bonus (so‘m)')} onChange={(e) => setT({ ...t, [k]: t[k].map((y, j) => (j === i ? { ...y, som: Number(e.target.value) } : y)) })} />
+        <div className="row tier-row" key={i}>
+          <label>{L('Norma ({0})', [unit])}<input className="input" type="number" min={1} value={x.min} onChange={(e) => setT({ ...t, [k]: t[k].map((y, j) => (j === i ? { ...y, min: Number(e.target.value) } : y)) })} /></label>
+          <label>{L('Bonus (so‘m)')}<input className="input" type="number" min={1} value={x.som} onChange={(e) => setT({ ...t, [k]: t[k].map((y, j) => (j === i ? { ...y, som: Number(e.target.value) } : y)) })} /></label>
           <button className="btn sm" type="button" onClick={() => setT({ ...t, [k]: t[k].filter((_, j) => j !== i) })}>{L('O‘chirish')}</button>
         </div>))}
       {t[k].length < 6 && <button className="btn sm" type="button" onClick={() => setT({ ...t, [k]: [...t[k], { min: 1, som: 1 }] })}>{L('Pog‘ona qo‘shish')}</button>}
@@ -180,22 +180,8 @@ function VideoPay({ run }: { run: Run }) {
   );
   return (
     <>
-      <section className="card" style={{ margin: '10px 0' }}>
-        <h3 style={{ marginTop: 0 }}>{L('Shartlar')}</h3>
-        <label className="evidence" style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={t.enabled} onChange={(e) => setT({ ...t, enabled: e.target.checked })} /> {L('Dastur yoqilgan (hamkorlik sahifasida ko‘rinadi)')}</label>
-        <div className="row">
-          <label>{L('Asosiy to‘lov (so‘m)')}<input className="input" type="number" min={0} value={t.baseSom} onChange={(e) => setT({ ...t, baseSom: Number(e.target.value) })} /></label>
-          <label>{L('Hisoblash muddati (kun)')}<input className="input" type="number" min={1} max={90} value={t.windowDays} onChange={(e) => setT({ ...t, windowDays: Number(e.target.value) })} /></label>
-          <label>{L('To‘lov muddati (kun)')}<input className="input" type="number" min={1} max={60} value={t.payDays} onChange={(e) => setT({ ...t, payDays: Number(e.target.value) })} /></label>
-          <label>{L('Instagram sahifamiz')}<input className="input" value={t.instagram} placeholder={'sellzen.uz'} onChange={(e) => setT({ ...t, instagram: e.target.value })} /></label>
-        </div>
-        <h4 className="list-h">{L('Ko‘rishlar bonusi: norma (ko‘rish) → bonus (so‘m)')}</h4>{tierRows('viewTiers', L('ko‘rish'))}
-        <h4 className="list-h">{L('O‘quvchilar bonusi: norma (o‘quvchi) → bonus (so‘m)')}</h4>{tierRows('learnerTiers', L('o‘quvchi'))}
-        <p className="muted" style={{ fontSize: 13 }}>{L('Eng yuqori erishilgan pog‘ona to‘lanadi. O‘zgarish faqat keyingi hisob-kitoblarga ta’sir qiladi.')}</p>
-        <button className="btn primary sm" onClick={saveTerms}>{L('Shartlarni saqlash')}</button>
-      </section>
-      <h3>{L('Tasdiqlangan videolar')}</h3>
-      {d.videos.length === 0 && <p className="muted">{L('Tasdiqlangan video yo‘q. Avval Postlar bo‘limida videoni tasdiqlang.')}</p>}
+      <p className="muted" style={{ fontSize: 13, margin: '10px 0' }}>{L('Har bir video: tekshirish → {0}-kuni hisoblash → tasdiqlash → to‘lash ({1} kun ichida).', [d.terms.windowDays, d.terms.payDays])}</p>
+      {d.videos.length === 0 && <p className="muted">{L('Hozircha video yo‘q.')}</p>}
       {d.videos.map((v) => {
         const fm = form[v.postId] ?? { views: '', base: '', bio: false, comment: false, tag: false, note: '', ref: '' };
         const set = (x: Partial<typeof fm>) => setForm({ ...form, [v.postId]: { ...fm, ...x } });
@@ -203,6 +189,7 @@ function VideoPay({ run }: { run: Run }) {
         const vb = bonus(d.terms.viewTiers, views), lb = bonus(d.terms.learnerTiers, v.learners);
         const settle = () => void run(async () => { await call(`/api/creatoradmin/videos/${v.postId}/settle`, { views: fm.views === '' ? null : Number(fm.views), baseSom: fm.base === '' ? null : Number(fm.base), bio: fm.bio, comment: fm.comment, tag: fm.tag, note: fm.note }); load(); }, L('Hisoblandi — endi tasdiqlang'));
         const decide = (decision: string) => void run(async () => { await call(`/api/creatoradmin/ledger/${v.entry!.id}/decision`, { decision, note: fm.note }); load(); }, L('Qaror saqlandi'));
+        const review = (decision: string) => void run(async () => { await call(`/api/creatoradmin/posts/${v.postId}/review`, { decision, note: fm.note }); load(); }, L('Qaror saqlandi'));
         const paid = () => void run(async () => { await call(`/api/creatoradmin/ledger/${v.entry!.id}/paid`, { ref: fm.ref }); load(); }, L('To‘langan deb belgilandi'));
         const b = v.entry?.basis;
         return (
@@ -210,7 +197,17 @@ function VideoPay({ run }: { run: Run }) {
             <b>{v.creator}</b> · {v.platform} · {L('joylangan: {0}', [v.postedOn ?? '—'])} · {L('hisob kuni: {0}', [day(v.dueAt)])}
             <p style={{ margin: '4px 0' }}>{v.url ? <a href={v.url} target="_blank" rel="noreferrer noopener">{v.url}</a> : '—'}</p>
             <p className="evidence" style={{ margin: '4px 0' }}>{L('Shu video havolasi orqali kelgan o‘quvchilar: {0}', [v.learners])} · {L('Bloger yozgan ko‘rishlar: {0}', [v.claimedViews ?? '—'])}</p>
-            {v.entry && b ? (
+            {v.status === 'submitted' ? (
+              <>
+                <p className="evidence" style={{ margin: '4px 0' }}>{L('Yangi video — tekshiring: havola ochiladimi, reklama belgisi bormi, video Sellzen haqidami.')}</p>
+                {v.caption && <p className="muted" style={{ margin: '4px 0' }}>{v.caption}</p>}
+                <div className="row">
+                  <input className="input" value={fm.note} placeholder={L('Izoh (rad etishda majburiy)')} onChange={(e) => set({ note: e.target.value })} />
+                  <button className="btn primary sm" onClick={() => review('approved')}>{L('Videoni tasdiqlash')}</button>
+                  <button className="btn sm" onClick={() => review('rejected')}>{L('Rad etish')}</button>
+                </div>
+              </>
+            ) : v.entry && b ? (
               <>
                 <p style={{ margin: '4px 0' }}>{L('Asosiy {0} + ko‘rishlar ({1}) {2} + o‘quvchilar ({3}) {4} = {5} so‘m', [fmtSum(b.baseSom), fmtSum(b.views), fmtSum(b.viewBonusSom), b.learners, fmtSum(b.learnerBonusSom), fmtSum(b.totalSom)])} · <b>{LEDGER_STATUS()[v.entry.status] ?? v.entry.status}</b></p>
                 {v.entry.status === 'pending' && <div className="row"><input className="input" value={fm.note} placeholder={L('Izoh (rad etishda majburiy)')} onChange={(e) => set({ note: e.target.value })} /><button className="btn primary sm" onClick={() => decide('approved')}>{L('Tasdiqlash')}</button><button className="btn sm" onClick={() => decide('rejected')}>{L('Rad etish')}</button></div>}
@@ -237,6 +234,20 @@ function VideoPay({ run }: { run: Run }) {
             )}
           </div>);
       })}
+      <details className="card fold" style={{ margin: '10px 0' }}>
+        <summary><h3 style={{ display: 'inline', margin: 0 }}>{L('Shartlarni o‘zgartirish')}</h3></summary>
+        <label className="evidence" style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={t.enabled} onChange={(e) => setT({ ...t, enabled: e.target.checked })} /> {L('Dastur yoqilgan (hamkorlik sahifasida ko‘rinadi)')}</label>
+        <div className="row">
+          <label>{L('Asosiy to‘lov (so‘m)')}<input className="input" type="number" min={0} value={t.baseSom} onChange={(e) => setT({ ...t, baseSom: Number(e.target.value) })} /></label>
+          <label>{L('Hisoblash muddati (kun)')}<input className="input" type="number" min={1} max={90} value={t.windowDays} onChange={(e) => setT({ ...t, windowDays: Number(e.target.value) })} /></label>
+          <label>{L('To‘lov muddati (kun)')}<input className="input" type="number" min={1} max={60} value={t.payDays} onChange={(e) => setT({ ...t, payDays: Number(e.target.value) })} /></label>
+          <label>{L('Instagram sahifamiz')}<input className="input" value={t.instagram} placeholder={'sellzen.uz'} onChange={(e) => setT({ ...t, instagram: e.target.value })} /></label>
+        </div>
+        <h4 className="list-h">{L('Ko‘rishlar bonusi: norma (ko‘rish) → bonus (so‘m)')}</h4>{tierRows('viewTiers', L('ko‘rish'))}
+        <h4 className="list-h">{L('O‘quvchilar bonusi: norma (o‘quvchi) → bonus (so‘m)')}</h4>{tierRows('learnerTiers', L('o‘quvchi'))}
+        <p className="muted" style={{ fontSize: 13 }}>{L('Eng yuqori erishilgan pog‘ona to‘lanadi. O‘zgarish faqat keyingi hisob-kitoblarga ta’sir qiladi.')}</p>
+        <button className="btn primary sm" onClick={saveTerms}>{L('Shartlarni saqlash')}</button>
+      </details>
     </>
   );
 }

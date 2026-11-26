@@ -364,7 +364,7 @@ try {
     assert.equal(ov.links[0].signups, 1);
     // Creator kabineti (brauzerda): link va voronka ko'rinadi, o'quvchi ma'lumoti yo'q
     const c = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: crT, nickname: 'E2E Creator' }) });
-    await c.goto(`${base}/#/creator`); await c.getByText('Tracking linklar').waitFor({ timeout: 10000 });
+    await c.goto(`${base}/#/creator`); await c.getByText('Batafsil statistika').click(); await c.getByText('Havolalar va voronka').waitFor({ timeout: 10000 });
     await c.getByText('E2E Reel').first().waitFor({ timeout: 8000 });
     assert.match(await text(c), /Voronka/); assert.match(await text(c), new RegExp(`/r/${link.code}`), 'qisqa havola ko‘rsatiladi');
     assert.doesNotMatch(await text(c), /E2E Talaba/, 'creator o‘quvchi laqabini ko‘rmaydi');
@@ -405,6 +405,7 @@ try {
     assert.equal(apps.find((x) => x.name === 'E2E Bloger')?.status, 'contacted');
     // Admin video to'lov shartlarini tahrirlaydi — hamkorlik sahifasi yangi qiymatni ko'rsatadi
     await a.getByRole('tab', { name: 'Video to‘lovlari' }).click();
+    await a.getByText('Shartlarni o‘zgartirish').click();
     await a.getByLabel('Instagram sahifamiz').fill('sellzen.uz');
     await a.getByRole('button', { name: 'Shartlarni saqlash' }).click();
     await a.getByText('Shartlar saqlandi').waitFor({ timeout: 8000 });

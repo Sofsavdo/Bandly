@@ -1,9 +1,11 @@
-// Hamkor kabineti: shaxsiy havola, kelgan o'quvchilar, faollashganlar, to'lov qilganlar va tushum (oylar bo'yicha).
+// Hamkor kabineti (2026-11-26, egasi: "juda murakkab"): yuqorida balans va videolar (CreatorVideos), qolgani yig'ilgan bo'limlarda:
+// tayyor post matnlari, batafsil statistika (umumiy havola, ko'rsatkichlar, havolalar va voronka, kampaniyalar, to'lovlar tarixi, reyting).
 import { Copy, Megaphone, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
 import { CreatorLinks } from '../components/CreatorLinks';
 import { CreatorPosts } from '../components/CreatorPosts';
+import { CreatorVideos } from '../components/CreatorVideos';
 import { fmtSum } from '../lib/pay';
 import { L } from '../i18n';
 
@@ -21,32 +23,14 @@ export default function Creator() {
   const m = d.me, link = d.bot ? `https://t.me/${d.bot}?start=ref_${m.code}` : `${location.origin}/?ref=${m.code}`;
   const conv = m.invited ? Math.round((m.payers / m.invited) * 1000) / 10 : 0;
   return (
-    <div>
+    <div className="creator-cab">
       <section className="card page-head t-peach">
         <h2 style={{ margin: 0 }}><Megaphone size={22} style={{ verticalAlign: -3 }} /> {L('Hamkor kabineti')}</h2>
-        <p style={{ margin: '6px 0 12px' }}>{L('Havolangiz orqali kelgan o‘quvchilar va ularning to‘lovlari.')}</p>
-        <div className="invite-link" style={{ background: 'var(--surface)' }}><code>{link}</code>
-          <button className="icon-btn sm" aria-label={L('Nusxalash')} onClick={() => { void navigator.clipboard?.writeText(link).then(() => setMsg(L('Havola nusxalandi'))); }}><Copy size={16} /></button>
-          <button className="icon-btn sm" aria-label={L('Ulashish')} onClick={() => { void navigator.share?.({ title: 'Sellzen', url: link }).catch(() => undefined); }}><Share2 size={16} /></button>
-        </div>
-        {msg && <p className="evidence">{msg}</p>}
+        <p style={{ margin: '6px 0 0' }}>{L('Video joylang — har bir video uchun to‘lov oling. Shu yerda videolaringiz holati va balansingiz.')}</p>
       </section>
-      <CreatorLinks bot={d.bot} />
-      <CreatorPosts />
-      <div className="kpis">
-        <div className="kpi2"><span>{L('Kelganlar')}</span><b>{m.invited}</b><small>{L('30 kun: {0}', [m.invited30])}</small></div>
-        <div className="kpi2"><span>{L('Faollashgan')}</span><b>{m.activated}</b><small>{L('birinchi darsni tugatgan')}</small></div>
-        <div className="kpi2"><span>{L('To‘lov qilgan')}</span><b>{m.payers}</b><small>{L('konversiya {0}%', [conv])}</small></div>
-        <div className="kpi2"><span>{L('Tushum')}</span><b>{fmtSum(m.revenue)}</b><small>{L('30 kun: {0}', [fmtSum(m.revenue30)])}</small></div>
-      </div>
-      <section className="card">
-        <h3 style={{ marginTop: 0 }}>{L('Oylar bo‘yicha')}</h3>
-        <div className="table-scroll"><table className="data"><thead><tr><th>{L('Oy')}</th><th>{L('Kelganlar')}</th><th>{L('To‘lov qilgan')}</th><th>{L('Tushum')}</th></tr></thead>
-          <tbody>{m.months.map((x) => <tr key={x.month}><td>{x.month}</td><td>{x.signups}</td><td>{x.payers}</td><td>{fmtSum(x.revenue)}</td></tr>)}</tbody></table></div>
-        <p className="muted" style={{ marginBottom: 0 }}>{L('Mukofot shartlari va balansingiz pastdagi «Bonus / komissiya holati» bo‘limida.')}</p>
-      </section>
-      <section className="card">
-        <h3 style={{ marginTop: 0 }}>{L('Tayyor post matnlari')}</h3>
+      <CreatorVideos />
+      <details className="card fold">
+        <summary><h3 style={{ display: 'inline', margin: 0 }}>{L('Tayyor post matnlari')}</h3></summary>
         <p className="muted" style={{ fontSize: 13 }}>{L('Nusxalang va Telegram, Instagram yoki TikTok’da ulashing — havolangiz matn ichida. Eng yaxshi natija: o‘z daraja testi natijangizni yoki mock balingizni ko‘rsatib, obunachilarni bellashuvga chaqirish.')}</p>
         <div className="promo-list">
           {[
@@ -61,7 +45,26 @@ export default function Creator() {
             </div>
           ))}
         </div>
-      </section>
+      </details>
+      <details className="card fold">
+        <summary><h3 style={{ display: 'inline', margin: 0 }}>{L('Batafsil statistika')}</h3></summary>
+        <p className="muted" style={{ marginBottom: 6 }}>{L('Umumiy havolangiz (video bilan bog‘liq bo‘lmagan takliflar uchun):')}</p>
+        <div className="invite-link"><code>{link}</code>
+          <button className="icon-btn sm" aria-label={L('Nusxalash')} onClick={() => { void navigator.clipboard?.writeText(link).then(() => setMsg(L('Havola nusxalandi'))); }}><Copy size={16} /></button>
+          <button className="icon-btn sm" aria-label={L('Ulashish')} onClick={() => { void navigator.share?.({ title: 'Sellzen', url: link }).catch(() => undefined); }}><Share2 size={16} /></button>
+        </div>
+        {msg && <p className="evidence">{msg}</p>}
+        <div className="kpis">
+          <div className="kpi2"><span>{L('Kelganlar')}</span><b>{m.invited}</b><small>{L('30 kun: {0}', [m.invited30])}</small></div>
+          <div className="kpi2"><span>{L('Faollashgan')}</span><b>{m.activated}</b><small>{L('birinchi darsni tugatgan')}</small></div>
+          <div className="kpi2"><span>{L('To‘lov qilgan')}</span><b>{m.payers}</b><small>{L('konversiya {0}%', [conv])}</small></div>
+        </div>
+        <h4 className="list-h">{L('Oylar bo‘yicha')}</h4>
+        <div className="table-scroll"><table className="data"><thead><tr><th>{L('Oy')}</th><th>{L('Kelganlar')}</th><th>{L('To‘lov qilgan')}</th></tr></thead>
+          <tbody>{m.months.map((x) => <tr key={x.month}><td>{x.month}</td><td>{x.signups}</td><td>{x.payers}</td></tr>)}</tbody></table></div>
+        <CreatorLinks bot={d.bot} />
+        <CreatorPosts />
+      </details>
       {d.all && (
         <section className="card">
           <h3 style={{ marginTop: 0 }}>{L('Barcha hamkorlar (admin)')}</h3>

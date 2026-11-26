@@ -144,7 +144,8 @@ export function savePost(db: DatabaseSync, creatorId: number, b: Record<string, 
     if (b.url !== undefined && b.url !== null && String(b.url).trim() !== '') { const n = normalizePostUrl(b.url, platform); url = n.url; norm = n.norm; }
     if (submit) {
       if (!url) throw new ApiError(400, 'Post havolasi majburiy'); if (!lang) throw new ApiError(400, 'Til majburiy'); if (!postedOn) throw new ApiError(400, 'Joylangan sana majburiy');
-      if (!caption || caption.length < 10) throw new ApiError(400, 'Caption kamida 10 belgi bo‘lsin'); if (!linkCode) throw new ApiError(400, 'Tracking link tanlash majburiy');
+      // Caption ixtiyoriy (2026-11-26, egasi: "kabinet juda murakkab"): admin videoning o'zini ko'radi va reklama belgisini tekshiradi
+      if (!linkCode) throw new ApiError(400, 'Tracking link tanlash majburiy');
     }
     if (norm && one(db, "SELECT 1 FROM creator_posts WHERE url_norm = ? AND status != 'rejected' AND id != ?", norm, id ?? -1)) throw new ApiError(409, 'Bu post havolasi allaqachon topshirilgan');
     const status: PostStatus = submit ? 'submitted' : (prev?.status as PostStatus | undefined) ?? 'draft';
