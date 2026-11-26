@@ -11,6 +11,7 @@ import { Illo } from '../components/Illo';
 import { takeExamTab, type ExamTab } from '../lib/examTab';
 import { IeltsCourseCard } from './IeltsCourse';
 import { SatCourseCard } from './SatCourse';
+import { CefrCourseCard } from './CefrCourse';
 import { L } from '../i18n';
 import { ExamPath } from '../components/ExamPath';
 import { FREE_INFO } from '../config';
@@ -35,10 +36,11 @@ export default function Exam() {
         </div>
         <Illo kind="target" size={128} />
       </div>
+      {tab === 'cefr' && <CefrCourseCard />}
       {tab === 'cefr' && <ExamPath exam="cefr" />}
       {tab === 'cefr' && <CefrPrep />}
-      {tab === 'sat' && <ExamPath exam="sat" />}
       {tab === 'sat' && <SatCourseCard />}
+      {tab === 'sat' && <ExamPath exam="sat" />}
       {tab === 'sat' && <SatPrep />}
       {tab === 'ielts' && <IeltsCourseCard />}
       {tab === 'ielts' && <BandProgress compact />}

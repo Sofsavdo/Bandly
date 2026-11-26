@@ -142,12 +142,12 @@ try {
     const keys = Object.keys(g.data ?? {});
     assert.ok(keys.includes('bandly.profile.v1'), 'profil saqlandi');
     assert.ok(!keys.some((k) => /content\.v|i18n\./.test(k)), `kesh kalitlari yuborilmadi: ${keys.join(',')}`);
-    // Xarita: har zonada "can-do" qatori; "Yo'l tanlang" oynasi (General English ⇄ IELTS ⇄ Imtihon)
+    // Xarita: har zonada "can-do" qatori; "Yo'l tanlang" oynasi (General English ⇄ IELTS ⇄ CEFR ⇄ SAT ⇄ Imtihon)
     await p.goto(`${base}/#/learn`); await p.waitForTimeout(1500);
     assert.ok((await p.locator('.zone-cando').count()) >= 6, 'har daraja zonasida can-do sarlavha');
     await p.locator('.chip-route').first().click();
     await p.getByRole('dialog').waitFor({ timeout: 5000 });
-    assert.deepEqual(await p.locator('.route-item').evaluateAll((els) => els.map((e) => e.getAttribute('href'))), ['#/learn', '#/ielts', '#/exam'], 'yo‘l tanlash havolalari');
+    assert.deepEqual(await p.locator('.route-item').evaluateAll((els) => els.map((e) => e.getAttribute('href'))), ['#/learn', '#/ielts', '#/cefr', '#/sat', '#/exam'], 'yo‘l tanlash havolalari');
     await p.getByRole('button', { name: 'Yopish' }).first().click();
     await p.context().close();
   });
@@ -226,6 +226,42 @@ try {
     const topic = p.getByRole('button', { name: /Craft and Structure/ }).first();
     await topic.click(); await p.waitForTimeout(500);
     assert.match(await text(p), /Craft and Structure/, 'mavzu filtri ishlaydi');
+    await p.context().close();
+  });
+
+  await step('F3. CEFR va SAT kurslari: kirish → dars → dars ichida ham «Imtihon» bo‘limi (General English emas)', async () => {
+    const p = await learner();
+    const activeTab = () => p.evaluate(() => document.querySelector('nav.tabbar a.active')?.getAttribute('href') ?? '');
+    const title = () => p.evaluate(() => document.title);
+    // CEFR: Imtihon → CEFR tabi → kurs kartasi → kurs sahifasi → dars
+    await p.goto(`${base}/#/exam`); await p.waitForTimeout(1200);
+    await p.getByRole('tab', { name: /CEFR/ }).first().click(); await p.waitForTimeout(500);
+    await p.locator('main a[href="#/cefr"]').first().click(); await p.waitForTimeout(1000);
+    assert.match(await text(p), /CEFR kursi/, 'CEFR kursi sahifasi ochildi');
+    assert.equal(await activeTab(), '#/exam', 'CEFR kursida pastki panelda «Imtihon» faol');
+    assert.match(await title(), /^CEFR kursi/, 'sarlavha — CEFR kursi');
+    const cefrLink = await p.locator('main a.lcard').first().getAttribute('href');
+    assert.match(cefrLink ?? '', /^#\/learn\//, 'CEFR kursida dars havolasi bor');
+    await p.locator('main a.lcard').first().click(); await p.waitForTimeout(1500);
+    assert.match(p.url(), /#\/learn\//, 'dars ochildi');
+    assert.equal(await activeTab(), '#/exam', 'CEFR kursidan ochilgan dars ichida ham «Imtihon» faol');
+    assert.ok((await p.locator('main a[href="#/cefr"]').count()) >= 1, 'darsdan CEFR kursiga qaytish havolasi bor');
+    // General English xaritasiga o'tilsa kontekst tozalanadi: o'sha dars endi General English darsi
+    await p.goto(`${base}/#/learn`); await p.waitForTimeout(1200);
+    assert.equal(await activeTab(), '#/learn', 'General English xaritasida «Darslar» faol');
+    await p.goto(`${base}/${cefrLink}`); await p.waitForTimeout(1200);
+    assert.equal(await activeTab(), '#/learn', 'xaritadan keyin ochilgan dars — General English');
+    assert.equal(await p.locator('main a[href="#/cefr"]').count(), 0, 'General English darsida CEFR havolasi yo‘q');
+    // SAT: Imtihon → SAT tabi → kurs kartasi → dars (sat-)
+    await p.goto(`${base}/#/exam`); await p.waitForTimeout(1200);
+    await p.getByRole('tab', { name: /SAT/ }).first().click(); await p.waitForTimeout(500);
+    const satCard = await p.locator('main a.ielts-card').first().getAttribute('href');
+    assert.match(satCard ?? '', /^#\/learn\/sat-/, 'SAT tabida birinchi karta — SAT kursi darsi');
+    await p.locator('main a.ielts-card').first().click(); await p.waitForTimeout(1500);
+    assert.equal(await activeTab(), '#/exam', 'SAT darsida «Imtihon» faol (General English emas)');
+    assert.match(await title(), /^SAT kursi/, 'sarlavha — SAT kursi');
+    await p.goto(`${base}/#/sat`); await p.waitForTimeout(1000);
+    assert.equal(await activeTab(), '#/exam', 'SAT kursi sahifasida «Imtihon» faol');
     await p.context().close();
   });
 

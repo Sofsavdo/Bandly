@@ -2,7 +2,7 @@
 // Ustoz suhbatni shu tavsiya asosida olib boradi (dars haqida savollarga javob beradi, o'rgatadi, topshiriq beradi). Faqat ilovadagi haqiqiy ma'lumot:
 // to'qilgan raqam yo'q. Serverga qisqa JSON ketadi (server yana qisqartiradi va yo'nalishlarni tekshiradi).
 import { nodeById, skillNodeTitle, topicOfNode } from '../content/curriculum/inventory';
-import { ALL_LESSONS, UNITS, lessonById, nextIeltsLesson } from '../content/lessons';
+import { ALL_LESSONS, UNITS, lessonById, nextIeltsLesson, nextSatLesson } from '../content/lessons';
 import { loadAdaptive, localDayKey } from './adaptive/store';
 import { buildDailyPlan } from './dailyPlan';
 import { adjustMinutes, loadLog, review } from './planLog';
@@ -48,6 +48,7 @@ export function buildLiveContext(p: LiveCtxInput, now = Date.now()): Record<stri
         rows.push({ title, minutes: t.minutes, why: (WHY[t.reason] ?? (() => ''))(t), route });
       }
       if (prefs.goal === 'ielts') { const ie = nextIeltsLesson(progress, p.level); if (ie) rows.push({ title: ie.lesson.titleUz, minutes: ie.lesson.minutes, why: 'IELTS course', route: `#/learn/${ie.lesson.id}` }); }
+      if (prefs.goal === 'sat') { const sa = nextSatLesson(progress); if (sa) rows.push({ title: sa.lesson.titleUz, minutes: sa.lesson.minutes, why: 'SAT course', route: `#/learn/${sa.lesson.id}` }); }
     }
     out.today = rows.slice(0, 5);
     // Takrorlanadigan xatolar (oxirgi yozuvlar bo'yicha eng ko'p uchraydigan 3 tasi)

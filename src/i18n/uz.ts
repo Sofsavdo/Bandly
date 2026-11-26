@@ -18,6 +18,8 @@ export const uz = {
   'nav.shadow': 'Eshit va takrorla',
   'nav.results': 'Natijalar',
   'nav.ieltsCourse': 'IELTS kursi',
+  'nav.satCourse': 'SAT kursi',
+  'nav.cefrCourse': 'CEFR kursi',
   'nav.menu': 'Menyu',
   'nav.close': 'Yopish',
   'nav.main': 'Asosiy menyu',
