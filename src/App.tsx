@@ -7,6 +7,7 @@ import { TabBar } from './components/TabBar';
 import { PaySheet } from './components/PaySheet';
 import { Toasts } from './components/Toasts';
 import { sectionOf } from './components/nav';
+import { clearCourse } from './lib/courseFrom';
 import { authRoute, setupRoute } from './lib/setupGate';
 import { getAccount, onAccountChange } from './lib/account';
 import { cloudVerified } from './lib/cloud';
@@ -57,6 +58,7 @@ const Creator = lazy(() => import('./pages/Creator'));
 const Leads = lazy(() => import('./pages/Leads'));
 const IeltsCourse = lazy(() => import('./pages/IeltsCourse'));
 const SatCourse = lazy(() => import('./pages/SatCourse'));
+const CefrCourse = lazy(() => import('./pages/CefrCourse'));
 const Certificates = lazy(() => import('./pages/Certificates'));
 const CertificateVerify = lazy(() => import('./pages/CertificateVerify'));
 const Loading = () => <div className="page-loading" role="status" aria-label={L('Yuklanmoqda…')}><div className="card skel" /><div className="card skel" /></div>; // sahifa joyini egallaydi — footer sakramaydi
@@ -77,6 +79,7 @@ const routes: Record<string, () => ReactNode> = {
   '#/exam': () => <Exam />,
   '#/ielts': () => <IeltsCourse />,
   '#/sat': () => <SatCourse />,
+  '#/cefr': () => <CefrCourse />,
   // B varianti: Writing/Speaking mashqi ochiq; AI baho obunasizlarga haftasiga 1 tadan (server tekshiradi)
   '#/exam/writing': () => <Writing />,
   '#/exam/speaking': () => <Speaking />,
@@ -147,6 +150,8 @@ function MainApp() {
     const off = onAccountChange(() => setTimeout(check, 600));
     return () => { clearTimeout(t); clearInterval(poll); off(); };
   }, [hash]);
+  // CEFR kursi konteksti faqat kursning o'zida va undan ochilgan darslarda saqlanadi — boshqa sahifaga o'tilsa tozalanadi
+  useEffect(() => { if (hash !== '#/cefr' && !/^#\/learn\/[\w-]+$/.test(hash)) clearCourse(); }, [hash]);
   const shadowId = hash.match(/^#\/shadow\/([\w-]+)$/)?.[1];
   const lessonId = hash.match(/^#\/learn\/([\w-]+)$/)?.[1];
   const bossUnit = hash.match(/^#\/boss\/([\w-]+)$/)?.[1];
@@ -162,7 +167,7 @@ function MainApp() {
   return (
     <>
       <Header hash={hash} />
-      <main className={`container${fit ? ' fit' : ''}`}>{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.length > 1 && !lessonId && !tr && !bossUnit && !duelCode && <SubNav items={where.section.children} hash={hash} active={where.page.href} />}<Suspense fallback={<Loading />}>{page}</Suspense></main>
+      <main className={`container${fit ? ' fit' : ''}`}>{section && hash !== '#/welcome' && <h1 className="sr-only">{t(section.label)}</h1>}{!wall && where && where.section.children.length > 1 && !lessonId && !tr && !bossUnit && !duelCode && <SubNav items={where.section.children} hash={hash} active={where.section.children.some((c) => c.href === where.page.href) ? where.page.href : where.section.item.href} />}<Suspense fallback={<Loading />}>{page}</Suspense></main>
       {!fit && <Footer />}
       <PlanRunBar hash={hash} />
       <TabBar hash={hash} />

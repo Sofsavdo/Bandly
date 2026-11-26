@@ -17,14 +17,14 @@ export function ExamPath({ exam }: { exam: Exam }) {
   const passed = atLevel.filter((l) => progress[l.id]?.passedAt).length;
   const steps: Step[] = exam === 'cefr' ? [
     { href: '#/placement', icon: Compass, title: L('1. Darajangizni biling'), text: lvl ? L('Hozirgi daraja: {0}. Multilevel’da B2 uchun odatda B1+ darajadan boshlanadi.', [lvl]) : L('3 daqiqalik test — yo‘l shu natijaga qarab tuziladi.'), done: !!lvl },
-    { href: '#/learn', icon: BookOpenCheck, title: L('2. Darajangizdagi darslar'), text: lvl ? L('{0}: {1}/{2} dars o‘tildi. Grammatika va so‘z boyligi — Multilevel’ning asosi.', [lvl, passed, atLevel.length]) : L('A1–C2 General English darslari.'), done: atLevel.length > 0 && passed >= atLevel.length },
+    { href: '#/cefr', icon: BookOpenCheck, title: L('2. Darajangizdagi darslar'), text: lvl ? L('{0}: {1}/{2} dars o‘tildi. Grammatika va so‘z boyligi — Multilevel’ning asosi.', [lvl, passed, atLevel.length]) : L('A1–C2 General English darslari.'), done: atLevel.length > 0 && passed >= atLevel.length },
     { href: '#/grammar', icon: Puzzle, title: L('3. Grammatika'), text: L('Imtihonda ko‘p uchraydigan mavzular, o‘zbekcha izohlar bilan.') },
     { href: '#/ielts', icon: GraduationCap, title: L('4. O‘qish va tinglash strategiyalari'), text: L('IELTS kursidagi Reading/Listening strategiya darslari Multilevel uchun ham ishlaydi (asosiy g‘oya, kalit so‘zlar, vaqtni boshqarish).') },
     { href: '#/mocks', icon: Timer, title: L('5. Mashq testlari'), text: L('Reading va Listening — rasmiy hajm va vaqt bilan. Xatolar izohi bilan.') },
     { href: '#/coach', icon: Mic, title: L('6. Gapirish va yozish'), text: L('Sellzen bilan har kuni suhbat; quyida yozma ish mashqi va AI baho.') },
   ] : [
     { href: '#/placement', icon: Compass, title: L('1. Darajangizni biling'), text: lvl ? L('Hozirgi daraja: {0}. SAT Reading & Writing uchun B2–C1 so‘z boyligi kerak.', [lvl]) : L('3 daqiqalik test — yo‘l shu natijaga qarab tuziladi.'), done: !!lvl },
-    { href: '#/learn', icon: BookOpenCheck, title: L('2. B2–C1 darslar'), text: L('Akademik so‘zlar, murakkab gaplar, matn tuzilishi.') },
+    { href: '#/sat', icon: BookOpenCheck, title: L('2. SAT kursi darslari'), text: L('Digital SAT darsligi: qoidalar, usullar va SAT uslubidagi savollar.') },
     { href: '#/grammar', icon: Puzzle, title: L('3. Standard English Conventions'), text: L('Tinish belgilari, moslashuv, zamonlar — SAT’dagi grammatika savollari.') },
     { href: '#/games', icon: Gamepad2, title: L('4. So‘z boyligi'), text: L('So‘z o‘yinlari — Words in Context savollari uchun.') },
     { href: '#/exam', icon: Target, title: L('5. Mashq savollari'), text: L('Quyidagi Reading & Writing va Math savollari — izohlar bilan.') },

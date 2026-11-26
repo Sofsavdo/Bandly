@@ -2,7 +2,7 @@ import { CalendarCheck, ArrowRight, Play } from 'lucide-react';
 import { trackUser } from '../lib/track';
 import { startRun, type RunTask } from '../lib/planRun';
 import { ALL_NODES, nodeById, skillNodeTitle, topicOfNode } from '../content/curriculum/inventory';
-import { ALL_LESSONS, nextIeltsLesson } from '../content/lessons';
+import { ALL_LESSONS, nextIeltsLesson, nextSatLesson } from '../content/lessons';
 import { loadAdaptive } from '../lib/adaptive/store';
 import type { PlanTask } from '../lib/adaptive/recommend';
 import { useEffect, useState } from 'react';
@@ -16,6 +16,7 @@ import { setTarget } from '../lib/store';
 import { levelIndex, type Cefr } from '../lib/levels';
 import { useProfile } from '../lib/store';
 import { dueMistakes } from '../lib/mistakes';
+import { openExamTab } from '../lib/examTab';
 import { L } from '../i18n';
 
 export const ERR_UZ: Record<string, string> = {
@@ -94,11 +95,15 @@ function PlanBody() {
   // IELTS maqsadli o'quvchiga har kuni 1 ta IELTS kursi darsi (imtihon ko'nikmasi) — General English darslariga qo'shimcha
   const ie = prefs.goal === 'ielts' ? nextIeltsLesson(lp, p.level) : undefined;
   const ieRow = ie ? { href: `#/learn/${ie.lesson.id}`, title: L('IELTS darsi: {0}', [ie.lesson.titleUz]), lessonId: ie.lesson.id, minutes: ie.lesson.minutes } : null;
+  // SAT maqsadli o'quvchiga ham har kuni 1 ta SAT kursi darsi (General English emas, imtihon darsligi)
+  const sa = prefs.goal === 'sat' ? nextSatLesson(lp) : undefined;
+  const saRow = sa ? { href: `#/learn/${sa.lesson.id}`, title: L('SAT darsi: {0}', [sa.lesson.titleUz]), lessonId: sa.lesson.id, minutes: sa.lesson.minutes } : null;
   /** Bir bosishda: xatolar (bo'lsa) → reja vazifalari ketma-ket; pastdagi panel keyingisiga olib boradi. */
   const runTasks: RunTask[] = [
     ...(mistakesDue > 0 ? [{ href: '#/mistakes', title: L('Xatolar ustida ishlash') }] : []),
     ...rows.map((r) => ({ href: r.href, title: r.title, lessonId: r.lessonId })),
     ...(ieRow ? [{ href: ieRow.href, title: ieRow.title, lessonId: ieRow.lessonId }] : []),
+    ...(saRow ? [{ href: saRow.href, title: saRow.title, lessonId: saRow.lessonId }] : []),
   ];
   const begin = () => { const g = rows.find((r) => r.href === '#/grammar'); if (g) { try { sessionStorage.setItem('bandly.nextTopic', g.title); } catch { /* */ } } startRun(runTasks); };
   return (
@@ -122,8 +127,9 @@ function PlanBody() {
       {load.suggestMore && <p className="muted" style={{ fontSize: 14 }}>{L('Oxirgi')} {rv.days}  {L('kunda rejaning')} {Math.round((rv.rate ?? 0) * 100)}{L('% ini bajardingiz — zo‘r! Xohlasangiz, “Rejani sozlash”da kunlik vaqtni oshiring.')}</p>}
       {weak.length > 0 && <p className="muted" style={{ fontSize: 14 }}>{L('Ko‘nikmalar tekshiruvi bo‘yicha')} {weak.map((w) => (w === 'reading' ? 'Reading' : 'Listening')).join(L(' va '))}  {L('zaifroq — rejada ko‘proq beriladi.')}</p>}
       {ieRow && <a className="path-step" href={ieRow.href}><b>{ieRow.title}</b><span>{ieRow.minutes}  {L('daq')} · {L('IELTS kursi')}</span></a>}
-      {prefs.goal === 'sat' && <a className="path-step" href="#/exam"><b>{L('SAT mashqi')}</b><span>{L('Imtihon → SAT: Reading and Writing va Math savollari')}</span></a>}
-      {prefs.goal === 'cefr' && <a className="path-step" href="#/exam"><b>{L('CEFR Multilevel')}</b><span>{L('Imtihon → CEFR: format va yozma ish mashqi')}</span></a>}
+      {saRow && <a className="path-step" href={saRow.href}><b>{saRow.title}</b><span>{saRow.minutes}  {L('daq')} · {L('SAT kursi')}</span></a>}
+      {prefs.goal === 'sat' && <a className="path-step" href="#/exam" onClick={() => openExamTab('sat')}><b>{L('SAT mashqi')}</b><span>{L('Imtihon → SAT: Reading and Writing va Math savollari')}</span></a>}
+      {prefs.goal === 'cefr' && <a className="path-step" href="#/cefr"><b>{L('CEFR Multilevel')}</b><span>{L('CEFR kursi')} · {L('Imtihon → CEFR: format va yozma ish mashqi')}</span></a>}
       {mistakesDue > 0 && <a className="path-step" href="#/mistakes"><b>{L('Xatolar ustida ishlash ·')} {mistakesDue}  {L('ta')}</b><span>{L('5 daq')}</span></a>}
       {plan.length === 0 && <p className="muted">{L('Bugun uchun yangi vazifa topilmadi. Grammar bo‘limida mashq qilib ko‘ring.')}</p>}
       <div className="stack">

@@ -1,6 +1,7 @@
 import { Award, Bot, BookOpenCheck, GraduationCap, BookOpen, Clapperboard, ClipboardList, CreditCard, LineChart as ChartIcon, ListChecks, PenLine, Gamepad2, House, Puzzle, Swords, Target, Timer, Trophy, User, type LucideIcon } from 'lucide-react';
 
 import type { Key } from '../i18n';
+import { currentCourse } from '../lib/courseFrom';
 
 export interface NavItem { href: string; label: Key; icon: LucideIcon; short?: Key }
 
@@ -25,6 +26,8 @@ export const RESULTS: NavItem = { href: '#/results', label: 'nav.results', icon:
 export const SHADOW: NavItem = { href: '#/shadow', label: 'nav.shadow', icon: Clapperboard };
 export const TOOLS: NavItem = { href: '#/tools', label: 'nav.tools', icon: BookOpen };
 export const IELTS_COURSE: NavItem = { href: '#/ielts', label: 'nav.ieltsCourse', icon: GraduationCap };
+export const SAT_COURSE: NavItem = { href: '#/sat', label: 'nav.satCourse', icon: GraduationCap };
+export const CEFR_COURSE: NavItem = { href: '#/cefr', label: 'nav.cefrCourse', icon: GraduationCap };
 
 export const isActive = (hash: string, base: string): boolean =>
   base === '#/' ? hash === '#/' || hash === '' : hash === base || hash.startsWith(base + '/');
@@ -47,8 +50,30 @@ export const SECTIONS: Section[] = [
   { id: 'profile', item: PROFILE, children: [PROFILE, sh(CERTIFICATES, 'nav.s.certificates'), sh(PRICING, 'nav.s.pricing')] },
 ];
 
+/**
+ * Imtihon kurslari (IELTS, SAT, CEFR) — o'z sahifalari bor, lekin darslari `#/learn/<id>` manzilida ochiladi.
+ * Bunday sahifalar "General English" emas, "Imtihon" bo'limiga tegishli (yuqori menyu, pastki panel, sarlavha).
+ * `lessonCourse` — CEFR kursidan ochilgan General English darsi uchun (sessiyada saqlangan kontekst).
+ */
+export function courseContext(hash: string, lessonCourse: string | null = currentCourse()): NavItem | null {
+  if (hash === SAT_COURSE.href) return SAT_COURSE;
+  if (hash === CEFR_COURSE.href) return CEFR_COURSE;
+  const id = hash.match(/^#\/learn\/([\w-]+)$/)?.[1];
+  if (!id) return null;
+  if (id.startsWith('sat-')) return SAT_COURSE;
+  if (id.startsWith('ie-')) return IELTS_COURSE;
+  return lessonCourse === CEFR_COURSE.href ? CEFR_COURSE : null;
+}
+/** Pastki panel: kurs sahifalarida "Imtihon" yorlig'i faol (General English emas). */
+export const tabActive = (hash: string, base: string): boolean => {
+  const c = courseContext(hash);
+  return c ? base === '#/exam' : isActive(hash, base);
+};
+
 /** Joriy manzil qaysi bo'limga va qaysi ichki sahifaga tegishli (eng uzun mos keluvchi). */
 export function sectionOf(hash: string): { section: Section; page: NavItem } | null {
+  const course = courseContext(hash);
+  if (course) return { section: SECTIONS.find((s) => s.id === 'exam')!, page: course };
   let best: { section: Section; page: NavItem } | null = null;
   for (const s of SECTIONS) for (const n of [s.item, ...s.children]) {
     if (isActive(hash, n.href) && (!best || n.href.length > best.page.href.length)) best = { section: s, page: n };

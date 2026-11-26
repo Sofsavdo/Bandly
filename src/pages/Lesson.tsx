@@ -24,6 +24,7 @@ import { Illo } from '../components/Illo';
 import { PRing } from '../components/PRing';
 import { DailyLimit } from '../components/DailyLimit';
 import { requestUnlock } from '../lib/freeQuota';
+import { CEFR_HREF, currentCourse, rememberCourse } from '../lib/courseFrom';
 import { L } from '../i18n';
 
 type Step = 'learn' | 'practice' | 'speak' | 'write' | 'check' | 'result';
@@ -82,7 +83,9 @@ export default function LessonPage({ id }: { id: string }) {
   const next = useMemo(() => nextInCourse(id), [id]);
   const ielts = isIeltsLesson(id);
   const sat = isSatLesson(id);
-  const back = ielts ? '#/ielts' : sat ? '#/sat' : '#/learn';
+  const cefr = !ielts && !sat && currentCourse() === CEFR_HREF; // CEFR kursidan ochilgan General English darsi
+  useEffect(() => { if (cefr) rememberCourse(CEFR_HREF); }, [cefr, id]); // uzoq o'qishda kontekst muddati tugamasin
+  const back = ielts ? '#/ielts' : sat ? '#/sat' : cefr ? CEFR_HREF : '#/learn';
   const course = ielts ? 'ielts' : sat ? 'sat' : 'ge';
 
   if (!found) return <div className="card"><h2>{L('Dars topilmadi')}</h2><a className="btn" href={back}>{L('Darslar ro‘yxati')}</a></div>;
@@ -168,7 +171,7 @@ export default function LessonPage({ id }: { id: string }) {
 
   return (
     <div>
-      <a className="btn sm" href={back}><ArrowLeft size={14} />  {ielts ? L('IELTS kursi') : sat ? L('SAT kursi') : L('Darslar')}</a>
+      <a className="btn sm" href={back}><ArrowLeft size={14} />  {ielts ? L('IELTS kursi') : sat ? L('SAT kursi') : cefr ? L('CEFR kursi') : L('Darslar')}</a>
       <div className="lesson-hud sticky" aria-label={L('Dars holati')}>
         <div className="seg-progress" role="img" aria-label={L('{0} / {1} qadam', [Math.min(stepIdx + 1, steps.length), steps.length])}>{steps.map((st, i) => <i key={st} className={i < stepIdx ? 'done' : i === stepIdx ? 'now' : ''} />)}</div>
         <span className="hud-hearts" role="img" aria-label={L('{0} ta jon', [play.hearts])}>{Array.from({ length: MAX_HEARTS }, (_, i) => <Heart key={i} size={16} className={i < play.hearts ? 'full' : 'empty'} />)}</span>

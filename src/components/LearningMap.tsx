@@ -220,6 +220,8 @@ export function LearningMap({ progress, level, currentId }: { progress: Progress
             <div className="route-list">
               <a className="route-item on" href="#/learn" onClick={() => setRoutes(false)}><span><b>{L('General English')}</b><small>{L('Noldan A1 dan C2 gacha, bo‘lim-bo‘lim')}</small></span><Check size={18} /></a>
               <a className="route-item" href="#/ielts"><span><b>{L('IELTS kursi')}</b><small>{L('Reading, Listening, Writing va Speaking strategiyalari')}</small></span><ChevronDown size={18} className="rot" /></a>
+              <a className="route-item" href="#/cefr"><span><b>{L('CEFR kursi')}</b><small>{L('Multilevel imtihoniga tayyorgarlik: daraja darslari, strategiyalar va mashq testlari.')}</small></span><ChevronDown size={18} className="rot" /></a>
+              <a className="route-item" href="#/sat"><span><b>{L('SAT kursi')}</b><small>{L('Digital SAT darsligi: qoidalar, usullar va SAT uslubidagi savollar.')}</small></span><ChevronDown size={18} className="rot" /></a>
               <a className="route-item" href="#/exam"><span><b>{L('Imtihon tayyorgarligi')}</b><small>{L('Mock testlar, CEFR va SAT')}</small></span><ChevronDown size={18} className="rot" /></a>
             </div>
           </div>
