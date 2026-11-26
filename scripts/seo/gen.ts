@@ -399,7 +399,7 @@ const LEGAL: Record<'privacy' | 'terms', Record<Lang, { title: string; desc: str
       desc: 'Sellzen’dan foydalanish qoidalari: hisob, bepul va pullik tariflar, to‘lov tartibi, AI ustoz va natijalar haqida muhim shartlar.',
       lead: 'Sellzen’dan foydalanishni boshlab, quyidagi shartlarga rozilik bildirasiz.',
       secs: [
-        { h: '1. Xizmat haqida', p: ['Sellzen — ingliz tili (A1–C2), IELTS, CEFR/Multilevel va SAT tayyorgarligi uchun onlayn platforma: darslar, mashqlar, mock testlar va Sellzen AI ustoz.'] },
+        { h: '1. Xizmat haqida', p: ['Sellzen — ingliz tili (A1–C2), IELTS, CEFR/Multilevel va SAT tayyorgarligi uchun onlayn platforma: darslar, mashqlar, mock testlar va Sellzen ovozli ustoz.'] },
         { h: '2. Hisob', ul: ['Hisob laqab, telefon raqami va parol yoki Telegram orqali ochiladi; ma’lumotlar to‘g‘ri bo‘lishi kerak.', 'Hisobingizni boshqalarga bermang va parolni sir saqlang.', '14 yoshdan kichiklar faqat ota-ona yoki vasiy roziligi bilan foydalanadi.'] },
         { h: '3. Bepul va pullik tariflar', ul: [
           'Bepul tarifda kunlik va haftalik limitlar bor; joriy qiymatlar «Tariflar» sahifasida ko‘rsatilgan.',

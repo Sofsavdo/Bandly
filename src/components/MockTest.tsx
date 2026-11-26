@@ -231,7 +231,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
             {L('Band:')} <b>{band.toFixed(1)}</b>
             {level && rawBand > band && <p className="evidence">{L('Bu test')} {level}  {L('darajali, shuning uchun band')} {BAND_CAP[level].toFixed(1)}  {L('dan yuqori ko‘rsatilmaydi: yuqori ball uchun qiyinroq testlarni yeching.')}</p>}
           </div>}
-          {scoring !== 'raw' && <p className="evidence" style={{ margin: '4px 0' }}>{L('Band taxminiy: rasmiy IELTS bahosi emas va natija kafolatlanmaydi.')}</p>}
+          {scoring !== 'raw' && <p className="evidence" style={{ margin: '4px 0' }}>{L('Band IELTS jadvali bo‘yicha to‘g‘ri javoblaringiz sonidan hisoblandi.')}</p>}
           {correct > 0 && <p><button className="btn sm" onClick={() => void shareMock({ kind, correct, total: questions.length, band: scoring === 'raw' ? null : band })}>{L('Natijani ulashish')}</button></p>}
           {cert && <CertNotice issued={cert.issued} missing={cert.missing} />}
           <TestReport kind={kind} title={title} questions={questions} graded={graded} answers={attempt.answers} startedAt={attempt.startedAt} submittedAt={attempt.submittedAt} minutes={minutes} stats={attempt.stats} />

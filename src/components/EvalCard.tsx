@@ -46,7 +46,7 @@ export function EvalCard({ ev, title = L('AI baho'), source = 'writing' }: { ev:
       <div className="row">
         {Object.entries(ev.bands).map(([k, v]) => <span key={k} className={`pill ${v !== null && v === low ? 'low' : ''}`}>{LABEL[k] ?? k}: <b>{v === null ? L('baholanmaydi') : v.toFixed(1)}</b></span>)}
       </div>
-      <p className="muted" style={{ fontSize: 12, margin: '6px 0 0' }}>{L('AI bahosi — taxminiy, rasmiy IELTS bahosi emas.')}{ev.bands.pronunciation === null ? ` ${L('Talaffuz matn orqali baholanmaydi.')}` : ''}</p>
+      <p className="muted" style={{ fontSize: 12, margin: '6px 0 0' }}>{L('AI bahosi — IELTS’ning 4 mezoni bo‘yicha.')}{ev.bands.pronunciation === null ? ` ${L('Talaffuz matn orqali baholanmaydi.')}` : ''}</p>
       {ev.focus && <p className="eval-focus"><b>{L('+0.5 band uchun:')}</b> {ev.focus}</p>}
       {ev.strengths.length > 0 && <><h4>{L('Kuchli tomonlar')}</h4><ul>{ev.strengths.map((s) => <li key={s}>{s}</li>)}</ul></>}
       {ev.improve.length > 0 && <><h4>{L('Yaxshilash kerak')}</h4><ul>{ev.improve.map((s) => <li key={s}>{s}</li>)}</ul></>}

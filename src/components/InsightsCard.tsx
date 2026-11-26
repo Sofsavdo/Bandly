@@ -24,7 +24,7 @@ function why(r: Recommendation): string {
   switch (r.reason) {
     case 'mistakes_due': return L('{0} ta xatoingiz takrorlash vaqtiga yetdi. Ularni hozir tuzatish yangi mavzudan ko‘ra ko‘proq foyda beradi.', [r.params.count!]);
     case 'recurring_error': return L('Oxirgi 30 kunda «{0}» bo‘yicha {1} marta xato qildingiz. «{2}» darsi aynan shu xatoni nishonga oladi.', [ERR_UZ[String(r.params.taxonomy)] ?? String(r.params.taxonomy), r.params.count!, r.params.lesson!]);
-    case 'weak_skill': return L('{0} — hozircha eng zaif ko‘nikmangiz (taxminan {1}/100). Shu ko‘nikmani mashq qilish umumiy natijani tezroq ko‘taradi.', [SKILL_UZ[r.skill!], r.params.score!]);
+    case 'weak_skill': return L('{0} — hozir eng zaif ko‘nikmangiz ({1}/100). Shu ko‘nikmani mashq qilish umumiy natijani tezroq ko‘taradi.', [SKILL_UZ[r.skill!], r.params.score!]);
     case 'no_evidence': return L('{0} bo‘yicha hali birorta natija yo‘q. Darajangizni bilish uchun avval bir marta o‘lchab olaylik.', [SKILL_UZ[r.skill!]]);
     default: return r.params.lesson ? L('Yo‘lingizdagi keyingi qadam: «{0}».', [r.params.lesson]) : L('Yo‘lingizdagi keyingi qadam.');
   }
@@ -69,7 +69,7 @@ export function InsightsCard() {
       )}
       <div className="ins-skills">
         {measured.map((s) => (
-          <div key={s.skill} className="ins-skill" title={L('Ballar taxminiy (0–100): oxirgi natijalaringiz va darslardagi o‘zlashtirishdan hisoblanadi, rasmiy imtihon bahosi emas.')}>
+          <div key={s.skill} className="ins-skill" title={L('Ballar (0–100) oxirgi natijalaringiz va darslardagi o‘zlashtirishdan hisoblanadi.')}>
             <span>{SKILL_UZ[s.skill]}</span><small>{s.score}</small><i><b style={{ width: `${s.score}%` }} /></i>
           </div>
         ))}

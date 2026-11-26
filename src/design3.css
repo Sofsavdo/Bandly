@@ -1708,3 +1708,32 @@ table.data.plan-matrix td { white-space: normal; min-width: 0; }
 main.container.fit { min-height: 0; padding-bottom: 0; }
 main.container.fit .tutor { min-height: 0; }
 main.container.fit .idle-call { margin-block: 0; }
+
+/* ===== Hamkorlik (#/partners) va bosh sahifadagi taklif kartasi ===== */
+.partner-promo { display: flex; align-items: center; gap: 14px; color: var(--ink); text-decoration: none; background: var(--peach-50, var(--lilac-50)); box-shadow: none; margin: 18px 0 8px; }
+.partner-promo > div { flex: 1; min-width: 0; }
+.partner-promo .blob svg { color: var(--orange); }
+.partners .partners-hero { margin-bottom: 8px; }
+.partners .partners-hero h1 { margin: 10px 0 8px; font-size: clamp(28px, 6vw, 44px); line-height: 1.08; }
+.partners .partners-hero .eyebrow { display: inline-flex; align-items: center; }
+.partner-who { display: grid; gap: 10px; margin-bottom: 18px; }
+@media (min-width: 820px) { .partner-who { grid-template-columns: repeat(3, 1fr); } }
+.partner-who .card { display: grid; gap: 6px; align-content: start; }
+.partner-who .card svg { color: var(--brand); }
+.partner-who h3, .partner-who p { margin: 0; }
+.partner-terms ul { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 8px; }
+.partner-terms li { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; }
+.partner-terms li svg { flex: none; margin-top: 3px; color: var(--teal); }
+.partner-terms p { margin: 6px 0 0; }
+.partner-form form { display: grid; gap: 12px; }
+.partner-form label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.partner-form label.check { display: flex; align-items: flex-start; gap: 10px; font-weight: 500; }
+.partner-form label.check input { margin-top: 3px; width: 18px; height: 18px; flex: none; }
+.partner-form input:not([type=checkbox]), .partner-form select, .partner-form textarea { padding: 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--text); font: inherit; font-size: 16px; font-weight: 500; width: 100%; box-sizing: border-box; }
+.partner-form .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+.partner-sent { text-align: center; padding: 10px 0; }
+.partner-sent svg { color: var(--teal); }
+.partner-sent h3 { margin: 6px 0 4px; }
+/* Bosh sahifa kartalari: "Boshlash bepul" belgisi rasm ostida qolmasin; Sellzen kartasidagi "Salom" pufagi chetdan kesilmasin */
+.course .tag { position: relative; z-index: 1; }
+.course.c-pink .illo { right: -2px; }

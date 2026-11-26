@@ -197,7 +197,7 @@ export default function Speaking() {
           <button className="btn primary lg" onClick={() => void run()}><Mic size={18} />  {L('Suhbatni boshlash')}</button>
           <p className="evidence" style={{ marginTop: 14 }}>
             
-            {L('Ustozning javoblari hozircha')} <b>{L('qoidaviy')}</b>{aiOn ? L(' (AI yoqilgan bo‘lsa, javobingizga bog‘liq savollar ham beradi)') : L(' (AI hali ulanmagan)')}{L(': savollarni tartib bilan beradi, qisqa javobda "batafsilroq ayting" deydi. Talaffuz va grammatika baholanmaydi.')}
+            {aiOn ? L('Imtihonchi savollarni IELTS tartibida beradi va javobingizga qarab qo‘shimcha savol so‘raydi. Qisqa javobda «batafsilroq ayting» deydi.') : L('Imtihonchi savollarni IELTS tartibida beradi. Qisqa javobda «batafsilroq ayting» deydi.')}
           </p>
         </div>
       </div>

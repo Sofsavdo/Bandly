@@ -52,7 +52,7 @@ export function MockPlanCard({ kind, exam, rows, takenTestId, since }: { kind: K
   return (
     <section className="card mock-plan">
       <h3><CalendarCheck size={18} style={{ verticalAlign: -3 }} />  {L('Natijangiz asosida shaxsiy reja')} <span className="pill">{doneN}/{plan.length}</span></h3>
-      <p className="evidence" style={{ margin: '0 0 8px' }}>{L('Bu natijangizga tayangan taxminiy tavsiya: ball yoki band kafolatlanmaydi, rasmiy IELTS bahosi emas.')}</p>
+      <p className="evidence" style={{ margin: '0 0 8px' }}>{L('Reja shu test natijangizga tayanadi.')}</p>
       {days.map((d) => (
         <div key={d}>
           <h4 className="list-h" style={{ margin: '10px 0 4px' }}>{dayLabel(d)}</h4>

@@ -153,7 +153,14 @@ function Result({ a, acc, onJoined, onRedo }: { a: Answers; acc: Account | null;
         </div>
         {plan.verdict === 'ok' && <p className="onboard-verdict ok">{L('Shu tempda ulgurasiz.')}</p>}
         {plan.verdict === 'reached' && <p className="onboard-verdict ok">{L('Darajangiz maqsadga yaqin — imtihon formatini mashq qilamiz.')}</p>}
-        {plan.verdict === 'tight' && min < (plan.minutesNeeded ?? 0) && (
+        {plan.verdict === 'tight' && (plan.minutesNeeded ?? 0) > 180 && plan.hoursNeeded !== null && (
+          // Kuniga 3 soatdan ko'p kerak bo'lsa — raqam ko'ngilni sovutadi: o'rniga real muddat (kuniga 60 daqiqa bilan) va oraliq maqsad
+          <p className="onboard-verdict tight">
+            {L('Bu muddat juda qisqa. Kuniga 60 daqiqa o‘qisangiz, maqsadga {0} oyda yetasiz — hozir esa imtihon formatini o‘rganib, oraliq natijaga tayyorlanamiz.', [Math.max(1, Math.ceil(plan.hoursNeeded / 7 / 4.3))])}{' '}
+            {min < 60 && <button className="btn sm" onClick={() => raise(60)}>{L('{0} daqiqa qilish', [60])}</button>}
+          </p>
+        )}
+        {plan.verdict === 'tight' && (plan.minutesNeeded ?? 0) <= 180 && min < (plan.minutesNeeded ?? 0) && (
           <p className="onboard-verdict tight">
             {L('Ulgurish uchun kuniga ~{0} daqiqa kerak.', [plan.minutesNeeded!])}{' '}
             {better ? <button className="btn sm" onClick={() => raise(better)}>{L('{0} daqiqa qilish', [better])}</button> : <span>{L('Sanani surish yoki maqsadni pasaytirish kerak.')}</span>}

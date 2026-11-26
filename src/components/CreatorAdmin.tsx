@@ -26,16 +26,16 @@ const pct = (x: number | null): string => (x === null ? '—' : `${x}%`);
 const minorToSom = (m: number): string => fmtSum(Math.round(m / 100));
 
 export function CreatorAdmin() {
-  const [sec, setSec] = useState<'creators' | 'campaigns' | 'posts' | 'flags' | 'ledger'>('creators');
+  const [sec, setSec] = useState<'apps' | 'creators' | 'campaigns' | 'posts' | 'flags' | 'ledger'>('apps');
   const [msg, setMsg] = useState(''); const [err, setErr] = useState('');
   const run = async (fn: () => Promise<unknown>, ok?: string) => { setErr(''); setMsg(''); try { await fn(); if (ok) setMsg(ok); } catch (e) { setErr((e as Error).message); } };
   return (
     <div>
       <div className="seg" role="tablist" aria-label={L('Hamkorlar bo‘limlari')}>
-        {([['creators', L('Hamkorlar')], ['campaigns', L('Kampaniyalar')], ['posts', L('Postlar')], ['flags', L('Gumonli holatlar')], ['ledger', L('Mukofot daftari')]] as const).map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={sec === k} className={sec === k ? 'on' : ''} onClick={() => setSec(k)}>{l}</button>)}
+        {([['apps', L('Arizalar')], ['creators', L('Hamkorlar')], ['campaigns', L('Kampaniyalar')], ['posts', L('Postlar')], ['flags', L('Gumonli holatlar')], ['ledger', L('Mukofot daftari')]] as const).map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={sec === k} className={sec === k ? 'on' : ''} onClick={() => setSec(k)}>{l}</button>)}
       </div>
       {err && <p className="notice" role="alert">{err}</p>}{msg && <p className="evidence" role="status">{msg}</p>}
-      {sec === 'creators' ? <Creators run={run} /> : sec === 'campaigns' ? <Campaigns run={run} /> : sec === 'posts' ? <Posts run={run} /> : sec === 'flags' ? <Flags run={run} /> : <Ledger run={run} />}
+      {sec === 'apps' ? <Applications run={run} /> : sec === 'creators' ? <Creators run={run} /> : sec === 'campaigns' ? <Campaigns run={run} /> : sec === 'posts' ? <Posts run={run} /> : sec === 'flags' ? <Flags run={run} /> : <Ledger run={run} />}
     </div>
   );
 }
@@ -256,5 +256,42 @@ function Ledger({ run }: { run: Run }) {
             {e.status === 'approved' && e.kind !== 'reversal' && e.kind !== 'adjustment' && e.amountMinor > 0 && <button className="btn sm" onClick={() => { const ref = prompt(L('To‘lov havolasi/izohi (tashqarida bajarilgan o‘tkazma)')) ?? ''; void run(async () => { await call(`/api/creatoradmin/ledger/${e.id}/paid`, { ref }); load(); }); }}>{L('To‘langan deb belgilash')}</button>}</td></tr>)}
       </tbody></table></div>
     </>
+  );
+}
+
+/** Hamkorlik sahifasidan kelgan arizalar: aloqa, havola, auditoriya; holat — yangi → bog'lanildi → tasdiqlandi/rad etildi.
+ *  Tasdiqlangach hamkor rolini "Xodimlar" bo'limida laqab bo'yicha beriladi (o'quvchi hisobi bo'lsa — laqabi shu yerda ko'rinadi). */
+interface PartnerApp { id: number; kind: string; name: string; link: string; audience: string; contact: string; note: string | null; nickname: string | null; status: string; adminNote: string | null; createdAt: number }
+const APP_STATUS: Record<string, string> = { new: L('Yangi'), contacted: L('Bog‘lanildi'), approved: L('Tasdiqlandi'), rejected: L('Rad etildi') };
+const APP_KIND: Record<string, string> = { blogger: L('Bloger'), teacher: L('O‘qituvchi'), learner: L('O‘quvchi') };
+function Applications({ run }: { run: (fn: () => Promise<unknown>, ok?: string) => Promise<void> }) {
+  const [apps, setApps] = useState<PartnerApp[] | null>(null);
+  const load = useCallback(() => { void call<{ apps: PartnerApp[] }>('/api/staff/partners').then((r) => setApps(r.apps)).catch(() => setApps([])); }, []);
+  useEffect(load, [load]);
+  if (!apps) return <p className="muted">{L('Yuklanmoqda…')}</p>;
+  if (!apps.length) return <p className="muted">{L('Hali ariza yo‘q. Ommaviy sahifa: #/partners')}</p>;
+  const href = (l: string) => (l.startsWith('@') ? `https://t.me/${l.slice(1)}` : l);
+  return (
+    <div className="table-scroll">
+      <table className="data">
+        <thead><tr><th>{L('Sana')}</th><th>{L('Kim')}</th><th>{L('Sahifa')}</th><th>{L('Auditoriya')}</th><th>{L('Aloqa')}</th><th>{L('Holat')}</th></tr></thead>
+        <tbody>
+          {apps.map((a) => (
+            <tr key={a.id}>
+              <td>{new Date(a.createdAt).toLocaleDateString()}</td>
+              <td><b>{a.name}</b><br /><span className="muted">{APP_KIND[a.kind] ?? a.kind}{a.nickname ? ` · ${a.nickname}` : ''}</span>{a.note && <><br /><span className="muted">{a.note}</span></>}</td>
+              <td><a href={href(a.link)} target="_blank" rel="noopener noreferrer">{a.link.replace(/^https?:\/\//, '').slice(0, 40)}</a></td>
+              <td>{a.audience}</td>
+              <td>{a.contact}</td>
+              <td>
+                <select value={a.status} aria-label={L('Holat')} onChange={(e) => void run(async () => { await call('/api/staff/partners', { id: a.id, status: e.target.value, note: a.adminNote ?? '' }); load(); }, L('Saqlandi'))}>
+                  {Object.entries(APP_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
