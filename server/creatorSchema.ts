@@ -12,7 +12,7 @@ import { ensureUserEventsTable } from './userEvents';
 // creator_posts.claimed_views — creator yozgan, TASDIQLANMAGAN; verified_* faqat admin.
 // creator_reward_rules: mukofot QOIDALARI (kind: paid_pct | activated_flat | first_paid_flat | verified_views_per_1k); standart enabled=0, yoqish — egasi tasdig'i + byudjet/chegara bilan.
 // creator_ledger: pul kichik birlikda (UZS: tiyin), event_key UNIQUE (idempotentlik), rule_id — qaysi qoida, parent_id — teskari yozuvning asosiy yozuvi;
-// kind: commission | cpa_activated | cpa_first_paid | views | bonus | adjustment | reversal; status: pending | approved | rejected | paid.
+// kind: commission | cpa_activated | cpa_first_paid | views | video | bonus | adjustment | reversal; creator_video_terms: video uchun to'lov shartlari (videoPay.ts); status: pending | approved | rejected | paid.
 export function ensureCreatorTables(db: DatabaseSync): void {
   ensureEventsTable(db); // app_meta (xesh tuzi) — barmoq izi uchun
   ensureUserEventsTable(db); // voronka plan_open qadami uchun o'qiladi
@@ -134,6 +134,9 @@ export function ensureCreatorTables(db: DatabaseSync): void {
     );
     CREATE INDEX IF NOT EXISTS creator_ledger_creator ON creator_ledger (creator_id, created_at);
     CREATE INDEX IF NOT EXISTS creator_ledger_status ON creator_ledger (status, created_at);
+    CREATE TABLE IF NOT EXISTS creator_video_terms (
+      id INTEGER PRIMARY KEY CHECK (id = 1), json TEXT NOT NULL, updated_by INTEGER, updated_at INTEGER NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS creator_ledger_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT, ledger_id INTEGER NOT NULL REFERENCES creator_ledger(id),
       ts INTEGER NOT NULL, actor_id INTEGER, from_status TEXT, to_status TEXT NOT NULL, note TEXT

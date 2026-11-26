@@ -124,7 +124,7 @@ export default function Home({ preview = false }: { preview?: boolean }) {
 
       <a className="card partner-promo" href="#/partners">
         <span className="blob"><Megaphone /></span>
-        <div><h3 style={{ margin: 0 }}>{L('Bloger yoki o‘qituvchimisiz?')}</h3><p className="muted" style={{ margin: '4px 0 0' }}>{L('Sellzen haqida video yoki post qiling — hamkor bo‘ling va har bir kelgan o‘quvchi uchun mukofot oling.')}</p></div>
+        <div><h3 style={{ margin: 0 }}>{L('Bloger yoki o‘qituvchimisiz?')}</h3><p className="muted" style={{ margin: '4px 0 0' }}>{L('Sellzen haqida video qiling — har bir video uchun to‘lov, ko‘rishlar va kelgan o‘quvchilar uchun bonus oling.')}</p></div>
         <ArrowRight size={18} />
       </a>
 

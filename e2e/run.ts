@@ -9,7 +9,8 @@
 //   G. Obuna muddati tugadi → pullik bo'lim yopiladi
 //   H. Mehmon mock → natija yopiq → ro'yxatdan o'tish → natija akkauntga bog'lanadi (bir marta), shaxsiy reja
 //   I. Creator linki → bridge → veb → ro'yxat → creator kabinetida voronka
-//   J. Hamkorlik: mehmon bosh sahifadan hamkorlik sahifasiga o'tadi, ariza qoldiradi (rozilik majburiy) → admin «Arizalar»da ko'radi va holatini o'zgartiradi
+//   J. Hamkorlik: mehmon bosh sahifadan hamkorlik sahifasiga o'tadi, video to'lovi shartlari va hisob misolini ko'radi, ariza qoldiradi (rozilik majburiy) →
+//      admin «Arizalar»da ko'radi va holatini o'zgartiradi; «Video to'lovlari»da shartni tahrirlaydi — sahifada yangi qiymat
 //   K. Admin paneli: hamkor mukofot qoidasi — so'mda yaratish, tahrirlash, yoqish (egasi tasdig'i bilan); kredit rejimi «Limitlar»da
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -375,7 +376,11 @@ try {
     await g.goto(`${base}/#/welcome`);
     await g.locator('a.partner-promo').click();
     await g.getByRole('heading', { name: 'Sellzen haqida gapiring — daromad oling' }).waitFor({ timeout: 8000 });
-    assert.ok(await g.getByText('ariza ko‘rib chiqilgach siz bilan kelishiladi').count(), 'qoida yoqilmagan — summa va’da qilinmaydi');
+    await g.getByRole('heading', { name: 'Har bir video uchun to‘lov' }).waitFor({ timeout: 8000 });
+    const ex = (await g.locator('.vp-example').innerText()).replace(/[\s\u00a0\u202f]+/g, ' ');
+    assert.match(ex, /50 000 \+ 200 000 \+ 150 000 = 400 000 so‘m/, 'misol: 1 video eng yuqori pog‘onalar bilan');
+    assert.match(ex, /15 × 400 000 = 6 000 000 so‘m/, 'misol: oyiga 15 video');
+    assert.ok(await g.getByText('sellzen.uz yoki shaxsiy havolangiz profilingiz bio’sida va video izohida turadi.').count(), 'talablar ko‘rinadi');
     await g.getByLabel('Ismingiz').fill('E2E Bloger');
     await g.getByLabel('Sahifangiz yoki kanalingiz').fill('tiktok.com/@e2e.bloger');
     await g.getByLabel('Obunachilar soni').selectOption('10k-100k');
@@ -395,6 +400,14 @@ try {
     await a.getByText('Saqlandi').waitFor({ timeout: 8000 });
     const apps = (await api('/api/staff/partners', { token: adminToken })).json.apps as { name: string; status: string }[];
     assert.equal(apps.find((x) => x.name === 'E2E Bloger')?.status, 'contacted');
+    // Admin video to'lov shartlarini tahrirlaydi — hamkorlik sahifasi yangi qiymatni ko'rsatadi
+    await a.getByRole('tab', { name: 'Video to‘lovlari' }).click();
+    await a.getByLabel('Instagram sahifamiz').fill('sellzen.uz');
+    await a.getByRole('button', { name: 'Shartlarni saqlash' }).click();
+    await a.getByText('Shartlar saqlandi').waitFor({ timeout: 8000 });
+    assert.equal((await api('/api/partners/terms')).json.video.instagram, 'sellzen.uz');
+    await g.goto(`${base}/#/partners`); await g.reload();
+    await g.getByText('Videoda Instagram sahifamiz @sellzen.uz belgilangan.').waitFor({ timeout: 8000 });
   });
 
   await step('K. Admin paneli: hamkor mukofot qoidasi — so‘mda yaratish, tahrirlash, yoqish; kredit rejimi «Limitlar»da', async () => {

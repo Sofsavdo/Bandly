@@ -26,16 +26,17 @@ const pct = (x: number | null): string => (x === null ? '—' : `${x}%`);
 const minorToSom = (m: number): string => fmtSum(Math.round(m / 100));
 
 export function CreatorAdmin() {
-  const [sec, setSec] = useState<'apps' | 'creators' | 'campaigns' | 'posts' | 'flags' | 'ledger'>('apps');
+  const [sec, setSec] = useState<'apps' | 'creators' | 'campaigns' | 'posts' | 'videos' | 'flags' | 'ledger'>('apps');
   const [msg, setMsg] = useState(''); const [err, setErr] = useState('');
-  const run = async (fn: () => Promise<unknown>, ok?: string) => { setErr(''); setMsg(''); try { await fn(); if (ok) setMsg(ok); } catch (e) { setErr((e as Error).message); } };
+  // useCallback: bo'limlar `run`ni yuklash effektiga bog'laydi — har renderda yangi funksiya cheksiz qayta yuklashga olib kelardi
+  const run = useCallback(async (fn: () => Promise<unknown>, ok?: string) => { setErr(''); setMsg(''); try { await fn(); if (ok) setMsg(ok); } catch (e) { setErr((e as Error).message); } }, []);
   return (
     <div>
       <div className="seg" role="tablist" aria-label={L('Hamkorlar bo‘limlari')}>
-        {([['apps', L('Arizalar')], ['creators', L('Hamkorlar')], ['campaigns', L('Kampaniyalar')], ['posts', L('Postlar')], ['flags', L('Gumonli holatlar')], ['ledger', L('Mukofot daftari')]] as const).map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={sec === k} className={sec === k ? 'on' : ''} onClick={() => setSec(k)}>{l}</button>)}
+        {([['apps', L('Arizalar')], ['creators', L('Hamkorlar')], ['campaigns', L('Kampaniyalar')], ['posts', L('Postlar')], ['videos', L('Video to‘lovlari')], ['flags', L('Gumonli holatlar')], ['ledger', L('Mukofot daftari')]] as const).map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={sec === k} className={sec === k ? 'on' : ''} onClick={() => setSec(k)}>{l}</button>)}
       </div>
       {err && <p className="notice" role="alert">{err}</p>}{msg && <p className="evidence" role="status">{msg}</p>}
-      {sec === 'apps' ? <Applications run={run} /> : sec === 'creators' ? <Creators run={run} /> : sec === 'campaigns' ? <Campaigns run={run} /> : sec === 'posts' ? <Posts run={run} /> : sec === 'flags' ? <Flags run={run} /> : <Ledger run={run} />}
+      {sec === 'apps' ? <Applications run={run} /> : sec === 'creators' ? <Creators run={run} /> : sec === 'campaigns' ? <Campaigns run={run} /> : sec === 'posts' ? <Posts run={run} /> : sec === 'videos' ? <VideoPay run={run} /> : sec === 'flags' ? <Flags run={run} /> : <Ledger run={run} />}
     </div>
   );
 }
@@ -146,6 +147,94 @@ function Posts({ run }: { run: Run }) {
                 <button className="btn primary sm" onClick={() => decide('approved')}>{L('Tasdiqlash')}</button><button className="btn sm" onClick={() => decide('needs_changes')}>{L('O‘zgartirish so‘rash')}</button><button className="btn sm" onClick={() => decide('rejected')}>{L('Rad etish')}</button>
               </div>)}
           </div>); })}
+    </>
+  );
+}
+
+interface Tier { min: number; som: number }
+interface VTerms { enabled: boolean; baseSom: number; windowDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
+interface VCalc { baseSom: number; views: number; viewBonusSom: number; learners: number; learnerBonusSom: number; totalSom: number }
+interface VItem { postId: number; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: { id: number; amountMinor: number; status: string; basis: VCalc | null } | null }
+const bonus = (t: Tier[], n: number): number => t.reduce((s, x) => (n >= x.min ? x.som : s), 0);
+const day = (t: number | null): string => (t === null ? '—' : new Date(t).toISOString().slice(0, 10));
+
+/** Video uchun to'lov: shartlarni tahrirlash, tasdiqlangan videolar navbati va 15-kun hisob-kitobi (admin tekshiradi → tasdiqlaydi → to'landi). */
+function VideoPay({ run }: { run: Run }) {
+  const [d, setD] = useState<{ terms: VTerms; videos: VItem[] } | null>(null);
+  const [t, setT] = useState<VTerms | null>(null);
+  const [form, setForm] = useState<Record<number, { views: string; base: string; bio: boolean; comment: boolean; tag: boolean; note: string; ref: string }>>({});
+  const load = useCallback(() => void run(async () => { const r = await call<{ terms: VTerms; videos: VItem[] }>('/api/creatoradmin/videos'); setD(r); setT(r.terms); }), [run]);
+  useEffect(load, [load]);
+  if (!d || !t) return <p className="muted">{L('Yuklanmoqda…')}</p>;
+  const saveTerms = () => void run(async () => { const r = await call<{ terms: VTerms }>('/api/creatoradmin/video-terms', t); setT(r.terms); load(); }, L('Shartlar saqlandi'));
+  const tierRows = (k: 'viewTiers' | 'learnerTiers', unit: string) => (
+    <div>
+      {t[k].map((x, i) => (
+        <div className="row" key={i}>
+          <input className="input" type="number" min={1} value={x.min} aria-label={L('Norma ({0})', [unit])} onChange={(e) => setT({ ...t, [k]: t[k].map((y, j) => (j === i ? { ...y, min: Number(e.target.value) } : y)) })} />
+          <input className="input" type="number" min={1} value={x.som} aria-label={L('Bonus (so‘m)')} onChange={(e) => setT({ ...t, [k]: t[k].map((y, j) => (j === i ? { ...y, som: Number(e.target.value) } : y)) })} />
+          <button className="btn sm" type="button" onClick={() => setT({ ...t, [k]: t[k].filter((_, j) => j !== i) })}>{L('O‘chirish')}</button>
+        </div>))}
+      {t[k].length < 6 && <button className="btn sm" type="button" onClick={() => setT({ ...t, [k]: [...t[k], { min: 1, som: 1 }] })}>{L('Pog‘ona qo‘shish')}</button>}
+    </div>
+  );
+  return (
+    <>
+      <section className="card" style={{ margin: '10px 0' }}>
+        <h3 style={{ marginTop: 0 }}>{L('Shartlar')}</h3>
+        <label className="evidence" style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={t.enabled} onChange={(e) => setT({ ...t, enabled: e.target.checked })} /> {L('Dastur yoqilgan (hamkorlik sahifasida ko‘rinadi)')}</label>
+        <div className="row">
+          <label>{L('Asosiy to‘lov (so‘m)')}<input className="input" type="number" min={0} value={t.baseSom} onChange={(e) => setT({ ...t, baseSom: Number(e.target.value) })} /></label>
+          <label>{L('Hisoblash muddati (kun)')}<input className="input" type="number" min={1} max={90} value={t.windowDays} onChange={(e) => setT({ ...t, windowDays: Number(e.target.value) })} /></label>
+          <label>{L('Instagram sahifamiz')}<input className="input" value={t.instagram} placeholder={'sellzen.uz'} onChange={(e) => setT({ ...t, instagram: e.target.value })} /></label>
+        </div>
+        <h4 className="list-h">{L('Ko‘rishlar bonusi: norma (ko‘rish) → bonus (so‘m)')}</h4>{tierRows('viewTiers', L('ko‘rish'))}
+        <h4 className="list-h">{L('O‘quvchilar bonusi: norma (o‘quvchi) → bonus (so‘m)')}</h4>{tierRows('learnerTiers', L('o‘quvchi'))}
+        <p className="muted" style={{ fontSize: 13 }}>{L('Eng yuqori erishilgan pog‘ona to‘lanadi. O‘zgarish faqat keyingi hisob-kitoblarga ta’sir qiladi.')}</p>
+        <button className="btn primary sm" onClick={saveTerms}>{L('Shartlarni saqlash')}</button>
+      </section>
+      <h3>{L('Tasdiqlangan videolar')}</h3>
+      {d.videos.length === 0 && <p className="muted">{L('Tasdiqlangan video yo‘q. Avval Postlar bo‘limida videoni tasdiqlang.')}</p>}
+      {d.videos.map((v) => {
+        const fm = form[v.postId] ?? { views: '', base: '', bio: false, comment: false, tag: false, note: '', ref: '' };
+        const set = (x: Partial<typeof fm>) => setForm({ ...form, [v.postId]: { ...fm, ...x } });
+        const views = Number(fm.views) || 0, base = fm.base === '' ? d.terms.baseSom : Number(fm.base);
+        const vb = bonus(d.terms.viewTiers, views), lb = bonus(d.terms.learnerTiers, v.learners);
+        const settle = () => void run(async () => { await call(`/api/creatoradmin/videos/${v.postId}/settle`, { views: fm.views === '' ? null : Number(fm.views), baseSom: fm.base === '' ? null : Number(fm.base), bio: fm.bio, comment: fm.comment, tag: fm.tag, note: fm.note }); load(); }, L('Hisoblandi — endi tasdiqlang'));
+        const decide = (decision: string) => void run(async () => { await call(`/api/creatoradmin/ledger/${v.entry!.id}/decision`, { decision, note: fm.note }); load(); }, L('Qaror saqlandi'));
+        const paid = () => void run(async () => { await call(`/api/creatoradmin/ledger/${v.entry!.id}/paid`, { ref: fm.ref }); load(); }, L('To‘langan deb belgilandi'));
+        const b = v.entry?.basis;
+        return (
+          <div key={v.postId} className="card" style={{ margin: '0 0 8px' }}>
+            <b>{v.creator}</b> · {v.platform} · {L('joylangan: {0}', [v.postedOn ?? '—'])} · {L('hisob kuni: {0}', [day(v.dueAt)])}
+            <p style={{ margin: '4px 0' }}>{v.url ? <a href={v.url} target="_blank" rel="noreferrer noopener">{v.url}</a> : '—'}</p>
+            <p className="evidence" style={{ margin: '4px 0' }}>{L('Shu video havolasi orqali kelgan o‘quvchilar: {0}', [v.learners])} · {L('Bloger yozgan ko‘rishlar: {0}', [v.claimedViews ?? '—'])}</p>
+            {v.entry && b ? (
+              <>
+                <p style={{ margin: '4px 0' }}>{L('Asosiy {0} + ko‘rishlar ({1}) {2} + o‘quvchilar ({3}) {4} = {5} so‘m', [fmtSum(b.baseSom), fmtSum(b.views), fmtSum(b.viewBonusSom), b.learners, fmtSum(b.learnerBonusSom), fmtSum(b.totalSom)])} · <b>{LEDGER_STATUS()[v.entry.status] ?? v.entry.status}</b></p>
+                {v.entry.status === 'pending' && <div className="row"><input className="input" value={fm.note} placeholder={L('Izoh (rad etishda majburiy)')} onChange={(e) => set({ note: e.target.value })} /><button className="btn primary sm" onClick={() => decide('approved')}>{L('Tasdiqlash')}</button><button className="btn sm" onClick={() => decide('rejected')}>{L('Rad etish')}</button></div>}
+                {v.entry.status === 'approved' && <div className="row"><input className="input" value={fm.ref} placeholder={L('To‘lov havolasi yoki izohi')} onChange={(e) => set({ ref: e.target.value })} /><button className="btn primary sm" onClick={paid}>{L('To‘landi')}</button></div>}
+              </>
+            ) : !v.due ? (
+              <p className="muted" style={{ margin: 0 }}>{L('Hisob {0} kuni ochiladi.', [day(v.dueAt)])}</p>
+            ) : (
+              <>
+                <div className="row">
+                  <input className="input" type="number" min={0} value={fm.views} placeholder={L('{0}-kundagi ko‘rishlar', [d.terms.windowDays])} onChange={(e) => set({ views: e.target.value })} />
+                  <input className="input" type="number" min={d.terms.baseSom} value={fm.base} placeholder={L('Asosiy: {0}', [fmtSum(d.terms.baseSom)])} onChange={(e) => set({ base: e.target.value })} />
+                  <input className="input" value={fm.note} placeholder={L('Izoh (ixtiyoriy)')} onChange={(e) => set({ note: e.target.value })} />
+                </div>
+                <div className="row">
+                  <label className="evidence"><input type="checkbox" checked={fm.bio} onChange={(e) => set({ bio: e.target.checked })} /> {L('Havola bio’da bor')}</label>
+                  <label className="evidence"><input type="checkbox" checked={fm.comment} onChange={(e) => set({ comment: e.target.checked })} /> {L('Havola izohda bor')}</label>
+                  <label className="evidence"><input type="checkbox" checked={fm.tag} onChange={(e) => set({ tag: e.target.checked })} /> {L('Instagram sahifamiz belgilangan')}</label>
+                </div>
+                <p style={{ margin: '4px 0' }}>{L('Hisob: {0} + {1} + {2} = {3} so‘m', [fmtSum(base), fmtSum(vb), fmtSum(lb), fmtSum(base + vb + lb)])}</p>
+                <button className="btn primary sm" disabled={fm.views === '' || !fm.bio || !fm.comment || !fm.tag} onClick={settle}>{L('Hisoblash')}</button>
+              </>
+            )}
+          </div>);
+      })}
     </>
   );
 }

@@ -95,9 +95,9 @@ const live = (r: Rule, now: number): boolean => r.enabled && (!r.startsAt || r.s
 // ---------------- Nomzodlar (hisoblash va "kutilmoqda" taxmini uchun umumiy) ----------------
 interface Cand { creatorId: number; key: string; amountMinor: number; matureAt: number; kind: string; paymentId: string | null; basis: Record<string, unknown> }
 const hist = (db: DatabaseSync, ledgerId: number, actor: number | null, from: string | null, to: string, note: string | null, now: number): void => { db.prepare('INSERT INTO creator_ledger_history (ledger_id, ts, actor_id, from_status, to_status, note) VALUES (?, ?, ?, ?, ?, ?)').run(ledgerId, now, actor, from, to, note); };
-const creatorOk = (db: DatabaseSync, id: number): boolean => one<{ ok: number }>(db, "SELECT COUNT(*) AS ok FROM players p LEFT JOIN creator_profiles cp ON cp.player_id = p.id WHERE p.id = ? AND p.role = 'creator' AND COALESCE(cp.status, 'approved') = 'approved'", id)?.ok === 1;
+export const creatorOk = (db: DatabaseSync, id: number): boolean => one<{ ok: number }>(db, "SELECT COUNT(*) AS ok FROM players p LEFT JOIN creator_profiles cp ON cp.player_id = p.id WHERE p.id = ? AND p.role = 'creator' AND COALESCE(cp.status, 'approved') = 'approved'", id)?.ok === 1;
 const activatedEver = (db: DatabaseSync, pid: number): boolean => !!one(db, "SELECT 1 FROM xp_events WHERE player_id = ? AND source IN ('placement','lesson','mock') AND accepted > 0 LIMIT 1", pid);
-const flaggedPlayer = (db: DatabaseSync, creator: number, pid: number, fp: string | null, click: string | null): boolean =>
+export const flaggedPlayer = (db: DatabaseSync, creator: number, pid: number, fp: string | null, click: string | null): boolean =>
   !!one(db, 'SELECT 1 FROM creator_flags WHERE dedupe_key = ?', `sr:${creator}:${pid}`)
   || (fp !== null && !!one(db, "SELECT 1 FROM creator_flags WHERE resolved = 0 AND kind = 'same_device_signups' AND dedupe_key LIKE ?", `sds:${creator}:${fp}:%`))
   || (click !== null && !!one(db, 'SELECT 1 FROM creator_flags WHERE resolved = 0 AND dedupe_key = ?', `cr:${click}`));
