@@ -13,6 +13,7 @@ import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
 import { listeningTests } from '../src/content/listeningTests';
 import { readingTests } from '../src/content/readingTests';
 import { consumeReset, ensureResetTable, offerReset, resetValid } from './passwordReset';
+import { ensureElchiTables, elchiInfo, onVideoApproved } from './elchi';
 import { ensurePartnersTable, listApplications, publicTerms, setApplicationStatus, submitApplication } from './partners';
 import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
@@ -95,6 +96,7 @@ ensureUserEventsTable(db);
 ensureMemoryTable(db);
 ensureLeadsTable(db);
 ensurePartnersTable(db);
+ensureElchiTables(db);
 ensureResetTable(db);
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
@@ -434,6 +436,7 @@ const httpServer = createServer(async (req, res) => {
       if (sub === 'campaigns' && req.method === 'GET') return send(res, 200, { campaigns: listCampaigns(db, false) });
       if (sub === 'posts' && req.method === 'GET') return send(res, 200, { posts: postsOf(db, me.id) });
       if (sub === 'posts' && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { post: savePost(db, me.id, b) }); }
+      if (sub === 'elchi' && req.method === 'GET') return send(res, 200, elchiInfo(db, me.id));
       if (sub === 'rewards' && req.method === 'GET') return send(res, 200, { ...creatorEarnings(db, me.id), video: videoPayOf(db, me.id) });
       if (sub === 'ranking' && req.method === 'GET') return send(res, 200, creatorRanking(db));
       return send(res, 404, { error: 'Topilmadi' });
@@ -477,7 +480,10 @@ const httpServer = createServer(async (req, res) => {
       if (sub === 'ledger' && req.method === 'GET') return send(res, 200, { entries: adminLedger(db, url.searchParams.get('status') || undefined), balances: balances(db), rules: listRules(db), attribution: creditMode() });
       const dm = sub.match(/^ledger\/(\d+)\/(decision|paid|history)$/);
       if (dm && req.method === 'GET' && dm[2] === 'history') return send(res, 200, { history: ledgerHistory(db, Number(dm[1])) });
-      if (dm && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: dm[2] === 'paid' ? markPaid(db, adm.id, Number(dm[1]), b.ref) : decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note) }); }
+      if (dm && req.method === 'POST') { const b = await readJson(req, 1024); if (dm[2] === 'paid') return send(res, 200, { entry: markPaid(db, adm.id, Number(dm[1]), b.ref) });
+        const entry = decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note);
+        const elchi = entry.status === 'approved' ? onVideoApproved(db, Number(dm[1])) : null; // blogerning birinchi tasdiqlangan videosi — elchiga to'lov
+        return send(res, 200, { entry, elchi }); }
       if (sub === 'refund' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, recordRefund(db, adm.id, b.paymentId, b.amountMinor, b.note)); }
       if (sub === 'accrue' && req.method === 'POST') return send(res, 200, accrueRewards(db));
       // Video uchun to'lov: shartlar (admin tahrirlaydi), navbat va 15-kun hisob-kitobi
@@ -831,7 +837,7 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/partners/apply') {
       const b = await readJson(req, 4096);
       let pid: number | null = null; try { const tk = String(req.headers['x-token'] ?? ''); if (tk) pid = byToken(db, tk).id; } catch { /* mehmon */ }
-      return send(res, 200, submitApplication(db, b, { ip, playerId: pid }));
+      return send(res, 200, submitApplication(db, b, { ip, playerId: pid, fp: clientFingerprint(db, ip, String(req.headers['user-agent'] ?? '')) }));
     }
     if (req.method === 'GET' && url.pathname === '/api/staff/partners') { requireRole(db, String(req.headers['x-token'] ?? ''), []); return send(res, 200, { apps: listApplications(db, url.searchParams.get('status')) }); }
     if (req.method === 'POST' && url.pathname === '/api/staff/partners') { requireRole(db, String(req.headers['x-token'] ?? ''), []); const b = await readJson(req); setApplicationStatus(db, Number(b.id), b.status, b.note); return send(res, 200, { ok: true }); }

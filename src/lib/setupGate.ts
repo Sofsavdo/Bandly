@@ -26,7 +26,8 @@ export const needsLogin = (hash: string, account: boolean): boolean => !account 
 export function nextOf(hash: string): string {
   const q = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '';
   const n = new URLSearchParams(q).get('next') ?? '';
-  return /^#\/[\w\-/]*$/.test(n) && !LOGIN.test(n) ? n : '#/';
+  // So'rov qismi ham saqlanadi (masalan, elchi havolasi #/partners?elchi=kod) — faqat oddiy belgilar
+  return /^#\/[\w\-/]*(\?[\w=&-]*)?$/.test(n) && !LOGIN.test(n) ? n : '#/';
 }
 /** Yagona kirish qoidasi: mehmon ichki sahifada — login sahifasiga (qaytish manzili bilan); kirgan o'quvchi login sahifasida — qaytish manziliga. */
 export function authRoute(hash: string, account: boolean): string | null {

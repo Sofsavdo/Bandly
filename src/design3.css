@@ -1833,3 +1833,12 @@ main.container.fit .idle-call { margin-block: 0; }
 .danger-zone summary { color: var(--muted); font-weight: 600; } .danger-zone { margin-top: 18px; }
 /* Tariflar (telefon): tavsiya etilgan tarif birinchi, bepul — oxirida (UX tekshiruvi 2026-11-26: pullik tariflar ~900 px pastdan boshlanardi) */
 @media (max-width: 719px) { .plans4 .plan.rec { order: -1; } .plans4 .plan.free { order: 10; } }
+
+/* Elchi kartasi (hamkor kabineti): 3 ko'rsatkich bitta qatorda, ro'yxat ixcham */
+.elchi-card .elchi-kpis { margin: 12px 0 8px; gap: 8px; }
+.elchi-card .elchi-kpis .kpi2 { padding: 10px; border-radius: 16px; }
+.elchi-card .elchi-kpis .kpi2 span, .elchi-card .elchi-kpis .kpi2 small { font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; }
+.elchi-card .invite-link code { overflow-wrap: anywhere; }
+.elchi-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+.elchi-list li { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); font-size: 14px; }
+.elchi-list .ok { color: var(--ok); font-weight: 650; }

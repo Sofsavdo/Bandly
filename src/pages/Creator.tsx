@@ -6,6 +6,7 @@ import { getAccount } from '../lib/account';
 import { CreatorLinks } from '../components/CreatorLinks';
 import { CreatorPosts } from '../components/CreatorPosts';
 import { CreatorVideos } from '../components/CreatorVideos';
+import { CreatorElchi } from '../components/CreatorElchi';
 import { fmtSum } from '../lib/pay';
 import { L } from '../i18n';
 
@@ -26,9 +27,10 @@ export default function Creator() {
     <div className="creator-cab">
       <section className="card page-head t-peach">
         <h2 style={{ margin: 0 }}><Megaphone size={22} style={{ verticalAlign: -3 }} /> {L('Hamkor kabineti')}</h2>
-        <p style={{ margin: '6px 0 0' }}>{L('Video joylang — har bir video uchun to‘lov oling. Shu yerda videolaringiz holati va balansingiz.')}</p>
+        <p style={{ margin: '6px 0 0' }}>{L('Video joylang yoki blogerlarni olib keling — ikkalasi uchun ham to‘lov olasiz. Shu yerda holat va balansingiz.')}</p>
       </section>
       <CreatorVideos />
+      <CreatorElchi />
       <details className="card fold">
         <summary><h3 style={{ display: 'inline', margin: 0 }}>{L('Tayyor post matnlari')}</h3></summary>
         <p className="muted" style={{ fontSize: 13 }}>{L('Nusxalang va Telegram, Instagram yoki TikTok’da ulashing — havolangiz matn ichida. Eng yaxshi natija: o‘z daraja testi natijangizni yoki mock balingizni ko‘rsatib, obunachilarni bellashuvga chaqirish.')}</p>

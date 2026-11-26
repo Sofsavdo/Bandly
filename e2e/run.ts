@@ -450,6 +450,49 @@ try {
     await a.context().close();
   });
 
+  await step('L. Elchi: kabinetdagi elchi havolasi → bloger kiradi, ariza qoldiradi (1 000 dan kam — yo‘q) → elchi kabinetida va admin arizasida ko‘rinadi', async () => {
+    const mk = async (nickname: string) => String((await api('/api/join', { method: 'POST', body: JSON.stringify({ nickname }) })).json.token);
+    const elT = await mk('E2E Elchi'), blT = await mk('E2E Elchi Bloger');
+    assert.equal((await api('/api/staff/role', { method: 'POST', token: adminToken, body: JSON.stringify({ nickname: 'E2E Elchi', role: 'creator' }) })).status, 200);
+    const el = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: elT, nickname: 'E2E Elchi' }) });
+    await el.goto(`${base}/#/creator`);
+    await el.getByRole('heading', { name: 'Elchi: blogerlarni olib keling' }).waitFor({ timeout: 10000 });
+    const cab = (await el.locator('.elchi-card').innerText()).replace(/[\s  ]+/g, ' ');
+    assert.match(cab, /Har faol bloger uchun 25 000 so‘m\. Oyda 5 ta — \+50 000 so‘m\. Oyda 10 ta — \+150 000 so‘m\./, 'egasi tasdiqlagan summalar');
+    const link = (await el.locator('.elchi-card code').innerText()).trim();
+    assert.match(link, /#\/partners\?elchi=[a-z2-9]{6,10}$/);
+    // Mehmon: elchi havolasi — avval kirish kerak
+    const g = await page();
+    await g.goto(link.replace(/^https?:\/\/[^/]+/, base));
+    await g.getByRole('heading', { name: 'Video qilmaysizmi? Elchi bo‘ling' }).waitFor({ timeout: 8000 });
+    await g.getByText('Sizni Sellzen elchisi taklif qildi.').waitFor({ timeout: 8000 });
+    assert.equal(await g.getByRole('button', { name: 'Ariza yuborish' }).count(), 0, 'mehmon elchi havolasi bilan ariza yubormaydi');
+    assert.ok(await g.getByRole('link', { name: 'Kirish va ariza yuborish' }).count(), 'kirish havolasi');
+    await g.context().close();
+    // Bloger hisobi bilan
+    const b = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: blT, nickname: 'E2E Elchi Bloger' }) });
+    await b.goto(link.replace(/^https?:\/\/[^/]+/, base));
+    await b.getByText('Sizni Sellzen elchisi taklif qildi.').waitFor({ timeout: 8000 });
+    await b.getByLabel('Ismingiz').fill('E2E Elchi Bloger');
+    await b.getByLabel('Sahifangiz yoki kanalingiz').fill('instagram.com/e2e.elchi.bloger');
+    await b.getByLabel('Telegram yoki telefon').fill('@e2e_elchi_bloger');
+    await b.getByLabel('Ma’lumotlarimni hamkorlik bo‘yicha bog‘lanish uchun ishlatishga roziman').check();
+    await b.getByLabel('Obunachilar soni').selectOption('<1k');
+    await b.getByText('Video uchun hamkorlikka kamida 1 000 obunachi kerak.', { exact: false }).waitFor({ timeout: 5000 });
+    assert.ok(await b.getByRole('button', { name: 'Ariza yuborish' }).isDisabled(), '1 000 dan kam — yuborib bo‘lmaydi');
+    await b.getByLabel('Obunachilar soni').selectOption('1k-10k');
+    await b.getByRole('button', { name: 'Ariza yuborish' }).click();
+    await b.getByText('Arizangiz qabul qilindi').waitFor({ timeout: 8000 });
+    await b.context().close();
+    const info = (await api('/api/creator/elchi', { token: elT })).json;
+    assert.deepEqual(info.bloggers.map((x: { nickname: string; activeAt: number | null }) => [x.nickname, x.activeAt]), [['E2E Elchi Bloger', null]], 'bloger elchiga bog‘landi, hali faol emas');
+    const apps = (await api('/api/staff/partners', { token: adminToken })).json.apps as { name: string; elchi: string | null }[];
+    assert.equal(apps.find((x) => x.name === 'E2E Elchi Bloger')?.elchi, 'E2E Elchi', 'admin arizada elchini ko‘radi');
+    await el.reload();
+    await el.getByText('birinchi video kutilmoqda').waitFor({ timeout: 8000 });
+    await el.context().close();
+  });
+
   assert.deepEqual(problems, [], 'brauzerda JS xatosi yoki 5xx bo‘lmasligi kerak');
   console.log('e2e: OK');
 } catch (e) {

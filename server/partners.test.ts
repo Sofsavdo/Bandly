@@ -21,7 +21,7 @@ assert.throws(() => submitApplication(db, { ...ok, link: 'x' }, { ip: '1' }), /h
 assert.throws(() => submitApplication(db, { ...ok, kind: 'boss' }, { ip: '1' }), /Kim/);
 const a1 = submitApplication(db, ok, { ip: '1' }, 1000);
 assert.equal(a1.duplicate, false);
-assert.deepEqual(submitApplication(db, ok, { ip: '1' }, 2000), { id: a1.id, duplicate: true }, 'bir xil aloqa — takroriy ariza yaratilmaydi');
+assert.deepEqual(submitApplication(db, ok, { ip: '1' }, 2000), { id: a1.id, duplicate: true, elchi: false }, 'bir xil aloqa — takroriy ariza yaratilmaydi');
 for (let i = 0; i < 5; i++) submitApplication(db, { ...ok, contact: `+99890000000${i}` }, { ip: '9' }, 3000 + i);
 assert.throws(() => submitApplication(db, { ...ok, contact: '+998900000009' }, { ip: '9' }, 3100), /Juda ko/);
 const list = listApplications(db);

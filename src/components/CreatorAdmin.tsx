@@ -152,7 +152,7 @@ function Posts({ run }: { run: Run }) {
 }
 
 interface Tier { min: number; som: number }
-interface VTerms { enabled: boolean; baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
+interface VTerms { enabled: boolean; baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; elchiSom: number; elchiTiers: Tier[]; updatedAt: number | null }
 interface VCalc { baseSom: number; views: number; viewBonusSom: number; learners: number; learnerBonusSom: number; totalSom: number }
 interface VItem { postId: number; status: string; caption?: string | null; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: { id: number; amountMinor: number; status: string; basis: VCalc | null; payBy: number | null; overdue: boolean } | null }
 const bonus = (t: Tier[], n: number): number => t.reduce((s, x) => (n >= x.min ? x.som : s), 0);
@@ -167,7 +167,7 @@ function VideoPay({ run }: { run: Run }) {
   useEffect(load, [load]);
   if (!d || !t) return <p className="muted">{L('Yuklanmoqda…')}</p>;
   const saveTerms = () => void run(async () => { const r = await call<{ terms: VTerms }>('/api/creatoradmin/video-terms', t); setT(r.terms); load(); }, L('Shartlar saqlandi'));
-  const tierRows = (k: 'viewTiers' | 'learnerTiers', unit: string) => (
+  const tierRows = (k: 'viewTiers' | 'learnerTiers' | 'elchiTiers', unit: string) => (
     <div>
       {t[k].map((x, i) => (
         <div className="row tier-row" key={i}>
@@ -241,10 +241,14 @@ function VideoPay({ run }: { run: Run }) {
           <label>{L('Asosiy to‘lov (so‘m)')}<input className="input" type="number" min={0} value={t.baseSom} onChange={(e) => setT({ ...t, baseSom: Number(e.target.value) })} /></label>
           <label>{L('Hisoblash muddati (kun)')}<input className="input" type="number" min={1} max={90} value={t.windowDays} onChange={(e) => setT({ ...t, windowDays: Number(e.target.value) })} /></label>
           <label>{L('To‘lov muddati (kun)')}<input className="input" type="number" min={1} max={60} value={t.payDays} onChange={(e) => setT({ ...t, payDays: Number(e.target.value) })} /></label>
-          <label>{L('Instagram sahifamiz')}<input className="input" value={t.instagram} placeholder={'sellzen.uz'} onChange={(e) => setT({ ...t, instagram: e.target.value })} /></label>
+          <label>{L('Instagram sahifamiz')}<input className="input" value={t.instagram} placeholder={'sellzen.ai'} onChange={(e) => setT({ ...t, instagram: e.target.value })} /></label>
         </div>
         <h4 className="list-h">{L('Ko‘rishlar bonusi: norma (ko‘rish) → bonus (so‘m)')}</h4>{tierRows('viewTiers', L('ko‘rish'))}
         <h4 className="list-h">{L('O‘quvchilar bonusi: norma (o‘quvchi) → bonus (so‘m)')}</h4>{tierRows('learnerTiers', L('o‘quvchi'))}
+        <h4 className="list-h">{L('Elchi: blogerlarni olib kelgani uchun')}</h4>
+        <div className="row"><label>{L('Har faol bloger uchun (so‘m)')}<input className="input" type="number" min={0} value={t.elchiSom} onChange={(e) => setT({ ...t, elchiSom: Number(e.target.value) })} /></label></div>
+        <p className="muted" style={{ fontSize: 13 }}>{L('Faol bloger — birinchi videosi hisobi tasdiqlangan bloger. Oylik bonus: shu oydagi faol blogerlar soni → bonus (so‘m).')}</p>
+        {tierRows('elchiTiers', L('faol bloger'))}
         <p className="muted" style={{ fontSize: 13 }}>{L('Eng yuqori erishilgan pog‘ona to‘lanadi. O‘zgarish faqat keyingi hisob-kitoblarga ta’sir qiladi.')}</p>
         <button className="btn primary sm" onClick={saveTerms}>{L('Shartlarni saqlash')}</button>
       </details>
@@ -363,9 +367,9 @@ function Ledger({ run }: { run: Run }) {
 
 /** Hamkorlik sahifasidan kelgan arizalar: aloqa, havola, auditoriya; holat — yangi → bog'lanildi → tasdiqlandi/rad etildi.
  *  Tasdiqlangach hamkor rolini "Xodimlar" bo'limida laqab bo'yicha beriladi (o'quvchi hisobi bo'lsa — laqabi shu yerda ko'rinadi). */
-interface PartnerApp { id: number; kind: string; name: string; link: string; audience: string; contact: string; note: string | null; nickname: string | null; status: string; adminNote: string | null; createdAt: number }
+interface PartnerApp { elchi: string | null; id: number; kind: string; name: string; link: string; audience: string; contact: string; note: string | null; nickname: string | null; status: string; adminNote: string | null; createdAt: number }
 const APP_STATUS: Record<string, string> = { new: L('Yangi'), contacted: L('Bog‘lanildi'), approved: L('Tasdiqlandi'), rejected: L('Rad etildi') };
-const APP_KIND: Record<string, string> = { blogger: L('Bloger'), teacher: L('O‘qituvchi'), learner: L('O‘quvchi') };
+const APP_KIND: Record<string, string> = { blogger: L('Bloger'), teacher: L('O‘qituvchi'), learner: L('O‘quvchi'), elchi: L('Elchi') };
 function Applications({ run }: { run: (fn: () => Promise<unknown>, ok?: string) => Promise<void> }) {
   const [apps, setApps] = useState<PartnerApp[] | null>(null);
   const load = useCallback(() => { void call<{ apps: PartnerApp[] }>('/api/staff/partners').then((r) => setApps(r.apps)).catch(() => setApps([])); }, []);
@@ -381,9 +385,9 @@ function Applications({ run }: { run: (fn: () => Promise<unknown>, ok?: string) 
           {apps.map((a) => (
             <tr key={a.id}>
               <td>{new Date(a.createdAt).toLocaleDateString()}</td>
-              <td><b>{a.name}</b><br /><span className="muted">{APP_KIND[a.kind] ?? a.kind}{a.nickname ? ` · ${a.nickname}` : ''}</span>{a.note && <><br /><span className="muted">{a.note}</span></>}</td>
+              <td><b>{a.name}</b><br /><span className="muted">{APP_KIND[a.kind] ?? a.kind}{a.nickname ? ` · ${a.nickname}` : ''}{a.elchi ? ` · ${L('elchi: {0}', [a.elchi])}` : ''}</span>{a.note && <><br /><span className="muted">{a.note}</span></>}</td>
               <td><a href={href(a.link)} target="_blank" rel="noopener noreferrer">{a.link.replace(/^https?:\/\//, '').slice(0, 40)}</a></td>
-              <td>{a.audience}</td>
+              <td>{a.audience === '-' ? '—' : a.audience}</td>
               <td>{a.contact}</td>
               <td>
                 <select value={a.status} aria-label={L('Holat')} onChange={(e) => void run(async () => { await call('/api/staff/partners', { id: a.id, status: e.target.value, note: a.adminNote ?? '' }); load(); }, L('Saqlandi'))}>
