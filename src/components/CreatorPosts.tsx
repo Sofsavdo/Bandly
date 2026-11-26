@@ -9,7 +9,7 @@ interface Campaign { id: number; name: string; brief: string; rules: string; req
 interface Post { id: number; platform: string; url: string | null; lang: string | null; postedOn: string | null; caption: string | null; status: string; claimedViews: number | null; viewsVerified: boolean; verifiedViews: number | null; adminNote: string | null; history: { ts: number; to: string; note: string | null; byAdmin: boolean }[]; linkCode: string | null; campaignId: number | null }
 interface Entry { id: number; kind: string; amountMinor: number; currency: string; status: string; createdAt: number }
 interface Link { code: string; label: string }
-interface VideoPay { terms: { enabled: boolean; baseSom: number; windowDays: number }; items: { postId: number; platform: string; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; entry: { amountMinor: number; status: string } | null }[] }
+interface VideoPay { terms: { enabled: boolean; baseSom: number; windowDays: number; payDays: number }; items: { postId: number; platform: string; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; entry: { amountMinor: number; status: string; payBy: number | null; overdue: boolean } | null }[] }
 const PLATFORMS = ['instagram', 'tiktok', 'youtube', 'telegram', 'facebook', 'x', 'other'];
 const LANGS = ['uz', 'en', 'ru', 'tg', 'ky', 'kk'];
 
@@ -87,28 +87,28 @@ export function CreatorPosts() {
       {rw?.video?.terms.enabled && (
         <section className="card">
           <h3 style={{ marginTop: 0 }}>{L('Video uchun to‘lov')}</h3>
-          <p className="muted" style={{ fontSize: 13 }}>{L('Tasdiqlangan har bir video joylanganiga {0} kun to‘lganda bir marta hisoblanadi: asosiy to‘lov + ko‘rishlar va kelgan o‘quvchilar bonusi.', [rw.video.terms.windowDays])}</p>
+          <p className="muted" style={{ fontSize: 13 }}>{L('Har bir video joylanganidan {0} kun o‘tib hisoblanadi. Summa tasdiqlangach {1} kun ichida to‘lanadi.', [rw.video.terms.windowDays, rw.video.terms.payDays])}</p>
           {rw.video.items.length === 0 ? <p className="muted">{L('Tasdiqlangan video hali yo‘q. Videoni yuqoridagi shakl orqali topshiring.')}</p> : (
             <div className="table-scroll"><table className="data"><thead><tr><th>{L('Video')}</th><th>{L('Hisob kuni')}</th><th>{L('Kelgan o‘quvchilar')}</th><th>{L('Natija')}</th></tr></thead><tbody>
               {rw.video.items.map((v) => <tr key={v.postId}><td>{v.platform} · {v.postedOn ?? '—'}</td><td>{v.dueAt ? fmtDate(v.dueAt) : '—'}</td><td>{v.learners}</td>
-                <td>{v.entry ? <><b>{fmtSum(Math.round(v.entry.amountMinor / 100))} {L('so‘m')}</b> <small className="muted">· {LEDGER_STATUS()[v.entry.status] ?? v.entry.status}</small></> : v.due ? L('Admin hisoblaydi') : L('Hisob kutilmoqda')}</td></tr>)}
+                <td>{v.entry ? <><b>{fmtSum(Math.round(v.entry.amountMinor / 100))} {L('so‘m')}</b> <small className="muted">· {LEDGER_STATUS()[v.entry.status] ?? v.entry.status}</small>{v.entry.status === 'approved' && v.entry.payBy ? <><br /><small className="muted">{L('{0} gacha to‘lanadi', [fmtDate(v.entry.payBy)])}</small></> : null}</> : v.due ? L('Admin hisoblaydi') : L('Hisob kutilmoqda')}</td></tr>)}
             </tbody></table></div>)}
         </section>
       )}
       {rw && (
         <section className="card">
-          <h3 style={{ marginTop: 0 }}>{L('Bonus / komissiya holati')}</h3>
+          <h3 style={{ marginTop: 0 }}>{L('Balansingiz')}</h3>
           {!rw.enabled && !rw.video?.terms.enabled && <p className="muted">{L('Hozircha mukofot dasturi yoqilmagan: hisoblash va to‘lovlar admin tasdiqlagan qoidalar bilan keyin boshlanadi. Hamkorlik shartlari alohida kelishiladi.')}</p>}
           {rw.terms.length > 0 && (<><h4 className="list-h">{L('Amaldagi mukofot shartlari')}</h4><ul>{rw.terms.map((t) => <li key={t.name}><b>{t.name}</b> — {RULE_KIND()[t.kind] ?? t.kind}: {t.kind === 'paid_pct' ? `${t.pct}%` : `${fmtSum(Math.round((t.amountMinor ?? 0) / 100))} ${L('so‘m')}`} · {L('kutish davri {0} kun', [t.holdDays])}{t.endsAt ? ` · ${L('muddati: {0}', [fmtDate(t.endsAt)])}` : ''}</li>)}</ul></>)}
           <div className="kpis">
-            <div className="kpi2"><span>{L('Kutish davrida')}</span><b>{fmtSum(Math.round(rw.inHoldMinor / 100))}</b></div>
-            <div className="kpi2"><span>{L('Kutilmoqda')}</span><b>{fmtSum(Math.round(rw.balances.pending / 100))}</b></div>
-            <div className="kpi2"><span>{L('Tasdiqlangan')}</span><b>{fmtSum(Math.round(rw.balances.approved / 100))}</b></div>
+            {rw.enabled && <div className="kpi2"><span>{L('Kutish davrida')}</span><b>{fmtSum(Math.round(rw.inHoldMinor / 100))}</b></div>}
+            <div className="kpi2"><span>{L('Tasdiq kutilmoqda')}</span><b>{fmtSum(Math.round(rw.balances.pending / 100))}</b></div>
+            <div className="kpi2"><span>{L('To‘lanadi')}</span><b>{fmtSum(Math.round(rw.balances.approved / 100))}</b></div>
             <div className="kpi2"><span>{L('To‘langan')}</span><b>{fmtSum(Math.round(rw.balances.paid / 100))}</b></div>
           </div>
           {rw.entries.length > 0 && <div className="table-scroll"><table className="data"><thead><tr><th>{L('Sana')}</th><th>{L('Turi')}</th><th>{L('Summa')}</th><th>{L('Holat')}</th></tr></thead><tbody>
             {rw.entries.map((e) => <tr key={e.id}><td>{fmtDate(e.createdAt)}</td><td>{LEDGER_KIND()[e.kind] ?? e.kind}</td><td>{fmtSum(Math.round(e.amountMinor / 100))} {e.currency === 'UZS' ? L('so‘m') : e.currency}</td><td>{LEDGER_STATUS()[e.status] ?? e.status}</td></tr>)}</tbody></table></div>}
-          <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>{L('Mukofot faqat shartlarda ko‘rsatilgan hodisalar uchun hisoblanadi. Qaytarilgan to‘lovlar ayriladi; ro‘yxatdan o‘tganlik va tasdiqlanmagan ko‘rishlar uchun to‘lov yo‘q. Kutish davridagi summa taxminiy.')}</p>
+          <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>{L('Summalar so‘mda. «Tasdiq kutilmoqda» — admin hisoblagan, hali tasdiqlamagan; «To‘lanadi» — tasdiqlangan, muddatida to‘lanadi; «To‘langan» — sizga o‘tkazilgan.')}</p>
         </section>
       )}
       <section className="card">

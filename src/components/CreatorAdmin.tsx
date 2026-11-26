@@ -152,9 +152,9 @@ function Posts({ run }: { run: Run }) {
 }
 
 interface Tier { min: number; som: number }
-interface VTerms { enabled: boolean; baseSom: number; windowDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
+interface VTerms { enabled: boolean; baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
 interface VCalc { baseSom: number; views: number; viewBonusSom: number; learners: number; learnerBonusSom: number; totalSom: number }
-interface VItem { postId: number; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: { id: number; amountMinor: number; status: string; basis: VCalc | null } | null }
+interface VItem { postId: number; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: { id: number; amountMinor: number; status: string; basis: VCalc | null; payBy: number | null; overdue: boolean } | null }
 const bonus = (t: Tier[], n: number): number => t.reduce((s, x) => (n >= x.min ? x.som : s), 0);
 const day = (t: number | null): string => (t === null ? '—' : new Date(t).toISOString().slice(0, 10));
 
@@ -186,6 +186,7 @@ function VideoPay({ run }: { run: Run }) {
         <div className="row">
           <label>{L('Asosiy to‘lov (so‘m)')}<input className="input" type="number" min={0} value={t.baseSom} onChange={(e) => setT({ ...t, baseSom: Number(e.target.value) })} /></label>
           <label>{L('Hisoblash muddati (kun)')}<input className="input" type="number" min={1} max={90} value={t.windowDays} onChange={(e) => setT({ ...t, windowDays: Number(e.target.value) })} /></label>
+          <label>{L('To‘lov muddati (kun)')}<input className="input" type="number" min={1} max={60} value={t.payDays} onChange={(e) => setT({ ...t, payDays: Number(e.target.value) })} /></label>
           <label>{L('Instagram sahifamiz')}<input className="input" value={t.instagram} placeholder={'sellzen.uz'} onChange={(e) => setT({ ...t, instagram: e.target.value })} /></label>
         </div>
         <h4 className="list-h">{L('Ko‘rishlar bonusi: norma (ko‘rish) → bonus (so‘m)')}</h4>{tierRows('viewTiers', L('ko‘rish'))}
@@ -213,6 +214,7 @@ function VideoPay({ run }: { run: Run }) {
               <>
                 <p style={{ margin: '4px 0' }}>{L('Asosiy {0} + ko‘rishlar ({1}) {2} + o‘quvchilar ({3}) {4} = {5} so‘m', [fmtSum(b.baseSom), fmtSum(b.views), fmtSum(b.viewBonusSom), b.learners, fmtSum(b.learnerBonusSom), fmtSum(b.totalSom)])} · <b>{LEDGER_STATUS()[v.entry.status] ?? v.entry.status}</b></p>
                 {v.entry.status === 'pending' && <div className="row"><input className="input" value={fm.note} placeholder={L('Izoh (rad etishda majburiy)')} onChange={(e) => set({ note: e.target.value })} /><button className="btn primary sm" onClick={() => decide('approved')}>{L('Tasdiqlash')}</button><button className="btn sm" onClick={() => decide('rejected')}>{L('Rad etish')}</button></div>}
+                {v.entry.status === 'approved' && v.entry.payBy && <p className={v.entry.overdue ? 'notice' : 'evidence'} style={{ margin: '4px 0' }}>{v.entry.overdue ? L('To‘lov muddati o‘tdi: {0}', [day(v.entry.payBy)]) : L('{0} gacha to‘lanishi kerak', [day(v.entry.payBy)])}</p>}
                 {v.entry.status === 'approved' && <div className="row"><input className="input" value={fm.ref} placeholder={L('To‘lov havolasi yoki izohi')} onChange={(e) => set({ ref: e.target.value })} /><button className="btn primary sm" onClick={paid}>{L('To‘landi')}</button></div>}
               </>
             ) : !v.due ? (

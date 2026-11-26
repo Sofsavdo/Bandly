@@ -14,7 +14,10 @@ const throwsMsg = (fn: () => unknown, re: RegExp, msg: string) => assert.throws(
 // 1) Hisob formulasi: eng yuqori pog'ona (pog'onalar qo'shilmaydi)
 {
   const t = { ...DEFAULT_TERMS, updatedAt: null };
-  assert.equal(calcVideo(t, 9_999, 49).totalSom, 50_000, 'norma yetmasa — faqat asosiy to‘lov');
+  // Egasining misollari (2026-11-26)
+  assert.equal(calcVideo(t, 9_999, 49).totalSom, 50_000, '9 999 ko‘rish + 49 o‘quvchi → faqat video uchun 50 000');
+  assert.equal(calcVideo(t, 99_000, 99).totalSom, 150_000, '99 000 ko‘rish + 99 o‘quvchi → 50 000 + 50 000 + 50 000');
+  assert.equal(calcVideo(t, 100_000, 100).totalSom, 400_000, '100 000 ko‘rish + 100 o‘quvchi → 50 000 + 200 000 + 150 000');
   assert.deepEqual(calcVideo(t, 10_000, 50), { baseSom: 50_000, views: 10_000, viewBonusSom: 50_000, learners: 50, learnerBonusSom: 50_000, totalSom: 150_000 });
   const top = calcVideo(t, 150_000, 120);
   assert.equal(top.viewBonusSom, 200_000); assert.equal(top.learnerBonusSom, 150_000);
@@ -56,8 +59,17 @@ const throwsMsg = (fn: () => unknown, re: RegExp, msg: string) => assert.throws(
   throwsMsg(() => settleVideo(db, admin, post.id, { views: 500_000, bio: true, comment: true, tag: true }, at + 15 * DAY), /bir marta/, 'keyingi o‘sish qo‘shimcha to‘lanmaydi');
 
   const row = adminLedger(db).find((x) => x.id === e.id)!; assert.equal(row.kind, 'video');
+  assert.equal(videoQueue(db, at + 500)[0]!.entry!.payBy, null, 'tasdiqlanmaguncha to‘lov muddati yo‘q');
   decideEntry(db, admin, e.id, 'approved', null, at + 1000);
+  const ap = videoQueue(db, at + 2000)[0]!.entry!;
+  assert.equal(ap.payBy, at + 1000 + 14 * DAY, 'tasdiqlangan summa 14 kun ichida to‘lanadi');
+  assert.equal(ap.overdue, false);
+  assert.equal(videoQueue(db, at + 1000 + 14 * DAY + 1)[0]!.entry!.overdue, true, '14 kun o‘tib to‘lanmagan — muddati o‘tgan');
+  setVideoTerms(db, admin, { payDays: 30 }, at + 1500);
+  assert.equal(videoQueue(db, at + 2000)[0]!.entry!.payBy, at + 1000 + 14 * DAY, 'muddat hisob paytidagi shart bo‘yicha — keyingi o‘zgarish ta’sir qilmaydi');
   assert.equal(markPaid(db, admin, e.id, 'Click #123', at + 2000).status, 'paid');
+  const pd = videoQueue(db, at + 20 * DAY)[0]!.entry!;
+  assert.equal(pd.overdue, false, 'to‘langan — muddati o‘tgan emas'); assert.equal(pd.payBy, at + 1000 + 14 * DAY, 'to‘langandan keyin ham tasdiq sanasidan hisoblanadi');
 
   const mine = videoPayOf(db, cid, at + 3000);
   assert.equal(mine.items.length, 1); assert.equal(mine.items[0]!.entry!.status, 'paid');
@@ -67,7 +79,8 @@ const throwsMsg = (fn: () => unknown, re: RegExp, msg: string) => assert.throws(
 // 3) Admin shartlarni tahrirlaydi; ochiq sahifa shu qiymatlarni ko'radi; o'chirilsa sahifada yo'q
 {
   const db = createDb(); const admin = byToken(db, join(db, 'Admin Ikki', T).token).id;
-  assert.equal(videoTerms(db).baseSom, 50_000, 'egasi belgilagan boshlang‘ich qiymat');
+  assert.equal(videoTerms(db).baseSom, 50_000, 'egasi belgilagan boshlang‘ich qiymat'); assert.equal(videoTerms(db).payDays, 14);
+  throwsMsg(() => setVideoTerms(db, admin, { payDays: 0 }), /To‘lov muddati/, 'to‘lov muddati 1–60');
   assert.deepEqual(publicTerms(db, T, {}).video?.learnerTiers, [{ min: 50, som: 50_000 }, { min: 100, som: 150_000 }]);
   throwsMsg(() => setVideoTerms(db, admin, { viewTiers: [{ min: 10, som: 5 }, { min: 10, som: 6 }] }), /takrorlanmasin/, 'bir xil norma');
   throwsMsg(() => setVideoTerms(db, admin, { instagram: 'yomon nom!' }), /Instagram/, 'Instagram nomi');

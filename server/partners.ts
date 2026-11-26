@@ -82,5 +82,5 @@ export function publicTerms(db: DatabaseSync, now = Date.now(), env: NodeJS.Proc
     .filter((r) => r.enabled && r.approvedAt !== null && r.campaignId === null && (r.startsAt === null || r.startsAt <= now) && (r.endsAt === null || r.endsAt > now))
     .map((r) => ({ kind: r.kind, pct: r.kind === 'paid_pct' ? r.pct : null, som: r.kind === 'paid_pct' || r.amountMinor === null ? null : Math.round(r.amountMinor / 100), holdDays: r.holdDays }));
   const v = videoTerms(db);
-  return { rules, invite: { xp: refXp(env), days: refPlanDays(env) }, video: v.enabled ? { baseSom: v.baseSom, windowDays: v.windowDays, viewTiers: v.viewTiers, learnerTiers: v.learnerTiers, instagram: v.instagram } : null };
+  return { rules, invite: { xp: refXp(env), days: refPlanDays(env) }, video: v.enabled ? { baseSom: v.baseSom, windowDays: v.windowDays, payDays: v.payDays, viewTiers: v.viewTiers, learnerTiers: v.learnerTiers, instagram: v.instagram } : null };
 }
