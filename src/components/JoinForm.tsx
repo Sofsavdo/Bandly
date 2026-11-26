@@ -8,13 +8,13 @@ import { track } from '../lib/track';
 import { L, getLang } from '../i18n';
 
 /** Hisobga kirish. Telegram sozlangan bo'lsa — faqat Telegram orqali (OD-05); aks holda vaqtincha laqab bilan. */
-export function JoinForm({ onJoined, text }: { onJoined: (a: Account) => void; text?: string }) {
+export function JoinForm({ onJoined, text, title }: { onJoined: (a: Account) => void; text?: string; title?: string }) {
   const [conf, setConf] = useState<AuthConfig | null>(null);
   useEffect(() => { void authConfig().then(setConf); }, []);
   if (!conf) return <div className="card"><p className="muted">{L('Yuklanmoqda…')}</p></div>;
   return (
     <>
-      {conf.telegram ? <TelegramJoin bot={conf.telegram.bot} host={conf.telegram.host} text={text} onJoined={onJoined} /> : <NickJoin text={text} onJoined={onJoined} />}
+      {conf.telegram ? <TelegramJoin bot={conf.telegram.bot} host={conf.telegram.host} text={text} onJoined={onJoined} /> : <NickJoin text={text} title={title} onJoined={onJoined} />}
       {!inTelegram() && (conf.google || conf.phone) && <AltLogin conf={conf} onJoined={onJoined} />}
     </>
   );
@@ -108,7 +108,7 @@ function TelegramJoin({ bot, host, text, onJoined }: { bot: string; host?: strin
   );
 }
 
-function NickJoin({ onJoined, text }: { onJoined: (a: Account) => void; text?: string }) {
+function NickJoin({ onJoined, text, title }: { onJoined: (a: Account) => void; text?: string; title?: string }) {
   const [nick, setNick] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -118,7 +118,7 @@ function NickJoin({ onJoined, text }: { onJoined: (a: Account) => void; text?: s
   };
   return (
     <div className="card">
-      <h3>{L('Hisob oching')}</h3>
+      <h3>{title ?? L('Hisob oching')}</h3>
       <p>{text ?? L('Parol shart emas. Laqabingiz reyting va duellarda ko‘rinadi.')}</p>
       <div className="row">
         <input type="text" value={nick} maxLength={20} placeholder={L('Laqab')} onChange={(e) => setNick(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void go(); }}

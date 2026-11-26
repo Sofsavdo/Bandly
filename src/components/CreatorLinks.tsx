@@ -44,7 +44,7 @@ export function FunnelView({ f }: { f: FunnelData }) {
           <div key={name} className="tr-row"><span>{name}</span><span className="tr-bar" aria-hidden="true"><i style={{ width: `${(n / max) * 100}%`, background: 'var(--brand)' }} /></span><b>{n}{rate ? <small className="muted"> · {rate}</small> : null}</b></div>
         ))}
       </div>
-      <p className="muted" style={{ fontSize: 13 }}>{L('Klik: {0} (noyob: {1}); filtrlangan (bot, takror, ichki): {2}.', [f.clicks, f.uniqueClicks, f.filteredClicks])} {L('Tashrif — kun va qurilma bo‘yicha taxminan noyob.')}</p>
+      <p className="muted" style={{ fontSize: 13 }}>{L('Klik: {0} (noyob: {1}); filtrlangan (bot, takror, ichki): {2}.', [f.clicks, f.uniqueClicks, f.filteredClicks])} {L('Tashrif — kun va qurilma bo‘yicha noyob.')}</p>
       <p className="muted" style={{ fontSize: 13, margin: 0 }}>{L('Sof tushum: {0} so‘m (tushum {1} − qaytarilgan {2}).', [fmtSum(f.netRevenue), fmtSum(f.grossRevenue), fmtSum(f.refundedSum)])}</p>
       {f.weakest && <p className="notice" style={{ marginTop: 8 }}>{L('Eng zaif bosqich: {0}.', [WEAK()[f.weakest]!])}</p>}
     </div>
@@ -68,7 +68,7 @@ export function CreatorLinks({ bot }: { bot: string | null }) {
   return (
     <>
       <section className="card">
-        <h3 style={{ marginTop: 0 }}><Link2 size={18} style={{ verticalAlign: -3 }} />  {L('Tracking linklar')}</h3>
+        <h3 style={{ marginTop: 0 }}><Link2 size={18} style={{ verticalAlign: -3 }} />  {L('Havolalar va voronka')}</h3>
         <p className="muted" style={{ fontSize: 13 }}>{L('Har bir post, video yoki bio uchun alohida link yarating — qaysi biri o‘quvchi olib kelganini ko‘rasiz. Bio uchun yengil sahifa ochiladi: foydalanuvchi veb-saytda davom etadi yoki Telegram’ni ochadi.')}</p>
         <div className="row">
           <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} aria-label={L('Link turi')}>{Object.entries(kinds).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>

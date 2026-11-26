@@ -18,7 +18,7 @@ export const LINK_KINDS = ['bio', 'reel', 'tiktok', 'telegram', 'youtube', 'camp
 export type LinkKind = (typeof LINK_KINDS)[number];
 export const LANGS = ['uz', 'en', 'ru', 'tg', 'ky', 'kk'] as const;
 const ALPH = 'abcdefghjkmnpqrstuvwxyz23456789';
-const MAX_LINKS_PER_CREATOR = 50;
+const MAX_LINKS_PER_CREATOR = 1000; // har bir video uchun alohida havola (oyiga 15+ video)
 /** Kredit rejimi: admin paneldagi sozlama (CREATOR_CREDIT_FIRST: 1 — birinchi havola, 0 — oxirgi) > eski Railway o'zgaruvchisi CREATOR_ATTRIBUTION > oxirgi havola. */
 export const creditMode = (env: NodeJS.ProcessEnv = process.env): 'first' | 'last' => {
   const v = env.CREATOR_CREDIT_FIRST;

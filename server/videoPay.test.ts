@@ -43,6 +43,8 @@ const throwsMsg = (fn: () => unknown, re: RegExp, msg: string) => assert.throws(
 
   const post = savePost(db, cid, { platform: 'instagram', url: 'https://www.instagram.com/reel/VID001/', lang: 'uz', postedOn: POSTED, caption: 'Sellzen bilan IELTS #reklama', linkCode: link.code, claimedViews: 120_000, submit: true }, T);
   throwsMsg(() => settleVideo(db, admin, post.id, { views: 1, bio: true, comment: true, tag: true }, T0 + 20 * DAY), /tasdiqlang/, 'tasdiqlanmagan video hisoblanmaydi');
+  assert.equal(videoQueue(db, T)[0]!.status, 'submitted', 'yangi video ham admin navbatida');
+  assert.equal(videoPayOf(db, cid, T).items.length, 0, 'tasdiqlanmagan video blogerning to‘lov ro‘yxatida yo‘q');
   reviewPost(db, admin, post.id, { decision: 'approved', note: 'ok' }, T);
 
   const q = videoQueue(db, T0 + 10 * DAY)[0]!;

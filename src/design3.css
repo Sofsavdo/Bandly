@@ -1766,3 +1766,31 @@ main.container.fit .idle-call { margin-block: 0; }
 .vp-rules { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 10px; }
 .vp-rules li { display: flex; gap: 8px; align-items: flex-start; }
 .vp-rules li svg { flex: none; margin-top: 3px; color: var(--teal); }
+/* Bloger kabineti: balans va videolar (CreatorVideos) */
+.cv-balance h3, .cv-videos h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.cv-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 8px; }
+.cv-kpis > div { display: grid; gap: 4px; padding: 12px; border-radius: 14px; background: var(--surface-2); min-width: 0; }
+.cv-kpis span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cv-kpis b { font-size: 16px; line-height: 1.2; overflow-wrap: anywhere; }
+.cv-balance .muted { margin: 4px 0 0; font-size: 13px; }
+.cv-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cv-new { display: grid; gap: 8px; padding: 14px; margin: 0 0 12px; border-radius: 16px; background: var(--lilac-50); }
+.cv-step { display: flex; gap: 10px; align-items: flex-start; margin: 0; font-weight: 600; }
+.cv-step b { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--surface); font-size: 13px; }
+.cv-new .invite-link { background: var(--surface); }
+.cv-form { display: grid; gap: 8px; }
+.cv-form label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.cv-form .input { width: 100%; }
+@media (min-width: 720px) { .cv-form { grid-template-columns: 1fr auto auto; align-items: end; } }
+.cv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cv-list li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; }
+.cv-list li p { margin: 4px 0 0; font-size: 14px; }
+.cv-list .muted { color: var(--muted); }
+.cv-list .cv-ok { color: var(--ok-ink, var(--teal-600)); font-weight: 700; }
+.cv-list .notice { padding: 6px 10px; }
+.creator-cab details.fold > summary { cursor: pointer; }
+/* Profil boshida: kabinetlar va hisobdan chiqish */
+.prof-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+.tier-row label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.tier-row { align-items: end; }
+.cv-cancel { justify-self: start; }

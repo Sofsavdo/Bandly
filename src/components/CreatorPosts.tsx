@@ -1,4 +1,4 @@
-// Creator kabineti: kampaniyalar va kreativ brief, video/post topshirish va holati, mukofot holati (faqat mavjud dalil), profil va ixtiyoriy reyting.
+// Creator kabineti — «Batafsil» qismi: kampaniyalar va brend qoidalari, to'lovlar tarixi, ixtiyoriy reyting. Video topshirish va balans: CreatorVideos.tsx.
 import { Megaphone, Trophy } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { getAccount } from '../lib/account';
@@ -6,12 +6,7 @@ import { fmtSum } from '../lib/pay';
 import { L } from '../i18n';
 
 interface Campaign { id: number; name: string; brief: string; rules: string; requiresVideo: boolean; endsAt: number | null }
-interface Post { id: number; platform: string; url: string | null; lang: string | null; postedOn: string | null; caption: string | null; status: string; claimedViews: number | null; viewsVerified: boolean; verifiedViews: number | null; adminNote: string | null; history: { ts: number; to: string; note: string | null; byAdmin: boolean }[]; linkCode: string | null; campaignId: number | null }
 interface Entry { id: number; kind: string; amountMinor: number; currency: string; status: string; createdAt: number }
-interface Link { code: string; label: string }
-interface VideoPay { terms: { enabled: boolean; baseSom: number; windowDays: number; payDays: number }; items: { postId: number; platform: string; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; entry: { amountMinor: number; status: string; payBy: number | null; overdue: boolean } | null }[] }
-const PLATFORMS = ['instagram', 'tiktok', 'youtube', 'telegram', 'facebook', 'x', 'other'];
-const LANGS = ['uz', 'en', 'ru', 'tg', 'ky', 'kk'];
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, { ...init, headers: { 'x-token': getAccount()?.token ?? '', ...(init?.body ? { 'content-type': 'application/json' } : {}) } });
@@ -32,25 +27,19 @@ const BRAND_RULES = (): string[] => [
 ];
 
 export function CreatorPosts() {
-  const [camps, setCamps] = useState<Campaign[]>([]); const [posts, setPosts] = useState<Post[]>([]); const [links, setLinks] = useState<Link[]>([]);
-  const [rw, setRw] = useState<{ entries: Entry[]; balances: { pending: number; approved: number; paid: number; currency: string }; enabled: boolean; video?: VideoPay; inHoldMinor: number; terms: { kind: string; name: string; pct: number | null; amountMinor: number | null; holdDays: number; endsAt: number | null }[] } | null>(null);
+  const [camps, setCamps] = useState<Campaign[]>([]);
+  const [rw, setRw] = useState<{ entries: Entry[]; balances: { pending: number; approved: number; paid: number; currency: string }; enabled: boolean; video?: { terms: { enabled: boolean } }; inHoldMinor: number; terms: { kind: string; name: string; pct: number | null; amountMinor: number | null; holdDays: number; endsAt: number | null }[] } | null>(null);
   const [rk, setRk] = useState<Record<string, { nickname: string; value: number }[]> | null>(null);
   const [prof, setProf] = useState<{ rankOptIn: boolean; status: string } | null>(null);
-  const [err, setErr] = useState(''); const [msg, setMsg] = useState('');
-  const blank = { platform: 'instagram', url: '', lang: 'uz', postedOn: new Date().toISOString().slice(0, 10), caption: '', linkCode: '', campaignId: '', claimedViews: '' };
-  const [f, setF] = useState(blank);
+  const [err, setErr] = useState('');
   const load = useCallback(() => {
     void api<{ campaigns: Campaign[] }>('/api/creator/campaigns').then((d) => setCamps(d.campaigns)).catch(() => undefined);
-    void api<{ posts: Post[] }>('/api/creator/posts').then((d) => setPosts(d.posts)).catch(() => undefined);
-    void api<{ links: Link[] }>('/api/creator/links').then((d) => setLinks(d.links)).catch(() => undefined);
     void api<NonNullable<typeof rw>>('/api/creator/rewards').then(setRw).catch(() => undefined);
     void api<Record<string, { nickname: string; value: number }[]>>('/api/creator/ranking').then(setRk).catch(() => undefined);
     void api<{ profile: { rankOptIn: boolean; status: string } }>('/api/creator/profile').then((d) => setProf(d.profile)).catch(() => undefined);
   }, []);
   useEffect(load, [load]);
-  const send = async (submit: boolean) => { setErr(''); setMsg(''); try { await api('/api/creator/posts', { method: 'POST', body: JSON.stringify({ ...f, campaignId: f.campaignId || null, claimedViews: f.claimedViews === '' ? null : Number(f.claimedViews), submit }) }); setMsg(submit ? L('Post topshirildi — admin ko‘rib chiqadi') : L('Qoralama saqlandi')); setF(blank); load(); } catch (e) { setErr((e as Error).message); } };
   const rankLabels: [string, string][] = [['verifiedReach', L('Tasdiqlangan qamrov')], ['activatedLearners', L('Faollashgan o‘quvchilar')], ['retainedLearners', L('Qaytgan o‘quvchilar (7-kun)')], ['netPaidConversions', L('Sof to‘lovga o‘tganlar')]];
-  const st = POST_STATUS();
   return (
     <>
       <section className="card">
@@ -63,49 +52,13 @@ export function CreatorPosts() {
         <h4 className="list-h">{L('Brend qoidalari (hammasi uchun)')}</h4>
         <ul>{BRAND_RULES().map((r) => <li key={r}>{r}</li>)}</ul>
       </section>
-      <section className="card">
-        <h3 style={{ marginTop: 0 }}>{L('Video / post topshirish')}</h3>
-        <p className="muted" style={{ fontSize: 13 }}>{L('Kampaniya yoki kontent bonusi uchun. Platforma, havola, til, sana, caption va tracking link majburiy. Ko‘rishlar sonini siz yozasiz — admin tekshirmaguncha u tasdiqlanmagan hisoblanadi.')}</p>
-        <div className="row">
-          <select value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} aria-label={L('Platforma')}>{PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}</select>
-          <input className="input" value={f.url} placeholder={L('Post havolasi')} inputMode="url" onChange={(e) => setF({ ...f, url: e.target.value })} aria-label={L('Post havolasi')} />
-          <select value={f.lang} onChange={(e) => setF({ ...f, lang: e.target.value })} aria-label={L('Til')}>{LANGS.map((l) => <option key={l} value={l}>{l}</option>)}</select>
-          <input className="input" type="date" value={f.postedOn} onChange={(e) => setF({ ...f, postedOn: e.target.value })} aria-label={L('Joylangan sana')} />
-          <select value={f.linkCode} onChange={(e) => setF({ ...f, linkCode: e.target.value })} aria-label={L('Tracking link')}><option value="">{L('Tracking link tanlang')}</option>{links.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}</select>
-          <select value={f.campaignId} onChange={(e) => setF({ ...f, campaignId: e.target.value })} aria-label={L('Kampaniya')}><option value="">{L('Kampaniyasiz')}</option>{camps.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-          <input className="input" type="number" min={0} value={f.claimedViews} placeholder={L('Ko‘rishlar (tasdiqlanmagan)')} onChange={(e) => setF({ ...f, claimedViews: e.target.value })} />
-        </div>
-        <textarea className="input" rows={3} style={{ width: '100%', marginTop: 8 }} value={f.caption} placeholder={L('Caption (reklama belgisi bilan)')} onChange={(e) => setF({ ...f, caption: e.target.value })} />
-        <div className="row"><button className="btn sm" onClick={() => void send(false)}>{L('Qoralama saqlash')}</button><button className="btn primary sm" onClick={() => void send(true)}>{L('Topshirish')}</button></div>
-        {err && <p className="notice" role="alert">{err}</p>}{msg && <p className="evidence">{msg}</p>}
-        {posts.length > 0 && <div className="table-scroll"><table className="data"><thead><tr><th>{L('Platforma')}</th><th>{L('Sana')}</th><th>{L('Holat')}</th><th>{L('Ko‘rishlar')}</th></tr></thead><tbody>
-          {posts.map((p) => <tr key={p.id}><td>{p.platform}{p.url ? <small className="muted"> · <a href={p.url} target="_blank" rel="noreferrer noopener">{L('havola')}</a></small> : null}</td><td>{p.postedOn ?? '—'}</td>
-            <td><b>{st[p.status] ?? p.status}</b>{p.adminNote ? <small className="muted"> · {p.adminNote}</small> : null}</td>
-            <td>{p.viewsVerified ? <>{p.verifiedViews} <small className="muted">({L('tasdiqlangan')})</small></> : p.claimedViews !== null ? <>{p.claimedViews} <small className="muted">({L('tasdiqlanmagan')})</small></> : '—'}</td></tr>)}
-        </tbody></table></div>}
-      </section>
-      {rw?.video?.terms.enabled && (
-        <section className="card">
-          <h3 style={{ marginTop: 0 }}>{L('Video uchun to‘lov')}</h3>
-          <p className="muted" style={{ fontSize: 13 }}>{L('Har bir video joylanganidan {0} kun o‘tib hisoblanadi. Summa tasdiqlangach {1} kun ichida to‘lanadi.', [rw.video.terms.windowDays, rw.video.terms.payDays])}</p>
-          {rw.video.items.length === 0 ? <p className="muted">{L('Tasdiqlangan video hali yo‘q. Videoni yuqoridagi shakl orqali topshiring.')}</p> : (
-            <div className="table-scroll"><table className="data"><thead><tr><th>{L('Video')}</th><th>{L('Hisob kuni')}</th><th>{L('Kelgan o‘quvchilar')}</th><th>{L('Natija')}</th></tr></thead><tbody>
-              {rw.video.items.map((v) => <tr key={v.postId}><td>{v.platform} · {v.postedOn ?? '—'}</td><td>{v.dueAt ? fmtDate(v.dueAt) : '—'}</td><td>{v.learners}</td>
-                <td>{v.entry ? <><b>{fmtSum(Math.round(v.entry.amountMinor / 100))} {L('so‘m')}</b> <small className="muted">· {LEDGER_STATUS()[v.entry.status] ?? v.entry.status}</small>{v.entry.status === 'approved' && v.entry.payBy ? <><br /><small className="muted">{L('{0} gacha to‘lanadi', [fmtDate(v.entry.payBy)])}</small></> : null}</> : v.due ? L('Admin hisoblaydi') : L('Hisob kutilmoqda')}</td></tr>)}
-            </tbody></table></div>)}
-        </section>
-      )}
       {rw && (
         <section className="card">
-          <h3 style={{ marginTop: 0 }}>{L('Balansingiz')}</h3>
+          <h3 style={{ marginTop: 0 }}>{L('To‘lovlar tarixi')}</h3>
           {!rw.enabled && !rw.video?.terms.enabled && <p className="muted">{L('Hozircha mukofot dasturi yoqilmagan: hisoblash va to‘lovlar admin tasdiqlagan qoidalar bilan keyin boshlanadi. Hamkorlik shartlari alohida kelishiladi.')}</p>}
           {rw.terms.length > 0 && (<><h4 className="list-h">{L('Amaldagi mukofot shartlari')}</h4><ul>{rw.terms.map((t) => <li key={t.name}><b>{t.name}</b> — {RULE_KIND()[t.kind] ?? t.kind}: {t.kind === 'paid_pct' ? `${t.pct}%` : `${fmtSum(Math.round((t.amountMinor ?? 0) / 100))} ${L('so‘m')}`} · {L('kutish davri {0} kun', [t.holdDays])}{t.endsAt ? ` · ${L('muddati: {0}', [fmtDate(t.endsAt)])}` : ''}</li>)}</ul></>)}
-          <div className="kpis">
-            {rw.enabled && <div className="kpi2"><span>{L('Kutish davrida')}</span><b>{fmtSum(Math.round(rw.inHoldMinor / 100))}</b></div>}
-            <div className="kpi2"><span>{L('Tasdiq kutilmoqda')}</span><b>{fmtSum(Math.round(rw.balances.pending / 100))}</b></div>
-            <div className="kpi2"><span>{L('To‘lanadi')}</span><b>{fmtSum(Math.round(rw.balances.approved / 100))}</b></div>
-            <div className="kpi2"><span>{L('To‘langan')}</span><b>{fmtSum(Math.round(rw.balances.paid / 100))}</b></div>
-          </div>
+          {rw.enabled && <p className="muted" style={{ fontSize: 13 }}>{L('Kutish davrida: {0} so‘m', [fmtSum(Math.round(rw.inHoldMinor / 100))])}</p>}
+          {rw.entries.length === 0 && <p className="muted">{L('Hali to‘lov yozuvi yo‘q.')}</p>}
           {rw.entries.length > 0 && <div className="table-scroll"><table className="data"><thead><tr><th>{L('Sana')}</th><th>{L('Turi')}</th><th>{L('Summa')}</th><th>{L('Holat')}</th></tr></thead><tbody>
             {rw.entries.map((e) => <tr key={e.id}><td>{fmtDate(e.createdAt)}</td><td>{LEDGER_KIND()[e.kind] ?? e.kind}</td><td>{fmtSum(Math.round(e.amountMinor / 100))} {e.currency === 'UZS' ? L('so‘m') : e.currency}</td><td>{LEDGER_STATUS()[e.status] ?? e.status}</td></tr>)}</tbody></table></div>}
           <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>{L('Summalar so‘mda. «Tasdiq kutilmoqda» — admin hisoblagan, hali tasdiqlamagan; «To‘lanadi» — tasdiqlangan, muddatida to‘lanadi; «To‘langan» — sizga o‘tkazilgan.')}</p>
@@ -114,6 +67,7 @@ export function CreatorPosts() {
       <section className="card">
         <h3 style={{ marginTop: 0 }}><Trophy size={18} style={{ verticalAlign: -3 }} />  {L('Hamkorlar reytingi')}</h3>
         <label className="evidence" style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={prof?.rankOptIn ?? false} onChange={(e) => void api('/api/creator/profile', { method: 'POST', body: JSON.stringify({ rankOptIn: e.target.checked }) }).then(load).catch((x: Error) => setErr(x.message))} /> {L('Laqabim va agregat ko‘rsatkichlarim reytingda ko‘rinsin')}</label>
+        {err && <p className="notice" role="alert">{err}</p>}
         {rk && rankLabels.map(([k, label]) => (rk[k]?.length ?? 0) > 0 && <div key={k}><h4 className="list-h">{label}</h4><ol>{rk[k]!.map((e) => <li key={e.nickname}>{e.nickname} — {e.value}</li>)}</ol></div>)}
         {rk && rankLabels.every(([k]) => (rk[k]?.length ?? 0) === 0) && <p className="muted">{L('Reytingda hozircha hech kim yo‘q (faqat ruxsat bergan hamkorlar ko‘rinadi).')}</p>}
       </section>

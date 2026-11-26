@@ -72,7 +72,7 @@ export const calcVideo = (t: VideoTerms, views: number, learners: number, baseSo
   return { baseSom, views, viewBonusSom: v, learners, learnerBonusSom: l, totalSom: baseSom + v + l };
 };
 
-interface PostRow { id: number; creator_id: number; link_code: string | null; posted_on: string | null; status: string; platform: string; url: string | null; claimed_views: number | null }
+interface PostRow { id: number; creator_id: number; link_code: string | null; posted_on: string | null; status: string; platform: string; url: string | null; claimed_views: number | null; caption: string | null }
 const postedAt = (p: PostRow): number | null => (p.posted_on && /^\d{4}-\d{2}-\d{2}$/.test(p.posted_on) ? Date.parse(`${p.posted_on}T00:00:00Z`) : null);
 
 /** Shu video havolasi orqali hisoblash muddatida kelib, shu muddatda darsni boshlagan o'quvchilar soni. */
@@ -100,19 +100,21 @@ const entryOf = (db: DatabaseSync, postId: number, now = Date.now()): VideoEntry
 const approvedAt = (db: DatabaseSync, ledgerId: number, fallback: number): number =>
   one<{ ts: number }>(db, "SELECT ts FROM creator_ledger_history WHERE ledger_id = ? AND to_status = 'approved' ORDER BY id LIMIT 1", ledgerId)?.ts ?? fallback;
 
-export interface VideoItem { postId: number; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: VideoEntry | null }
+/** status: 'submitted' — admin hali tekshirmagan (faqat admin navbatida), 'approved' — tasdiqlangan video. */
+export interface VideoItem { postId: number; status: string; caption?: string | null; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: VideoEntry | null }
 function item(db: DatabaseSync, p: PostRow, t: VideoTerms, now: number, withCreator: boolean): VideoItem {
   const at = postedAt(p); const dueAt = at === null ? null : at + t.windowDays * DAY;
-  return { postId: p.id, ...(withCreator ? { creator: one<{ nickname: string }>(db, 'SELECT nickname FROM players WHERE id = ?', p.creator_id)?.nickname } : {}), platform: p.platform, url: p.url, postedOn: p.posted_on,
+  return { postId: p.id, status: p.status, ...(withCreator ? { caption: p.caption, creator: one<{ nickname: string }>(db, 'SELECT nickname FROM players WHERE id = ?', p.creator_id)?.nickname } : {}), platform: p.platform, url: p.url, postedOn: p.posted_on,
     dueAt, due: dueAt !== null && now >= dueAt, learners: videoLearners(db, p, t.windowDays), claimedViews: p.claimed_views, entry: entryOf(db, p.id, now) };
 }
-/** Admin: tasdiqlangan videolar — hisob sanasi, o'quvchilar soni va hisob holati (hisoblanmaganlari va muddati yetganlari avval). */
+/** Admin: bitta navbat — yangi (tekshirilmagan) va tasdiqlangan videolar: hisob sanasi, o'quvchilar soni, hisob va to'lov holati. */
 export function videoQueue(db: DatabaseSync, now = Date.now()): VideoItem[] {
   const t = videoTerms(db);
-  const rows = db.prepare("SELECT * FROM creator_posts WHERE status = 'approved' ORDER BY posted_on DESC, id DESC LIMIT 300").all() as unknown as PostRow[];
+  const rows = db.prepare("SELECT * FROM creator_posts WHERE status IN ('approved', 'submitted') ORDER BY posted_on DESC, id DESC LIMIT 300").all() as unknown as PostRow[];
   const items = rows.map((p) => item(db, p, t, now, true));
   // Avval: muddati o'tgan to'lovlar, to'lanishi kerak bo'lganlar, hisobi kelganlar; keyin kutilayotganlar; oxirida to'langanlar
-  const rank = (i: VideoItem) => (i.entry?.overdue ? 0 : i.entry?.status === 'approved' ? 1 : i.entry?.status === 'pending' ? 2 : !i.entry && i.due ? 3 : !i.entry ? 4 : 5);
+  // Avval: muddati o'tgan to'lovlar, to'lanishi kerak bo'lganlar, tasdiq kutayotgan hisoblar, hisob kuni kelganlar, yangi videolar; keyin kutilayotganlar; oxirida to'langanlar
+  const rank = (i: VideoItem) => (i.entry?.overdue ? 0 : i.entry?.status === 'approved' ? 1 : i.entry?.status === 'pending' ? 2 : i.status === 'approved' && !i.entry && i.due ? 3 : i.status === 'submitted' ? 4 : !i.entry ? 5 : 6);
   return items.sort((a, b) => rank(a) - rank(b) || (a.dueAt ?? 0) - (b.dueAt ?? 0));
 }
 /** Creator: o'z videolari bo'yicha hisob sanasi va natija (shaxsiy ma'lumotsiz). */
