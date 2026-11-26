@@ -370,10 +370,10 @@ export default function Coach() {
     <div className="tutor">
       <section className="tutor-call voice idle-call setup-call">
         <div className="setup-top">
-          <div className="setup-face"><AiAvatar phase="idle" size={84} look={personaLevel(p)} /></div>
+          <div className="setup-face"><AiAvatar phase="idle" size={56} look={personaLevel(p)} /></div>
           <div>
             <h2>{L('Sellzen ustoz')}</h2>
-            <p>{acc ? L('Ustoz va xarakterni tanlang, keyin suhbatni boshlang.') : L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>
+            {!acc && <p>{L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>}
             {acc && minutes === null && <span className="pill" style={{ visibility: 'hidden' }} aria-hidden="true">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span>}{/* daqiqalar yuklanguncha joy band — sahifa sakramaydi */}
             {minutes?.subscribed ? <span className="pill">{minutes.premium ? L('Bugun {0} daqiqa qoldi', [minutes.left]) : L('{0} daqiqa qoldi', [minutes.left])}</span> : minutes && FREE_INFO.liveMinutesPerDay > 0 ? <span className="pill">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span> : null}
           </div>

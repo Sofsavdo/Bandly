@@ -489,19 +489,19 @@ try {
     await q.context().close();
   });
   // 2026-11-26: ustoz sahifasida tanlov — ayol ustoz (yosh ovoz) va bolalar xarakteri qo'ng'iroqqa yetib boradi
-  await step('J13. Tanlov ekrani: Ayol ustoz + Bolalar uchun → Gemini’ga ayol ovozi va bolalar xarakteri boradi', async () => {
+  await step('J13. Tanlov ekrani: Ayol ustoz + Bolalar → Gemini’ga ayol ovozi va bolalar xarakteri boradi', async () => {
     const b = await chromium.launch({ args: args(LOUD) }); browsers.push(b);
     const ctx = await b.newContext({ viewport: { width: 390, height: 800 }, permissions: ['microphone'] });
     await ctx.addInitScript(([t]) => { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('bandly.account.v1', JSON.stringify({ token: t, nickname: 'Voice E2E' })); localStorage.setItem('bandly.onboard.v1', JSON.stringify({ goal: 'ielts', minutes: 20, done: true })); localStorage.setItem('bandly.profile.v1', JSON.stringify({ level: 'B1', xp: 0 })); } }, [token]);
     const q = await ctx.newPage(); q.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
     await q.goto(`${base}/#/coach`); await q.locator('.tsetup-start').waitFor({ timeout: 15000 });
     await q.getByRole('button', { name: /Ayol ustoz/ }).click();
-    await q.getByRole('button', { name: /Bolalar uchun/ }).click();
+    await q.locator('.tsetup-card', { hasText: 'Bolalar' }).click();
     // 18+ xarakter: tasdiqsiz tanlanmaydi
     await q.getByRole('button', { name: /Jallod/ }).click();
     await q.getByText('Bu xarakter faqat kattalar uchun. 18 yoshdan oshganmisiz?').waitFor({ timeout: 3000 });
     await q.getByRole('button', { name: 'Yo‘q' }).click();
-    assert.equal(await q.locator('.tsetup-card.on').innerText().then((t) => /Bolalar uchun/.test(t)), true, 'bolalar xarakteri tanlangan qoldi');
+    assert.equal(await q.locator('.tsetup-card.on').innerText().then((t) => /Bolalar/.test(t)), true, 'bolalar xarakteri tanlangan qoldi');
     const n0 = seen.filter((x) => x.kind === 'setup').length;
     await q.locator('.tsetup-start').click(); await q.locator('.call').waitFor({ timeout: 15000 });
     for (let i = 0; i < 100 && seen.filter((x) => x.kind === 'setup').length <= n0; i++) await wait(50);

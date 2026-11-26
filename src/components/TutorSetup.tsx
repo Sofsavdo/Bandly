@@ -7,14 +7,15 @@ import { setPersona, setTutorChoice, setTutorVoice, useProfile } from '../lib/st
 import { L } from '../i18n';
 
 type Choice = 0 | 1 | 2 | 3 | 'romantic' | 'kids';
-interface Card { id: Choice; emoji: string; name: string; desc: string; adult: boolean }
+interface Card { id: Choice; emoji: string; name: string; adult: boolean }
+// Egasi (2026-11-26): "juda uzun izohlar shart emas" — faqat emoji va qisqa nom
 const CARDS = (): Card[] => [
-  { id: 0, emoji: '😊', name: L('Yumshoq'), desc: L('Sabrli, muloyim tuzatadi'), adult: false },
-  { id: 1, emoji: '😄', name: L('Hazil'), desc: L('Kuladi, kesatadi — toza tilda'), adult: false },
-  { id: 'kids', emoji: '🧸', name: L('Bolalar uchun'), desc: L('4–10 yosh, o‘yin va qo‘shiq'), adult: false },
-  { id: 'romantic', emoji: '💕', name: L('Romantik'), desc: L('Erkalaydi va maqtaydi'), adult: true },
-  { id: 2, emoji: '😤', name: L('Qattiq'), desc: L('Yengil so‘kish, talabchan'), adult: true },
-  { id: 3, emoji: '👹', name: L('Jallod'), desc: L('Qattiq so‘kish, dramatik g‘azab'), adult: true },
+  { id: 0, emoji: '😊', name: L('Yumshoq'), adult: false },
+  { id: 1, emoji: '😄', name: L('Hazil'), adult: false },
+  { id: 'kids', emoji: '🧸', name: L('Bolalar'), adult: false },
+  { id: 'romantic', emoji: '💕', name: L('Romantik'), adult: true },
+  { id: 2, emoji: '😤', name: L('Qattiq'), adult: true },
+  { id: 3, emoji: '👹', name: L('Jallod'), adult: true },
 ];
 
 export function TutorSetup({ onStart, disabled, extra }: { onStart: () => void; disabled: boolean; extra?: React.ReactNode }) {
@@ -36,7 +37,6 @@ export function TutorSetup({ onStart, disabled, extra }: { onStart: () => void; 
   };
   return (
     <div className="tsetup">
-      <h3 className="tsetup-h">{L('Ustoz')}</h3>
       <div className="tsetup-voices" role="group" aria-label={L('Ustoz ovozi')}>
         {([['male', '👨‍🏫', L('Erkak ustoz')], ['female', '👩‍🏫', L('Ayol ustoz')]] as const).map(([v, e, t]) => (
           <button key={v} type="button" className={`tsetup-voice${voice === v ? ' on' : ''}`} aria-pressed={voice === v} onClick={() => setTutorVoice(v)}>
@@ -54,7 +54,6 @@ export function TutorSetup({ onStart, disabled, extra }: { onStart: () => void; 
             <button key={String(c.id)} type="button" className={`tsetup-card${on ? ' on' : ''}${locked ? ' locked' : ''}`} aria-pressed={on} disabled={kids && c.id !== 'kids'} onClick={() => pick(c)}>
               <span className="tsetup-emoji" aria-hidden="true">{c.emoji}</span>
               <b>{c.name}{c.adult && <small> 18+</small>}</b>
-              <span>{c.desc}</span>
               {locked && !kids && <Lock className="tsetup-lock" size={12} aria-hidden="true" />}
             </button>
           );
@@ -68,7 +67,7 @@ export function TutorSetup({ onStart, disabled, extra }: { onStart: () => void; 
       )}
       {extra}
       <button type="button" className="btn primary lg block tsetup-start" disabled={disabled} onClick={onStart}>{L('Suhbatni boshlash')} <ArrowRight size={18} /></button>
-      <a className="tsetup-more" href="#/profile">{L('Bolalar rejimi (PIN bilan) — profilda')}</a>
+      <a className="tsetup-more" href="#/profile">{L('Bolalar rejimi (PIN bilan)')}</a>
     </div>
   );
 }

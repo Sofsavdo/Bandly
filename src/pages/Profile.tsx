@@ -65,18 +65,6 @@ export default function Profile() {
         <h3>{L('Hisob va obuna')}</h3>
         <p style={{ margin: 0 }}><b>{acc?.nickname}</b></p>
         {bye && <SignOutDialog onClose={() => setBye(false)} />}
-        {acc && (
-          <details className="fold" style={{ marginTop: 10 }}>
-            <summary>{L('Hisobni o‘chirish')}</summary>
-            <p className="evidence">{L('Hisobingiz va barcha shaxsiy ma’lumotlaringiz (progress, natijalar, xatolar, telefon) o‘chiriladi. Bu amalni qaytarib bo‘lmaydi. To‘lov yozuvlari hisob-kitob uchun anonim holda qoladi.')}</p>
-            <button className="btn sm danger" disabled={erasing} onClick={() => {
-              if (!window.confirm(L('Hisob butunlay o‘chiriladi. Bu amalni qaytarib bo‘lmaydi. Davom etasizmi?'))) return;
-              setErasing(true); setEraseErr('');
-              eraseAccount().catch((e: unknown) => { setErasing(false); setEraseErr(e instanceof Error ? e.message : L('Hisobni o‘chirib bo‘lmadi. Qayta urinib ko‘ring.')); });
-            }}>{L('Hisobni butunlay o‘chirish')}</button>
-            {eraseErr && <p className="err" role="alert">{eraseErr}</p>}
-          </details>
-        )}
         {acc && !acc.tg && <div style={{ marginTop: 10 }}><JoinForm onJoined={(a) => setAcc(a)} title={L('Kirish usulini ulang')} text={L('Hisobingizni bog‘lang (Telegram, Google yoki telefon raqam) — shunda qayta kira olasiz.')} /></div>}
         <h4 style={{ margin: '14px 0 4px' }}>{L('Obunalar')}</h4>
         {(() => {
@@ -132,6 +120,19 @@ export default function Profile() {
         <h3>{L('Natijalar tarixi')}</h3>
         <ResultList results={results} limit={10} moreHref="#/results" />
       </div>
+      {/* Xavfli amal — sahifa oxirida (UX tekshiruvi 2026-11-26: hisob kartasida, ism ostida turardi) */}
+      {acc && (
+        <details className="card fold danger-zone">
+            <summary>{L('Hisobni o‘chirish')}</summary>
+            <p className="evidence">{L('Hisobingiz va barcha shaxsiy ma’lumotlaringiz (progress, natijalar, xatolar, telefon) o‘chiriladi. Bu amalni qaytarib bo‘lmaydi. To‘lov yozuvlari hisob-kitob uchun anonim holda qoladi.')}</p>
+            <button className="btn sm danger" disabled={erasing} onClick={() => {
+              if (!window.confirm(L('Hisob butunlay o‘chiriladi. Bu amalni qaytarib bo‘lmaydi. Davom etasizmi?'))) return;
+              setErasing(true); setEraseErr('');
+              eraseAccount().catch((e: unknown) => { setErasing(false); setEraseErr(e instanceof Error ? e.message : L('Hisobni o‘chirib bo‘lmadi. Qayta urinib ko‘ring.')); });
+            }}>{L('Hisobni butunlay o‘chirish')}</button>
+            {eraseErr && <p className="err" role="alert">{eraseErr}</p>}
+        </details>
+      )}
     </div>
   );
 }
