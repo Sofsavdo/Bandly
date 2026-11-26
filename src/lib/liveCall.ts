@@ -14,9 +14,11 @@ export interface LiveHandlers {
   onLevel(v: number): void;
   onHeard(text: string): void;
   onSaid(text: string): void;
-  onError(message: string, beforeReady: boolean): void;
+  /** resume — server: suhbatni qayta ulanib davom ettirish mumkin (aloqa uzildi, Gemini sessiyasi yopildi) */
+  onError(message: string, beforeReady: boolean, resume?: boolean): void;
   /** kind: 'session' — qo'ng'iroq vaqti (10 daqiqa) tugadi; 'quota' — kunlik/oylik daqiqalar tugadi (obuna taklif qilinadi) */
-  onLimit(message: string, kind: 'session' | 'quota'): void;
+  /** resume — 10 daqiqalik sessiya tugadi, lekin daqiqalar bor: mijoz jimgina qayta ulanadi va suhbat davom etadi */
+  onLimit(message: string, kind: 'session' | 'quota', resume?: boolean): void;
   onClosed(): void;
   /** Ustoz javobi (yoki o'quvchi gapi) tugadi — ekrandagi matn keyingi navbatda yangilanadi */
   onTurn?(): void;
@@ -71,12 +73,12 @@ export function makeResampler(fromRate: number, toRate = 16000): { process(input
 }
 const rms = (f: Float32Array): number => { let s = 0; for (let i = 0; i < f.length; i++) s += f[i]! * f[i]!; return Math.sqrt(s / Math.max(1, f.length)); };
 
-export async function startLive(o: { token: string; adult: boolean; level: string | null; lang: string; style?: number; ptt?: boolean; /** o'quvchi konteksti: daraja, bugungi reja, zaif joylar (ustoz suhbatni tavsiya asosida olib boradi) */ ctx?: unknown }, h: LiveHandlers): Promise<LiveCall> {
+export async function startLive(o: { token: string; adult: boolean; level: string | null; lang: string; style?: number; ptt?: boolean; /** ustoz ovozi */ voice?: 'male' | 'female'; /** qayta ulanish: ustoz salomlashmaydi, suhbatni davom ettiradi */ cont?: boolean; /** o'quvchi konteksti: daraja, bugungi reja, zaif joylar (ustoz suhbatni tavsiya asosida olib boradi) */ ctx?: unknown }, h: LiveHandlers): Promise<LiveCall> {
   const ptt = o.ptt !== false;
   // Server (va Gemini) bilan ulanish mikrofon tayyorlanishi bilan PARALLEL boshlanadi — kutish vaqti qisqaradi.
   // Mikrofon tayyor bo'lguncha kelgan xabarlar navbatda turadi va keyin qayta ishlanadi.
   const proto0 = location.protocol === 'https:' ? 'wss' : 'ws';
-  const q0 = new URLSearchParams({ adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang, style: String(o.style ?? (o.adult ? 2 : 0)), ...(ptt ? { ptt: '1' } : {}), ...(o.ctx ? { ctx: '1' } : {}) });
+  const q0 = new URLSearchParams({ adult: o.adult ? '1' : '0', level: o.level ?? '', lang: o.lang, style: String(o.style ?? (o.adult ? 2 : 0)), ...(ptt ? { ptt: '1' } : {}), ...(o.ctx ? { ctx: '1' } : {}), ...(o.voice === 'female' ? { voice: 'f' } : {}), ...(o.cont ? { cont: '1' } : {}) });
   const ws = new WebSocket(`${proto0}://${location.host}/api/ai/live?${q0}`, ['sellzen.v1', `tk.${o.token}`]);
   ws.binaryType = 'arraybuffer';
   ws.onopen = () => { if (o.ctx) { try { ws.send(JSON.stringify({ type: 'ctx', ctx: o.ctx })); } catch { /* kontekstsiz ham ishlaydi */ } } };
@@ -185,7 +187,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
       s.onended = () => { playing.delete(s); if (!playing.size && ctx.currentTime >= nextAt - 0.05) setSpeaking(false); };
       return;
     }
-    let m: { type?: string; text?: string; message?: string; value?: string; kind?: string; capSec?: number; ptt?: boolean; asr?: boolean; route?: string };
+    let m: { type?: string; text?: string; message?: string; value?: string; kind?: string; capSec?: number; ptt?: boolean; asr?: boolean; route?: string; resume?: boolean };
     try { m = JSON.parse(e.data as string); } catch { return; }
     if (m.type === 'ready') { ready = true; asr = m.asr === true; h.onReady({ capSec: Number(m.capSec) || 0, ptt: m.ptt === true, asr }); }
     // Javob tugadi: hissiyot effekti ovoz chalinib bo'lgach o'chadi (keyingi javobda eski hissiyot qolmasin)
@@ -195,9 +197,9 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     else if (m.type === 'out' && m.text) h.onSaid(m.text);
     else if (m.type === 'noVoice') h.onNoVoice?.();
     else if (m.type === 'navigate' && typeof m.route === 'string') h.onNavigate?.(m.route);
-    else if (m.type === 'limit') h.onLimit(m.message ?? '', m.kind === 'session' ? 'session' : 'quota');
+    else if (m.type === 'limit') h.onLimit(m.message ?? '', m.kind === 'session' ? 'session' : 'quota', m.resume === true);
     else if (m.type === 'emotion' && (m.value === 'angry' || m.value === 'laugh' || m.value === 'happy' || m.value === 'impressed' || m.value === 'disappointed' || m.value === 'serious' || m.value === 'sarcastic')) h.onEmotion?.(m.value);
-    else if (m.type === 'error') h.onError(m.message ?? L('Xato'), !ready);
+    else if (m.type === 'error') h.onError(m.message ?? L('Xato'), !ready, m.resume === true);
   };
   ws.onerror = () => { if (!ended) h.onError(L('Aloqa yo‘q'), !ready); };
   ws.onclose = () => { cleanup(); if (!ended) { ended = true; h.onClosed(); } };

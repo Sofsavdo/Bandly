@@ -16,7 +16,7 @@ function load(): Profile {
   const base = defaultProfile(dayKey());
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) { const m = { ...base, ...(JSON.parse(raw) as Partial<Profile>) }; return { ...m, hardMode: effectiveLevel(m.roastLevel, m.adult) >= 2 }; }
+    if (raw) { const m = { ...base, ...(JSON.parse(raw) as Partial<Profile>) }; return { ...m, hardMode: !m.kidsMode && !m.tutorExtra && effectiveLevel(m.roastLevel, m.adult) >= 2 }; }
   } catch {
     /* buzilgan yoki mavjud bo'lmagan saqlash: boshlang'ich holat */
   }
@@ -164,10 +164,38 @@ export function setPlan(track: TrackId, on: boolean): void {
 }
 /** Ustoz xarakteri. 18+ tasdiqlanmasa 2–3 daraja tanlab bo'lmaydi. */
 export function setPersona(level: number, adult: boolean): void {
+  if (state.kidsMode) return; // bolalar rejimida xarakter o'zgarmaydi
   const lv = effectiveLevel(level, adult);
-  commit({ ...state, roastLevel: lv, adult, hardMode: lv >= 2 });
+  commit({ ...state, roastLevel: lv, adult, tutorExtra: null, hardMode: lv >= 2 });
 }
-export const personaLevel = (p: Profile = state) => effectiveLevel(p.roastLevel, p.adult);
+/** Hazil iboralari va mashqlar uchun daraja (0–3). Bolalar rejimi va qo'shimcha xarakterlarda — har doim muloyim (0). */
+export const personaLevel = (p: Profile = state) => (p.kidsMode || p.tutorExtra ? 0 : effectiveLevel(p.roastLevel, p.adult));
+/** 18+ tasdig'i amalda: bolalar rejimida — yo'q (ota-onaning tasdig'i bolaga o'tmaydi). */
+export const adultOn = (p: Profile = state): boolean => p.adult && !p.kidsMode;
+/** Ovozli suhbat uslubi (server LiveStyle): 0 Yumshoq, 1 Hazil, 2 Qattiq, 3 Jallod, 4 Romantik (18+), 5 Bolalar uchun. */
+export function liveStyle(p: Profile = state): 0 | 1 | 2 | 3 | 4 | 5 {
+  if (p.kidsMode || p.tutorExtra === 'kids') return 5;
+  if (p.tutorExtra === 'romantic') return adultOn(p) ? 4 : 0;
+  return effectiveLevel(p.roastLevel, adultOn(p));
+}
+/** Xarakter tanlovi: 0–3 (oddiy darajalar), 'romantic' yoki 'kids'. Bolalar rejimida o'zgartirib bo'lmaydi. */
+export function setTutorChoice(choice: number | 'romantic' | 'kids', adult = state.adult): void {
+  if (state.kidsMode) return;
+  if (choice === 'romantic' || choice === 'kids') { if (choice === 'romantic' && !adult) return; commit({ ...state, adult, tutorExtra: choice, roastLevel: 0, hardMode: false }); return; }
+  const lv = effectiveLevel(choice, adult);
+  commit({ ...state, adult, tutorExtra: null, roastLevel: lv, hardMode: lv >= 2 });
+}
+export function setTutorVoice(v: 'male' | 'female'): void { commit({ ...state, tutorVoice: v }); }
+/** PIN xeshi (qurilmada; kriptografik himoya emas — bola tasodifan o'chirib qo'ymasligi uchun). */
+export const pinHash = (pin: string): string => { let h = 5381; for (const ch of `sellzen-kids:${pin}`) h = ((h * 33) ^ ch.charCodeAt(0)) >>> 0; return h.toString(36); };
+/** Bolalar rejimini yoqish (ota-ona 4 xonali PIN o'rnatadi) yoki o'chirish (to'g'ri PIN bilan). Natija: muvaffaqiyatli bo'ldimi. */
+export function setKidsMode(on: boolean, pin: string): boolean {
+  if (!/^\d{4}$/.test(pin)) return false;
+  if (on) { commit({ ...state, kidsMode: true, kidsPin: pinHash(pin), hardMode: false }); return true; }
+  if (!state.kidsMode || state.kidsPin !== pinHash(pin)) return false;
+  commit({ ...state, kidsMode: false, kidsPin: null });
+  return true;
+}
 export function setLevel(level: Cefr, target: number, examDate: string | null): void {
   const band = LEVEL_BAND[level];
   const at = new Date().toISOString();

@@ -16,7 +16,7 @@ import { clampStyle, emotionOf, type LiveEmotion } from './coach';
 import { addLiveUsage, emptyLive, type LiveUsage } from './aiUsage';
 
 export interface LiveConfig {
-  key: string; model: string; fallbackModel: string | null; /** Gemini setupComplete kutish muddati (ms), standart 8000 */ setupTimeoutMs?: number; voice: string; url: string;
+  key: string; model: string; fallbackModel: string | null; /** Gemini setupComplete kutish muddati (ms), standart 8000 */ setupTimeoutMs?: number; voice: string; /** ayol ustoz ovozi (?voice=f) */ voiceFemale?: string; url: string;
   freeDailySeconds: number; maxSessionSec: number; pricePerMin: number;
   /** Gap tugadi deb hisoblash uchun jimlik (ms): qanchalik kichik — shunchalik tez javob, lekin o'ylab gapirganda bo'lib yuborish xavfi. */
   silenceMs: number;
@@ -36,6 +36,7 @@ export function liveConfigFromEnv(geminiKey: string | null, env: NodeJS.ProcessE
   return {
     key, model, fallbackModel: fb && fb !== model ? fb : null,
     voice: (env.GEMINI_LIVE_VOICE ?? '').trim() || 'Puck',
+    voiceFemale: (env.GEMINI_LIVE_VOICE_FEMALE ?? '').trim() || 'Aoede', // egasi (2026-11-26): erkak va ayol ustoz
     url: (env.GEMINI_LIVE_URL ?? '').trim() || 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent',
     // Admin panelda o'zgaradi — har safar env'dan o'qiladi (getter)
     get freeDailySeconds() { return Math.max(0, Number(env.LIVE_FREE_DAILY_MINUTES ?? 5) || 0) * 60; },
@@ -72,11 +73,11 @@ export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriber
 }
 
 /** Gemini Live'ga birinchi xabar: model, ovoz, Sellzen ko'rsatmasi, ikkala tomon matn nusxasi. */
-export function setupMessage(cfg: LiveConfig, model: string, systemText: string, ptt = false): Record<string, unknown> {
+export function setupMessage(cfg: LiveConfig, model: string, systemText: string, ptt = false, voice: string = cfg.voice): Record<string, unknown> {
   return {
     setup: {
       model: `models/${model}`,
-      generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: cfg.voice } } } },
+      generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
       systemInstruction: { parts: [{ text: systemText }] },
       // Navbat almashish: o'quvchilar o'ylab, to'xtab gapiradi — sezgirlik past va ~0.9 s jimlik (0.6 s + yuqori sezgirlik gapni
       // o'rtasida kesib, ustoz "tushunmadim, qattiqroq gapir" deyaverardi — 2026-11-21 shikoyati). LIVE_SILENCE_MS bilan sozlanadi.
@@ -144,6 +145,8 @@ export interface LearnerCtx {
   level: string | null; goal: string | null; minutes: number | null; examDays: number | null;
   today: { title: string; minutes: number | null; why: string; route: string }[];
   weak: string[]; mistakesDue: number; done: string[];
+  /** qayta ulanishda (?cont=1): oldingi sessiyaning oxirgi gaplari — suhbat uzilmasdan davom etsin */
+  recent?: string;
 }
 const ROUTE_OK = /^#\/(?:learn(?:\/[a-z0-9._-]{1,60})?|grammar|mistakes|games|exam|placement|mocks\/(?:reading|listening|writing|speaking))?$/i;
 const clean = (v: unknown, n: number): string => String(v ?? '').replace(/[\r\n<>{}[\]]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
@@ -157,7 +160,8 @@ export function sanitizeCtx(raw: unknown): LearnerCtx | null {
     const route = clean(o.route, 80);
     return { title: clean(o.title, 90), minutes: num(o.minutes, 120), why: clean(o.why, 80), route: ROUTE_OK.test(route) ? route : '' };
   }).filter((t) => t.title);
-  return { level: clean(r.level, 4) || null, goal: clean(r.goal, 20) || null, minutes: num(r.minutes, 240), examDays: num(r.examDays, 3650), today, weak: list(r.weak, 6, 60), mistakesDue: num(r.mistakesDue, 999) ?? 0, done: list(r.done, 4, 90) };
+  const recent = typeof r.recent === 'string' ? r.recent.replace(/[<>{}[\]]+/g, ' ').replace(/[ \t]+/g, ' ').trim().slice(-1500) : '';
+  return { level: clean(r.level, 4) || null, goal: clean(r.goal, 20) || null, minutes: num(r.minutes, 240), examDays: num(r.examDays, 3650), today, weak: list(r.weak, 6, 60), mistakesDue: num(r.mistakesDue, 999) ?? 0, done: list(r.done, 4, 90), ...(recent ? { recent } : {}) };
 }
 /** Ctx → ustozga beriladigan matn (kickoff'ga qo'shiladi). Bo'sh kontekst — bo'sh matn. */
 export function ctxPrompt(c: LearnerCtx | null): string {
@@ -212,7 +216,7 @@ interface LiveDeps {
   cfg: LiveConfig;
   /** Token → o'quvchi; null — yaroqsiz */
   auth: (token: string) => { id: number; staff: boolean; subscriberLeftSec: number } | null;
-  prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string; style: 0 | 1 | 2 | 3; ptt: boolean; asr: boolean }) => string;
+  prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string; style: 0 | 1 | 2 | 3 | 4 | 5; ptt: boolean; asr: boolean }) => string;
   /** O'quvchi uchun: birinchi qo'ng'iroqmi va xotira matni (ko'rsatmaga qo'shiladi) */
   context?: (playerId: number) => { firstCall: boolean; memory: string; followUp?: string };
   /** Qo'ng'iroq boshidagi ko'rsatma (o'quvchi hali gapirmagan) */
@@ -254,6 +258,9 @@ export function attachLive(server: Server, d: LiveDeps): void {
   });
 }
 
+/** Har o'quvchida bitta faol qo'ng'iroq: yangi ulanish eskisini yopadi (jurnal 2026-11-26: bir soniyada 6 ta parallel ulanish — ovoz aralashib, qotib qolardi). */
+const activeCalls = new Map<number, (why: string) => void>();
+
 function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, log: (m: string) => void): void {
   const send = (o: Record<string, unknown>) => { if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify(o)); };
   const who = d.auth(token);
@@ -266,8 +273,12 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const asrOn = ptt && !!d.asr; // gap serverda matnga aylantiriladi
   const ctx: { firstCall: boolean; memory: string; followUp?: string } = d.context?.(who.id) ?? { firstCall: false, memory: '' };
   const adult = url.searchParams.get('adult') === '1';
-  // Xarakter (profil): 0 Yumshoq, 1 Hazil, 2 Qattiq, 3 Jallod; 2–3 faqat 18+ bilan
+  // Xarakter (profil): 0 Yumshoq, 1 Hazil, 2 Qattiq, 3 Jallod, 4 Romantik, 5 Bolalar uchun; 2–4 faqat 18+ bilan
   const style = clampStyle(url.searchParams.get('style') ?? (adult ? 2 : 0), adult);
+  // Ustoz: erkak (standart) yoki ayol ovozi
+  const voice = url.searchParams.get('voice') === 'f' ? (d.cfg.voiceFemale || d.cfg.voice) : d.cfg.voice;
+  // Qayta ulanish (10 daqiqalik sessiya chegarasi yoki aloqa uzilishi): ustoz salomlashmaydi, suhbatni davom ettiradi
+  const cont = url.searchParams.get('cont') === '1';
   const systemText = d.prompt({ adult, native: d.native(lang), level: url.searchParams.get('level'), firstCall: ctx.firstCall, memory: ctx.memory, style, ptt, asr: asrOn });
   // Suhbat yozuvi (xotira uchun) va noto'g'ri til himoyasi
   const turns: { who: 'learner' | 'coach'; text: string }[] = [];
@@ -281,7 +292,9 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   let inAct = false, actTimer: NodeJS.Timeout | null = null, actMsgs = 0;
   // Tanish rejimi: navbat ovozi shu yerda yig'iladi; qo'yib yuborilganda Scribe → matn → Gemini. dropOld — o'quvchi ustozni bosib to'xtatdi: eski javobning qolgan ovozi tashlanadi.
   let viaAudio = false, actBuf: Buffer[] = [], actBytes = 0, modelBusy = false, dropOld = false, dropTimer: NodeJS.Timeout | null = null, asrChain: Promise<void> = Promise.resolve();
-  const st = { acts: 0, taps: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0, emo: {} as Record<string, number> };
+  const st = { acts: 0, taps: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0, emo: {} as Record<string, number>, waits: [] as number[], asrMs: [] as number[] };
+  // Kechikish: o'quvchi tugmani qo'yib yuborgandan ustozning birinchi ovozigacha (jurnalga — "qotib qolish" shikoyatlarini o'lchash uchun)
+  let releasedAt = 0;
   const started = Date.now();
   let upstream: WebSocket | null = null;
   let setupTimer: NodeJS.Timeout | null = null; // Gemini sozlash muddati (connect ichida)
@@ -292,6 +305,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const finish = (why: string) => {
     if (closed) return;
     closed = true;
+    if (activeCalls.get(who.id) === finish) activeCalls.delete(who.id);
+    if (capWait) clearTimeout(capWait);
     clearTimeout(cap); if (wrapTimer) clearTimeout(wrapTimer); if (actTimer) clearTimeout(actTimer); if (dropTimer) clearTimeout(dropTimer); if (setupTimer) clearTimeout(setupTimer);
     try { upstream?.close(); } catch { /* */ }
     try { client.close(); } catch { /* */ }
@@ -299,14 +314,18 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     if (secs > 0) d.onEnd(who.id, secs, model, usage);
     if (turns.filter((t) => t.who === 'learner').length >= 3) { try { d.onTranscript?.(who.id, turns, lang); } catch { /* xotira ixtiyoriy */ } }
     const dbfs = st.acts && st.lvl > 0 ? ` lvl=${(20 * Math.log10(st.lvl / st.acts)).toFixed(0)}dB` : '';
-    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why}) javob=${st.replies} hissiyot=${Object.entries(st.emo).map(([k, v]) => `${k}:${v}`).join(',') || '-'}${wrongCount ? ` til-xato:${wrongCount}` : ''}${ptt ? ` navbat=${st.acts}${asrOn ? ` tanish=${st.asrOk}/${st.asrEmpty}/${st.asrFail} ishonchsiz=${st.unsure} tegish=${st.taps}` : ''} ${st.audioSec.toFixed(0)}s${dbfs}` : ''}`);
+    log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why}) javob=${st.replies} hissiyot=${Object.entries(st.emo).map(([k, v]) => `${k}:${v}`).join(',') || '-'}${wrongCount ? ` til-xato:${wrongCount}` : ''}${ptt ? ` navbat=${st.acts}${asrOn ? ` tanish=${st.asrOk}/${st.asrEmpty}/${st.asrFail} ishonchsiz=${st.unsure} tegish=${st.taps}` : ''} ${st.audioSec.toFixed(0)}s${dbfs}` : ''}${statLine(st)}`);
   };
   // Chegara: sessiya cheklovi (10 daqiqa) yoki kunlik/oylik daqiqa tugashi — mijozga turi aytiladi (sessiya tugasa — obuna taklif qilinmaydi)
   const capKind = allowance >= d.cfg.maxSessionSec ? 'session' : 'quota';
-  const cap = setTimeout(() => { send({ type: 'limit', kind: capKind, message: capKind === 'session' ? tr(lang, 'Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : tr(lang, 'Ovozli suhbat vaqti tugadi.') }); finish('limit'); }, allowance * 1000);
+  // Sessiya chegarasi (10 daqiqa): ustoz gapini tugatguncha kutiladi (ko'pi 20 s), keyin mijoz o'zi qayta ulanadi — suhbat davom etadi (resume).
+  // Kunlik/oylik daqiqa tugasa — suhbat tugaydi.
+  let capWait: NodeJS.Timeout | null = null, capDue = false;
+  const capNow = () => { if (closed) return; send({ type: 'limit', kind: capKind, resume: capKind === 'session', message: capKind === 'session' ? tr(lang, 'Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : tr(lang, 'Ovozli suhbat vaqti tugadi.') }); finish('limit'); };
+  const cap = setTimeout(() => { if (capKind === 'session' && modelBusy) { capDue = true; capWait = setTimeout(capNow, 20_000); capWait.unref?.(); return; } capNow(); }, Math.max(1000, allowance * 1000));
   // Vaqt tugashidan 25 soniya oldin ustozga xabar: fikrini tugatib, xayrlashsin (suhbat o'rtasida to'satdan uzilmasin)
   const wrapLead = d.cfg.wrapLeadSec ?? 25;
-  const wrapTimer = allowance > wrapLead + 1 ? setTimeout(() => { if (ready && !closed && upstream?.readyState === WebSocket.OPEN) upstream.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: the call ends in about ${wrapLead} seconds. Finish your current thought, give ONE short useful tip and say a warm goodbye — do not start a new topic.)` }] }], turnComplete: true } })); }, (allowance - wrapLead) * 1000) : null;
+  const wrapTimer = capKind === 'quota' && allowance > wrapLead + 1 ? setTimeout(() => { if (ready && !closed && upstream?.readyState === WebSocket.OPEN) upstream.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: the call ends in about ${wrapLead} seconds. Finish your current thought, give ONE short useful tip and say a warm goodbye — do not start a new topic.)` }] }], turnComplete: true } })); }, (allowance - wrapLead) * 1000) : null;
   wrapTimer?.unref?.();
 
   // Gemini sozlashni (setupComplete) shuncha vaqtda tugatmasa — zaxira model, u ham bo'lmasa xato (foydalanuvchi "o'ylayapman"da qolib ketmasin)
@@ -323,7 +342,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       finish('setup-timeout');
     }, d.cfg.setupTimeoutMs ?? 8000);
     setupTimer.unref?.();
-    ws.on('open', () => ws.send(JSON.stringify(setupMessage(d.cfg, model, systemText, ptt))));
+    ws.on('open', () => ws.send(JSON.stringify(setupMessage(d.cfg, model, systemText, ptt, voice))));
     ws.on('message', (raw: RawData) => {
       let m: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
       try { m = JSON.parse(raw.toString()); } catch { return; }
@@ -334,7 +353,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
         for (const b of pending.splice(0)) forward(b);
         void ctxWait.then(() => {
           if (closed || ws.readyState !== WebSocket.OPEN) return;
-          const kick = d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory, plan: ctxPrompt(learnerCtx) || undefined, followUp: ctx.followUp, level: url.searchParams.get('level'), native: d.native(lang) }) ?? `(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)${learnerCtx ? `\n${ctxPrompt(learnerCtx)}` : ''}`;
+          const kick = cont ? continueKick(learnerCtx?.recent, d.native(lang)) : d.kickoff?.({ firstCall: ctx.firstCall, hasMemory: !!ctx.memory, plan: ctxPrompt(learnerCtx) || undefined, followUp: ctx.followUp, level: url.searchParams.get('level'), native: d.native(lang) }) ?? `(The learner just joined the voice call. Greet them in your style in one or two sentences and ask a question.)${learnerCtx ? `\n${ctxPrompt(learnerCtx)}` : ''}`;
           ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: kick }] }], turnComplete: true } }));
         });
         return;
@@ -359,15 +378,15 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
             if (e !== 'neutral' && e !== emo) { emo = e; st.emo[e] = (st.emo[e] ?? 0) + 1; send({ type: 'emotion', value: e }); }
           }
         }
-        if (!muted && !dropOld) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { modelBusy = true; if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
+        if (!muted && !dropOld) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { if (releasedAt) { st.waits.push(Date.now() - releasedAt); releasedAt = 0; } modelBusy = true; if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
         if (sc.inputTranscription?.text && (!asrOn || viaAudio)) { // tanish ishlamagan navbatda (ovoz Gemini'ga ketgan) — Gemini'ning o'z nusxasi
           const t = String(sc.inputTranscription.text); send({ type: 'in', text: t }); addText('learner', t);
           learnerBuf = (learnerBuf + ' ' + t).slice(-300); maybeNavigate(learnerBuf); // Gemini o'zi eshitgan gap (tanish o'chiq bo'lsa)
         }
         if (sc.interrupted) { send({ type: 'interrupted' }); turnOut = ''; muted = false; modelBusy = false; viaAudio = false; clearDrop(); }
-        if (sc.turnComplete) { st.replies++; send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); }
+        if (sc.turnComplete) { st.replies++; send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); if (capDue) { if (capWait) clearTimeout(capWait); capNow(); } }
       }
-      if (m.goAway) { send({ type: 'error', code: 503, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
+      if (m.goAway) { send({ type: 'error', code: 503, resume: true, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
     });
     ws.on('close', (code: number, reason: Buffer) => {
       if (closed) return;
@@ -375,7 +394,8 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       log(`[live] upstream yopildi ${code} ${model}${r ? `: ${r}` : ''}`);
       // Model topilmasa yoki sozlama rad etilsa — zaxira model bilan bir marta
       if (!ready && !triedFallback && d.cfg.fallbackModel) { triedFallback = true; model = d.cfg.fallbackModel; connect(); return; }
-      send({ type: 'error', code: code === 1011 ? 503 : 502, message: ready ? 'Aloqa uzildi.' : 'Ovozli suhbat hozir ishlamayapti.' });
+      // Tayyor bo'lgandan keyin uzilsa (masalan, 1008 "client inactivity") — mijoz suhbatni o'zi davom ettiradi (resume)
+      send({ type: 'error', code: code === 1011 ? 503 : 502, ...(ready ? { resume: true } : {}), message: ready ? 'Aloqa uzildi.' : 'Ovozli suhbat hozir ishlamayapti.' });
       finish(`upstream ${code}`);
     });
     ws.on('error', (e: Error) => log(`[live] upstream xato ${model}: ${e.message.slice(0, 160)}`));
@@ -418,7 +438,9 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     let text = '';
     let sure = true, partly = false;
     try {
+      const t0 = Date.now();
       const r = await d.asr!(who.id, pcmToWav(audio), lang, enStreak >= 2 ? 'en' : 'native');
+      st.asrMs.push(Date.now() - t0);
       text = (r?.text ?? '').trim();
       if (text) enStreak = r?.lang === 'eng' ? enStreak + 1 : 0;
       sure = r?.score == null || r.score >= UNSURE_SCORE;
@@ -451,12 +473,12 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       } else if (discard) {
         actBuf = []; actBytes = 0; st.taps++;
       } else {
-        const audio = Buffer.concat(actBuf); actBuf = []; actBytes = 0; st.acts++;
+        const audio = Buffer.concat(actBuf); actBuf = []; actBytes = 0; st.acts++; releasedAt = Date.now();
         asrChain = asrChain.then(() => onUtterance(audio)).catch(() => undefined);
       }
       return;
     }
-    st.acts += on ? 1 : 0;
+    st.acts += on ? 1 : 0; if (!on) releasedAt = Date.now();
     upstream.send(JSON.stringify({ realtimeInput: on ? { activityStart: {} } : { activityEnd: {} } }));
     if (on) { actTimer = setTimeout(() => setActivity(false), 60_000); actTimer.unref?.(); }
   };
@@ -480,5 +502,17 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   });
   client.on('close', () => finish('client-close'));
   client.on('error', () => finish('client-error'));
+  activeCalls.get(who.id)?.('replaced'); activeCalls.set(who.id, finish);
   connect();
+}
+
+/** Jurnal uchun: ustoz javobini kutish (o'quvchi qo'yib yuborgandan birinchi ovozgacha) va tanish vaqti — o'rtacha/eng uzun, soniyada. */
+export function statLine(st: { waits: number[]; asrMs: number[] }): string {
+  const f = (a: number[]) => (a.length ? `${(a.reduce((x, y) => x + y, 0) / a.length / 1000).toFixed(1)}/${(Math.max(...a) / 1000).toFixed(1)}s` : '');
+  return `${st.waits.length ? ` kutish=${f(st.waits)}` : ''}${st.asrMs.length ? ` asr=${f(st.asrMs)}` : ''}`;
+}
+/** Qayta ulanishdan keyingi birinchi ko'rsatma: salomlashmasdan, oldingi gaplardan davom etish. */
+export function continueKick(recent: string | undefined, native: string): string {
+  const nat = native.replace(/\s*\(.*\)\s*$/, '');
+  return `(System: the voice call was reconnected for a technical reason a moment ago — it is the SAME conversation. Do NOT greet, do NOT introduce yourself and do NOT mention the reconnect. ${recent ? `The last lines were:\n${recent}\nPick up exactly where it stopped: answer or continue the last topic in one or two short sentences, then hand the turn back.` : `Continue the lesson naturally with one short question (in ${nat} or English, as before).`})`;
 }

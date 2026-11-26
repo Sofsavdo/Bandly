@@ -5,7 +5,7 @@ import { listenTurn, say, SpeechError, stopSpeaking, sttSupported } from '../lib
 import { findIssues } from '../lib/grammarCheck';
 import { addMistake } from '../lib/mistakes';
 import { renderCard, shareCard } from '../lib/shareCard';
-import { addXp, useProfile } from '../lib/store';
+import { addXp, personaLevel, useProfile } from '../lib/store';
 import { L } from '../i18n';
 
 type Phase = 'setup' | 'playing' | 'over';
@@ -160,7 +160,7 @@ export default function Challenge() {
           <p className="row">
             <span className="pill">{res.words}  {L('so‘z')}</span><span className="pill">{L('{0} oltin g‘isht', [res.linkers])}</span><span className="pill">{L('{0} qavat quladi', [res.fallen])}</span><span className="pill">{res.wpm}  {L('so‘z/daqiqa')}</span><span className="pill">{score(res)}  {L('ball')}</span>
           </p>
-          <p>{reaction(res, p.adult && p.roastLevel >= 2)}</p>
+          <p>{reaction(res, personaLevel(p) >= 2)}</p>
           {issues.length > 0 && (
             <>
               <h3>{L('Xatolar')}</h3>

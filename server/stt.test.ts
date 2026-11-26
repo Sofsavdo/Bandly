@@ -43,7 +43,7 @@ console.log('stt: OK');
   // 2) Ona tili natijasi ishonchsiz, inglizcha ishonchli: ikkala so'rov, ishonchlisi olinadi; soniyalar ikkalasi uchun
   const c2: (string | null)[] = [];
   const r2 = await transcribeLearner({ ...base, fetchImpl: mk({ uzb: { text: 'yesterday ay go skul', lp: -0.6, end: 1 }, eng: { text: 'Yesterday I go school', lp: -0.05, end: 1 } }, c2) }, audio, 'audio/wav', 'uzb');
-  assert.deepEqual(c2, ['uzb', 'eng']); assert.equal(r2.text, 'Yesterday I go school'); assert.equal(r2.forced, true); assert.equal(r2.seconds, 4 + 4, 'ikki so‘rov ham hisobga olinadi');
+  assert.deepEqual(c2, ['uzb', 'eng']); assert.equal(r2.text, 'Yesterday I go school'); assert.equal(r2.forced, true); assert.equal(r2.billedSeconds, 4 + 4, 'ikki so‘rov ham xarajatga yoziladi'); assert.equal(r2.seconds, 4, 'o‘quvchi limiti — gapirgan vaqt (bir marta)');
   // 3) Ishonchsiz, lekin inglizcha yomonroq: ona tili natijasi qoladi
   const c3: (string | null)[] = [];
   const r3 = await transcribeLearner({ ...base, fetchImpl: mk({ uzb: { text: 'Men tushunmadim', lp: -0.3 }, eng: { text: 'Дарске ўтамиз', lp: -0.9 } }, c3) }, audio, 'audio/wav', 'uzb');
@@ -71,5 +71,19 @@ console.log('stt: OK');
   const c10: (string | null)[] = [];
   const r10 = await transcribeLearner({ ...base, fetchImpl: mk({ eng: { text: 'Дарске ўтамиз', lp: -0.05 }, uzb: { text: 'Darsga o‘tamiz', lp: -0.1 } }, c10) }, audio, 'audio/wav', 'uzb', 'en-first');
   assert.deepEqual(c10, ['eng', 'uzb']); assert.equal(r10.text, 'Darsga o‘tamiz');
+  // 8) Birinchi so'rov sekin (hedge): ikkinchisi KUTMASDAN parallel boshlanadi; birinchisi ishonchli bo'lsa ikkinchisi bekor qilinadi
+  const slow = (by: Record<string, { text: string; lp: number; ms: number }>, calls: string[], aborted: string[]) => (async (_u: string, init: { body: FormData; signal?: AbortSignal }) => {
+    const lc = init.body.get('language_code') as string; calls.push(lc); const x = by[lc]!;
+    await new Promise<void>((res, rej) => { const t = setTimeout(res, x.ms); init.signal?.addEventListener('abort', () => { clearTimeout(t); aborted.push(lc); rej(new Error('abort')); }); });
+    return { ok: true, status: 200, json: async () => ({ text: x.text, language_code: lc, words: x.text.split(' ').map((_, i) => ({ type: 'word', end: i + 1, logprob: x.lp })) }) };
+  }) as never;
+  const c11: string[] = [], ab11: string[] = []; const t11 = Date.now();
+  const r11 = await transcribeLearner({ ...base, fetchImpl: slow({ uzb: { text: 'Men keldim', lp: -0.02, ms: 120 }, eng: { text: 'Men keldim', lp: -0.5, ms: 400 } }, c11, ab11) }, audio, 'audio/wav', 'uzb', 'any', 40);
+  assert.deepEqual(c11, ['uzb', 'eng'], 'sekin birinchi so‘rov — ikkinchisi parallel boshlandi'); assert.deepEqual(ab11, ['eng'], 'birinchisi ishonchli — ikkinchisi bekor');
+  assert.equal(r11.text, 'Men keldim'); assert.ok(Date.now() - t11 < 380, 'ikkinchisini kutmadi');
+  // ishonchsiz + sekin: umumiy vaqt ~ eng sekini (ketma-ket yig'indisi emas)
+  const c12: string[] = []; const t12 = Date.now();
+  const r12 = await transcribeLearner({ ...base, fetchImpl: slow({ uzb: { text: 'yesterday ay go', lp: -0.6, ms: 300 }, eng: { text: 'Yesterday I go', lp: -0.05, ms: 300 } }, c12, []) }, audio, 'audio/wav', 'uzb', 'any', 40);
+  assert.equal(r12.text, 'Yesterday I go'); assert.ok(Date.now() - t12 < 550, `parallel: ${Date.now() - t12} ms (ketma-ket bo‘lsa ~600)`);
   console.log('stt (til): OK');
 }

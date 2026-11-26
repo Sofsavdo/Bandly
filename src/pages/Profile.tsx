@@ -124,7 +124,7 @@ export default function Profile() {
             </select>
           </label>
         </div>
-        <details className="fold" style={{ margin: '10px 0' }}><summary>{L('Sellzen xarakteri')}</summary><PersonaPicker /></details>
+        <details className="fold" style={{ margin: '10px 0' }}><summary>{L('Sellzen ustoz: ovoz, xarakter, bolalar rejimi')}</summary><PersonaPicker /></details>
       </div>
 
       <details className="card fold cert-fold"><summary><h3 style={{ display: 'inline', margin: 0 }}>{L('Sertifikat uchun ma’lumot')}</h3></summary><CertProfileCard /></details>

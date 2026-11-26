@@ -51,7 +51,16 @@ assert.ok(again.includes('do NOT introduce yourself') && again.includes("Qulog'i
 assert.equal(clampStyle(3, false), 1);
 assert.equal(clampStyle(0, true), 0);
 assert.equal(clampStyle('x', true), 0);
-assert.equal(clampStyle(9, true), 3);
+assert.equal(clampStyle(9, true), 5);
+// 2026-11-26: Romantik (4) — faqat 18+ (aks holda Yumshoq), Bolalar uchun (5) — hammaga
+assert.equal(clampStyle(4, false), 0); assert.equal(clampStyle(4, true), 4); assert.equal(clampStyle(5, false), 5); assert.equal(clampStyle(2, false), 1);
+{
+  const rom = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 4 });
+  assert.ok(/romantic/.test(rom) && rom.includes('"azizim"') && /no sexual content/i.test(rom) && /never pretend to be a real partner/.test(rom) && !/swearing is allowed/.test(rom), 'romantik: erkalaydi, lekin toza va AI ekanini yashirmaydi');
+  const kid = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', level: 'C1', style: 5 });
+  assert.ok(/YOUNG CHILD/.test(kid) && /CHILD SAFETY/.test(kid) && /speak MOSTLY Uzbek/.test(kid) && !/swearing is allowed/.test(kid) && !/SWEAR for real/.test(kid), 'bolalar: so‘kish yo‘q, daraja C1 bo‘lsa ham asosan ona tilida');
+  assert.ok(kid.includes('correct it kindly') && kid.includes('Kechirasiz, tushunmadim'), 'bolalar: muloyim tuzatish');
+}
 const soft = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 0 });
 assert.ok(soft.includes('Kechirasiz, tushunmadim') && soft.includes('correct it kindly') && !/swearing/.test(soft), 'yumshoq: so‘kinmaydi');
 const fun = buildLivePrompt({ adult: true, native: 'Uzbek (Latin script)', style: 1 });

@@ -934,10 +934,11 @@ if (live) attachLive(httpServer, {
   asr: stt && (process.env.LIVE_ASR ?? 'scribe').trim().toLowerCase() !== 'gemini' ? async (pid, wav, lang, prefer) => {
     sttAllowed(db, stt, pid);
     const r = await transcribeLearner(stt, wav, 'audio/wav', NATIVE_STT_CODE[lang] ?? 'uzb', prefer === 'en' ? 'en-first' : 'any');
-    const secs = r.seconds || wav.length / 32000;
+    const secs = r.seconds || wav.length / 32000; // o'quvchi limiti — gapirgan vaqt (bir marta); xarajat — to'langan so'rovlar bo'yicha
+    const billed = Math.max(secs, r.billedSeconds || 0);
     recordStt(db, pid, secs);
     console.log(`[stt] live ${stt.model} ${secs.toFixed(1)}s til=${r.lang ?? '?'}${prefer === 'en' ? ' (avval inglizcha)' : ''}${r.forced && prefer !== 'en' ? ' (inglizcha qayta tanildi)' : ''} ishonch=${r.score === null || r.score === undefined ? '?' : r.score.toFixed(2)} belgi=${r.text.length}`); // matnning o'zi yozilmaydi
-    recordAiCost(db, { playerId: pid, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 3600) * stt.pricePerHour, estimated: true });
+    recordAiCost(db, { playerId: pid, feature: 'stt', provider: 'elevenlabs', model: stt.model, units: Math.round(secs), unitKind: 'seconds', costUsd: (billed / 3600) * stt.pricePerHour, estimated: true });
     return { text: r.text, lang: r.lang, score: r.score ?? null };
   } : undefined,
   onTranscript: (pid, turns, lang) => {
@@ -952,6 +953,8 @@ if (live) attachLive(httpServer, {
     const tok = usage ? usage.textIn + usage.audioIn + usage.textOut + usage.audioOut : 0;
     const lp = livePrice();
     if (tok > 0) recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: tok, unitKind: 'tokens', costUsd: liveCost(usage!, lp), estimated: lp.estimated });
+    // Jurnal: 1 daqiqa suhbatning haqiqiy narxi (cheksiz tarif narxini hisoblash uchun)
+    if (tok > 0 && secs >= 30) { const c = liveCost(usage!, lp); console.log(`[live] narx ${pid} ${(secs / 60).toFixed(1)} daq $${c.toFixed(3)} = $${((c / secs) * 60).toFixed(4)}/daq tokenlar: matn ${usage!.textIn}+${usage!.textOut}, audio ${usage!.audioIn}+${usage!.audioOut}${lp.estimated ? ' (standart narx)' : ''}`); }
     else recordAiCost(db, { playerId: pid, feature: 'live', provider: 'gemini', model, units: Math.round(secs), unitKind: 'seconds', costUsd: (secs / 60) * live.pricePerMin, estimated: true });
   },
 });
