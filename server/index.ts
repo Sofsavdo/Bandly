@@ -12,6 +12,7 @@ import { findUsers } from './adminUsers';
 import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
 import { listeningTests } from '../src/content/listeningTests';
 import { readingTests } from '../src/content/readingTests';
+import { ensurePartnersTable, listApplications, publicTerms, setApplicationStatus, submitApplication } from './partners';
 import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, callbackOutcome, reconcile, recent, statusFor } from './payments';
@@ -90,6 +91,7 @@ ensureEventsTable(db);
 ensureUserEventsTable(db);
 ensureMemoryTable(db);
 ensureLeadsTable(db);
+ensurePartnersTable(db);
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
@@ -804,6 +806,15 @@ const httpServer = createServer(async (req, res) => {
       return send(res, 200, out);
     }
     // Lidlar: o'quvchi o'zi raqam qoldiradi (rozilik bilan); operator (rol: sales) va admin ro'yxatni ko'radi
+    // Hamkorlik: ochiq shartlar (faqat yoqilgan qoidalar) va ariza — mehmon ham yubora oladi; ko'rib chiqish — admin
+    if (req.method === 'GET' && url.pathname === '/api/partners/terms') return send(res, 200, publicTerms(db));
+    if (req.method === 'POST' && url.pathname === '/api/partners/apply') {
+      const b = await readJson(req, 4096);
+      let pid: number | null = null; try { const tk = String(req.headers['x-token'] ?? ''); if (tk) pid = byToken(db, tk).id; } catch { /* mehmon */ }
+      return send(res, 200, submitApplication(db, b, { ip, playerId: pid }));
+    }
+    if (req.method === 'GET' && url.pathname === '/api/staff/partners') { requireRole(db, String(req.headers['x-token'] ?? ''), []); return send(res, 200, { apps: listApplications(db, url.searchParams.get('status')) }); }
+    if (req.method === 'POST' && url.pathname === '/api/staff/partners') { requireRole(db, String(req.headers['x-token'] ?? ''), []); const b = await readJson(req); setApplicationStatus(db, Number(b.id), b.status, b.note); return send(res, 200, { ok: true }); }
     if (url.pathname === '/api/lead') {
       const p = byToken(db, String(req.headers['x-token'] ?? ''));
       if (req.method === 'GET') return send(res, 200, { has: hasLead(db, p.id), bot: botUsername });

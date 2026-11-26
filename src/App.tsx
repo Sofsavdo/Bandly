@@ -55,6 +55,7 @@ import { L } from './i18n';
 const Studio = lazy(() => import('./pages/Studio'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Creator = lazy(() => import('./pages/Creator'));
+const Partners = lazy(() => import('./pages/Partners'));
 const Leads = lazy(() => import('./pages/Leads'));
 const IeltsCourse = lazy(() => import('./pages/IeltsCourse'));
 const SatCourse = lazy(() => import('./pages/SatCourse'));
@@ -93,6 +94,7 @@ const routes: Record<string, () => ReactNode> = {
   '#/games/spell': () => <Spell />,
   '#/tools': () => <Tools />,
   '#/pricing': () => <Pricing />,
+  '#/partners': () => <Partners />,
   '#/league': () => <League />,
   '#/duel': () => <DuelHub />,
   '#/profile': () => <Profile />,
@@ -139,7 +141,7 @@ function MainApp() {
   useLayoutEffect(() => { if (hash !== '#/learn') window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, [hash]);
   useEffect(() => { document.title = section ? `${t(section.label)} — Sellzen` : L('Sellzen — ingliz tili, IELTS, CEFR, SAT va Sellzen ustoz'); }, [section, t]);
   // Tavsif (meta description) ham tanlangan tilda — ulashilgan havola va brauzer ko'rinishi uchun
-  useEffect(() => { document.querySelector('meta[name="description"]')?.setAttribute('content', L('Sellzen: A1 dan C2 gacha ingliz tili darslari, shaxsiy reja, IELTS mock testlar, CEFR va SAT tayyorgarligi hamda shaxsiy ustoz — Sellzen AI.')); }, []);
+  useEffect(() => { document.querySelector('meta[name="description"]')?.setAttribute('content', L('Sellzen: A1 dan C2 gacha ingliz tili darslari, shaxsiy reja, IELTS mock testlar, CEFR va SAT tayyorgarligi hamda shaxsiy ovozli ustoz — Sellzen.')); }, []);
   // Kirgan o'quvchi: avval shaxsiy reja (Sellzen uslubi bilan), keyin daraja testi — shundan keyin darslar darajaga qarab ochiladi
   useEffect(() => {
     const check = () => { const to = setupRoute(window.location.hash || '#/'); if (to) window.location.hash = to; };

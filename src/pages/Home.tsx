@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, Check, Compass, Flame, Plus, Send } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Check, Compass, Flame, Megaphone, Plus, Send } from 'lucide-react';
 import { UserAvatar } from '../components/UserAvatar';
 import { useEffect, useState } from 'react';
 import { authConfig, getAccount } from '../lib/account';
@@ -121,6 +121,12 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <ArrowRight size={18} />
         </a>
       )}
+
+      <a className="card partner-promo" href="#/partners">
+        <span className="blob"><Megaphone /></span>
+        <div><h3 style={{ margin: 0 }}>{L('Bloger yoki o‘qituvchimisiz?')}</h3><p className="muted" style={{ margin: '4px 0 0' }}>{L('Sellzen haqida video yoki post qiling — hamkor bo‘ling va har bir kelgan o‘quvchi uchun mukofot oling.')}</p></div>
+        <ArrowRight size={18} />
+      </a>
 
       <div className="section-title"><h2>{L('Savollar')}</h2></div>
       <div className="faq">

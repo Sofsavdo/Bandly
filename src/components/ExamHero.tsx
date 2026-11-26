@@ -23,10 +23,10 @@ function PlanDetails({ examDate, current, target, results }: { examDate: string 
   const plan = examPlan({ examAt: t, now: Date.now(), minutesPerDay: loadPrefs().minutes, current, target, weakest, lastMockAt: mockAt });
   if (plan.risk === 'past' || plan.daysLeft === null) return null;
   const RISK: Record<string, string> = {
-    reached: L('Hozirgi taxminiy natijangiz maqsadga yetgan. Darajani ushlab turish uchun mock va takrorlashni davom ettiring.'),
-    ok: L('Tanlagan vaqtingiz bilan maqsadga yetish real ko‘rinadi (taxminan {0} soat o‘qish imkoni bor, kerak — ~{1} soat).', [plan.availableHours ?? 0, plan.neededHours ?? 0]),
-    tight: L('Vaqt zich: taxminan {0} soat o‘qish imkoni bor, kerak — ~{1} soat. Kunlik vaqtni oshirish yoki sanani surish xavfni kamaytiradi.', [plan.availableHours ?? 0, plan.neededHours ?? 0]),
-    unlikely: L('Halol aytsak: shu sana va kunlik vaqt bilan maqsadga yetish qiyin (taxminan {0} soat bor, kerak — ~{1} soat). Sanani surish, kunlik vaqtni oshirish yoki oraliq maqsad qo‘yishni tavsiya qilamiz.', [plan.availableHours ?? 0, plan.neededHours ?? 0]),
+    reached: L('Hozirgi natijangiz maqsadga yetgan. Darajani ushlab turish uchun mock va takrorlashni davom ettiring.'),
+    ok: L('Tanlagan vaqtingiz bilan maqsadga yetasiz: {0} soat o‘qish imkoni bor, kerak — {1} soat.', [plan.availableHours ?? 0, plan.neededHours ?? 0]),
+    tight: L('Vaqt zich: {0} soat o‘qish imkoni bor, kerak — {1} soat. Kunlik vaqtni oshirsangiz, ulgurasiz.', [plan.availableHours ?? 0, plan.neededHours ?? 0]),
+    unlikely: L('Shu sana va kunlik vaqt bilan maqsadga yetish qiyin: {0} soat bor, kerak — {1} soat. Sanani surish, kunlik vaqtni oshirish yoki oraliq maqsad qo‘yishni tavsiya qilamiz.', [plan.availableHours ?? 0, plan.neededHours ?? 0]),
     unknown: L('Imkoniyatni baholash uchun avval bitta mock test topshiring — hozirgi natijangiz noma’lum.'),
   };
   return (
@@ -34,7 +34,7 @@ function PlanDetails({ examDate, current, target, results }: { examDate: string 
       <summary>{L('Tayyorgarlik rejasi')}</summary>
       <p className={`eh-risk ${plan.risk}`}>{RISK[plan.risk]}</p>
       <ol className="eh-weeks">{plan.milestones.slice(0, 6).map((m) => <li key={m.week}><b>{L('{0}-hafta', [m.week])}</b> {L('Asosiy e’tibor: {0}', [SK[m.focus]])}{m.mock ? ` · ${L('mock test')}` : ''}</li>)}</ol>
-      <p className="muted" style={{ fontSize: 12, margin: '6px 0 0' }}>{plan.nextMockInDays === 0 ? L('Keyingi mock: bugun.') : L('Keyingi mock: {0} kundan keyin.', [plan.nextMockInDays ?? 0])} {L('Hisob taxminiy: haftasiga 5 kun o‘qish va har 0,5 band uchun ~50 soat deb olingan; natija kafolatlanmaydi.')}</p>
+      <p className="muted" style={{ fontSize: 12, margin: '6px 0 0' }}>{plan.nextMockInDays === 0 ? L('Keyingi mock: bugun.') : L('Keyingi mock: {0} kundan keyin.', [plan.nextMockInDays ?? 0])} {L('Hisob: haftasiga 5 kun o‘qish va har 0,5 band uchun ~50 soat.')}</p>
     </details>
   );
 }

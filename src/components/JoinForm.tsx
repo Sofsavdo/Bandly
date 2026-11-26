@@ -55,7 +55,7 @@ function AltLogin({ conf, onJoined }: { conf: AuthConfig; onJoined: (a: Account)
             <input type="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} value={pw} minLength={8} maxLength={128} placeholder={mode === 'register' ? L('Parol (kamida 8 belgi)') : L('Parol')} aria-label={L('Parol')} onChange={(e) => setPw(e.target.value)} />
             {mode === 'register' && <input type="text" autoComplete="nickname" value={nick} maxLength={20} placeholder={L('Ismingiz (ixtiyoriy)')} onChange={(e) => setNick(e.target.value)} />}
             <button className="btn primary" type="submit" disabled={busy || phone.trim().length < 9 || pw.length < 8}>{busy ? L('Kuting…') : mode === 'login' ? L('Kirish') : L('Ro‘yxatdan o‘tish')}</button>
-            {mode === 'register' && <p className="muted tg-note" style={{ margin: 0 }}>{L('Parolni eslab qoling: uni tiklash hozircha yo‘q.')}</p>}
+            {mode === 'register' && <p className="muted tg-note" style={{ margin: 0 }}>{L('Parolni xavfsiz joyda saqlang — uni faqat siz bilasiz.')}</p>}
           </form>
         </details>
       )}

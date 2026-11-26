@@ -9,6 +9,7 @@
 //   G. Obuna muddati tugadi → pullik bo'lim yopiladi
 //   H. Mehmon mock → natija yopiq → ro'yxatdan o'tish → natija akkauntga bog'lanadi (bir marta), shaxsiy reja
 //   I. Creator linki → bridge → veb → ro'yxat → creator kabinetida voronka
+//   J. Hamkorlik: mehmon bosh sahifadan hamkorlik sahifasiga o'tadi, ariza qoldiradi (rozilik majburiy) → admin «Arizalar»da ko'radi va holatini o'zgartiradi
 //   K. Admin paneli: hamkor mukofot qoidasi — so'mda yaratish, tahrirlash, yoqish (egasi tasdig'i bilan); kredit rejimi «Limitlar»da
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -310,8 +311,8 @@ try {
     assert.match(await text(p), /\d+\s*\/\s*\d+/, 'natija (to‘g‘ri javoblar soni) ochildi');
     assert.ok(gradeCalls.length >= 1 && gradeCalls.every((t) => t.length > 10), 'baholash faqat hisob tokeni bilan');
     await p.getByText('Natijangiz asosida shaxsiy reja').waitFor({ timeout: 8000 });
-    assert.match(await text(p), /taxminiy tavsiya/, 'reja taxminiy tavsiya ekani aytilgan');
-    assert.match(await text(p), /kafolatlanmaydi/, 'kafolat yo‘q ogohlantirishi');
+    assert.match(await text(p), /Reja shu test natijangizga tayanadi/, 'reja qaysi natijaga tayanishi aytilgan');
+    assert.doesNotMatch(await text(p), /taxminiy|kafolatlanmaydi|rasmiy IELTS bahosi emas/, 'egasi (2026-11-26): ishonchni pasaytiruvchi so‘zlar reja kartasida ko‘rinmaydi (shartlar sahifasida bor)');
     const hrefs = await p.locator('.mock-plan a.path-step').evaluateAll((els) => els.map((e) => e.getAttribute('href') ?? ''));
     assert.ok(hrefs.length >= 1 && hrefs.every((h) => /^#\/(learn\/[\w-]+|mocks\/(reading|listening)\/[\w-]+|placement)$/.test(h)), `reja havolalari bevosita: ${hrefs.join(', ')}`);
     await p.waitForTimeout(1800); // 600 ms dan keyin savolnomaga qaytarib yubormasligi kerak
@@ -367,6 +368,33 @@ try {
     assert.match(await text(c), /Voronka/); assert.match(await text(c), new RegExp(`/r/${link.code}`), 'qisqa havola ko‘rsatiladi');
     assert.doesNotMatch(await text(c), /E2E Talaba/, 'creator o‘quvchi laqabini ko‘rmaydi');
     await p.context().close(); await c.context().close();
+  });
+
+  await step('J. Hamkorlik: mehmon bosh sahifadan hamkorlik sahifasiga o‘tadi, ariza qoldiradi → admin «Arizalar»da ko‘radi', async () => {
+    const g = await page();
+    await g.goto(`${base}/#/welcome`);
+    await g.locator('a.partner-promo').click();
+    await g.getByRole('heading', { name: 'Sellzen haqida gapiring — daromad oling' }).waitFor({ timeout: 8000 });
+    assert.ok(await g.getByText('ariza ko‘rib chiqilgach siz bilan kelishiladi').count(), 'qoida yoqilmagan — summa va’da qilinmaydi');
+    await g.getByLabel('Ismingiz').fill('E2E Bloger');
+    await g.getByLabel('Sahifangiz yoki kanalingiz').fill('tiktok.com/@e2e.bloger');
+    await g.getByLabel('Obunachilar soni').selectOption('10k-100k');
+    await g.getByLabel('Telegram yoki telefon').fill('@e2e_bloger');
+    const send = g.getByRole('button', { name: 'Ariza yuborish' });
+    assert.ok(await send.isDisabled(), 'rozilikdan oldin yuborib bo‘lmaydi');
+    await g.getByLabel('Ma’lumotlarimni hamkorlik bo‘yicha bog‘lanish uchun ishlatishga roziman').check();
+    await send.click();
+    await g.getByText('Arizangiz qabul qilindi').waitFor({ timeout: 8000 });
+    const a = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: adminToken, nickname: 'E2E Admin' }) });
+    await a.goto(`${base}/#/admin`);
+    await a.getByRole('tab', { name: 'Hamkorlar' }).click();
+    await a.getByRole('tab', { name: 'Arizalar' }).click();
+    await a.getByText('E2E Bloger').waitFor({ timeout: 8000 });
+    assert.ok(await a.getByText('@e2e_bloger').count(), 'aloqa ko‘rinadi');
+    await a.getByLabel('Holat').first().selectOption('contacted');
+    await a.getByText('Saqlandi').waitFor({ timeout: 8000 });
+    const apps = (await api('/api/staff/partners', { token: adminToken })).json.apps as { name: string; status: string }[];
+    assert.equal(apps.find((x) => x.name === 'E2E Bloger')?.status, 'contacted');
   });
 
   await step('K. Admin paneli: hamkor mukofot qoidasi — so‘mda yaratish, tahrirlash, yoqish; kredit rejimi «Limitlar»da', async () => {

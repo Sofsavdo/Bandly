@@ -12,7 +12,7 @@ export function Footer() {
         <div className="footer-row">
           <a className="logo" href="#/" aria-label={BRAND.name}><Logo size={30} /></a>
           <nav className="footer-links" aria-label={L('Pastki havolalar')}>
-            <a href="#/learn">{t('nav.learn')}</a><a href="#/exam">{t('nav.exam')}</a><a href="#/mocks">{t('nav.mocks')}</a><a href="#/pricing">{t('nav.pricing')}</a><a href="/vositalar/">{L('Bepul vositalar')}</a><a href="/shartlar">{L('Foydalanish shartlari')}</a><a href="/maxfiylik">{L('Maxfiylik siyosati')}</a>
+            <a href="#/learn">{t('nav.learn')}</a><a href="#/exam">{t('nav.exam')}</a><a href="#/mocks">{t('nav.mocks')}</a><a href="#/pricing">{t('nav.pricing')}</a><a href="#/partners">{L('Hamkorlik')}</a><a href="/vositalar/">{L('Bepul vositalar')}</a><a href="/shartlar">{L('Foydalanish shartlari')}</a><a href="/maxfiylik">{L('Maxfiylik siyosati')}</a>
           </nav>
         </div>
       </div>
