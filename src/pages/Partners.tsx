@@ -1,24 +1,35 @@
 // Hamkorlik: blogerlar, o'qituvchilar va ijtimoiy tarmog'i bor o'quvchilar uchun ommaviy sahifa (mehmon ham ochadi).
-// Mukofot summalari faqat admin yoqqan qoidalardan (server/partners.ts publicTerms) — sahifa o'zi hech narsa va'da qilmaydi.
+// Egasi (2026-11-26): "ko'p qismlar tushunarsiz va murakkab" — sahifa soddalashtirildi: bitta jadval, egasining 3 ta misoli, 4 ta qisqa shart.
+// Summalar va normalar serverdan (admin tahrirlaydi: server/videoPay.ts) — sahifada qattiq yozilgan summa yo'q.
 import { useEffect, useState } from 'react';
-import { ArrowRight, Check, Eye, Megaphone, Send, UserPlus, Users, Video } from 'lucide-react';
+import { ArrowRight, Check, Megaphone } from 'lucide-react';
 import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
-import { InviteCard } from '../components/InviteCard';
 import { L } from '../i18n';
 
 interface Tier { min: number; som: number }
-interface VideoTerms { baseSom: number; windowDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string }
+interface VideoTerms { baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string }
 interface Terms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: VideoTerms | null }
-const n = (x: number): string => fmtSum(x);
 type Kind = 'blogger' | 'teacher' | 'learner';
+const n = (x: number): string => fmtSum(x);
+const som = (x: number): string => L('{0} so‘m', [n(x)]);
 
-function ruleText(r: Terms['rules'][number]): string | null {
-  if (r.kind === 'paid_pct' && r.pct) return L('Siz orqali kelgan o‘quvchining har bir obuna to‘lovidan {0}%', [r.pct]);
-  if (r.kind === 'first_paid_flat' && r.som) return L('Siz orqali kelib birinchi obunani olgan har bir o‘quvchi uchun {0} so‘m', [fmtSum(r.som)]);
-  if (r.kind === 'activated_flat' && r.som) return L('Siz orqali kelib darsni boshlagan har bir o‘quvchi uchun {0} so‘m', [fmtSum(r.som)]);
-  if (r.kind === 'verified_views_per_1k' && r.som) return L('Sellzen haqidagi videongizning har 1000 ta tasdiqlangan ko‘rishi uchun {0} so‘m', [fmtSum(r.som)]);
-  return null;
+/** Server bilan bir xil hisob: har qatorda erishilgan ENG YUQORI pog'ona (ustma-ust qo'shilmaydi). */
+const bonus = (t: Tier[], x: number): number => t.reduce((s, y) => (x >= y.min ? y.som : s), 0);
+
+/** Egasining misollari: birinchi normaga yetmagan, o'rtadagi va eng yuqori natija (normalar o'zgarsa misollar ham o'zgaradi). */
+function examples(v: VideoTerms): { views: number; learners: number; parts: number[] }[] {
+  const vt = v.viewTiers, lt = v.learnerTiers;
+  if (!vt.length || !lt.length) return [];
+  const topV = vt.at(-1)!.min, topL = lt.at(-1)!.min;
+  const raw = [
+    { views: vt[0]!.min - 1, learners: lt[0]!.min - 1 },
+    { views: Math.max(vt[0]!.min, Math.floor((topV * 0.99) / 1000) * 1000), learners: Math.max(lt[0]!.min, topL - 1) },
+    { views: topV, learners: topL },
+  ];
+  const seen = new Set<string>();
+  return raw.filter((e) => { const k = `${bonus(vt, e.views)}:${bonus(lt, e.learners)}`; if (seen.has(k)) return false; seen.add(k); return true; })
+    .map((e) => ({ ...e, parts: [v.baseSom, bonus(vt, e.views), bonus(lt, e.learners)].filter((x, i) => i === 0 || x > 0) }));
 }
 
 export default function Partners() {
@@ -31,7 +42,6 @@ export default function Partners() {
   const [err, setErr] = useState('');
   const [sent, setSent] = useState(false);
   useEffect(() => { void fetch('/api/partners/terms').then((r) => (r.ok ? r.json() : null)).then(setTerms).catch(() => undefined); }, []);
-  const rules = (terms?.rules ?? []).map(ruleText).filter((x): x is string => !!x);
   const v = terms?.video ?? null;
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(''); setBusy(true);
@@ -43,44 +53,72 @@ export default function Partners() {
     } catch (x) { setErr((x as Error).message); } finally { setBusy(false); }
   };
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
+  const ex = v ? examples(v) : [];
+  const best = ex.length ? ex.at(-1)!.parts.reduce((a, b) => a + b, 0) : 0;
 
   return (
     <div className="partners">
       <section className="w-hero partners-hero">
         <div>
           <span className="eyebrow"><Megaphone size={15} />  {L('Hamkorlik')}</span>
-          <h1>{L('Sellzen haqida gapiring — daromad oling')}</h1>
-          <p className="lead">{L('Blogerlar, o‘qituvchilar va ijtimoiy tarmog‘i bor o‘quvchilar uchun: shaxsiy havola, tayyor materiallar va har bir kelgan o‘quvchi kabinetingizda ko‘rinadi.')}</p>
+          <h1>{L('Sellzen haqida video qiling — pul ishlang')}</h1>
+          <p className="lead">{v
+            ? (best > v.baseSom ? L('Har bir video uchun {0}. Video yaxshi natija bersa — {1} so‘mgacha.', [som(v.baseSom), n(best)]) : L('Har bir video uchun {0}.', [som(v.baseSom)]))
+            : L('Blogerlar, o‘qituvchilar va ijtimoiy tarmog‘i bor o‘quvchilar uchun: shaxsiy havola va har bir kelgan o‘quvchi kabinetingizda ko‘rinadi.')}</p>
           <a className="btn primary lg" href="#partner-form">{L('Ariza qoldirish')} <ArrowRight size={18} /></a>
         </div>
       </section>
 
-      <div className="section-title"><h2>{L('Kimlar uchun?')}</h2></div>
-      <div className="partner-who">
-        <div className="card"><Video size={22} /><h3>{L('Blogerlar')}</h3><p>{L('Instagram, TikTok, YouTube yoki Telegram’da ingliz tili, ta’lim yoki talabalar hayoti haqida kontent qilasiz.')}</p></div>
-        <div className="card"><Users size={22} /><h3>{L('O‘qituvchilar va o‘quv markazlar')}</h3><p>{L('O‘quvchilaringizga Sellzen’ni tavsiya qilasiz yoki guruhingiz bilan birga ishlatasiz.')}</p></div>
-        <div className="card"><Send size={22} /><h3>{L('Faol o‘quvchilar')}</h3><p>{L('Sellzen’da o‘qiyapsiz va natijangizni do‘stlaringiz yoki obunachilaringiz bilan ulashmoqchisiz.')}</p></div>
-      </div>
+      {v ? (
+        <>
+          <div className="section-title"><h2>{L('Bitta video uchun qancha olasiz?')}</h2></div>
+          <section className="card vp-table">
+            <div className="vp-row base"><span>{L('Video joylaganingiz uchun')}</span><b>{som(v.baseSom)}</b></div>
+            {v.viewTiers.map((t) => <div className="vp-row" key={`v${t.min}`}><span>{L('{0} va undan ko‘p ko‘rish', [n(t.min)])}</span><b>+{som(t.som)}</b></div>)}
+            {v.learnerTiers.map((t) => <div className="vp-row" key={`l${t.min}`}><span>{L('{0} va undan ko‘p o‘quvchi', [n(t.min)])}</span><b>+{som(t.som)}</b></div>)}
+            <p className="muted">{L('Ko‘rish va o‘quvchi bonuslari ustma-ust qo‘shilmaydi: har biridan eng yuqorisi olinadi.')}</p>
+          </section>
 
-      <div className="section-title"><h2>{L('Qanday ishlaydi?')}</h2></div>
+          {ex.length > 0 && (
+            <>
+              <div className="section-title"><h2>{L('Misollar')}</h2></div>
+              <div className="vp-examples">
+                {ex.map((e) => {
+                  const total = e.parts.reduce((a, b) => a + b, 0);
+                  return (
+                    <section className="card vp-ex" key={`${e.views}-${e.learners}`}>
+                      <p className="vp-ex-in">{L('{0} ko‘rish, {1} o‘quvchi', [n(e.views), n(e.learners)])}</p>
+                      <p className="vp-ex-calc">{e.parts.length > 1 ? `${e.parts.map(n).join(' + ')} =` : L('faqat video uchun')}</p>
+                      <b className="vp-ex-total">{som(total)}</b>
+                    </section>
+                  );
+                })}
+              </div>
+              {best > 0 && <p className="vp-month">{L('Oyiga 15 ta video: 15 × {0} = {1} so‘mgacha', [n(best), n(best * 15)])}</p>}
+            </>
+          )}
+
+          <div className="section-title"><h2>{L('Shartlar')}</h2></div>
+          <section className="card">
+            <ul className="vp-rules">
+              <li><Check size={16} />{L('sellzen.uz yoki shaxsiy havolangiz profil bio’sida va video izohida tursin.')}</li>
+              <li><Check size={16} />{v.instagram ? L('Videoda Instagram sahifamizni belgilang: {0}.', [`@${v.instagram}`]) : L('Videoda Sellzen Instagram sahifasini belgilang.')}</li>
+              <li><Check size={16} />{L('Hisob video joylanganidan {0} kun o‘tib, bir marta qilinadi. Keyingi ko‘rishlar hisobga olinmaydi.', [v.windowDays])}</li>
+              <li><Check size={16} />{L('Summa tasdiqlangach {0} kun ichida to‘lanadi.', [v.payDays])}</li>
+            </ul>
+            <p className="muted" style={{ marginBottom: 0 }}>{L('O‘quvchi — havolangiz orqali ro‘yxatdan o‘tib, darsni boshlagan odam.')}</p>
+          </section>
+        </>
+      ) : (
+        <section className="card"><p style={{ margin: 0 }}>{L('Mukofot shartlari auditoriyangiz va formatga qarab ariza ko‘rib chiqilgach siz bilan kelishiladi.')}</p></section>
+      )}
+
+      <div className="section-title"><h2>{L('Qanday boshlanadi?')}</h2></div>
       <ol className="how-steps">
-        <li><b>1</b><div><h3>{L('Ariza qoldirasiz')}</h3><p>{L('Sahifangiz havolasi va aloqa ma’lumotingiz — 1 daqiqa.')}</p></div></li>
-        <li><b>2</b><div><h3>{L('Biz bog‘lanamiz')}</h3><p>{L('Arizani ko‘rib chiqamiz va hamkor kabinetini ochib beramiz.')}</p></div></li>
-        <li><b>3</b><div><h3>{L('Ulashasiz va kuzatasiz')}</h3><p>{L('Har bir video yoki post uchun alohida havola. Kim kelgani, kim obuna bo‘lgani va mukofotingiz kabinetda ko‘rinadi.')}</p></div></li>
+        <li><b>1</b><div><h3>{L('Ariza qoldirasiz')}</h3><p>{L('1 daqiqa: sahifangiz va aloqa.')}</p></div></li>
+        <li><b>2</b><div><h3>{L('Havola olasiz')}</h3><p>{L('Bog‘lanib, kabinet va shaxsiy havolangizni beramiz.')}</p></div></li>
+        <li><b>3</b><div><h3>{L('Video joylaysiz')}</h3><p>{L('Ko‘rishlar, o‘quvchilar va balansingiz kabinetda ko‘rinadi.')}</p></div></li>
       </ol>
-
-      {v && <VideoPay v={v} />}
-
-      <div className="section-title"><h2>{v ? L('Qo‘shimcha') : L('Mukofot')}</h2></div>
-      <section className="card partner-terms">
-        {rules.length > 0
-          ? <ul>{rules.map((t) => <li key={t}><Check size={16} />{t}</li>)}</ul>
-          : !v && <p>{L('Mukofot shartlari auditoriyangiz va formatga qarab ariza ko‘rib chiqilgach siz bilan kelishiladi.')}</p>}
-        {terms && terms.invite.days > 0 && <p className="muted">{L('Do‘stingizni taklif qilsangiz: u darsni boshlaganda ikkalangiz ham {0} kunlik All Access olasiz.', [terms.invite.days])}</p>}
-        <p className="muted">{L('Mukofot faqat haqiqiy o‘quvchilar va tasdiqlangan to‘lovlar uchun hisoblanadi. Qaytarilgan to‘lovlar ayriladi.')}</p>
-      </section>
-
-      {acc && <InviteCard />}
 
       <div className="section-title" id="partner-form"><h2>{L('Ariza')}</h2></div>
       <section className="card partner-form">
@@ -113,50 +151,5 @@ export default function Partners() {
         )}
       </section>
     </div>
-  );
-}
-
-/** Har bir video uchun to'lov: shartlar (admin sozlaydi), talablar va qiziqtiruvchi hisob misoli (eng yuqori pog'onalar bilan). */
-function VideoPay({ v }: { v: VideoTerms }) {
-  const topV = v.viewTiers.at(-1), topL = v.learnerTiers.at(-1);
-  const best = v.baseSom + (topV?.som ?? 0) + (topL?.som ?? 0);
-  const insta = v.instagram ? `@${v.instagram}` : null;
-  return (
-    <>
-      <div className="section-title"><h2>{L('Har bir video uchun to‘lov')}</h2></div>
-      <section className="card video-pay">
-        <div className="vp-base"><Video size={22} /><div><b>{L('{0} so‘m', [n(v.baseSom)])}</b><span>{L('har bir tasdiqlangan video uchun')}</span></div></div>
-        <div className="vp-tiers">
-          {v.viewTiers.length > 0 && <div><h3><Eye size={18} /> {L('Ko‘rishlar bonusi')}</h3><ul>{v.viewTiers.map((t) => <li key={t.min}><span>{L('{0} ko‘rish', [n(t.min)])}</span><b>+{L('{0} so‘m', [n(t.som)])}</b></li>)}</ul></div>}
-          {v.learnerTiers.length > 0 && <div><h3><UserPlus size={18} /> {L('Kelgan o‘quvchilar bonusi')}</h3><ul>{v.learnerTiers.map((t) => <li key={t.min}><span>{L('{0} o‘quvchi', [`${n(t.min)}+`])}</span><b>+{L('{0} so‘m', [n(t.som)])}</b></li>)}</ul></div>}
-        </div>
-        <h3 className="list-h">{L('Qanday hisoblanadi')}</h3>
-        <ul className="vp-rules">
-          <li><Check size={16} />{L('Video joylanganiga {0} kun to‘lganda shu videoning o‘z ko‘rishlari va havolangiz orqali kelgan o‘quvchilar hisoblanadi.', [v.windowDays])}</li>
-          <li><Check size={16} />{L('Har bir video bir marta to‘lanadi: {0}-kundan keyingi o‘sish qo‘shimcha to‘lanmaydi.', [v.windowDays])}</li>
-          <li><Check size={16} />{L('Bonus pog‘onalari qo‘shilmaydi — erishilgan eng yuqori pog‘ona to‘lanadi.')}</li>
-          <li><Check size={16} />{L('Kelgan o‘quvchi — havolangiz orqali ro‘yxatdan o‘tib, kamida bitta darsni boshlagan o‘quvchi.')}</li>
-          <li><Check size={16} />{L('Hisob-kitobni admin tekshiradi va tasdiqlaydi, keyin to‘lov qilinadi.')}</li>
-        </ul>
-        <h3 className="list-h">{L('Talablar')}</h3>
-        <ul className="vp-rules">
-          <li><Check size={16} />{L('sellzen.uz yoki shaxsiy havolangiz profilingiz bio’sida va video izohida turadi.')}</li>
-          <li><Check size={16} />{insta ? L('Videoda Instagram sahifamiz {0} belgilangan.', [insta]) : L('Videoda Sellzen Instagram sahifasi belgilangan.')}</li>
-        </ul>
-      </section>
-      {(topV || topL) && (
-        <section className="card vp-example" aria-label={L('Hisob misoli')}>
-          <h3>{L('Qancha ishlash mumkin?')}</h3>
-          <p>{topV && topL ? L('1 ta video {0}+ ko‘rish va {1}+ o‘quvchi olib kelsa:', [n(topV.min), n(topL.min)]) : topV ? L('1 ta video {0}+ ko‘rish olib kelsa:', [n(topV.min)]) : L('1 ta video {0}+ o‘quvchi olib kelsa:', [n(topL!.min)])}</p>
-          <div className="vp-sum">
-            <span>{n(v.baseSom)}</span>{topV && <><i>+</i><span>{n(topV.som)}</span></>}{topL && <><i>+</i><span>{n(topL.som)}</span></>}<i>=</i><b>{L('{0} so‘m', [n(best)])}</b>
-          </div>
-          <p>{L('Oyiga 15 ta shunday video joylasangiz:')}</p>
-          <div className="vp-sum big"><span>15 × {n(best)}</span><i>=</i><b>{L('{0} so‘m', [n(best * 15)])}</b></div>
-          <p className="muted">{L('Har bir video o‘z natijasi bo‘yicha alohida hisoblanadi.')}</p>
-          <a className="btn primary" href="#partner-form">{L('Ariza qoldirish')} <ArrowRight size={16} /></a>
-        </section>
-      )}
-    </>
   );
 }

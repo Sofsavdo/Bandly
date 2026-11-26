@@ -4,7 +4,8 @@
 //   - bonus: shu videoning (umumiy emas) ko'rishlari — 10 000 → +50 000, 100 000 → +200 000 so'm;
 //     shu video havolasi orqali kelgan o'quvchilar — 50 → +50 000, 100+ → +150 000 so'm (har biri bir martalik, eng yuqori pog'ona);
 //   - hisob video joylanganidan 15 kun o'tgach BIR MARTA qilinadi; keyingi o'sish (20–30-kun) qo'shimcha to'lanmaydi;
-//   - hisobni admin qiladi va tasdiqlaydi; summalar va normalarni admin tahrirlaydi.
+//   - hisobni admin qiladi va tasdiqlaydi; tasdiqlangan summa 14 kun ichida to'lanadi; summalar, normalar va muddatlarni admin tahrirlaydi.
+// Misollar (egasi): 9 999 ko'rish + 49 o'quvchi → 50 000; 99 000 + 99 → 50 000 + 50 000 + 50 000 = 150 000; 100 000 + 100 → 50 000 + 200 000 + 150 000 = 400 000.
 // "Kelgan o'quvchi" — videoning shaxsiy havolasi orqali 15 kun ichida ro'yxatdan o'tib, shu muddatda kamida bitta dars/test boshlagan
 // o'quvchi (soxta hisoblar sanalmasligi uchun; o'z-o'zini taklif va gumonli belgilar chiqarib tashlanadi).
 // Pul daftarga (creator_ledger) kind='video' yozuvi bo'lib tushadi: kutilmoqda → admin tasdiqlaydi → to'langan (mavjud oqim).
@@ -16,11 +17,11 @@ import { creditMode } from './creatorLinks';
 
 const DAY = 86_400_000;
 export interface Tier { min: number; som: number }
-export interface VideoTerms { enabled: boolean; baseSom: number; windowDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
+export interface VideoTerms { enabled: boolean; baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
 
 /** Egasi tasdiqlagan boshlang'ich shartlar (admin keyin o'zgartira oladi). */
 export const DEFAULT_TERMS: Omit<VideoTerms, 'updatedAt'> = {
-  enabled: true, baseSom: 50_000, windowDays: 15,
+  enabled: true, baseSom: 50_000, windowDays: 15, payDays: 14,
   viewTiers: [{ min: 10_000, som: 50_000 }, { min: 100_000, som: 200_000 }],
   learnerTiers: [{ min: 50, som: 50_000 }, { min: 100, som: 150_000 }],
   instagram: '',
@@ -53,6 +54,7 @@ export function setVideoTerms(db: DatabaseSync, adminId: number, b: Record<strin
     enabled: b.enabled === undefined ? cur.enabled : b.enabled === true,
     baseSom: b.baseSom === undefined ? cur.baseSom : int(b.baseSom, 0, 1e8, 'Asosiy to‘lov (so‘m)'),
     windowDays: b.windowDays === undefined ? cur.windowDays : int(b.windowDays, 1, 90, 'Hisoblash muddati (kun)'),
+    payDays: b.payDays === undefined ? cur.payDays : int(b.payDays, 1, 60, 'To‘lov muddati (kun)'),
     viewTiers: b.viewTiers === undefined ? cur.viewTiers : tiers(b.viewTiers, 'Ko‘rishlar bonusi'),
     learnerTiers: b.learnerTiers === undefined ? cur.learnerTiers : tiers(b.learnerTiers, 'O‘quvchilar bonusi'),
     instagram: insta,
@@ -83,26 +85,34 @@ export function videoLearners(db: DatabaseSync, p: PostRow, windowDays: number, 
   return rows.filter((r) => r.pid !== p.creator_id && !flaggedPlayer(db, p.creator_id, r.pid, r.fp, r.click)).length;
 }
 
-export interface VideoEntry { id: number; amountMinor: number; status: string; basis: Calc | null }
-const entryOf = (db: DatabaseSync, postId: number): VideoEntry | null => {
-  const e = one<{ id: number; amount_minor: number; status: string; basis: string | null }>(db, 'SELECT id, amount_minor, status, basis FROM creator_ledger WHERE event_key = ?', `video:${postId}`);
+/** payBy — tasdiqlangan summaning oxirgi to'lov sanasi (tasdiqlangan kun + hisob paytidagi to'lov muddati); overdue — muddat o'tgan, hali to'lanmagan. */
+export interface VideoEntry { id: number; amountMinor: number; status: string; basis: (Calc & { payDays?: number }) | null; decidedAt: number | null; payBy: number | null; overdue: boolean }
+const entryOf = (db: DatabaseSync, postId: number, now = Date.now()): VideoEntry | null => {
+  const e = one<{ id: number; amount_minor: number; status: string; basis: string | null; decided_at: number | null }>(db, 'SELECT id, amount_minor, status, basis, decided_at FROM creator_ledger WHERE event_key = ?', `video:${postId}`);
   if (!e) return null;
-  let basis: Calc | null = null; try { basis = JSON.parse(e.basis ?? 'null') as Calc; } catch { /* eski yozuv */ }
-  return { id: e.id, amountMinor: e.amount_minor, status: e.status, basis };
+  let basis: VideoEntry['basis'] = null; try { basis = JSON.parse(e.basis ?? 'null') as VideoEntry['basis']; } catch { /* eski yozuv */ }
+  const payDays = basis?.payDays ?? DEFAULT_TERMS.payDays;
+  // To'lov muddati faqat TASDIQLANGANDA boshlanadi (to'langandan keyin ham ko'rsatiladi — muddatida to'langanini tekshirish uchun)
+  const payBy = (e.status === 'approved' || e.status === 'paid') && e.decided_at !== null ? approvedAt(db, e.id, e.decided_at) + payDays * DAY : null;
+  return { id: e.id, amountMinor: e.amount_minor, status: e.status, basis, decidedAt: e.decided_at, payBy, overdue: e.status === 'approved' && payBy !== null && now > payBy };
 };
+/** Tasdiqlangan vaqt (to'langanda decided_at o'zgaradi — shuning uchun tarixdan olinadi). */
+const approvedAt = (db: DatabaseSync, ledgerId: number, fallback: number): number =>
+  one<{ ts: number }>(db, "SELECT ts FROM creator_ledger_history WHERE ledger_id = ? AND to_status = 'approved' ORDER BY id LIMIT 1", ledgerId)?.ts ?? fallback;
 
 export interface VideoItem { postId: number; creator?: string; platform: string; url: string | null; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; claimedViews: number | null; entry: VideoEntry | null }
 function item(db: DatabaseSync, p: PostRow, t: VideoTerms, now: number, withCreator: boolean): VideoItem {
   const at = postedAt(p); const dueAt = at === null ? null : at + t.windowDays * DAY;
   return { postId: p.id, ...(withCreator ? { creator: one<{ nickname: string }>(db, 'SELECT nickname FROM players WHERE id = ?', p.creator_id)?.nickname } : {}), platform: p.platform, url: p.url, postedOn: p.posted_on,
-    dueAt, due: dueAt !== null && now >= dueAt, learners: videoLearners(db, p, t.windowDays), claimedViews: p.claimed_views, entry: entryOf(db, p.id) };
+    dueAt, due: dueAt !== null && now >= dueAt, learners: videoLearners(db, p, t.windowDays), claimedViews: p.claimed_views, entry: entryOf(db, p.id, now) };
 }
 /** Admin: tasdiqlangan videolar — hisob sanasi, o'quvchilar soni va hisob holati (hisoblanmaganlari va muddati yetganlari avval). */
 export function videoQueue(db: DatabaseSync, now = Date.now()): VideoItem[] {
   const t = videoTerms(db);
   const rows = db.prepare("SELECT * FROM creator_posts WHERE status = 'approved' ORDER BY posted_on DESC, id DESC LIMIT 300").all() as unknown as PostRow[];
   const items = rows.map((p) => item(db, p, t, now, true));
-  const rank = (i: VideoItem) => (i.entry ? 2 : i.due ? 0 : 1);
+  // Avval: muddati o'tgan to'lovlar, to'lanishi kerak bo'lganlar, hisobi kelganlar; keyin kutilayotganlar; oxirida to'langanlar
+  const rank = (i: VideoItem) => (i.entry?.overdue ? 0 : i.entry?.status === 'approved' ? 1 : i.entry?.status === 'pending' ? 2 : !i.entry && i.due ? 3 : !i.entry ? 4 : 5);
   return items.sort((a, b) => rank(a) - rank(b) || (a.dueAt ?? 0) - (b.dueAt ?? 0));
 }
 /** Creator: o'z videolari bo'yicha hisob sanasi va natija (shaxsiy ma'lumotsiz). */
@@ -120,7 +130,7 @@ export function settleVideo(db: DatabaseSync, adminId: number, postId: number, b
     const p = one<PostRow>(db, 'SELECT * FROM creator_posts WHERE id = ?', postId); if (!p) throw new ApiError(404, 'Video topilmadi');
     if (p.status !== 'approved') throw new ApiError(409, 'Avval videoni tasdiqlang (Postlar bo‘limi)');
     if (!creatorOk(db, p.creator_id)) throw new ApiError(409, 'Hamkor faol emas');
-    if (entryOf(db, postId)) throw new ApiError(409, 'Bu video uchun hisob allaqachon qilingan — har bir video bir marta to‘lanadi');
+    if (entryOf(db, postId, now)) throw new ApiError(409, 'Bu video uchun hisob allaqachon qilingan — har bir video bir marta to‘lanadi');
     const at = postedAt(p); if (at === null) throw new ApiError(409, 'Videoning joylangan sanasi yo‘q');
     const dueAt = at + t.windowDays * DAY;
     if (now < dueAt) throw new ApiError(409, `Hisob ${new Date(dueAt).toISOString().slice(0, 10)} kuni qilinadi (joylanganiga ${t.windowDays} kun to‘lganda)`);
@@ -130,10 +140,10 @@ export function settleVideo(db: DatabaseSync, adminId: number, postId: number, b
     const c = calcVideo(t, views, videoLearners(db, p, t.windowDays), base);
     const note = typeof b.note === 'string' ? b.note.trim().slice(0, 500) || null : null;
     const id = Number(db.prepare("INSERT INTO creator_ledger (creator_id, campaign_id, kind, event_key, amount_minor, currency, status, basis, note, created_at) VALUES (?, NULL, 'video', ?, ?, ?, 'pending', ?, ?, ?)")
-      .run(p.creator_id, `video:${postId}`, c.totalSom * 100, LEDGER_CURRENCY, JSON.stringify({ ...c, windowDays: t.windowDays, checks: { bio: true, comment: true, tag: true } }), note, now).lastInsertRowid);
+      .run(p.creator_id, `video:${postId}`, c.totalSom * 100, LEDGER_CURRENCY, JSON.stringify({ ...c, windowDays: t.windowDays, payDays: t.payDays, checks: { bio: true, comment: true, tag: true } }), note, now).lastInsertRowid);
     db.prepare('INSERT INTO creator_ledger_history (ledger_id, ts, actor_id, from_status, to_status, note) VALUES (?, ?, ?, NULL, ?, ?)').run(id, now, adminId, 'pending', 'video_settle');
     db.prepare("UPDATE creator_posts SET verified_views = ?, verified_by = ?, verify_method = 'day_window', updated_at = ? WHERE id = ?").run(views, adminId, now, postId);
     audit(db, adminId, 'creator.video.settle', String(postId), c, now);
-    return entryOf(db, postId)!;
+    return entryOf(db, postId, now)!;
   });
 }
