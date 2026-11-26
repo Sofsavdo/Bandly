@@ -1,11 +1,12 @@
 // Hamkorlik (blogerlar, o'qituvchilar, faol o'quvchilar): ommaviy ariza va ochiq shartlar.
 // Egasi (2026-11-26): "hamkorlik uchun deb qo'yishimiz yaxshimi? blogerlar, blog yurituvchi o'quvchilar bo'lishi mumkin".
-// Mukofot summalari bu yerda BELGILANMAYDI: sahifada faqat admin yoqqan (egasi tasdiqlagan) hamkor qoidalari va referal sozlamalari
-// ko'rsatiladi; qoida bo'lmasa — "shartlar ariza ko'rib chiqilgach kelishiladi". Ariza adminga tushadi, u hamkor rolini beradi.
+// Mukofot: video uchun to'lov shartlari (egasi 2026-11-26 belgilagan, admin tahrirlaydi — videoPay.ts) va admin yoqqan hamkor qoidalari ko'rsatiladi.
+// Ariza adminga tushadi, u hamkor rolini beradi.
 import type { DatabaseSync } from 'node:sqlite';
 import { ApiError } from './db';
 import { listRules } from './creatorLedger';
 import { refPlanDays, refXp } from './referral';
+import { videoTerms, type VideoTerms } from './videoPay';
 
 export const PARTNER_KINDS = ['blogger', 'teacher', 'learner'] as const;
 export const AUDIENCES = ['<1k', '1k-10k', '10k-100k', '100k+'] as const;
@@ -74,11 +75,12 @@ export function setApplicationStatus(db: DatabaseSync, id: number, status: unkno
   if (!r.changes) throw new ApiError(404, 'Ariza topilmadi');
 }
 
-/** Ochiq shartlar (sahifada ko'rsatiladi): faqat yoqilgan va amal muddatidagi hamkor qoidalari + do'st taklif mukofoti. Summalar so'mda. */
-export interface PublicTerms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number } }
+/** Ochiq shartlar (sahifada ko'rsatiladi): video uchun to'lov (egasi belgilagan, admin tahrirlaydi), yoqilgan hamkor qoidalari + do'st taklif mukofoti. Summalar so'mda. */
+export interface PublicTerms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: Omit<VideoTerms, 'updatedAt' | 'enabled'> | null }
 export function publicTerms(db: DatabaseSync, now = Date.now(), env: NodeJS.ProcessEnv = process.env): PublicTerms {
   const rules = listRules(db)
     .filter((r) => r.enabled && r.approvedAt !== null && r.campaignId === null && (r.startsAt === null || r.startsAt <= now) && (r.endsAt === null || r.endsAt > now))
     .map((r) => ({ kind: r.kind, pct: r.kind === 'paid_pct' ? r.pct : null, som: r.kind === 'paid_pct' || r.amountMinor === null ? null : Math.round(r.amountMinor / 100), holdDays: r.holdDays }));
-  return { rules, invite: { xp: refXp(env), days: refPlanDays(env) } };
+  const v = videoTerms(db);
+  return { rules, invite: { xp: refXp(env), days: refPlanDays(env) }, video: v.enabled ? { baseSom: v.baseSom, windowDays: v.windowDays, viewTiers: v.viewTiers, learnerTiers: v.learnerTiers, instagram: v.instagram } : null };
 }

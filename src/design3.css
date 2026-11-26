@@ -1745,3 +1745,29 @@ main.container.fit .idle-call { margin-block: 0; }
 /* Dars paneli (yuraklar, progress) va sayt sarlavhasi orasidagi 6 px tirqishdan varaqlangan matn ko'rinmasin */
 .lesson-hud.sticky::before { content: ''; position: absolute; left: -16px; right: -16px; top: -8px; height: 8px; background: var(--bg); pointer-events: none; }
 .lesson-hud.sticky { background: color-mix(in srgb, var(--bg) 96%, transparent); }
+/* Video uchun to'lov (#/partners) */
+.video-pay { display: grid; gap: 14px; }
+.video-pay h3 { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 16px; }
+.vp-base { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--lilac-50); }
+.vp-base svg { color: var(--brand); flex: none; }
+.vp-base b { display: block; font-size: clamp(24px, 6vw, 32px); line-height: 1.1; color: var(--ink); }
+.vp-base span { color: var(--muted); font-weight: 600; }
+.vp-tiers { display: grid; gap: 12px; }
+@media (min-width: 720px) { .vp-tiers { grid-template-columns: 1fr 1fr; } }
+.vp-tiers > div { display: grid; gap: 8px; }
+.vp-tiers ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.vp-tiers li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-weight: 600; }
+.vp-tiers li b { color: var(--teal); white-space: nowrap; }
+.vp-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vp-rules li { display: flex; gap: 8px; align-items: flex-start; }
+.vp-rules li svg { flex: none; margin-top: 3px; color: var(--teal); }
+.vp-example { display: grid; gap: 8px; margin-top: 12px; background: linear-gradient(135deg, #2a2366, #14162b); color: #fff; border: 1px solid rgba(255, 255, 255, .08); }
+.vp-example h3 { margin: 0; color: #fff; }
+.vp-example p { margin: 0; color: rgba(255, 255, 255, .82); }
+.vp-example .muted { color: rgba(255, 255, 255, .62); font-size: 14px; }
+.vp-sum { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; font-weight: 700; font-size: 18px; }
+.vp-sum i { font-style: normal; opacity: .6; }
+.vp-sum b { color: var(--peach, #ffb48a); font-size: 22px; white-space: nowrap; }
+.vp-sum.big b { font-size: clamp(26px, 7vw, 36px); }
+.vp-example .btn { justify-self: start; margin-top: 6px; }
+.vp-example .btn.primary { background: var(--peach); color: #14162b; border-color: transparent; }

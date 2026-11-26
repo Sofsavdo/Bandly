@@ -9,6 +9,7 @@ interface Campaign { id: number; name: string; brief: string; rules: string; req
 interface Post { id: number; platform: string; url: string | null; lang: string | null; postedOn: string | null; caption: string | null; status: string; claimedViews: number | null; viewsVerified: boolean; verifiedViews: number | null; adminNote: string | null; history: { ts: number; to: string; note: string | null; byAdmin: boolean }[]; linkCode: string | null; campaignId: number | null }
 interface Entry { id: number; kind: string; amountMinor: number; currency: string; status: string; createdAt: number }
 interface Link { code: string; label: string }
+interface VideoPay { terms: { enabled: boolean; baseSom: number; windowDays: number }; items: { postId: number; platform: string; postedOn: string | null; dueAt: number | null; due: boolean; learners: number; entry: { amountMinor: number; status: string } | null }[] }
 const PLATFORMS = ['instagram', 'tiktok', 'youtube', 'telegram', 'facebook', 'x', 'other'];
 const LANGS = ['uz', 'en', 'ru', 'tg', 'ky', 'kk'];
 
@@ -20,7 +21,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
 }
 export const POST_STATUS = (): Record<string, string> => ({ draft: L('Qoralama'), submitted: L('Ko‘rib chiqilmoqda'), needs_changes: L('O‘zgartirish kerak'), approved: L('Tasdiqlangan'), rejected: L('Rad etilgan') });
 export const RULE_KIND = (): Record<string, string> => ({ paid_pct: L('To‘lovdan foiz'), activated_flat: L('Faollashgan o‘quvchi boshiga'), first_paid_flat: L('Birinchi to‘lov boshiga'), verified_views_per_1k: L('Har 1000 tasdiqlangan ko‘rish uchun') });
-export const LEDGER_KIND = (): Record<string, string> => ({ commission: L('Komissiya'), cpa_activated: L('Faollashgan o‘quvchi'), cpa_first_paid: L('Birinchi to‘lov'), views: L('Tasdiqlangan ko‘rishlar'), bonus: L('Bonus'), adjustment: L('Tuzatish'), reversal: L('Qaytarish ushlanmasi') });
+export const LEDGER_KIND = (): Record<string, string> => ({ commission: L('Komissiya'), cpa_activated: L('Faollashgan o‘quvchi'), cpa_first_paid: L('Birinchi to‘lov'), views: L('Tasdiqlangan ko‘rishlar'), video: L('Video to‘lovi'), bonus: L('Bonus'), adjustment: L('Tuzatish'), reversal: L('Qaytarish ushlanmasi') });
 export const LEDGER_STATUS = (): Record<string, string> => ({ pending: L('Kutilmoqda'), approved: L('Tasdiqlangan'), rejected: L('Rad etilgan'), paid: L('To‘langan') });
 const fmtDate = (t: number): string => new Date(t).toLocaleDateString();
 const BRAND_RULES = (): string[] => [
@@ -32,7 +33,7 @@ const BRAND_RULES = (): string[] => [
 
 export function CreatorPosts() {
   const [camps, setCamps] = useState<Campaign[]>([]); const [posts, setPosts] = useState<Post[]>([]); const [links, setLinks] = useState<Link[]>([]);
-  const [rw, setRw] = useState<{ entries: Entry[]; balances: { pending: number; approved: number; paid: number; currency: string }; enabled: boolean; inHoldMinor: number; terms: { kind: string; name: string; pct: number | null; amountMinor: number | null; holdDays: number; endsAt: number | null }[] } | null>(null);
+  const [rw, setRw] = useState<{ entries: Entry[]; balances: { pending: number; approved: number; paid: number; currency: string }; enabled: boolean; video?: VideoPay; inHoldMinor: number; terms: { kind: string; name: string; pct: number | null; amountMinor: number | null; holdDays: number; endsAt: number | null }[] } | null>(null);
   const [rk, setRk] = useState<Record<string, { nickname: string; value: number }[]> | null>(null);
   const [prof, setProf] = useState<{ rankOptIn: boolean; status: string } | null>(null);
   const [err, setErr] = useState(''); const [msg, setMsg] = useState('');
@@ -83,13 +84,24 @@ export function CreatorPosts() {
             <td>{p.viewsVerified ? <>{p.verifiedViews} <small className="muted">({L('tasdiqlangan')})</small></> : p.claimedViews !== null ? <>{p.claimedViews} <small className="muted">({L('tasdiqlanmagan')})</small></> : '—'}</td></tr>)}
         </tbody></table></div>}
       </section>
+      {rw?.video?.terms.enabled && (
+        <section className="card">
+          <h3 style={{ marginTop: 0 }}>{L('Video uchun to‘lov')}</h3>
+          <p className="muted" style={{ fontSize: 13 }}>{L('Tasdiqlangan har bir video joylanganiga {0} kun to‘lganda bir marta hisoblanadi: asosiy to‘lov + ko‘rishlar va kelgan o‘quvchilar bonusi.', [rw.video.terms.windowDays])}</p>
+          {rw.video.items.length === 0 ? <p className="muted">{L('Tasdiqlangan video hali yo‘q. Videoni yuqoridagi shakl orqali topshiring.')}</p> : (
+            <div className="table-scroll"><table className="data"><thead><tr><th>{L('Video')}</th><th>{L('Hisob kuni')}</th><th>{L('Kelgan o‘quvchilar')}</th><th>{L('Natija')}</th></tr></thead><tbody>
+              {rw.video.items.map((v) => <tr key={v.postId}><td>{v.platform} · {v.postedOn ?? '—'}</td><td>{v.dueAt ? fmtDate(v.dueAt) : '—'}</td><td>{v.learners}</td>
+                <td>{v.entry ? <><b>{fmtSum(Math.round(v.entry.amountMinor / 100))} {L('so‘m')}</b> <small className="muted">· {LEDGER_STATUS()[v.entry.status] ?? v.entry.status}</small></> : v.due ? L('Admin hisoblaydi') : L('Hisob kutilmoqda')}</td></tr>)}
+            </tbody></table></div>)}
+        </section>
+      )}
       {rw && (
         <section className="card">
           <h3 style={{ marginTop: 0 }}>{L('Bonus / komissiya holati')}</h3>
-          {!rw.enabled && <p className="muted">{L('Hozircha mukofot dasturi yoqilmagan: hisoblash va to‘lovlar admin tasdiqlagan qoidalar bilan keyin boshlanadi. Hamkorlik shartlari alohida kelishiladi.')}</p>}
+          {!rw.enabled && !rw.video?.terms.enabled && <p className="muted">{L('Hozircha mukofot dasturi yoqilmagan: hisoblash va to‘lovlar admin tasdiqlagan qoidalar bilan keyin boshlanadi. Hamkorlik shartlari alohida kelishiladi.')}</p>}
           {rw.terms.length > 0 && (<><h4 className="list-h">{L('Amaldagi mukofot shartlari')}</h4><ul>{rw.terms.map((t) => <li key={t.name}><b>{t.name}</b> — {RULE_KIND()[t.kind] ?? t.kind}: {t.kind === 'paid_pct' ? `${t.pct}%` : `${fmtSum(Math.round((t.amountMinor ?? 0) / 100))} ${L('so‘m')}`} · {L('kutish davri {0} kun', [t.holdDays])}{t.endsAt ? ` · ${L('muddati: {0}', [fmtDate(t.endsAt)])}` : ''}</li>)}</ul></>)}
           <div className="kpis">
-            <div className="kpi2"><span>{L('Kutish davrida (taxminiy)')}</span><b>{fmtSum(Math.round(rw.inHoldMinor / 100))}</b></div>
+            <div className="kpi2"><span>{L('Kutish davrida')}</span><b>{fmtSum(Math.round(rw.inHoldMinor / 100))}</b></div>
             <div className="kpi2"><span>{L('Kutilmoqda')}</span><b>{fmtSum(Math.round(rw.balances.pending / 100))}</b></div>
             <div className="kpi2"><span>{L('Tasdiqlangan')}</span><b>{fmtSum(Math.round(rw.balances.approved / 100))}</b></div>
             <div className="kpi2"><span>{L('To‘langan')}</span><b>{fmtSum(Math.round(rw.balances.paid / 100))}</b></div>

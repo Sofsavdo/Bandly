@@ -52,6 +52,7 @@ import { cohortReport, DEFINITIONS, ensureUserEventsTable, recordUserEvent } fro
 import { maybeRewardReferral, refStats } from './referral';
 import { creatorStats, creatorsOverview } from './creator';
 import { bridgeHtml, pickBridgeLang } from './creatorBridge';
+import { settleVideo, setVideoTerms, videoPayOf, videoQueue, videoTerms } from './videoPay';
 import { accrueRewards, addManualEntry, adminLedger, balances, createRule, creatorCosts, creatorEarnings, creatorRanking, decideEntry, disableRule, enableRule, ledgerHistory, listRules, markPaid, programKpis, recordRefund, ruleUsage, updateRule } from './creatorLedger';
 import { adminCreators, adminSetProfile, createCampaign, creatorsCsv, listCampaigns, listFlags, postsForAdmin, postsOf, profileOf as creatorProfileOf, resolveFlag, reviewPost, savePost, selfSetProfile, updateCampaign } from './creatorOps';
 import { attachAttribution, clientFingerprint, creditMode, createLink, creatorFunnel, linksOf, noteCreatorDevice, purgeCreatorData, recordClick, recordClickEvent, scanClickBursts, setLinkActive, isClickId } from './creatorLinks';
@@ -433,7 +434,7 @@ const httpServer = createServer(async (req, res) => {
       if (sub === 'campaigns' && req.method === 'GET') return send(res, 200, { campaigns: listCampaigns(db, false) });
       if (sub === 'posts' && req.method === 'GET') return send(res, 200, { posts: postsOf(db, me.id) });
       if (sub === 'posts' && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { post: savePost(db, me.id, b) }); }
-      if (sub === 'rewards' && req.method === 'GET') return send(res, 200, creatorEarnings(db, me.id));
+      if (sub === 'rewards' && req.method === 'GET') return send(res, 200, { ...creatorEarnings(db, me.id), video: videoPayOf(db, me.id) });
       if (sub === 'ranking' && req.method === 'GET') return send(res, 200, creatorRanking(db));
       return send(res, 404, { error: 'Topilmadi' });
     }
@@ -479,6 +480,11 @@ const httpServer = createServer(async (req, res) => {
       if (dm && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: dm[2] === 'paid' ? markPaid(db, adm.id, Number(dm[1]), b.ref) : decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note) }); }
       if (sub === 'refund' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, recordRefund(db, adm.id, b.paymentId, b.amountMinor, b.note)); }
       if (sub === 'accrue' && req.method === 'POST') return send(res, 200, accrueRewards(db));
+      // Video uchun to'lov: shartlar (admin tahrirlaydi), navbat va 15-kun hisob-kitobi
+      if (sub === 'video-terms' && req.method === 'GET') return send(res, 200, { terms: videoTerms(db) });
+      if (sub === 'video-terms' && req.method === 'POST') { const b = await readJson(req, 4096); return send(res, 200, { terms: setVideoTerms(db, adm.id, b) }); }
+      if (sub === 'videos' && req.method === 'GET') return send(res, 200, { terms: videoTerms(db), videos: videoQueue(db) });
+      const vm = sub.match(/^videos\/(\d+)\/settle$/); if (vm && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, { entry: settleVideo(db, adm.id, Number(vm[1]), b) }); }
       return send(res, 404, { error: 'Topilmadi' });
     }
     // ---- Metodist kabineti (rol: methodologist yoki admin) ----
