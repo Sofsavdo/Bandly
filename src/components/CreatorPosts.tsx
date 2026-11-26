@@ -16,7 +16,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
 }
 export const POST_STATUS = (): Record<string, string> => ({ draft: L('Qoralama'), submitted: L('Ko‘rib chiqilmoqda'), needs_changes: L('O‘zgartirish kerak'), approved: L('Tasdiqlangan'), rejected: L('Rad etilgan') });
 export const RULE_KIND = (): Record<string, string> => ({ paid_pct: L('To‘lovdan foiz'), activated_flat: L('Faollashgan o‘quvchi boshiga'), first_paid_flat: L('Birinchi to‘lov boshiga'), verified_views_per_1k: L('Har 1000 tasdiqlangan ko‘rish uchun') });
-export const LEDGER_KIND = (): Record<string, string> => ({ commission: L('Komissiya'), cpa_activated: L('Faollashgan o‘quvchi'), cpa_first_paid: L('Birinchi to‘lov'), views: L('Tasdiqlangan ko‘rishlar'), video: L('Video to‘lovi'), bonus: L('Bonus'), adjustment: L('Tuzatish'), reversal: L('Qaytarish ushlanmasi') });
+export const LEDGER_KIND = (): Record<string, string> => ({ commission: L('Komissiya'), cpa_activated: L('Faollashgan o‘quvchi'), cpa_first_paid: L('Birinchi to‘lov'), views: L('Tasdiqlangan ko‘rishlar'), video: L('Video to‘lovi'), elchi: L('Elchi: faol bloger'), elchi_tier: L('Elchi: oylik bonus'), bonus: L('Bonus'), adjustment: L('Tuzatish'), reversal: L('Qaytarish ushlanmasi') });
 export const LEDGER_STATUS = (): Record<string, string> => ({ pending: L('Kutilmoqda'), approved: L('Tasdiqlangan'), rejected: L('Rad etilgan'), paid: L('To‘langan') });
 const fmtDate = (t: number): string => new Date(t).toLocaleDateString();
 const BRAND_RULES = (): string[] => [

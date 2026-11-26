@@ -18,6 +18,7 @@ assert.equal(authRoute('#/login?next=%23%2Fmocks%2Freading%2Freading-5', true), 
 assert.equal(authRoute('#/login', true), '#/', 'qaytish manzili yo‘q — bosh sahifa');
 assert.equal(nextOf('#/login?next=https%3A%2F%2Fevil.example'), '#/', 'tashqi manzilga yo‘naltirilmaydi');
 assert.equal(nextOf('#/login?next=%23%2Flogin%3Fnext%3D%23%2F'), '#/', 'login → login aylanmasi yo‘q');
+assert.equal(nextOf('#/login?next=%23%2Fpartners%3Felchi%3Dab3cd5e'), '#/partners?elchi=ab3cd5e', 'elchi havolasi kirishdan keyin saqlanadi');
 assert.equal(authRoute('#/learn', true), null, 'kirgan o‘quvchiga hamma sahifa ochiq');
 assert.equal(needsLogin('#/mocks', false), false, 'mehmon Mock Arena ro‘yxatini ko‘radi');
 // Mehmon mock: bitta Reading/Listening testini topshira oladi (baholash ro'yxatdan o'tgandan keyin); boshqa "harakat"lar yopiq

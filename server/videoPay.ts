@@ -17,14 +17,18 @@ import { creditMode } from './creatorLinks';
 
 const DAY = 86_400_000;
 export interface Tier { min: number; som: number }
-export interface VideoTerms { enabled: boolean; baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string; updatedAt: number | null }
+export interface VideoTerms { enabled: boolean; baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string;
+  /** Elchi (elchi.ts): har faol bloger uchun summa va oylik faol blogerlar soni bo'yicha bonus pog'onalari */
+  elchiSom: number; elchiTiers: Tier[]; updatedAt: number | null }
 
 /** Egasi tasdiqlagan boshlang'ich shartlar (admin keyin o'zgartira oladi). */
 export const DEFAULT_TERMS: Omit<VideoTerms, 'updatedAt'> = {
   enabled: true, baseSom: 50_000, windowDays: 15, payDays: 14,
   viewTiers: [{ min: 10_000, som: 50_000 }, { min: 100_000, som: 200_000 }],
   learnerTiers: [{ min: 50, som: 50_000 }, { min: 100, som: 150_000 }],
-  instagram: '',
+  instagram: 'sellzen.ai',
+  // Egasi (2026-11-26): har faol bloger uchun 25 000; oyda 5 ta faol → +50 000, 10 ta → +150 000 (qo'shilmaydi)
+  elchiSom: 25_000, elchiTiers: [{ min: 5, som: 50_000 }, { min: 10, som: 150_000 }],
 };
 
 const one = <T>(db: DatabaseSync, sql: string, ...p: (string | number)[]): T | undefined => db.prepare(sql).get(...p) as T | undefined;
@@ -32,7 +36,8 @@ const one = <T>(db: DatabaseSync, sql: string, ...p: (string | number)[]): T | u
 export function videoTerms(db: DatabaseSync): VideoTerms {
   const r = one<{ json: string; updated_at: number }>(db, 'SELECT json, updated_at FROM creator_video_terms WHERE id = 1');
   if (!r) return { ...DEFAULT_TERMS, updatedAt: null };
-  try { return { ...DEFAULT_TERMS, ...(JSON.parse(r.json) as Partial<VideoTerms>), updatedAt: r.updated_at }; } catch { return { ...DEFAULT_TERMS, updatedAt: r.updated_at }; }
+  // Instagram bo'sh saqlangan bo'lsa — egasi bergan sahifa (sellzen.ai)
+  try { const j = JSON.parse(r.json) as Partial<VideoTerms>; return { ...DEFAULT_TERMS, ...j, instagram: j.instagram || DEFAULT_TERMS.instagram, updatedAt: r.updated_at }; } catch { return { ...DEFAULT_TERMS, updatedAt: r.updated_at }; }
 }
 
 const int = (v: unknown, lo: number, hi: number, what: string): number => {
@@ -58,6 +63,8 @@ export function setVideoTerms(db: DatabaseSync, adminId: number, b: Record<strin
     viewTiers: b.viewTiers === undefined ? cur.viewTiers : tiers(b.viewTiers, 'Ko‘rishlar bonusi'),
     learnerTiers: b.learnerTiers === undefined ? cur.learnerTiers : tiers(b.learnerTiers, 'O‘quvchilar bonusi'),
     instagram: insta,
+    elchiSom: b.elchiSom === undefined ? cur.elchiSom : int(b.elchiSom, 0, 1e8, 'Elchi: har faol bloger uchun (so‘m)'),
+    elchiTiers: b.elchiTiers === undefined ? cur.elchiTiers : tiers(b.elchiTiers, 'Elchi oylik bonusi'),
   };
   db.prepare('INSERT INTO creator_video_terms (id, json, updated_by, updated_at) VALUES (1, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET json = excluded.json, updated_by = excluded.updated_by, updated_at = excluded.updated_at').run(JSON.stringify(next), adminId, now);
   audit(db, adminId, 'creator.video.terms', '1', next, now);

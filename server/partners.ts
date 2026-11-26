@@ -7,13 +7,18 @@ import { ApiError } from './db';
 import { listRules } from './creatorLedger';
 import { refPlanDays, refXp } from './referral';
 import { videoTerms, type VideoTerms } from './videoPay';
+import { bindElchi, elchiByCode, elchiNickOfApp, ensureElchiTables } from './elchi';
 
-export const PARTNER_KINDS = ['blogger', 'teacher', 'learner'] as const;
+// elchi — video qilmaydi, blogerlarni olib keladi (elchi.ts)
+export const PARTNER_KINDS = ['blogger', 'teacher', 'learner', 'elchi'] as const;
+/** Egasi (2026-11-26): video qiladigan hamkor (bloger, o'quvchi-bloger) — kamida 1 000 obunachi. */
+export const MIN_AUDIENCE_KINDS = ['blogger', 'learner'];
 export const AUDIENCES = ['<1k', '1k-10k', '10k-100k', '100k+'] as const;
 export const APP_STATUSES = ['new', 'contacted', 'approved', 'rejected'] as const;
 export type AppStatus = (typeof APP_STATUSES)[number];
 
 export function ensurePartnersTable(db: DatabaseSync): void {
+  ensureElchiTables(db); // elchi orqali kelgan arizalar (elchi.ts)
   db.exec(`CREATE TABLE IF NOT EXISTS partner_applications (
     id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, name TEXT NOT NULL, link TEXT NOT NULL, audience TEXT NOT NULL,
     contact TEXT NOT NULL, note TEXT, player_id INTEGER, status TEXT NOT NULL DEFAULT 'new', admin_note TEXT,
@@ -44,30 +49,35 @@ function allowIp(ip: string, now: number): boolean {
   a.push(now); recent.set(ip, a); return true;
 }
 
-export function submitApplication(db: DatabaseSync, b: Record<string, unknown>, o: { ip: string; playerId?: number | null }, now = Date.now()): { id: number; duplicate: boolean } {
+export function submitApplication(db: DatabaseSync, b: Record<string, unknown>, o: { ip: string; playerId?: number | null; fp?: string | null }, now = Date.now()): { id: number; duplicate: boolean; elchi: boolean } {
   if (b.consent !== true) throw new ApiError(400, 'Ma’lumotlaringizni ko‘rib chiqishimizga rozilik bering');
   const kind = PARTNER_KINDS.includes(b.kind as never) ? (b.kind as string) : null;
   if (!kind) throw new ApiError(400, 'Kim ekaningizni tanlang');
   const name = clean(b.name, 60); if (name.length < 2) throw new ApiError(400, 'Ismingizni yozing');
   const link = normLink(b.link); if (!link) throw new ApiError(400, 'Sahifangiz havolasini yozing (masalan, instagram.com/… yoki @kanal)');
-  const audience = AUDIENCES.includes(b.audience as never) ? (b.audience as string) : null;
+  const audience = kind === 'elchi' ? (AUDIENCES.includes(b.audience as never) ? (b.audience as string) : '-') : AUDIENCES.includes(b.audience as never) ? (b.audience as string) : null;
   if (!audience) throw new ApiError(400, 'Auditoriya hajmini tanlang');
+  if (MIN_AUDIENCE_KINDS.includes(kind) && audience === '<1k') throw new ApiError(400, 'Video uchun hamkorlikka kamida 1 000 obunachi kerak. Video qilmasangiz — elchi bo‘lib blogerlarni olib keling.');
+  // Elchi havolasi orqali kelgan bo'lsa — bog'lash uchun hisob kerak (aks holda bloger kimligi noma'lum)
+  const elchiId = kind !== 'elchi' && b.elchi !== undefined && b.elchi !== null && b.elchi !== '' ? elchiByCode(db, b.elchi) : null;
+  if (elchiId !== null && !o.playerId) throw new ApiError(401, 'Elchi havolasi bilan ariza yuborish uchun avval hisobingizga kiring');
   const contact = normContact(b.contact); if (!contact) throw new ApiError(400, 'Telegram (@username) yoki telefon raqamingizni yozing');
   const note = clean(b.note, 500) || null;
   // Bir xil aloqa bilan ochiq ariza bo'lsa — yangisi yaratilmaydi (takroriy bosish)
   const dup = db.prepare("SELECT id FROM partner_applications WHERE contact = ? AND status IN ('new', 'contacted')").get(contact) as { id: number } | undefined;
-  if (dup) return { id: dup.id, duplicate: true };
+  if (dup) return { id: dup.id, duplicate: true, elchi: elchiId !== null && bindElchi(db, elchiId, o.playerId!, dup.id, audience, o.fp ?? null, now) };
   if (!allowIp(o.ip, now)) throw new ApiError(429, 'Juda ko‘p ariza — birozdan keyin urinib ko‘ring');
   const r = db.prepare('INSERT INTO partner_applications (kind, name, link, audience, contact, note, player_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run(kind, name, link, audience, contact, note, o.playerId ?? null, 'new', now, now);
-  return { id: Number(r.lastInsertRowid), duplicate: false };
+  const id = Number(r.lastInsertRowid);
+  return { id, duplicate: false, elchi: elchiId !== null && bindElchi(db, elchiId, o.playerId!, id, audience, o.fp ?? null, now) };
 }
 
-export interface PartnerApp { id: number; kind: string; name: string; link: string; audience: string; contact: string; note: string | null; playerId: number | null; nickname: string | null; status: AppStatus; adminNote: string | null; createdAt: number }
+export interface PartnerApp { elchi: string | null; id: number; kind: string; name: string; link: string; audience: string; contact: string; note: string | null; playerId: number | null; nickname: string | null; status: AppStatus; adminNote: string | null; createdAt: number }
 export function listApplications(db: DatabaseSync, status?: string | null): PartnerApp[] {
   const st = status && APP_STATUSES.includes(status as AppStatus) ? status : null;
   const rows = db.prepare(`SELECT a.*, p.nickname FROM partner_applications a LEFT JOIN players p ON p.id = a.player_id ${st ? 'WHERE a.status = ?' : ''} ORDER BY a.id DESC LIMIT 300`).all(...(st ? [st] : [])) as Record<string, unknown>[];
-  return rows.map((r) => ({ id: Number(r.id), kind: String(r.kind), name: String(r.name), link: String(r.link), audience: String(r.audience), contact: String(r.contact), note: (r.note as string) ?? null, playerId: r.player_id === null ? null : Number(r.player_id), nickname: (r.nickname as string) ?? null, status: r.status as AppStatus, adminNote: (r.admin_note as string) ?? null, createdAt: Number(r.created_at) }));
+  return rows.map((r) => ({ elchi: elchiNickOfApp(db, Number(r.id)), id: Number(r.id), kind: String(r.kind), name: String(r.name), link: String(r.link), audience: String(r.audience), contact: String(r.contact), note: (r.note as string) ?? null, playerId: r.player_id === null ? null : Number(r.player_id), nickname: (r.nickname as string) ?? null, status: r.status as AppStatus, adminNote: (r.admin_note as string) ?? null, createdAt: Number(r.created_at) }));
 }
 export function setApplicationStatus(db: DatabaseSync, id: number, status: unknown, adminNote: unknown, now = Date.now()): void {
   if (!APP_STATUSES.includes(status as AppStatus)) throw new ApiError(400, 'Holat noto‘g‘ri');
@@ -76,11 +86,11 @@ export function setApplicationStatus(db: DatabaseSync, id: number, status: unkno
 }
 
 /** Ochiq shartlar (sahifada ko'rsatiladi): video uchun to'lov (egasi belgilagan, admin tahrirlaydi), yoqilgan hamkor qoidalari + do'st taklif mukofoti. Summalar so'mda. */
-export interface PublicTerms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: Omit<VideoTerms, 'updatedAt' | 'enabled'> | null }
+export interface PublicTerms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: Omit<VideoTerms, 'updatedAt' | 'enabled' | 'elchiSom' | 'elchiTiers'> | null; elchi: { som: number; tiers: { min: number; som: number }[]; payDays: number } | null }
 export function publicTerms(db: DatabaseSync, now = Date.now(), env: NodeJS.ProcessEnv = process.env): PublicTerms {
   const rules = listRules(db)
     .filter((r) => r.enabled && r.approvedAt !== null && r.campaignId === null && (r.startsAt === null || r.startsAt <= now) && (r.endsAt === null || r.endsAt > now))
     .map((r) => ({ kind: r.kind, pct: r.kind === 'paid_pct' ? r.pct : null, som: r.kind === 'paid_pct' || r.amountMinor === null ? null : Math.round(r.amountMinor / 100), holdDays: r.holdDays }));
   const v = videoTerms(db);
-  return { rules, invite: { xp: refXp(env), days: refPlanDays(env) }, video: v.enabled ? { baseSom: v.baseSom, windowDays: v.windowDays, payDays: v.payDays, viewTiers: v.viewTiers, learnerTiers: v.learnerTiers, instagram: v.instagram } : null };
+  return { rules, invite: { xp: refXp(env), days: refPlanDays(env) }, video: v.enabled ? { baseSom: v.baseSom, windowDays: v.windowDays, payDays: v.payDays, viewTiers: v.viewTiers, learnerTiers: v.learnerTiers, instagram: v.instagram } : null, elchi: v.enabled && v.elchiSom > 0 ? { som: v.elchiSom, tiers: v.elchiTiers, payDays: v.payDays } : null };
 }

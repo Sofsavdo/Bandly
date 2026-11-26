@@ -2,15 +2,23 @@
 // Egasi (2026-11-26): "ko'p qismlar tushunarsiz va murakkab" — sahifa soddalashtirildi: bitta jadval, egasining 3 ta misoli, 4 ta qisqa shart.
 // Summalar va normalar serverdan (admin tahrirlaydi: server/videoPay.ts) — sahifada qattiq yozilgan summa yo'q.
 import { useEffect, useState } from 'react';
-import { ArrowRight, Check, Megaphone } from 'lucide-react';
+import { ArrowRight, Check, Megaphone, Users } from 'lucide-react';
 import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
 import { L } from '../i18n';
 
 interface Tier { min: number; som: number }
 interface VideoTerms { baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string }
-interface Terms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: VideoTerms | null }
-type Kind = 'blogger' | 'teacher' | 'learner';
+interface Terms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: VideoTerms | null; elchi: { som: number; tiers: Tier[]; payDays: number } | null }
+type Kind = 'blogger' | 'teacher' | 'learner' | 'elchi';
+/** Elchi havolasi (#/partners?elchi=kod): kirish sahifasidan qaytganda ham saqlanadi. */
+const ELCHI_KEY = 'sellzen.elchi';
+function elchiCode(): string {
+  const c = new URLSearchParams(location.hash.split('?')[1] ?? '').get('elchi') ?? '';
+  try { if (/^[a-z2-9]{6,10}$/.test(c)) sessionStorage.setItem(ELCHI_KEY, c); return sessionStorage.getItem(ELCHI_KEY) ?? ''; } catch { return /^[a-z2-9]{6,10}$/.test(c) ? c : ''; }
+}
+/** Video qiladigan hamkor — kamida 1 000 obunachi (egasi, 2026-11-26). */
+const needsAudience = (k: Kind): boolean => k === 'blogger' || k === 'learner';
 const n = (x: number): string => fmtSum(x);
 const som = (x: number): string => L('{0} so‘m', [n(x)]);
 
@@ -41,12 +49,17 @@ export default function Partners() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [sent, setSent] = useState(false);
+  const [elchi] = useState(elchiCode);
   useEffect(() => { void fetch('/api/partners/terms').then((r) => (r.ok ? r.json() : null)).then(setTerms).catch(() => undefined); }, []);
   const v = terms?.video ?? null;
+  const el = terms?.elchi ?? null;
+  const small = needsAudience(kind) && f.audience === '<1k';
+  const needLogin = !!elchi && !acc && kind !== 'elchi';
+  const loginHref = `#/login?next=${encodeURIComponent(`#/partners?elchi=${elchi}`)}`;
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(''); setBusy(true);
     try {
-      const r = await fetch('/api/partners/apply', { method: 'POST', headers: { 'content-type': 'application/json', ...(acc ? { 'x-token': acc.token } : {}) }, body: JSON.stringify({ kind, ...f, consent }) });
+      const r = await fetch('/api/partners/apply', { method: 'POST', headers: { 'content-type': 'application/json', ...(acc ? { 'x-token': acc.token } : {}) }, body: JSON.stringify({ kind, ...f, consent, ...(elchi && kind !== 'elchi' ? { elchi } : {}) }) });
       const j = await r.json().catch(() => ({})) as { error?: string };
       if (!r.ok) throw new Error(j.error || L('Yuborib bo‘lmadi — qayta urinib ko‘ring.'));
       setSent(true);
@@ -113,6 +126,20 @@ export default function Partners() {
         <section className="card"><p style={{ margin: 0 }}>{L('Mukofot shartlari auditoriyangiz va formatga qarab ariza ko‘rib chiqilgach siz bilan kelishiladi.')}</p></section>
       )}
 
+      {el && (
+        <>
+          <div className="section-title"><h2><Users size={20} style={{ verticalAlign: -3 }} /> {L('Video qilmaysizmi? Elchi bo‘ling')}</h2></div>
+          <section className="card vp-table">
+            <p style={{ marginTop: 0 }}>{L('Tanish blogerlaringizni elchi havolangiz orqali olib keling. Blogeringizning birinchi videosi tasdiqlansa — siz to‘lov olasiz.')}</p>
+            <div className="vp-row base"><span>{L('Har faol bloger uchun')}</span><b>{som(el.som)}</b></div>
+            {el.tiers.map((t) => <div className="vp-row" key={`e${t.min}`}><span>{L('Oyda {0} ta faol bloger', [n(t.min)])}</span><b>+{som(t.som)}</b></div>)}
+            <p className="muted">{L('Misol: oyda 10 ta faol bloger — 10 × {0} + {1} = {2}.', [n(el.som), n(bonus(el.tiers, 10)), som(el.som * 10 + bonus(el.tiers, 10))])}</p>
+            <p className="muted" style={{ marginBottom: 8 }}>{L('Elchi bir vaqtda bloger ham bo‘la oladi. Pul tasdiqdan keyin {0} kun ichida to‘lanadi.', [el.payDays])}</p>
+            <a className="btn sm" href="#partner-form" onClick={() => setKind('elchi')}>{L('Elchi bo‘lish')} <ArrowRight size={16} /></a>
+          </section>
+        </>
+      )}
+
       <div className="section-title"><h2>{L('Qanday boshlanadi?')}</h2></div>
       <ol className="how-steps">
         <li><b>1</b><div><h3>{L('Ariza qoldirasiz')}</h3><p>{L('1 daqiqa: sahifangiz va aloqa.')}</p></div></li>
@@ -127,13 +154,14 @@ export default function Partners() {
         ) : (
           <form onSubmit={(e) => void submit(e)}>
             <div className="seg" role="group" aria-label={L('Kim siz?')}>
-              {([['blogger', L('Bloger')], ['teacher', L('O‘qituvchi')], ['learner', L('O‘quvchi')]] as const).map(([k, t]) => (
+              {([['blogger', L('Bloger')], ['teacher', L('O‘qituvchi')], ['learner', L('O‘quvchi')], ...(el ? [['elchi', L('Elchi')] as const] : [])] as const).map(([k, t]) => (
                 <button key={k} type="button" className={`btn sm${kind === k ? ' primary' : ''}`} aria-pressed={kind === k} onClick={() => setKind(k)}>{t}</button>
               ))}
             </div>
             <label>{L('Ismingiz')}<input required maxLength={60} value={f.name} onChange={set('name')} autoComplete="name" /></label>
             <label>{L('Sahifangiz yoki kanalingiz')}<input required maxLength={200} value={f.link} onChange={set('link')} placeholder={L('instagram.com/… yoki @kanal')} /></label>
-            <label>{L('Obunachilar soni')}
+            {elchi && kind !== 'elchi' && <p className="evidence" role="note">{L('Sizni Sellzen elchisi taklif qildi.')}</p>}
+            {kind !== 'elchi' && <label>{L('Obunachilar soni')}
               <select required value={f.audience} onChange={set('audience')}>
                 <option value="" disabled>{L('Tanlang')}</option>
                 <option value="<1k">{L('1 000 gacha')}</option>
@@ -141,12 +169,15 @@ export default function Partners() {
                 <option value="10k-100k">{'10 000 – 100 000'}</option>
                 <option value="100k+">{L('100 000 dan ko‘p')}</option>
               </select>
-            </label>
+            </label>}
+            {small && <p className="notice" role="alert">{L('Video uchun hamkorlikka kamida 1 000 obunachi kerak. Video qilmasangiz — elchi bo‘lib blogerlarni olib keling.')}</p>}
             <label>{L('Telegram yoki telefon')}<input required maxLength={60} value={f.contact} onChange={set('contact')} placeholder={L('@username yoki +998 90 123 45 67')} inputMode="text" /></label>
             <label>{L('Izoh (ixtiyoriy)')}<textarea maxLength={500} rows={3} value={f.note} onChange={set('note')} placeholder={L('Qanday kontent qilasiz, qaysi auditoriya')} /></label>
             <label className="check"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} /> {L('Ma’lumotlarimni hamkorlik bo‘yicha bog‘lanish uchun ishlatishga roziman')}</label>
             {err && <p className="notice" role="alert">{err}</p>}
-            <button className="btn primary lg" type="submit" disabled={busy || !consent}>{busy ? L('Yuborilmoqda…') : L('Ariza yuborish')}</button>
+            {needLogin
+              ? <a className="btn primary lg" href={loginHref}>{L('Kirish va ariza yuborish')} <ArrowRight size={18} /></a>
+              : <button className="btn primary lg" type="submit" disabled={busy || !consent || small}>{busy ? L('Yuborilmoqda…') : L('Ariza yuborish')}</button>}
           </form>
         )}
       </section>
