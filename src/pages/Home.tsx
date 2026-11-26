@@ -169,11 +169,12 @@ export default function Home({ preview = false }: { preview?: boolean }) {
 
       {/* Bitta ixcham kartochka: davom ettirish + asosiy ko'rsatkichlar + bugungi maqsad (avval 4 ta katta blok edi) */}
       <section className="card prog">
-        <a className="prog-next" href={nl ? `#/learn/${nl.id}` : '#/learn'}>
+        {/* Bugungi reja ko'rinsa, u keyingi darsni allaqachon ko'rsatadi — bir xil dars ikki marta chiqmasin (UX tekshiruvi, 2026-11-26) */}
+        {!lvl && <a className="prog-next" href={nl ? `#/learn/${nl.id}` : '#/learn'}>
           <span className="prog-ic"><BookOpenCheck size={20} /></span>
           <span className="grow"><small>{nl ? L('Davom ettirish') : L('Darslar')}</small><b>{nl ? nl.titleUz : L('Darslar xaritasi')}</b><em>{nu ? `${nu.level} · ${nu.titleUz}` : L('{0}/{1} dars o‘tildi', [passed, total])}</em></span>
           <ArrowRight size={18} className="prog-go" />
-        </a>
+        </a>}
         <div className="prog-stats">
           <a href="#/learn"><b>{passed}<small>/{total}</small></b><span>{L('dars')}</span></a>
           <a href="#/league"><b><Flame size={15} />{streak}</b><span>{L('kunlik seriya')}</span></a>
