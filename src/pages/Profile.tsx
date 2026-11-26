@@ -1,4 +1,4 @@
-import { Lock, LogOut, Trophy } from 'lucide-react';
+import { ArrowRight, Lock, LogOut, Megaphone, Trophy } from 'lucide-react';
 import { UserAvatar } from '../components/UserAvatar';
 import { useEffect, useState } from 'react';
 import { eraseAccount, getAccount, onAccountChange } from '../lib/account';
@@ -54,6 +54,7 @@ export default function Profile() {
       </div>
       {p.brokenStreak && repairOpen(p, dayKey()) && <p className="notice">{p.brokenStreak?.value}  {L('kunlik seriya uzildi. 48 soat ichida kunlik maqsadni 2 barobar bajarsangiz, tiklanadi (30 kunda bir marta).')}</p>}
       <InviteCard />
+      <a className="card partner-promo" href="#/partners"><span className="blob"><Megaphone /></span><div><h3 style={{ margin: 0 }}>{L('Bloger yoki o‘qituvchimisiz?')}</h3><p className="muted" style={{ margin: '4px 0 0' }}>{L('Sellzen haqida video yoki post qiling — hamkor bo‘ling va har bir kelgan o‘quvchi uchun mukofot oling.')}</p></div><ArrowRight size={18} /></a>
       <JoinGroupCard />
       <section className="card"><h3 style={{ margin: 0 }}>{L('Bu hafta')}</h3><WeekBars activity={p.activity} /></section>
       <LeadCard level={p.level ?? undefined} />

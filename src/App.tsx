@@ -56,6 +56,7 @@ const Studio = lazy(() => import('./pages/Studio'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Creator = lazy(() => import('./pages/Creator'));
 const Partners = lazy(() => import('./pages/Partners'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Leads = lazy(() => import('./pages/Leads'));
 const IeltsCourse = lazy(() => import('./pages/IeltsCourse'));
 const SatCourse = lazy(() => import('./pages/SatCourse'));
@@ -165,7 +166,7 @@ function MainApp() {
   const wall = !acc ? redirect !== null || hash.startsWith('#/login') : hash.startsWith('#/login');
   // Sellzen (ovozli ustoz) sahifasi ekranga sig'adi: sayt pastki qismi yo'q, skrol yo'q (egasi, 2026-11-25)
   const fit = !wall && hash === '#/coach';
-  const page = wall ? <Login /> : tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
+  const page = /^#\/reset(\?|$)/.test(hash) ? <ResetPassword /> : wall ? <Login /> : tr ? tr : lessonId ? <LessonPage key={lessonId} id={lessonId} /> : bossUnit ? <Boss key={bossUnit} unitId={bossUnit} /> : shadowId ? <Gate track="exam"><ShadowHub id={shadowId} /></Gate> : duelCode ? <DuelRoom key={duelCode} code={duelCode.toUpperCase()} /> : (routes[hash] ?? routes['#/'])();
   return (
     <>
       <Header hash={hash} />

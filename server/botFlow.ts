@@ -21,6 +21,8 @@ export interface BotDeps {
   setRef: (tgId: number, ref: string) => void;
   getRef: (tgId: number) => string | undefined;
   setRemind: (tgId: number, on: boolean) => boolean;
+  /** /parol: Telegram tasdiqlagan raqam bo'yicha telefon-hisobga bir martalik parol tiklash kaliti (server/passwordReset.ts) */
+  resetOffer?: (tgId: number) => { ok: true; token: string; nickname: string } | { ok: false; reason: 'nophone' | 'noaccount' | 'limit' };
   channel?: string;
   stats?: BotStats;
   /** Rasm bilan yuborish (fayl yuklash / file_id keshi). Berilmasa yoki xato bo'lsa — matn sifatida yuboriladi. */
@@ -90,7 +92,7 @@ export function helpMsg(chatId: number, tr: Tr): Record<string, unknown> {
     text: [
       tr('Buyruqlar:'),
       `/start — ${tr('boshlash')}`, `/app — ${tr('ilovani ochish')}`, `/level — ${tr('darajani aniqlash')}`, `/mock — ${tr('bepul mock test')}`, `/coach — ${tr('Sellzen')}`,
-      `/remind — ${tr('kunlik eslatmani yoqish')}`, `/stop — ${tr('eslatmani o‘chirish')}`,
+      `/remind — ${tr('kunlik eslatmani yoqish')}`, `/stop — ${tr('eslatmani o‘chirish')}`, `/parol — ${tr('parolni tiklash (telefon raqam bilan kirsangiz)')}`,
       '', tr('Savol bo‘lsa, shu yerga yozing — jamoamiz javob beradi.'),
     ].join('\n'),
   };
@@ -112,6 +114,30 @@ async function welcome(d: BotDeps, chatId: number, from: TgFrom, tr: Tr): Promis
     try { await d.sendPhoto(msg); return; } catch (e) { console.error('[bot] rasm yuborilmadi, matn yuboriladi:', (e as Error).message); }
   }
   await d.api('sendMessage', { chat_id: msg.chat_id, text: msg.caption, reply_markup: msg.reply_markup, link_preview_options: { is_disabled: true } });
+}
+
+/** Kontakt kutilayotgan parol tiklash so'rovlari (raqam hali ulashilmagan). Xotirada, 10 daqiqa. */
+const wantReset = new Map<number, number>();
+/** /parol: raqam Telegram orqali tasdiqlangan bo'lsa — bir martalik havola; bo'lmasa — avval raqamni ulashishni so'raydi. */
+async function sendReset(d: BotDeps, chatId: number, from: TgFrom, tr: Tr): Promise<void> {
+  if (!d.resetOffer) return;
+  const r = d.resetOffer(from.id);
+  if (!r.ok && r.reason === 'nophone') {
+    wantReset.set(from.id, Date.now());
+    await d.api('sendMessage', { ...phoneMsg(chatId, tr), text: `${tr('Parolni tiklash uchun raqamingizni tasdiqlang: pastdagi «Raqamni ulashish» tugmasini bosing.')}\n\n${tr('Telegram raqamingiz saytda ro‘yxatdan o‘tgan raqam bilan bir xil bo‘lishi kerak.')}` });
+    return;
+  }
+  wantReset.delete(from.id);
+  if (!r.ok) {
+    await d.api('sendMessage', { chat_id: chatId, text: r.reason === 'limit' ? tr('Bir soatda 3 martadan ko‘p so‘raldi. Birozdan keyin qayta urinib ko‘ring.') : tr('Bu Telegram raqami bilan parolli hisob topilmadi. Agar Telegram orqali kirgan bo‘lsangiz, parol kerak emas — ilovani bot orqali oching.') });
+    return;
+  }
+  const url = `${d.publicUrl.replace(/\/+$/, '')}/#/reset?t=${r.token}`;
+  await d.api('sendMessage', {
+    chat_id: chatId,
+    text: `🔑 ${tr('Hisob: {0}').replace('{0}', r.nickname)}\n${tr('Yangi parol o‘rnatish uchun bosing. Havola 15 daqiqa amal qiladi va bir marta ishlaydi.')}\n\n${tr('Agar siz so‘ramagan bo‘lsangiz, bu xabarni e’tiborsiz qoldiring.')}`,
+    reply_markup: { inline_keyboard: [[{ text: `🔑 ${tr('Yangi parol o‘rnatish')}`, url }]] },
+  });
 }
 
 /** Bitta webhook yangilanishini qayta ishlaydi (javoblar API orqali yuboriladi). */
@@ -138,6 +164,8 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
     const raw = String(m.contact.phone_number ?? '');
     d.savePhone(from.id, raw.startsWith('+') ? raw : `+${raw}`);
     await d.api('sendMessage', { chat_id: chatId, text: `✅ ${tr('Raqam saqlandi. Rahmat!')}`, reply_markup: { remove_keyboard: true } });
+    const asked = wantReset.get(from.id);
+    if (asked && Date.now() - asked < 600_000) { await sendReset(d, chatId, from, tr); return; }
     if (!(d.requireSubscribe?.() ?? true) || await d.isMember(from.id)) await welcome(d, chatId, from, tr); else await d.api('sendMessage', subscribeMsg(chatId, tr, d.channel ?? CHANNEL));
     return;
   }
@@ -150,6 +178,7 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
     return;
   }
   if (name === 'help') { await d.api('sendMessage', helpMsg(chatId, tr)); return; }
+  if (name === 'parol' || (name === 'start' && cmd?.[2] === 'reset')) { await sendReset(d, chatId, from, tr); return; }
   if (name === 'start') { const ref = cmd?.[2]?.match(/^ref_([a-z2-9]{6,10})$/)?.[1]; if (ref) d.setRef(from.id, ref); }
   if (!(await gate(d, chatId, from, tr))) return;
   if (name && ROUTES[name] && name !== 'app') {

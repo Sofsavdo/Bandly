@@ -5,6 +5,7 @@
 //   H5. Telefon raqam + parol: ro'yxatdan o'tish → chiqish → qayta kirish; xato parol → xabar
 //   H6. Google: soxta GIS skripti + soxta JWKS (haqiqiy RS256 imzo): kirish; boshqa ilovaga berilgan token rad etiladi
 //   H7. Hisob kodi bilan kirish bo'limi yo'q; bog'lanmagan hisob chiqishda ogohlantiriladi
+//   H8. Parolni tiklash: botdan bir martalik havola → yangi parol; eski parol ishlamaydi; eskirgan havola aniq aytiladi
 import assert from 'node:assert/strict';
 import { createHash, createHmac, createSign, generateKeyPairSync } from 'node:crypto';
 import { createServer } from 'node:http';
@@ -13,6 +14,9 @@ import { createRequire } from 'node:module';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+import { saveBotPhone } from '../server/leads';
+import { offerReset } from '../server/passwordReset';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright') as typeof import('playwright');
@@ -166,6 +170,29 @@ try {
     assert.match(d, /bog‘lanmagan/, 'bog‘lanmagan hisob haqida ogohlantirish');
     assert.equal(await dlg.locator('a[href="#/profile"]').count(), 1, '«Hisobni bog‘lash» havolasi');
     assert.doesNotMatch(d, /nusxa|kod/i, 'chiqish oynasida hisob kodi nusxalash yo‘q');
+    await ctx.close();
+  });
+
+  await step('H8. Parolni tiklash: botdan kelgan bir martalik havola → yangi parol → eski parol ishlamaydi; eskirgan havola aniq aytiladi', async () => {
+    const phone = '+998907776655', post = (path: string, body: unknown) => fetch(`${base}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    assert.equal((await post('/api/auth/phone/register', { phone, password: 'birinchi-parol-1', nickname: 'Reset E2E' })).status, 200);
+    // Bot: o'quvchi Telegram'da o'z raqamini ulashgan (Telegram tasdiqlagan) → bot bir martalik havola yaratadi
+    const db = new DatabaseSync(join(dir, 'l.sqlite'));
+    saveBotPhone(db, 424242, phone); const o = offerReset(db, 424242); db.close();
+    assert.ok(o.ok);
+    const { ctx, p } = await newPage();
+    await p.goto(`${base}/#/login`);
+    await p.getByText('Telefon raqam va parol bilan').click();
+    assert.equal(await p.locator('a.forgot[href="https://t.me/Sellzenbot?start=reset"]').count(), 1, 'kirish oynasida «Parolni unutdingizmi?» havolasi');
+    await p.goto(`${base}/#/reset?t=${'0'.repeat(48)}`);
+    await p.getByText('Havola eskirgan yoki allaqachon ishlatilgan').waitFor({ timeout: 8000 });
+    await p.goto(`${base}/#/reset?t=${o.ok ? o.token : ''}`); await p.reload();
+    await p.getByPlaceholder('Yangi parol (kamida 8 belgi)').fill('ikkinchi-parol-2');
+    await p.getByPlaceholder('Parolni takrorlang').fill('ikkinchi-parol-2');
+    await p.getByRole('button', { name: 'Parolni saqlash' }).click();
+    await p.getByText('Parol yangilandi. Hisobingizga kirdingiz.').waitFor({ timeout: 8000 });
+    assert.equal((await post('/api/auth/phone/login', { phone, password: 'birinchi-parol-1' })).status, 401, 'eski parol ishlamaydi');
+    assert.equal((await post('/api/auth/phone/login', { phone, password: 'ikkinchi-parol-2' })).status, 200, 'yangi parol bilan kiriladi');
     await ctx.close();
   });
 

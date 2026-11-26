@@ -19,7 +19,7 @@ export function MissionIntro({ unit, lesson, steps, onStart }: { unit: Unit; les
       <h2 style={{ margin: '12px 0 4px' }}><Target size={20} /> {lesson.titleUz}</h2>
       <p className="muted" style={{ margin: 0 }}>{lesson.objectiveUz}</p>
       <ol className="mission-steps">{steps.map((s, i) => <li key={s}><b>{i + 1}</b>{s}</li>)}</ol>
-      <p className="mission-loot"><Star size={16} /> {L('3 yulduzgacha')} · <Sparkles size={16} />  {L('XP ·')} <Swords size={16} /> {L('oxirida boss jang')}</p>
+      <p className="mission-loot"><span><Star size={16} />{L('3 yulduzgacha')}</span><span><Sparkles size={16} />{L('XP ballari')}</span><span><Swords size={16} />{L('oxirida boss jang')}</span></p>
       <button className="btn primary block" onClick={onStart} autoFocus>{L('Missiyani boshlash')} <ArrowRight size={16} /></button>
     </section>
   );
@@ -156,7 +156,7 @@ export function FeedbackSheet({ ok, n, answer, explain, onNext, xp, sentence }: 
   useEffect(() => { btn.current?.focus({ preventScroll: true }); btn.current?.scrollIntoView({ block: 'nearest' }); }, []);
   return (
     <div className={`fb-sheet ${ok ? 'ok' : 'bad'}`} role="status">
-      <div className="fb-head">{ok ? <CheckCircle2 size={22} /> : <XCircle size={22} />}<b>{reaction(ok, n)}</b>{ok && xp ? <span className="xp-pop">+{xp}  {L('XP')}</span> : null}</div>
+      <div className="fb-head">{ok ? <CheckCircle2 size={22} /> : <XCircle size={22} />}<b>{reaction(ok, n)}</b>{ok && xp ? <span className="xp-pop">+{xp}  {L('XP ballari')}</span> : null}</div>
       {!ok && !sentence && <p className="fb-answer">{L('To‘g‘ri javob:')} <b>{answer}</b></p>}
       {sentence && <p className="fb-answer fb-sentence"><ClipButton className="icon-btn sm" text={sentence} size={15} /><b>{sentence}</b></p>}
       <p className="fb-explain">{explain}</p>
