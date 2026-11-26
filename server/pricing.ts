@@ -8,7 +8,7 @@ export interface Period { days: number; label: string; note?: string }
 export const PERIODS: Period[] = SALE_PERIODS;
 export const PLAN_IDS: PlanId[] = SALE_PLANS.map((p) => p.id);
 /** Eski alohida obunalar (faqat qo'lda berish va mavjud yozuvlar uchun; endi sotilmaydi). */
-export const TRACKS: TrackId[] = ['exam', 'grammar', 'mocks'];
+export const TRACKS: TrackId[] = ['exam', 'grammar', 'mocks', 'voice'];
 
 export function monthlyPrice(plan: PlanId, env: NodeJS.ProcessEnv = process.env): number {
   const o = Number(env[`PLAN_PRICE_${plan.toUpperCase()}`]);

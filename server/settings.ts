@@ -24,6 +24,9 @@ export const SETTINGS: SettingDef[] = [
   { key: 'PLAN_EXAM_SPEAKING', group: 'plans', label: 'Exam Preparation: AI Speaking baholash, oyiga', def: 10, min: 0, max: 500 },
   { key: 'PLAN_ALL_WRITING', group: 'plans', label: 'All Access: AI Writing baholash, oyiga', def: 20, min: 0, max: 500 },
   { key: 'PLAN_ALL_SPEAKING', group: 'plans', label: 'All Access: AI Speaking baholash, oyiga', def: 20, min: 0, max: 500 },
+  { key: 'PREMIUM_DAILY_MINUTES', group: 'plans', label: 'Premium: ovozli suhbat, kuniga', hint: 'Har kuni yangilanadi (oylik daqiqadan alohida)', def: 30, min: 0, max: 600, unit: 'min' },
+  { key: 'PLAN_PREMIUM_WRITING', group: 'plans', label: 'Premium: AI Writing baholash, oyiga', def: 60, min: 0, max: 1000 },
+  { key: 'PLAN_PREMIUM_SPEAKING', group: 'plans', label: 'Premium: AI Speaking baholash, oyiga', def: 60, min: 0, max: 1000 },
   // Sellzen (hamma uchun)
   { key: 'AI_COACH_DAILY_LIMIT', group: 'coach', label: 'Kuniga Sellzen matnli xabarlari (bitta o‘quvchi)', def: 30, min: 0, max: 2000 },
   { key: 'LIVE_MAX_SESSION_MINUTES', group: 'coach', label: 'Bitta ovozli qo‘ng‘iroqning eng uzun davomi', def: 10, min: 1, max: 60, unit: 'min' },
@@ -40,6 +43,7 @@ export const SETTINGS: SettingDef[] = [
   { key: 'PLAN_PRICE_GENERAL', group: 'prices', label: 'General English narxi, oyiga', def: 69_000, min: 1000, max: 10_000_000, unit: 'uzs' },
   { key: 'PLAN_PRICE_EXAM', group: 'prices', label: 'Exam Preparation narxi, oyiga', def: 99_000, min: 1000, max: 10_000_000, unit: 'uzs' },
   { key: 'PLAN_PRICE_ALL', group: 'prices', label: 'All Access narxi, oyiga', def: 129_000, min: 1000, max: 10_000_000, unit: 'uzs' },
+  { key: 'PLAN_PRICE_PREMIUM', group: 'prices', label: 'Premium narxi, oyiga', def: 499_000, min: 1000, max: 10_000_000, unit: 'uzs' },
   // Xarajat himoyasi
   { key: 'AI_GLOBAL_DAILY_CALLS', group: 'safety', label: 'Platforma bo‘yicha kuniga AI so‘rovlari', hint: '0 — AI o‘chiq', def: 0, min: 0, max: 1_000_000 },
   { key: 'AI_DAILY_LIMIT', group: 'safety', label: 'Bitta o‘quvchiga kuniga AI so‘rovlari (jami)', def: 120, min: 0, max: 10_000 },
@@ -106,6 +110,7 @@ export function publicLimits(env: NodeJS.ProcessEnv = process.env) {
       general: { voiceMin: v('COACH_CALL_MONTH_MINUTES'), writing: v('PLAN_GENERAL_WRITING'), speaking: v('PLAN_GENERAL_SPEAKING') },
       exam: { voiceMin: v('COACH_CALL_MONTH_MINUTES'), writing: v('PLAN_EXAM_WRITING'), speaking: v('PLAN_EXAM_SPEAKING') },
       all: { voiceMin: v('COACH_CALL_MONTH_MINUTES'), writing: v('PLAN_ALL_WRITING'), speaking: v('PLAN_ALL_SPEAKING') },
+      premium: { voiceMin: v('PREMIUM_DAILY_MINUTES') * 30, voiceDaily: v('PREMIUM_DAILY_MINUTES'), writing: v('PLAN_PREMIUM_WRITING'), speaking: v('PLAN_PREMIUM_SPEAKING') },
     },
     referral: { xp: v('REF_XP'), planDays: v('REF_PLAN_DAYS') },
     coach: { textPerDay: v('AI_COACH_DAILY_LIMIT') },

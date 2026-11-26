@@ -1,4 +1,4 @@
-import { Check, Crown, Gift, Info, Sparkles, Target, Bot } from 'lucide-react';
+import { Check, Crown, Gift, Info, Sparkles, Target, Bot, Mic } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FREE_INFO, SALE_PERIODS, SALE_PLANS, periodPrice, type PlanId } from '../config';
 import { fmtDate, fmtSum, payConfig, startPurchase, type PayConfig } from '../lib/pay';
@@ -7,8 +7,8 @@ import { Illo } from '../components/Illo';
 import { track, trackUser } from '../lib/track';
 import { L } from '../i18n';
 
-const ICON: Record<PlanId, typeof Bot> = { general: Bot, exam: Target, all: Crown };
-const TONE: Record<PlanId, string> = { general: 'blue', exam: 'red', all: 'orange' };
+const ICON: Record<PlanId, typeof Bot> = { general: Bot, exam: Target, all: Crown, premium: Mic };
+const TONE: Record<PlanId, string> = { general: 'blue', exam: 'red', all: 'orange', premium: 'purple' };
 
 /** Tariflar sahifasi (MONETIZATION_SPEC §7): FREE + General English / Exam Preparation / All Access, 1 / 3 / 12 oy. */
 export default function Pricing() {

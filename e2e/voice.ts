@@ -139,7 +139,10 @@ async function openCall(f: string, token: string, viewport = { width: 390, heigh
   p.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
   p.on('response', (r) => { if (r.url().startsWith(base) && r.status() >= 500) problems.push(`${scenario}: HTTP ${r.status()} ${r.url().slice(base.length)}`); });
   await p.goto(`${base}/#/coach`);
-  // Egasi (2026-11-25): Sellzen ochilishi bilan qo'ng'iroq o'zi boshlanadi — hech narsa bosilmaydi
+  // Egasi (2026-11-26): avval ustoz va xarakter tanlanadi, keyin "Suhbatni boshlash" — qo'ng'iroq shundan keyin boshlanadi
+  await p.locator('.tsetup-start').waitFor({ timeout: 15000 });
+  assert.equal(await p.locator('.call').count(), 0, 'qo‘ng‘iroq o‘zi boshlanmaydi');
+  await p.locator('.tsetup-start').click();
   await p.locator('.call').waitFor({ timeout: 15000 });
   return p;
 }
@@ -195,7 +198,7 @@ try {
   assert.ok(token);
 
   let p!: Page;
-  await step('J1. Sellzen ochilishi bilan qo‘ng‘iroq o‘zi boshlanadi; tegilmaguncha hech narsa yuborilmaydi', async () => {
+  await step('J1. Ustoz/xarakter tanlanib «Suhbatni boshlash» bosilgach qo‘ng‘iroq boshlanadi; tegilmaguncha hech narsa yuborilmaydi', async () => {
     p = await openCall(LOUD, token);
     await waitStatus(p, /Sellzen gapiryapti|Navbat sizda/);
     assert.match(await p.locator('.call-time').innerText(), /\/ 5:00/, 'taymer: o‘tgan / ruxsat etilgan vaqt');
@@ -329,16 +332,16 @@ try {
     await shot(q, 'j5-no-voice');
     // Tugatilgan qo'ng'iroq o'zi qayta boshlanmaydi; Sellzen yuziga tegib yana boshlash mumkin; kutish sahifasi skrol bo'lmaydi
     await q.locator('.call-end').click();
-    await q.locator('.start-face').waitFor({ timeout: 5000 }); await wait(1500);
+    await q.locator('.tsetup-start').waitFor({ timeout: 5000 }); await wait(1500);
     assert.equal(await q.locator('.call').count(), 0, 'tugatilgan qo‘ng‘iroq o‘zi qayta boshlanmadi');
     for (const [w, h] of [[320, 568], [360, 640], [390, 800], [1280, 720]] as const) {
       await q.setViewportSize({ width: w, height: h }); await wait(300);
       const sc = await q.evaluate(() => ({ h: document.documentElement.scrollHeight - innerHeight, w: document.documentElement.scrollWidth - innerWidth }));
-      assert.ok(sc.h <= 1 && sc.w <= 1, `Sellzen kutish sahifasi ${w}x${h} da skrol bo‘lmaydi (${JSON.stringify(sc)})`);
+      assert.ok(sc.w <= 1, `Sellzen tanlov sahifasi ${w}x${h} da yonga skrol bo‘lmaydi (${JSON.stringify(sc)})`); // tanlov kartalari kichik ekranda pastga suriladi — bu normal
       await shot(q, `j5-idle-${w}`);
     }
     await q.setViewportSize({ width: 390, height: 800 });
-    await q.locator('.start-face').click({ force: true });
+    await q.locator('.tsetup-start').click();
     await q.locator('.call').waitFor({ timeout: 10000 });
     scribeText = 'teach me English, I go to school yesterday';
   });
@@ -384,7 +387,7 @@ try {
     const end = (await t0.locator('.call-end').boundingBox())!;
     await touch('pointerdown', end.x + end.width / 2, end.y + end.height / 2); await touch('pointerup', end.x + end.width / 2, end.y + end.height / 2);
     await wait(300); assert.ok(!/Tinglayapman/.test(await statusText(t0)), 'tugatish tugmasi gapirishni boshlamadi');
-    await t0.locator('.call-end').click(); await t0.locator('.start-face').waitFor({ timeout: 5000 });
+    await t0.locator('.call-end').click(); await t0.locator('.tsetup-start').waitFor({ timeout: 5000 });
   });
 
   await step('J11. Jahl va kulgi: yuz ifodali harakatlanadi, matn va tugmalar qimirlamaydi', async () => {
@@ -483,6 +486,28 @@ try {
     assert.ok(await q.locator('.vl.you').count() >= 1, 'suhbat tarixi saqlandi');
     assert.doesNotMatch(await q.locator('.call').innerText(), /Jonli ovozli suhbat hozir ishlamayapti|Aloqa uzildi/, 'xato ko‘rsatilmadi');
     scribeText = 'teach me English, I go to school yesterday';
+    await q.context().close();
+  });
+  // 2026-11-26: ustoz sahifasida tanlov — ayol ustoz (yosh ovoz) va bolalar xarakteri qo'ng'iroqqa yetib boradi
+  await step('J13. Tanlov ekrani: Ayol ustoz + Bolalar uchun → Gemini’ga ayol ovozi va bolalar xarakteri boradi', async () => {
+    const b = await chromium.launch({ args: args(LOUD) }); browsers.push(b);
+    const ctx = await b.newContext({ viewport: { width: 390, height: 800 }, permissions: ['microphone'] });
+    await ctx.addInitScript(([t]) => { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('bandly.account.v1', JSON.stringify({ token: t, nickname: 'Voice E2E' })); localStorage.setItem('bandly.onboard.v1', JSON.stringify({ goal: 'ielts', minutes: 20, done: true })); localStorage.setItem('bandly.profile.v1', JSON.stringify({ level: 'B1', xp: 0 })); } }, [token]);
+    const q = await ctx.newPage(); q.on('pageerror', (e) => problems.push(`${scenario}: JS xato ${e.message.slice(0, 160)}`));
+    await q.goto(`${base}/#/coach`); await q.locator('.tsetup-start').waitFor({ timeout: 15000 });
+    await q.getByRole('button', { name: /Ayol ustoz/ }).click();
+    await q.getByRole('button', { name: /Bolalar uchun/ }).click();
+    // 18+ xarakter: tasdiqsiz tanlanmaydi
+    await q.getByRole('button', { name: /Jallod/ }).click();
+    await q.getByText('Bu xarakter faqat kattalar uchun. 18 yoshdan oshganmisiz?').waitFor({ timeout: 3000 });
+    await q.getByRole('button', { name: 'Yo‘q' }).click();
+    assert.equal(await q.locator('.tsetup-card.on').innerText().then((t) => /Bolalar uchun/.test(t)), true, 'bolalar xarakteri tanlangan qoldi');
+    const n0 = seen.filter((x) => x.kind === 'setup').length;
+    await q.locator('.tsetup-start').click(); await q.locator('.call').waitFor({ timeout: 15000 });
+    for (let i = 0; i < 100 && seen.filter((x) => x.kind === 'setup').length <= n0; i++) await wait(50);
+    const st = seen.filter((x) => x.kind === 'setup').at(-1)!.setup!;
+    assert.equal(st.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Leda', 'ayol ustoz — yosh ovoz (Leda)');
+    assert.match(JSON.stringify(st.systemInstruction), /YOUNG CHILD/, 'bolalar xarakteri ko‘rsatmasi');
     await q.context().close();
   });
 } catch (e) {

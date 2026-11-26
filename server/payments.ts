@@ -33,12 +33,12 @@ export function extend(db: DatabaseSync, playerId: number, track: TrackId, days:
   return until;
 }
 
-export function entitlements(db: DatabaseSync, token: string, now = Date.now()): { subs: Record<TrackId, number | null>; plan: 'all' | 'exam' | 'general' | null; now: number; nickname: string } {
+export function entitlements(db: DatabaseSync, token: string, now = Date.now()): { subs: Record<TrackId, number | null>; plan: 'premium' | 'all' | 'exam' | 'general' | null; now: number; nickname: string } {
   const p = byToken(db, token);
   const rows = db.prepare('SELECT track, until FROM subscriptions WHERE player_id = ?').all(p.id) as { track: TrackId; until: number }[];
-  const subs = { exam: null, grammar: null, mocks: null } as Record<TrackId, number | null>;
+  const subs = { exam: null, grammar: null, mocks: null, voice: null } as Record<TrackId, number | null>;
   for (const r of rows) if (r.until > now) subs[r.track] = r.until;
-  const plan = subs.exam && subs.grammar ? 'all' : subs.exam ? 'exam' : subs.grammar ? 'general' : null;
+  const plan = subs.voice && subs.exam && subs.grammar ? 'premium' : subs.exam && subs.grammar ? 'all' : subs.exam ? 'exam' : subs.grammar ? 'general' : null;
   return { subs, plan, now, nickname: p.nickname };
 }
 

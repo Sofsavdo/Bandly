@@ -7,7 +7,7 @@ import { SALE_PLANS } from '../src/config';
 import { settingValue } from './settings';
 
 /** Tariflarda e'lon qilingan oylik daqiqa (SALE_PLANS.voiceMin — barcha tariflarda bir xil; farq qilsa eng kichigi). Sotilgan va berilgan bitta manbadan. */
-export const PLAN_VOICE_MINUTES = Math.min(...SALE_PLANS.map((p) => p.voiceMin));
+export const PLAN_VOICE_MINUTES = Math.min(...SALE_PLANS.filter((p) => !p.voiceDaily).map((p) => p.voiceMin));
 /** COACH_CALL_MONTH_MINUTES — faqat vaqtinchalik qo'lda o'zgartirish uchun (masalan xarajat nazorati); standart — tarifdagi qiymat. */
 /** Obunachining oylik ovozli suhbat soniyalari: admin panel (COACH_CALL_MONTH_MINUTES) > Railway > tarifdagi qiymat. Har chaqiruvda o'qiladi. */
 export const callMonthSeconds = (): number => settingValue('COACH_CALL_MONTH_MINUTES') * 60;
@@ -28,4 +28,17 @@ export function addCall(db: DatabaseSync, playerId: number, seconds: number, now
 /** Obunachining shu oyda qolgan soniyalari (obuna bo'lmasa 0). */
 export function callLeft(db: DatabaseSync, playerId: number, subscribed: boolean, now = Date.now(), total = callMonthSeconds()): number {
   return subscribed ? Math.max(0, total - callUsed(db, playerId, now)) : 0;
+}
+
+/** Premium: kunlik ovozli suhbat soniyalari (admin: PREMIUM_DAILY_MINUTES). */
+export const premiumDailySeconds = (): number => settingValue('PREMIUM_DAILY_MINUTES') * 60;
+/** Bugun ishlatilgan ovozli suhbat soniyalari (live_usage — jonli qo'ng'iroqlar). */
+export function voiceUsedToday(db: DatabaseSync, playerId: number, now = Date.now()): number {
+  try { return (db.prepare('SELECT seconds FROM live_usage WHERE day = ? AND player_id = ?').get(tzDay(now), playerId) as { seconds: number } | undefined)?.seconds ?? 0; } catch { return 0; }
+}
+/** Ovozli suhbatning qolgan soniyalari tarif bo'yicha: Premium — bugungi kunlik qoldiq; boshqa tariflar — oylik qoldiq; obunasiz — 0. */
+export function voiceLeft(db: DatabaseSync, playerId: number, plan: string | null, now = Date.now()): number {
+  if (!plan) return 0;
+  if (plan === 'premium') return Math.max(0, premiumDailySeconds() - voiceUsedToday(db, playerId, now));
+  return callLeft(db, playerId, true, now);
 }
