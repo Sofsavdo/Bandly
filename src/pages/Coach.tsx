@@ -12,7 +12,7 @@ import { lastTtsStatus, playPrepared, prepareUz } from '../lib/tts';
 import { parkMic, recordTurn, recorderSupported, resumeAudio, SttError, transcribeTurn } from '../lib/voiceTurn';
 import { lockTelegramSwipes } from '../lib/telegram';
 import { MAX_TALK_MS, PTT_IDLE, pttStep, type PttInput, type PttState } from '../lib/ptt';
-import { personaLevel, useProfile } from '../lib/store';
+import { adultOn, liveStyle, personaLevel, useProfile } from '../lib/store';
 import { liveSupported, startLive, type LiveCall } from '../lib/liveCall';
 import { buildLiveContext } from '../lib/liveContext';
 import { getLang } from '../i18n';
@@ -134,7 +134,11 @@ export default function Coach() {
   const loadMinutes = () => { const a = getAccount(); if (a) void fetch('/api/coach/minutes', { headers: { 'x-token': a.token } }).then((r) => (r.ok ? r.json() : null)).then(setMinutes).catch(() => undefined); };
   useEffect(() => { loadMinutes(); }, [acc]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { void coachStatus().then(setStatus); return () => { liveRefCall.current?.end(); liveRef.current = false; sig.current.cancelled = true; listenSig.current.cancelled = true; endRef.current?.(); stopSpeaking(); parkMic(); }; }, []);
-  useEffect(() => { if (!live) return; const t = setInterval(() => setSecs((s) => s + 1), 1000); return () => clearInterval(t); }, [live]);
+  useEffect(() => { if (!live) return; const t = setInterval(() => setSecs((s) => { secsRef.current = s + 1; return s + 1; }), 1000); return () => clearInterval(t); }, [live]);
+  // Qayta ulanish (10 daqiqalik sessiya chegarasi yoki aloqa uzilishi) uchun: suhbat vaqti, oxirgi gaplar, ulanish avlodi (eski ulanish hodisalari e'tiborsiz)
+  const secsRef = useRef(0); const msgsRef = useRef(msgs); msgsRef.current = msgs;
+  const genRef = useRef(0); const resumes = useRef(0);
+  const recentLines = (): string => msgsRef.current.slice(-8).map((m) => `${m.who === 'you' ? 'Learner' : 'Sellzen'}: ${m.text}`).join('\n').slice(-1400);
 
   const pushMsg = (who: 'you' | 'bot', text: string) => { const t = text.trim(); if (t) setMsgs((m) => [...m, { id: ++msgId.current, who, text: t.slice(0, 700) }].slice(-30)); };
   /** Oqim bo'lagi (Gemini matni bo'laklab keladi): oxirgi xabar shu tomonniki bo'lsa — davom ettiradi, aks holda yangi xabar. */
@@ -163,17 +167,19 @@ export default function Coach() {
   };
 
   /** Gemini Live: ovozdan-ovozga. Ishga tushmasa (model yo'q, tarmoq) — eski usulga (tanish → AI → ovoz) o'tadi. */
-  const startLiveCall = async (): Promise<boolean> => {
+  const startLiveCall = async (cont = false): Promise<boolean> => {
     const a = getAccount();
     if (!a) return false;
-    setPhase('connecting');
+    const gen = ++genRef.current; const cur = () => gen === genRef.current; // eski ulanishning hodisalari yangisini buzmasin
+    if (!cont) setPhase('connecting');
     return new Promise<boolean>((resolve) => {
       let settled = false;
       // 10 s ichida ulanmasa — kutib qolmaymiz: oddiy ovozli rejimga o'tamiz
       const guard = setTimeout(() => { if (!settled) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } }, 10_000);
       const done = (ok: boolean) => { if (!settled) { settled = true; clearTimeout(guard); resolve(ok); } };
-      void startLive({ token: a.token, adult: p.adult, level: p.level, lang: getLang(), style: personaLevel(p), ctx: buildLiveContext(p) }, {
-        onReady: (info) => { setCapSec(info.capSec); setLiveOn(true); setPhase('idle'); done(true); },
+      const base = buildLiveContext(p);
+      void startLive({ token: a.token, adult: adultOn(p), level: p.level, lang: getLang(), style: liveStyle(p), voice: p.tutorVoice ?? 'male', cont, ctx: cont && base ? { ...base, recent: recentLines() } : base }, {
+        onReady: (info) => { if (!cur()) return; setCapSec(cont ? secsRef.current + info.capSec : info.capSec); setLiveOn(true); if (!cont || phaseRef.current === 'connecting') setPhase('idle'); setHint(''); done(true); },
         onSpeaking: (on) => {
           if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
           setPhase(on ? 'speaking' : talkingRef.current ? 'listening' : 'idle'); if (!on) setLvl(0);
@@ -188,16 +194,27 @@ export default function Coach() {
         onTurn: () => { botFresh.current = true; if (phaseRef.current === 'thinking') setPhase('idle'); },
         onNoVoice: () => { setPhase('idle'); setHint(L('Ovoz eshitilmadi — mikrofonga yaqinroq gapirib ko‘ring.')); },
         onNavigate: (route) => { if (nav.current) return; nav.current = { route, spoke: false, timer: setTimeout(goNav, 7000) }; }, // ustoz tasdiqlamasa ham 7 soniyada o'tamiz
-        onError: (msg, beforeReady) => { if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); setLiveFailed(true); end(); } }, // keyingi urinish — oddiy ovozli rejim (STT + matn AI + ovoz)
-        onLimit: (m, kind) => { setLimitKind(kind); setLimitMsg(m || (kind === 'session' ? L('Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : L('Bugungi bepul ovozli suhbat daqiqalari tugadi. Yangi daqiqalar ertaga beriladi.'))); end(); },
-        onClosed: () => { if (settled && liveRef.current) end(); done(false); },
+        onError: (msg, beforeReady, resume) => { if (!cur()) return; if (resume && !beforeReady && resumeCall()) return; if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); setLiveFailed(true); end(); } }, // keyingi urinish — oddiy ovozli rejim (STT + matn AI + ovoz)
+        onLimit: (m, kind, resume) => { if (!cur()) return; if (resume && kind === 'session' && resumeCall()) return; setLimitKind(kind); setLimitMsg(m || (kind === 'session' ? L('Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : L('Bugungi bepul ovozli suhbat daqiqalari tugadi. Yangi daqiqalar ertaga beriladi.'))); end(); },
+        onClosed: () => { if (!cur()) return; if (settled && liveRef.current) end(); done(false); },
         onEmotion: (e) => setEmotion(e),
       }).then((c) => { liveRefCall.current = c; }).catch(() => { setLiveFailed(true); done(false); });
     });
   };
 
+  /** Suhbatni uzmasdan davom ettirish: eski ulanish yopiladi, yangisi ?cont=1 bilan (ustoz salomlashmaydi, oxirgi gaplardan davom etadi).
+   *  Bitta qo'ng'iroqda ko'pi bilan 12 marta (≈2 soat). Muvaffaqiyatsiz bo'lsa — oddiy tugatish. */
+  const resumeCall = (): boolean => {
+    if (!liveRef.current || resumes.current >= 12) return false;
+    resumes.current++;
+    genRef.current++; // eski ulanish hodisalari endi e'tiborsiz
+    const old = liveRefCall.current; liveRefCall.current = null; try { old?.end(); } catch { /* */ }
+    setHint(L('Ulanish yangilanmoqda — suhbat davom etadi…'));
+    void startLiveCall(true).then((ok) => { if (!ok && liveRef.current) { setHint(''); end(); } });
+    return true;
+  };
   const start = () => {
-    liveRef.current = true; setLive(true); setSecs(0); setCapSec(0); setErr(''); setEmotion('happy'); resetCallVoice();
+    liveRef.current = true; resumes.current = 0; secsRef.current = 0; setLive(true); setSecs(0); setCapSec(0); setErr(''); setEmotion('happy'); resetCallVoice();
     setLimitMsg(null); setLimitKind('quota'); setHint(''); setMsgs([]); youFresh.current = true; botFresh.current = true; pttState.current = PTT_IDLE; setTalking(false); talkingRef.current = false;
     if (useLive) { void startLiveCall().then((ok) => { if (!ok && liveRef.current) startClassic(); }); return; }
     startClassic();
@@ -230,7 +247,7 @@ export default function Coach() {
     try {
       const history = turns.current.slice(0, -1);
       // Profil xarakteri: Yumshoq → friendly, Hazil → comedy, Qattiq → bandi, Jallod → savage (18+ server ham tekshiradi)
-      const r = await coachSay({ persona: (['friendly', 'comedy', 'bandi', 'savage'] as const)[personaLevel(p)] ?? 'friendly', mode: 'practice', adult: p.adult, level: p.level, history, text: turn.text, turnId: turn.turnId });
+      const r = await coachSay({ persona: (['friendly', 'comedy', 'bandi', 'savage'] as const)[personaLevel(p)] ?? 'friendly', mode: 'practice', adult: adultOn(p), level: p.level, history, text: turn.text, turnId: turn.turnId });
       pending.current = null;
       if (r.correction) {
         const tax: TaxonomyId[] = r.correction.errorType && isTaxonomyId(r.correction.errorType) ? [r.correction.errorType] : [];

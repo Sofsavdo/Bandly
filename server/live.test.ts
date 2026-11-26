@@ -411,9 +411,10 @@ http.close(); upstream.close();
   const msgs: { type: string; [k: string]: unknown }[] = [];
   ws.on('message', (d, bin) => { if (!bin) msgs.push(JSON.parse(d.toString())); });
   await new Promise((r) => ws.on('close', r));
-  assert.ok(toModel.some((t) => /call ends in about 3 seconds/.test(t)), 'ustozga tugashdan oldin eslatma yuborildi');
+  // 2026-11-26: sessiya chegarasida suhbat TUGAMAYDI — mijoz o'zi qayta ulanadi (resume), shuning uchun ustoz xayrlashmaydi
+  assert.ok(!toModel.some((t) => /call ends in about/.test(t)), 'sessiya chegarasida xayrlashuv eslatmasi yo‘q');
   const lim = msgs.find((m) => m.type === 'limit')!;
-  assert.equal(lim.kind, 'session'); assert.match(String(lim.message), /^\[tr\] Suhbat vaqti tugadi/, 'sessiya tugashi — obuna taklif qilinmaydi, xabar tarjima qilinadi');
+  assert.equal(lim.kind, 'session'); assert.equal(lim.resume, true, 'mijozga: suhbatni davom ettir'); assert.match(String(lim.message), /^\[tr\] Suhbat vaqti tugadi/, 'sessiya tugashi — obuna taklif qilinmaydi, xabar tarjima qilinadi');
   h.close(); up.close();
 }
 // 2026-11-25: ishonchsiz navbatda ustoz javob beradi (eng ehtimolli ma'no), ketma-ket ikkinchi marta qayta so'ramaydi
@@ -421,5 +422,39 @@ http.close(); upstream.close();
   const u1 = unsureTurn('men kecha bozor bordim'), u2 = unsureTurn('men kecha bozor bordim', true);
   assert.ok(/most likely meant and ANSWER that/.test(u1) && /Do NOT correct grammar from this turn/.test(u1) && /Only if it makes no sense at all/.test(u1));
   assert.ok(/do NOT ask again/.test(u2) && !/Only if it makes no sense at all/.test(u2), 'ikkinchi ishonchsiz navbatda qayta so‘ramaydi');
+}
+// 2026-11-26: erkak/ayol ustoz ovozi; qayta ulanishda salomlashmasdan davom etish; bitta o'quvchida bitta faol qo'ng'iroq; kechikish jurnali
+{
+  const L = await import('./live');
+  const cfgF = L.liveConfigFromEnv('AQ.k', {})!;
+  assert.equal(cfgF.voiceFemale, 'Aoede'); assert.equal(L.liveConfigFromEnv('AQ.k', { GEMINI_LIVE_VOICE_FEMALE: 'Kore' })!.voiceFemale, 'Kore');
+  const sm = L.setupMessage(cfgF, 'm', 'SYS', true, 'Aoede') as { setup: { generationConfig: { speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: string } } } } } };
+  assert.equal(sm.setup.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Aoede');
+  const k = L.continueKick('Learner: I go to school\nSellzen: We say «I went».', 'Uzbek (Latin script)');
+  assert.ok(/Do NOT greet/.test(k) && /SAME conversation/.test(k) && k.includes('I go to school'), 'qayta ulanish: oldingi gaplardan davom');
+  assert.equal(L.sanitizeCtx({ recent: 'Learner: hi <x>' })?.recent, 'Learner: hi x');
+  assert.equal(L.statLine({ waits: [1000, 3000], asrMs: [500] }), ' kutish=2.0/3.0s asr=0.5/0.5s');
+
+  // Ikkinchi ulanish (shu o'quvchi) — birinchisi yopiladi; ?voice=f — ayol ovozi Gemini'ga boradi; ?cont=1 — salomlashmaydi
+  const db2 = new DatabaseSync(':memory:'); ensureLiveTable(db2);
+  const up = new WebSocketServer({ port: 0 });
+  const setups: string[] = []; const kicks: string[] = [];
+  up.on('connection', (ws) => ws.on('message', (raw) => { const m = JSON.parse(raw.toString()); if (m.setup) { setups.push(m.setup.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName); ws.send(JSON.stringify({ setupComplete: {} })); } else if (m.clientContent) kicks.push(m.clientContent.turns[0].parts[0].text); }));
+  await new Promise((r) => up.once('listening', r));
+  const h = createServer((_q, sres) => { sres.end(); });
+  const logs: string[] = [];
+  L.attachLive(h, { db: db2, cfg: { ...cfgF, url: `ws://127.0.0.1:${(up.address() as { port: number }).port}` }, auth: () => ({ id: 31, staff: true, subscriberLeftSec: 0 }), prompt: () => 'SYS', native: () => 'Uzbek (Latin script)', onEnd: () => undefined, log: (m) => logs.push(m), kickoff: () => 'HELLO-KICK' });
+  await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
+  const port = (h.address() as { port: number }).port;
+  const open = (q: string) => new Promise<WebSocket>((res) => { const w = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?lang=uz&${q}`, ['sellzen.v1', 'tk.x']); w.on('message', (d, bin) => { if (!bin && JSON.parse(d.toString()).type === 'ready') res(w); }); });
+  const w1 = await open('voice=f');
+  const closed1 = new Promise((r) => w1.on('close', r));
+  const w2 = await open('cont=1');
+  await closed1; // birinchi ulanish yopildi
+  for (let i = 0; i < 40 && kicks.length < 2; i++) await new Promise((r) => setTimeout(r, 25));
+  assert.deepEqual(setups, ['Aoede', 'Puck'], 'ayol ovozi; ikkinchisi standart (erkak)');
+  assert.equal(kicks[0], 'HELLO-KICK'); assert.ok(/Do NOT greet/.test(kicks[1] ?? ''), 'qayta ulanish — salomlashuvsiz davom');
+  assert.ok(logs.some((l) => / \(replaced\)/.test(l)), 'eski ulanish "replaced" bilan yopildi');
+  w2.close(); await new Promise((r) => setTimeout(r, 50)); h.close(); up.close();
 }
 console.log('live: OK');

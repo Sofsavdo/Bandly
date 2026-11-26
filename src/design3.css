@@ -1794,3 +1794,8 @@ main.container.fit .idle-call { margin-block: 0; }
 .tier-row label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
 .tier-row { align-items: end; }
 .cv-cancel { justify-self: start; }
+/* Ustoz sozlamalari: bolalar rejimi */
+.persona-picker .opt b { display: inline-flex; align-items: center; gap: 6px; }
+.kids-box { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--butter-50, var(--surface-2)); }
+.kids-box .list-h { display: flex; align-items: center; gap: 6px; margin-top: 0; }
+.persona-picker .opt:disabled { opacity: .45; cursor: not-allowed; }

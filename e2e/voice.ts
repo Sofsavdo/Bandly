@@ -83,6 +83,7 @@ up.on('connection', (ws) => {
     if (text && /^\(The learner/.test(text)) { seen.push({ t: Date.now() - T0, kind: 'kickoff', text }); say('Salom! Bugun nima haqida gaplashamiz?', 2); return; }
     if (text) { // o'quvchi gapi (Scribe matni): eski javob to'xtaydi, yangisi boshlanadi
       seen.push({ t: Date.now() - T0, kind: 'text', text });
+      if (/DROP/.test(text)) { setTimeout(() => ws.close(1008, 'Session closed due to client inactivity.'), 100); return; } // J12: Gemini sessiyani yopdi
       if (speakingTimer) { clearInterval(speakingTimer); speakingTimer = null; ws.send(JSON.stringify({ serverContent: { interrupted: true } })); }
       const LONGREPLY = 'Present perfect zamoni o‘tgan paytda boshlangan, lekin natijasi hozirgi paytga bog‘liq bo‘lgan ishlarni bildiradi. Masalan: I have finished my homework — men uy vazifamni tugatdim va u endi tayyor. Yasalishi: have yoki has va fe’lning uchinchi shakli. Endi o‘zingiz bitta gap tuzing: I have already visited Samarkand — va shu gapni to‘liq ayting.';
       const EMO: Record<string, string> = { ANGRY: 'What the hell was that?! Seriously? «I go yesterday»?! It is «I went» — say it again, properly this time!', LAUGH: 'Hahaha! Oh come on, you said you ate the homework? Hahaha, say it again!' };
@@ -463,6 +464,27 @@ try {
 
   assert.deepEqual(problems, [], 'brauzerda JS xatosi yoki 5xx bo‘lmasligi kerak');
   console.log('e2e voice: OK');
+  // 2026-11-26 (jurnal: "upstream yopildi 1008 … client inactivity", 10 daqiqada uzilish): suhbat UZILMAYDI — ilova jimgina qayta ulanadi,
+  // ustoz salomlashmasdan oldingi gaplardan davom etadi, ekrandagi suhbat tarixi saqlanadi
+  await step('J12. Gemini ulanishni yopsa — suhbat o‘zi qayta ulanadi va davom etadi (salomlashmaydi, tarix saqlanadi)', async () => {
+    const q = await openCall(LOUD, token);
+    await waitStatus(q, /Sellzen gapiryapti|Navbat sizda/, 10000);
+    const setups0 = seen.filter((x) => x.kind === 'setup').length;
+    scribeText = 'DROP please, I go to school yesterday';
+    const c = await faceCenter(q);
+    await q.mouse.move(c.x, c.y); await q.mouse.down(); await wait(1400); await q.mouse.up();
+    await q.locator('.vl.you').first().waitFor({ timeout: 8000 });
+    for (let i = 0; i < 200 && seen.filter((x) => x.kind === 'setup').length <= setups0; i++) await wait(50);
+    assert.ok(seen.filter((x) => x.kind === 'setup').length > setups0, 'yangi Gemini sessiyasi ochildi (qayta ulanish)');
+    for (let i = 0; i < 200 && !seen.some((x) => x.kind === 'text' && /reconnected for a technical reason/.test(x.text ?? '')); i++) await wait(50);
+    const kick = seen.filter((x) => x.kind === 'text' && /reconnected for a technical reason/.test(x.text ?? '')).at(-1)?.text ?? '';
+    assert.ok(/Do NOT greet/.test(kick) && /DROP please/.test(kick), `ustoz salomlashmaydi va oldingi gapdan davom etadi: ${kick.slice(0, 160)}`);
+    assert.equal(await q.locator('.call').count(), 1, 'qo‘ng‘iroq ekrani yopilmadi');
+    assert.ok(await q.locator('.vl.you').count() >= 1, 'suhbat tarixi saqlandi');
+    assert.doesNotMatch(await q.locator('.call').innerText(), /Jonli ovozli suhbat hozir ishlamayapti|Aloqa uzildi/, 'xato ko‘rsatilmadi');
+    scribeText = 'teach me English, I go to school yesterday';
+    await q.context().close();
+  });
 } catch (e) {
   console.error(`\n✗ ${scenario}\n`, e, '\n--- server log (oxiri) ---\n', log.slice(-1500), '\n', problems.join('\n'));
   process.exitCode = 1;

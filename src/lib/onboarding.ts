@@ -8,7 +8,7 @@ import { weeklyLessonTarget, type Goal } from './planPrefs';
 export type Why = 'abroad' | 'local' | 'career' | 'self';
 export type When = 'm1' | 'm3' | 'm6' | 'later' | 'unknown';
 export type Skill = 'speaking' | 'writing' | 'listening' | 'reading' | 'grammar' | 'vocab';
-export type Tutor = 'friendly' | 'strict' | 'savage';
+export type Tutor = 'friendly' | 'strict' | 'savage' | 'kids';
 
 export interface Answers {
   goal: Goal;

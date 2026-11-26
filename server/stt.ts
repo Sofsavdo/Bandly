@@ -50,23 +50,33 @@ export const LOW_CONFIDENCE = -0.2;
  *  ko'rsatmasi bilan ikkinchi marta sinab, ishonchlisi olinadi. Mashqlar (expect='en') — faqat inglizcha. */
 /** expect: 'en' — faqat inglizcha; 'any' — avval ona tili, ishonch past bo'lsa inglizcha; 'en-first' — o'quvchi oxirgi navbatlarda inglizcha gapirgan:
  *  avval inglizcha (ko'p hollarda bitta so'rov yetadi — jurnal 2026-11-25: ko'p navbatda ikki marta tanilardi), ishonch past bo'lsa ona tili. */
-export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb', expect: 'en' | 'any' | 'en-first' = 'any'): Promise<SttResult & { forced: boolean }> {
-  if (expect === 'en' || native === 'eng') return { ...(await transcribe(cfg, audio, mime, 'eng')), forced: false };
+/** Ikkinchi til so'rovini kutmasdan boshlash muddati (ms): birinchi so'rov shundan uzoq cho'zilsa, ikkinchisi parallel ketadi. */
+export const HEDGE_MS = 1200;
+export async function transcribeLearner(cfg: SttConfig, audio: Buffer, mime: string, native = 'uzb', expect: 'en' | 'any' | 'en-first' = 'any', hedgeMs = HEDGE_MS): Promise<SttResult & { forced: boolean; billedSeconds: number }> {
+  if (expect === 'en' || native === 'eng') { const r = await transcribe(cfg, audio, mime, 'eng'); return { ...r, forced: false, billedSeconds: r.seconds }; }
   const firstEn = expect === 'en-first';
   const sure = (r: SttResult) => !!r.text && (r.score === null || r.score === undefined || r.score >= LOW_CONFIDENCE) && !(firstEn && /[\u0400-\u04FF]/.test(r.text));
-  const a = await transcribe(cfg, audio, mime, firstEn ? 'eng' : native);
-  if (sure(a)) return { ...a, forced: firstEn };
-  const e = await transcribe(cfg, audio, mime, firstEn ? native : 'eng').catch(() => null);
-  const secs = a.seconds + (e?.seconds ?? 0); // ikkala so'rov ham to'lanadi
+  // Odatda BITTA so'rov. Ikkinchi til so'rovi: birinchisi ishonchsiz/bo'sh chiqsa YOKI hedgeMs dan uzoq cho'zilsa — parallel boshlanadi
+  // (jurnal 2026-11-26: navbatlarning ~28 % ida ikkinchi tanish ketma-ket kutilardi — "qotib qolish"). Birinchisi ishonchli chiqsa ikkinchisi bekor qilinadi.
+  const stop = new AbortController();
+  let secondP: Promise<SttResult | null> | null = null;
+  const startSecond = (): Promise<SttResult | null> => (secondP ??= transcribe(cfg, audio, mime, firstEn ? native : 'eng', stop.signal).catch(() => null));
+  const hedge = setTimeout(() => { void startSecond(); }, hedgeMs); hedge.unref?.();
+  const a = await transcribe(cfg, audio, mime, firstEn ? 'eng' : native).catch(async (err: unknown) => { clearTimeout(hedge); const b = await startSecond(); if (b?.text) return null; throw err; });
+  clearTimeout(hedge);
+  if (a && sure(a)) { if (secondP) stop.abort(); return { ...a, forced: firstEn, billedSeconds: a.seconds }; }
+  const e = await startSecond();
+  if (!a) return { ...e!, forced: !firstEn, billedSeconds: e!.seconds }; // birinchisi xato, ikkinchisi tanidi
+  const billed = a.seconds + (e?.seconds ?? 0); // ikkala so'rov ham to'lanadi
   const aIsEn = firstEn;
-  if (!e || !e.text) return { ...a, seconds: secs, forced: aIsEn };
+  if (!e || !e.text) return { ...a, forced: aIsEn, billedSeconds: billed };
   // inglizcha so'rovdagi kirill matn — noto'g'ri tanilgan (o'quvchi ona tilida gapirgan)
   const aScore = firstEn && /[\u0400-\u04FF]/.test(a.text) ? Number.NEGATIVE_INFINITY : (a.score ?? Number.NEGATIVE_INFINITY);
-  if (!a.text || (e.score ?? Number.NEGATIVE_INFINITY) > aScore || aScore === Number.NEGATIVE_INFINITY) return { ...e, seconds: secs, forced: !aIsEn };
-  return { ...a, seconds: secs, forced: aIsEn };
+  if (!a.text || (e.score ?? Number.NEGATIVE_INFINITY) > aScore || aScore === Number.NEGATIVE_INFINITY) return { ...e, forced: !aIsEn, billedSeconds: billed };
+  return { ...a, forced: aIsEn, billedSeconds: billed };
 }
 
-export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, language?: string): Promise<SttResult> {
+export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, language?: string, signal?: AbortSignal): Promise<SttResult> {
   const type = mime.split(';')[0]!.trim().toLowerCase();
   if (!MIMES.includes(type)) throw new ApiError(415, 'Audio formati qo‘llab-quvvatlanmaydi');
   if (audio.length < 800) throw new ApiError(400, 'Ovoz juda qisqa');
@@ -76,7 +86,7 @@ export async function transcribe(cfg: SttConfig, audio: Buffer, mime: string, la
   form.append('tag_audio_events', 'false');
   if (language) form.append('language_code', language);
   form.append('file', new Blob([new Uint8Array(audio)], { type }), `turn.${type.split('/')[1]}`);
-  const r = await (cfg.fetchImpl ?? fetch)(`${cfg.baseUrl ?? 'https://api.elevenlabs.io'}/v1/speech-to-text`, { method: 'POST', headers: { 'xi-api-key': cfg.key }, body: form, signal: AbortSignal.timeout(30_000) });
+  const r = await (cfg.fetchImpl ?? fetch)(`${cfg.baseUrl ?? 'https://api.elevenlabs.io'}/v1/speech-to-text`, { method: 'POST', headers: { 'xi-api-key': cfg.key }, body: form, signal: signal ? AbortSignal.any([AbortSignal.timeout(30_000), signal]) : AbortSignal.timeout(30_000) });
   if (!r.ok) throw new ApiError(502, `Nutqni tanib bo‘lmadi (${r.status})`);
   const j = await r.json() as { text?: string; language_code?: string; words?: { end?: number; type?: string; logprob?: number }[] };
   const words = (j.words ?? []).filter((w) => w.type !== 'spacing');

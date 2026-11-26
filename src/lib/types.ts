@@ -32,6 +32,14 @@ export interface Profile {
   roastLevel: number;
   /** Foydalanuvchi 18 yoshdan oshganini o'zi tasdiqlagan */
   adult: boolean;
+  /** Ustoz ovozi: erkak (standart) yoki ayol (egasi, 2026-11-26) */
+  tutorVoice?: 'male' | 'female';
+  /** Qo'shimcha xarakter: romantik (18+) yoki bolalar uchun; null — roastLevel (0–3) amal qiladi */
+  tutorExtra?: 'romantic' | 'kids' | null;
+  /** Bolalar rejimi: faqat bolalar xarakteri, 18+ xarakterlar yopiq; o'chirish — ota-ona PIN kodi bilan (shu qurilmada) */
+  kidsMode?: boolean;
+  /** Bolalar rejimi PIN kodining xeshi (ochiq saqlanmaydi) */
+  kidsPin?: string | null;
   /** Daraja aniqlash natijasi (null = hali aniqlanmagan) */
   level: Cefr | null;
   /** Maqsad IELTS bali */

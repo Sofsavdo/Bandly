@@ -8,7 +8,7 @@ import { getAccount, type Account } from '../lib/account';
 import { CEFR, type Cefr } from '../lib/levels';
 import { buildPlan, isExam, loadAnswers, saveAnswers, targetBand, type Answers, type Skill, type Tutor, type When, type Why } from '../lib/onboarding';
 import { MINUTES, savePrefs, type Goal } from '../lib/planPrefs';
-import { getProfile, setPersona, setTarget, useProfile } from '../lib/store';
+import { getProfile, setPersona, setTarget, setTutorChoice, useProfile } from '../lib/store';
 import { L } from '../i18n';
 import { goPlacement } from '../lib/setupGate';
 import { LeadCard } from '../components/LeadCard';
@@ -26,6 +26,7 @@ const SKILL_OPTS: { id: Skill; label: string }[] = [{ id: 'speaking', label: 'Sp
 const TUTOR_OPTS: { id: Tutor; label: string; sub: string }[] = [
   { id: 'friendly', label: L('Hazil, lekin so‘kinmasin'), sub: L('Kuladi, kesatadi — toza tilda') },
   { id: 'savage', label: L('So‘kinsa ham bo‘ladi (18+)'), sub: L('Xatolaringiz ustidan so‘kinib kuladi') },
+  { id: 'kids', label: L('Farzandim uchun (4–10 yosh)'), sub: L('O‘yin va qo‘shiq bilan, faqat yumshoq so‘zlar') },
 ];
 const SKILL_HREF: Record<Skill, string> = { speaking: '#/coach', writing: '#/exam/writing', listening: '#/mocks', reading: '#/mocks', grammar: '#/grammar', vocab: '#/games' };
 const SKILL_STEP: Record<Skill, string> = { speaking: L('Speaking: Sellzen bilan ovozli suhbat'), writing: L('Writing: insho va AI baho'), listening: L('Listening: mock testlar'), reading: L('Reading: mock testlar'), grammar: L('Grammar: zaif mavzular'), vocab: L('So‘z o‘yinlari: har kuni 5 daqiqa') };
@@ -62,7 +63,7 @@ export default function Start() {
     const band = targetBand(ans.goal, ans.target);
     if (band !== null || ans.examDate) setTarget(band ?? p.target, ans.examDate ?? p.examDate);
     const adult = ans.tutor === 'savage' ? true : p.adult;
-    setPersona(ans.tutor === 'savage' ? 2 : 0, ans.tutor === 'savage' ? true : adult);
+    if (ans.tutor === 'kids') setTutorChoice('kids'); else setPersona(ans.tutor === 'savage' ? 2 : 0, ans.tutor === 'savage' ? true : adult);
     setDone(true);
     window.scrollTo({ top: 0 });
   };
