@@ -150,14 +150,15 @@ export function consumeGame(): boolean {
 /** Hisobdan chiqilganda: serverdan kelgan obunalar bu qurilmada qolmaydi. */
 export function clearServerPlans(): void {
   if (!Object.values(state.planUntil).some(Boolean)) return;
-  commit({ ...state, plan: { exam: false, grammar: false, mocks: false }, planUntil: { exam: null, grammar: null, mocks: null } });
+  commit({ ...state, plan: { exam: false, grammar: false, mocks: false, voice: false }, planUntil: { exam: null, grammar: null, mocks: null, voice: null } });
 }
 
 /** To'lov ulangan rejimda obuna holati faqat serverdan keladi. */
 export function applyServerPlans(subs: Record<TrackId, number | null>): void {
   const now = Date.now();
-  const plan = { exam: !!subs.exam && subs.exam > now, grammar: !!subs.grammar && subs.grammar > now, mocks: !!subs.mocks && subs.mocks > now };
-  commit({ ...state, plan, planUntil: { exam: subs.exam, grammar: subs.grammar, mocks: subs.mocks } });
+  const on = (t: TrackId) => !!subs[t] && subs[t]! > now;
+  const plan = { exam: on('exam'), grammar: on('grammar'), mocks: on('mocks'), voice: on('voice') };
+  commit({ ...state, plan, planUntil: { exam: subs.exam, grammar: subs.grammar, mocks: subs.mocks, voice: subs.voice ?? null } });
 }
 export function setPlan(track: TrackId, on: boolean): void {
   commit({ ...state, plan: { ...state.plan, [track]: on } });

@@ -1,6 +1,7 @@
 import type { Cefr } from './levels';
 
-export type TrackId = 'exam' | 'grammar' | 'mocks';
+/** voice — Premium: kuniga N daqiqa ovozli ustoz (egasi, 2026-11-26) */
+export type TrackId = 'exam' | 'grammar' | 'mocks' | 'voice';
 
 export interface CardState {
   box: number; // 0 = o'rganilmoqda, 5 = o'zlashtirilgan
@@ -74,8 +75,8 @@ export const defaultProfile = (today: string): Profile => ({
   dailyDay: today,
   dailyGoal: 50,
   achievements: [],
-  plan: { exam: false, grammar: false, mocks: false },
-  planUntil: { exam: null, grammar: null, mocks: null },
+  plan: { exam: false, grammar: false, mocks: false, voice: false },
+  planUntil: { exam: null, grammar: null, mocks: null, voice: null },
   srs: {},
   gamesPlayed: 0,
   freeGames: { day: today, n: 0 },

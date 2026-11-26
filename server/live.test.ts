@@ -427,9 +427,9 @@ http.close(); upstream.close();
 {
   const L = await import('./live');
   const cfgF = L.liveConfigFromEnv('AQ.k', {})!;
-  assert.equal(cfgF.voiceFemale, 'Aoede'); assert.equal(L.liveConfigFromEnv('AQ.k', { GEMINI_LIVE_VOICE_FEMALE: 'Kore' })!.voiceFemale, 'Kore');
-  const sm = L.setupMessage(cfgF, 'm', 'SYS', true, 'Aoede') as { setup: { generationConfig: { speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: string } } } } } };
-  assert.equal(sm.setup.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Aoede');
+  assert.equal(cfgF.voiceFemale, 'Leda'); assert.equal(L.liveConfigFromEnv('AQ.k', { GEMINI_LIVE_VOICE_FEMALE: 'Kore' })!.voiceFemale, 'Kore');
+  const sm = L.setupMessage(cfgF, 'm', 'SYS', true, 'Leda') as { setup: { generationConfig: { speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: string } } } } } };
+  assert.equal(sm.setup.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Leda');
   const k = L.continueKick('Learner: I go to school\nSellzen: We say «I went».', 'Uzbek (Latin script)');
   assert.ok(/Do NOT greet/.test(k) && /SAME conversation/.test(k) && k.includes('I go to school'), 'qayta ulanish: oldingi gaplardan davom');
   assert.equal(L.sanitizeCtx({ recent: 'Learner: hi <x>' })?.recent, 'Learner: hi x');
@@ -452,7 +452,7 @@ http.close(); upstream.close();
   const w2 = await open('cont=1');
   await closed1; // birinchi ulanish yopildi
   for (let i = 0; i < 40 && kicks.length < 2; i++) await new Promise((r) => setTimeout(r, 25));
-  assert.deepEqual(setups, ['Aoede', 'Puck'], 'ayol ovozi; ikkinchisi standart (erkak)');
+  assert.deepEqual(setups, ['Leda', 'Puck'], 'ayol ovozi; ikkinchisi standart (erkak)');
   assert.equal(kicks[0], 'HELLO-KICK'); assert.ok(/Do NOT greet/.test(kicks[1] ?? ''), 'qayta ulanish — salomlashuvsiz davom');
   assert.ok(logs.some((l) => / \(replaced\)/.test(l)), 'eski ulanish "replaced" bilan yopildi');
   w2.close(); await new Promise((r) => setTimeout(r, 50)); h.close(); up.close();

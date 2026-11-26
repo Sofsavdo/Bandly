@@ -36,7 +36,7 @@ export function liveConfigFromEnv(geminiKey: string | null, env: NodeJS.ProcessE
   return {
     key, model, fallbackModel: fb && fb !== model ? fb : null,
     voice: (env.GEMINI_LIVE_VOICE ?? '').trim() || 'Puck',
-    voiceFemale: (env.GEMINI_LIVE_VOICE_FEMALE ?? '').trim() || 'Aoede', // egasi (2026-11-26): erkak va ayol ustoz
+    voiceFemale: (env.GEMINI_LIVE_VOICE_FEMALE ?? '').trim() || 'Leda', // egasi (2026-11-26): erkak va ayol ustoz; Aoede katta yoshli ayoldek eshitildi — yosh, yoqimli ovoz (Leda: «youthful»)
     url: (env.GEMINI_LIVE_URL ?? '').trim() || 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent',
     // Admin panelda o'zgaradi — har safar env'dan o'qiladi (getter)
     get freeDailySeconds() { return Math.max(0, Number(env.LIVE_FREE_DAILY_MINUTES ?? 5) || 0) * 60; },

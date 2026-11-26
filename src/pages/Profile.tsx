@@ -81,8 +81,8 @@ export default function Profile() {
         <h4 style={{ margin: '14px 0 4px' }}>{L('Obunalar')}</h4>
         {(() => {
           const now = Date.now(); const u = p.planUntil;
-          const on = (t: 'exam' | 'grammar') => !!u[t] && u[t]! > now;
-          const id = on('exam') && on('grammar') ? 'all' : on('exam') ? 'exam' : on('grammar') ? 'general' : null;
+          const on = (t: 'exam' | 'grammar' | 'voice') => !!u[t] && u[t]! > now;
+          const id = on('voice') && on('exam') && on('grammar') ? 'premium' : on('exam') && on('grammar') ? 'all' : on('exam') ? 'exam' : on('grammar') ? 'general' : null;
           const pl = SALE_PLANS.find((x) => x.id === id);
           if (pl) { const until = Math.min(...pl.tracks.filter((t) => t !== 'mocks').map((t) => u[t]!)); return <p style={{ margin: '4px 0' }}>{L('Tarif:')} <b className="ok">{pl.title}</b>, {fmtDate(until)}  {L('gacha')}</p>; }
           const demo = (['exam', 'grammar'] as const).filter((t) => p.plan[t]);

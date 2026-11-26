@@ -3,7 +3,7 @@ import { hasAnyTrack, hasTrack } from './entitlement';
 
 const now = Date.UTC(2026, 10, 18);
 const p = (plan: Partial<Record<'exam' | 'grammar' | 'mocks', boolean>>, until: Partial<Record<'exam' | 'grammar' | 'mocks', number | null>> = {}) =>
-  ({ plan: { exam: false, grammar: false, mocks: false, ...plan }, planUntil: until });
+  ({ plan: { exam: false, grammar: false, mocks: false, voice: false, ...plan }, planUntil: until });
 assert.equal(hasTrack(p({ exam: true }, { exam: now + 1000 }), 'exam', now), true, 'faol obuna');
 assert.equal(hasTrack(p({ exam: true }, { exam: now - 1000 }), 'exam', now), false, 'muddati tugagan obuna darhol yopiladi (belgi eskirgan bo‘lsa ham)');
 assert.equal(hasTrack(p({ grammar: true }), 'grammar', now), true, 'demo belgisi (server muddati yo‘q)');

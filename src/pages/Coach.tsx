@@ -4,6 +4,7 @@
 // Nutq serverda (ElevenLabs Scribe) aniq tanadi. Ustoz o'quvchi rejasini biladi, "darsga o't" desa o'tkazadi. Xatolar "Xatolarim"ga jimgina yoziladi.
 import { PhoneOff } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react';
+import { TutorSetup } from '../components/TutorSetup';
 import { JoinForm } from '../components/JoinForm';
 import { getAccount, type Account } from '../lib/account';
 import { coachSay, coachStatus, newTurnId, type CoachStatus } from '../lib/coach';
@@ -118,7 +119,7 @@ export default function Coach() {
   const nav = useRef<{ route: string; spoke: boolean; timer: ReturnType<typeof setTimeout> | null } | null>(null); // "darsga o't": ustoz tasdiqlab bo'lgach o'tamiz
   const finePointer = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
   const [serverDown, setServerDown] = useState(false);
-  const [minutes, setMinutes] = useState<{ subscribed: boolean; left: number; total: number } | null>(null);
+  const [minutes, setMinutes] = useState<{ subscribed: boolean; premium?: boolean; left: number; total: number } | null>(null);
   const turns = useRef<Turn[]>([]);
   const liveRef = useRef(false);
   const endRef = useRef<(() => void) | null>(null);
@@ -359,28 +360,27 @@ export default function Coach() {
   };
   // Qo'ng'iroq paytida sahifa orqada siljimasin; Telegram oynasi ham pastga surilib yig'ilmasin
   useEffect(() => { if (!live) return; const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; lockTelegramSwipes(true); return () => { document.body.style.overflow = prev; lockTelegramSwipes(false); }; }, [live]);
-  // Egasi (2026-11-25): "Sellzenga kirishim bilan boshlayversin — ichkariga ikki marta kirishga majbur bo'lyapman". Sahifa ochilishi bilan
-  // qo'ng'iroq o'zi boshlanadi (bir marta; o'quvchi tugatsa — qayta boshlanmaydi, yuzga tegib yana boshlash mumkin).
-  const autoStarted = useRef(false);
-  useEffect(() => {
-    if (autoStarted.current || live || !acc || !status?.coach || limitMsg) return;
-    autoStarted.current = true; start();
-  }, [acc, status, live, limitMsg]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Egasi (2026-11-26): avval ustoz (erkak/ayol) va xarakter tanlanadi, "Suhbatni boshlash" bosilgach qo'ng'iroq boshlanadi
+  // (2026-11-25 dagi "ochilishi bilan o'zi boshlansin" o'rniga — tanlov ko'rinmay qolardi).
 
   const orb = <div className={`ai-orb-wrap ${phase}`} aria-hidden="true"><AiAvatar phase={phase === 'connecting' ? 'thinking' : phase} emotion={phase === 'speaking' ? emotion : 'neutral'} level={lvl} size={live ? 'var(--face)' : 'min(46vw, 190px)'} look={personaLevel(p)} /></div>;
 
-  // ---- Qo'ng'iroqdan oldin: Sellzen yuziga tegish — qo'ng'iroq boshlanadi (alohida "boshlash" tugmasi yo'q) ----
+  // ---- Qo'ng'iroqdan oldin: ustoz va xarakterni tanlash, keyin "Suhbatni boshlash" ----
   if (!live) return (
     <div className="tutor">
-      <section className="tutor-call voice idle-call">
-        <button type="button" className="start-face" onClick={start} disabled={!acc || !status?.coach} aria-label={L('Qo‘ng‘iroqni boshlash')}>{orb}</button>
-        <h2>{L('Sellzen')}</h2>
-        <p>{acc ? L('Gaplashish uchun Sellzen yuziga tegining') : L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>
-        {acc && minutes === null && <span className="pill" style={{ visibility: 'hidden' }} aria-hidden="true">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span>}{/* daqiqalar yuklanguncha joy band — sahifa sakramaydi */}
-        {minutes?.subscribed ? <span className="pill">{L('{0} daqiqa qoldi', [minutes.left])}</span> : minutes && FREE_INFO.liveMinutesPerDay > 0 ? <span className="pill">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span> : null}
+      <section className="tutor-call voice idle-call setup-call">
+        <div className="setup-top">
+          <div className="setup-face"><AiAvatar phase="idle" size={84} look={personaLevel(p)} /></div>
+          <div>
+            <h2>{L('Sellzen ustoz')}</h2>
+            <p>{acc ? L('Ustoz va xarakterni tanlang, keyin suhbatni boshlang.') : L('Gapiring — Sellzen tinglaydi va xatoingizni tuzatadi.')}</p>
+            {acc && minutes === null && <span className="pill" style={{ visibility: 'hidden' }} aria-hidden="true">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span>}{/* daqiqalar yuklanguncha joy band — sahifa sakramaydi */}
+            {minutes?.subscribed ? <span className="pill">{minutes.premium ? L('Bugun {0} daqiqa qoldi', [minutes.left]) : L('{0} daqiqa qoldi', [minutes.left])}</span> : minutes && FREE_INFO.liveMinutesPerDay > 0 ? <span className="pill">{L('Bepul: kuniga {0} daqiqa', [FREE_INFO.liveMinutesPerDay])}</span> : null}
+          </div>
+        </div>
         {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
         {status && !status.coach && <p className="notice">{L('Sellzen tez orada ochiladi.')}</p>}
-        {!acc && <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />}
+        {acc ? <TutorSetup onStart={start} disabled={!status?.coach} /> : <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />}
       </section>
     </div>
   );

@@ -18,7 +18,7 @@ import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listL
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, callbackOutcome, reconcile, recent, statusFor } from './payments';
 import { demoMode, PERIODS, PLAN_IDS, priceFor } from './pricing';
-import { addCall, callLeft, callMonthSeconds, ttsSeconds } from './callMinutes';
+import { addCall, callLeft, callMonthSeconds, premiumDailySeconds, ttsSeconds, voiceLeft } from './callMinutes';
 import { ensureSettings, listSettings, publicLimits, settingValue, updateSettings } from './settings';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
 import { freeLimitsFromEnv, freeStatus, unlockLesson, wallStats } from './freeQuota';
@@ -659,6 +659,8 @@ const httpServer = createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/ai/status') return send(res, 200, { enabled: ai.provider !== 'none' && COACH_GLOBAL_DAILY() > 0, provider: ai.provider, coach: ai.provider !== 'none' && COACH_GLOBAL_DAILY() > 0, configured: ai.provider !== 'none', stt: !!stt, live: !!live && COACH_GLOBAL_DAILY() > 0 });
     if (req.method === 'GET' && url.pathname === '/api/coach/minutes') {
       const tk = String(req.headers['x-token'] ?? ''); const pid = byToken(db, tk).id; const sub = entitlements(db, tk).plan !== null;
+      const planNow = sub ? entitlements(db, String(req.headers['x-token'] ?? '')).plan : null;
+      if (planNow === 'premium') return send(res, 200, { subscribed: true, premium: true, total: Math.round(premiumDailySeconds() / 60), left: Math.floor(voiceLeft(db, pid, planNow) / 60) });
       return send(res, 200, { subscribed: sub, total: Math.round(callMonthSeconds() / 60), left: Math.floor(callLeft(db, pid, sub) / 60) });
     }
     // Nutqni tanish: brauzer yozib olgan bitta navbat (ovoz) → matn. Ovoz saqlanmaydi.
@@ -766,7 +768,7 @@ const httpServer = createServer(async (req, res) => {
       const isCoach = b.feature === 'coach';
       const contPart = Number.isInteger(b.part) && Number(b.part) >= 1 && Number(b.part) <= 8;
       const staffRole = roleOf(db, player.id);
-      const coachCall = isCoach && paid && (staffRole === 'admin' || staffRole === 'methodologist' || callLeft(db, player.id, entitlements(db, token, now).plan !== null, now) > 0);
+      const coachCall = isCoach && paid && (staffRole === 'admin' || staffRole === 'methodologist' || voiceLeft(db, player.id, entitlements(db, token, now).plan, now) > 0);
       const bucket = tts.provider === 'elevenlabs' ? (isCoach ? 'coachvoice' : 'voice') : 'tts';
       if (tts.provider !== 'elevenlabs') useAi(db, token, now, TTS_DAILY_LIMIT, 'tts');
       else if (paid && coachCall) useGlobalVoiceChars(db, tts.globalDailyChars ?? 0, reserve, now);
@@ -919,7 +921,7 @@ if (live) attachLive(httpServer, {
     try {
       const p = byToken(db, token);
       const role = roleOf(db, p.id);
-      return { id: p.id, staff: role === 'admin' || role === 'methodologist', subscriberLeftSec: callLeft(db, p.id, entitlements(db, token).plan !== null) };
+      return { id: p.id, staff: role === 'admin' || role === 'methodologist', subscriberLeftSec: voiceLeft(db, p.id, entitlements(db, token).plan) };
     } catch { return null; }
   },
   prompt: (o) => buildLivePrompt(o),

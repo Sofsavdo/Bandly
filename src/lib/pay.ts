@@ -65,7 +65,7 @@ export const fmtDate = (ms: number): string => new Date(ms).toLocaleDateString('
 export async function initPay(): Promise<void> {
   const c = await payConfig();
   if (c.enabled && !c.demo) {
-    if (!getAccount()) applyServerPlans({ exam: null, grammar: null, mocks: null });
+    if (!getAccount()) applyServerPlans({ exam: null, grammar: null, mocks: null, voice: null });
     else await refreshEntitlements();
   } else if (getAccount()) await refreshEntitlements();
   setInterval(() => void refreshEntitlements(), 5 * 60_000);

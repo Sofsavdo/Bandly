@@ -6,11 +6,11 @@ import { ApiError, byToken } from './db';
 import { freeAssessKey, freeAssessLimit, freeLimitsFromEnv } from './freeQuota';
 import { settingValue } from './settings';
 
-/** Faol tarif: exam + grammar → all, faqat exam → exam, faqat grammar → general. */
+/** Faol tarif: voice + exam + grammar → premium, exam + grammar → all, faqat exam → exam, faqat grammar → general. */
 export function planOf(db: DatabaseSync, playerId: number, now = Date.now()): PlanId | null {
   const rows = db.prepare('SELECT track FROM subscriptions WHERE player_id = ? AND until > ?').all(playerId, now) as { track: string }[];
   const has = (t: string) => rows.some((r) => r.track === t);
-  return has('exam') && has('grammar') ? 'all' : has('exam') ? 'exam' : has('grammar') ? 'general' : null;
+  return has('voice') && has('exam') && has('grammar') ? 'premium' : has('exam') && has('grammar') ? 'all' : has('exam') ? 'exam' : has('grammar') ? 'general' : null;
 }
 
 export type AssessKind = 'writing' | 'speaking';
