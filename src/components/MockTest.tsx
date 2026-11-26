@@ -173,7 +173,7 @@ export function MockTest({ kind, testId, title, minutes, groups, questions, tabl
         <ul className="rules" style={{ marginTop: 10 }}>
           <li>{L('Imtihon rejimida menyu yashiriladi; javoblar avtomatik saqlanadi — sahifa yangilansa ham davom etasiz.')}</li>
           <li>{L('Vaqt to‘xtamaydi: sahifani yopsangiz ham hisoblanadi, tugaganda test o‘zi topshiriladi.')}</li>
-          <li>{L('Savolni belgilash (⚑), matnni bo‘yash va eslatma yozish mumkin. Klaviatura: Alt+N / Alt+P / Alt+F.')}</li>
+          <li>{L('Savolni belgilash (⚑), matnni bo‘yash va eslatma yozish mumkin.')}{typeof window !== 'undefined' && window.matchMedia?.('(hover: hover) and (pointer: fine)').matches ? ` ${L('Klaviatura: Alt+N / Alt+P / Alt+F.')}` : ''}</li>
         </ul>
         <div className="row" style={{ marginTop: 12 }}>
           <button className="btn primary" onClick={begin}>{L('Testni boshlash')}</button>

@@ -80,6 +80,11 @@ export async function phoneAuth(kind: 'login' | 'register', phone: string, passw
   const r = await call<Account>(`/api/auth/phone/${kind}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, password, nickname: nickname || undefined, link: getAccount()?.token, ...touchFields() }) });
   return finishLogin(r);
 }
+/** Parolni tiklash (botdan kelgan bir martalik havola): yangi parol o'rnatiladi va shu qurilmada darhol kiriladi. */
+export async function resetPassword(token: string, password: string): Promise<Account> {
+  const r = await call<Account>('/api/auth/reset', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, password }) });
+  return finishLogin(r);
+}
 /** Google ID token bilan kirish (token serverda tekshiriladi). */
 export async function googleLogin(credential: string): Promise<Account> {
   const r = await call<Account>('/api/auth/google', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ credential, link: getAccount()?.token, ...touchFields() }) });

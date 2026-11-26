@@ -12,6 +12,7 @@ import { findUsers } from './adminUsers';
 import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
 import { listeningTests } from '../src/content/listeningTests';
 import { readingTests } from '../src/content/readingTests';
+import { consumeReset, ensureResetTable, offerReset, resetValid } from './passwordReset';
 import { ensurePartnersTable, listApplications, publicTerms, setApplicationStatus, submitApplication } from './partners';
 import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
@@ -79,6 +80,7 @@ const GOOGLE_CLIENT_ID = (process.env.GOOGLE_CLIENT_ID ?? '').trim() || null;
 const phoneFails = new AttemptLimiter(5, 15 * 60_000);   // bitta raqamga 15 daqiqada 5 ta xato parol — keyin blok
 const ipFails = new AttemptLimiter(20, 15 * 60_000);     // bitta IP'dan 15 daqiqada 20 ta muvaffaqiyatsiz kirish
 const signupsByIp = new AttemptLimiter(10, 60 * 60_000); // bitta IP'dan soatiga 10 ta yangi hisob (spam hisoblarga qarshi)
+const resetFails = new AttemptLimiter(10, 15 * 60_000); // parol tiklash: noto'g'ri/eskirgan kalit bilan urinishlar
 const DB_FILE = process.env.DB_PATH ?? new URL('./data.sqlite', import.meta.url).pathname;
 const db = createDb(DB_FILE);
 ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan ustun)
@@ -92,6 +94,7 @@ ensureUserEventsTable(db);
 ensureMemoryTable(db);
 ensureLeadsTable(db);
 ensurePartnersTable(db);
+ensureResetTable(db);
 const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi (mavjudlarini o'zgartirmaydi)
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
@@ -270,6 +273,14 @@ const httpServer = createServer(async (req, res) => {
       audit(db, null, 'account.erase', `player:${me.id}`, { tables: Object.keys(r.tables).length });
       return send(res, 200, { ok: true });
     }
+    // Parolni tiklash: kalit faqat botdan (Telegram tasdiqlagan raqam) keladi; 15 daqiqa, bir martalik
+    if (req.method === 'GET' && url.pathname === '/api/auth/reset') return send(res, 200, { valid: resetValid(db, url.searchParams.get('t')) });
+    if (req.method === 'POST' && url.pathname === '/api/auth/reset') {
+      resetFails.check(ip);
+      const b = await readJson(req, 1024);
+      const bad = passwordProblem(b.password); if (bad) throw new ApiError(400, bad);
+      try { return send(res, 200, consumeReset(db, b.token, await hashPassword(String(b.password)))); } catch (e) { resetFails.fail(ip); throw e; }
+    }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
       revokeSession(db, String(req.headers['x-token'] ?? '')); // shu qurilma tokeni endi ishlamaydi
       return send(res, 200, { ok: true });
@@ -290,6 +301,7 @@ const httpServer = createServer(async (req, res) => {
         savePhone: (id, phone) => saveBotPhone(db, id, phone),
         setRef: (id, ref) => setBotRef(db, id, ref), getRef: (id) => getBotRef(db, id),
         setRemind: (id, on) => setRemind(db, id, on),
+        resetOffer: (id) => offerReset(db, id),
         stats: BOT_STATS, sendPhoto: (msg) => sendWelcomePhoto(bot.token, msg),
       }).catch((e) => console.error('[bot]', (e as Error).message));
       return send(res, 200, {});

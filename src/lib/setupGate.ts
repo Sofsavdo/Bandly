@@ -9,13 +9,13 @@ import { loadAttempt } from './examAttempt';
 import { getProfile } from './store';
 import { cloudVerified } from './cloud';
 
-const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|partners|leads|groups|welcome|login|certificates|duel\/)/;
+const FREE = /^#\/(start|placement|pricing|profile|studio|admin|creator|partners|reset|leads|groups|welcome|login|certificates|duel\/)/;
 
 /** Mehmon (kirmagan) bo'limlarni KO'RA oladi: bosh sahifa, darslar xaritasi, IELTS kursi ro'yxati, Imtihon va Mock Arena ro'yxatlari,
  *  o'yinlar ro'yxati, tariflar, bepul vositalar, duel taklifi va 3 daqiqalik daraja testi (o'sish voronkasi: test → natija → ro'yxatdan o'tish). Kirish faqat HARAKATda so'raladi: darsni ochish, Sellzen, test topshirish,
  *  o'yin o'ynash, Writing/Speaking, profil va boshqalar (qaytish manzili saqlanadi) — natija darhol hisobga yoziladi.
  *  (Egasi qarori 2026-11-23: oldingi "mehmon faqat landing" siyosati o'rniga.) */
-const PUBLIC = /^#\/(welcome|placement|learn|ielts|exam|mocks|mocks\/(reading|listening)|games|pricing|partners|tools|duel\/[A-Za-z0-9]{4,12})?$/;
+const PUBLIC = /^#\/(welcome|placement|learn|ielts|exam|mocks|mocks\/(reading|listening)|games|pricing|partners|reset|tools|duel\/[A-Za-z0-9]{4,12})?$/;
 /** Mock Arena'ning bitta testi (Reading/Listening): mehmon uni boshidan oxirigacha topshira oladi; javoblar qurilmada saqlanadi, natijani
  *  baholash (javob kalitlari faqat serverda) va ko'rsatish ro'yxatdan o'tgandan keyin (egasi qarori 2026-11-24: mehmon mock → ro'yxat → reja). */
 const GUEST_MOCK = /^#\/(exam|mocks)\/(reading|listening)\/[\w-]+$/;

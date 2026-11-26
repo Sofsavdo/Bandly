@@ -1737,3 +1737,11 @@ main.container.fit .idle-call { margin-block: 0; }
 /* Bosh sahifa kartalari: "Boshlash bepul" belgisi rasm ostida qolmasin; Sellzen kartasidagi "Salom" pufagi chetdan kesilmasin */
 .course .tag { position: relative; z-index: 1; }
 .course.c-pink .illo { right: -2px; }
+/* Dars oldidagi mukofotlar: har biri alohida bo'lak (qatorga bo'linganda nuqta va so'zlar ajralib qolmasin) */
+.mission-loot { gap: 8px 16px; }
+.mission-loot span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+/* Barmoq uchun yetarli tegish maydoni (kamida ~40 px) — uyga vazifa va tarif filtrlarida */
+.price-tabs button { min-height: 40px; }
+/* Dars paneli (yuraklar, progress) va sayt sarlavhasi orasidagi 6 px tirqishdan varaqlangan matn ko'rinmasin */
+.lesson-hud.sticky::before { content: ''; position: absolute; left: -16px; right: -16px; top: -8px; height: 8px; background: var(--bg); pointer-events: none; }
+.lesson-hud.sticky { background: color-mix(in srgb, var(--bg) 96%, transparent); }

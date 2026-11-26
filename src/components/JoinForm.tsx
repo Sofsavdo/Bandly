@@ -56,6 +56,7 @@ function AltLogin({ conf, onJoined }: { conf: AuthConfig; onJoined: (a: Account)
             {mode === 'register' && <input type="text" autoComplete="nickname" value={nick} maxLength={20} placeholder={L('Ismingiz (ixtiyoriy)')} onChange={(e) => setNick(e.target.value)} />}
             <button className="btn primary" type="submit" disabled={busy || phone.trim().length < 9 || pw.length < 8}>{busy ? L('Kuting…') : mode === 'login' ? L('Kirish') : L('Ro‘yxatdan o‘tish')}</button>
             {mode === 'register' && <p className="muted tg-note" style={{ margin: 0 }}>{L('Parolni xavfsiz joyda saqlang — uni faqat siz bilasiz.')}</p>}
+            {mode === 'login' && conf.telegram?.bot && <a className="muted tg-note forgot" href={`https://t.me/${conf.telegram.bot}?start=reset`} target="_blank" rel="noopener noreferrer">{L('Parolni unutdingizmi? Telegram bot orqali tiklang')}</a>}
           </form>
         </details>
       )}
