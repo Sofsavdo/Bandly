@@ -56,7 +56,7 @@ for (const x of EXTRA) if (!KEEP_EN.has(x)) set.add(x); // qo'lda tanlangan: eng
 
 section = 'server';
 // 3) Server xabarlari (xatolar, bot matnlari): `${x}` → {0}
-const srv: string[] = []; walk(join(ROOT, 'server'), srv, () => false);
+const srv: string[] = []; walk(join(ROOT, 'server'), srv, (p) => p.endsWith('botStats.ts')); // botStats — faqat admin uchun o'zbekcha /stat xabari
 for (const f of srv) {
   const sf = ts.createSourceFile(f, readFileSync(f, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const v = (n: ts.Node): void => {

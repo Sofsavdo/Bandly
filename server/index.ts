@@ -43,6 +43,7 @@ import { leagueView } from './league';
 import { assessmentUsage, refundAssessment, useAssessment } from './entitle';
 import { TgAuthError, appUrl, botFromEnv, nickFrom, setBotPhoto, setupBot, tgApi, tgUpload, verifyInitData, verifyWidget, webhookSecret } from './telegram';
 import { checkMember, CHANNEL, handleBot } from './botFlow';
+import { isAdminTg, statNumbers, statText } from './botStats';
 import { runReminders, setRemind } from './reminders';
 import { runNudges } from './nudges';
 import { runLeagueNotices } from './leagueNotify';
@@ -306,6 +307,12 @@ const httpServer = createServer(async (req, res) => {
         setRemind: (id, on) => setRemind(db, id, on),
         resetOffer: (id) => offerReset(db, id),
         stats: BOT_STATS, sendPhoto: (msg) => sendWelcomePhoto(bot.token, msg),
+        isAdmin: (id) => isAdminTg(db, id),
+        statText: async () => {
+          let members: number | null = null;
+          try { members = Number(await api('getChatMemberCount', { chat_id: CHANNEL })); if (!Number.isFinite(members)) members = null; } catch { members = null; } // bot kanalda admin bo'lmasa — qator ko'rsatilmaydi
+          return statText(statNumbers(db), Date.now(), members, CHANNEL);
+        },
       }).catch((e) => console.error('[bot]', (e as Error).message));
       return send(res, 200, {});
     }
