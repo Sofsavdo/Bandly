@@ -58,7 +58,9 @@ export type Direction = 'in' | 'out' | 'unknown';
 export interface ParsedNotice { amount: number | null; direction: Direction }
 
 const NUM = String.raw`\d{1,3}(?:[ .,]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?`;
-const CUR = String.raw`(?:uzs|so['‘’ʻʼ\u0060]?m|сум|сўм|sum)(?![\p{L}\p{N}])`;
+// Valyuta belgisi regex literal ko'rinishida (matn literali emas): tarjima katalogi uni foydalanuvchi matni deb olmasin
+const CUR_RE = /(?:uzs|so['‘’ʻʼ`]?m|сум|сўм|sum)(?![\p{L}\p{N}])/u;
+const CUR = CUR_RE.source;
 const BALANCE = /(balans|баланс|остаток|qoldiq|balance|доступно|mavjud)[^\n]{0,24}$/iu;
 const CREDIT = /(➕|пополнен|поступлен|зачислен|kirim|tushum|tushdi|o['‘’ʻʼ`]?tkazma\s+qabul|received|credit)/iu;
 const DEBIT = /(➖|списан|покупк|оплат|chiqim|xarid|to['‘’ʻʼ`]?lov|снят|yechib|debit|purchase|withdraw)/iu;
@@ -170,7 +172,7 @@ export const MAX_OWN_BUMPS = 99;
 export function ownCardApi(db: DatabaseSync, cfg: CardPayConfig, nowFn: () => number = Date.now): HamyonApi {
   return {
     async create(orderId, amount, busy = new Set<number>()): Promise<Created> {
-      if (!cfg.card) throw new HamyonError('PAY_OWN_CARD yo‘q');
+      if (!cfg.card) throw new HamyonError('PAY_OWN_CARD missing');
       const now = nowFn();
       // band: oyna ichidagi ochiq to'lovlar + oyna tugagan, lekin hali yetkazilishi mumkin bo'lgan (grace) to'lovlar
       const rows = db.prepare("SELECT hamyon_amount AS a FROM payments WHERE hamyon_amount IS NOT NULL AND status IN ('pending', 'prepared', 'cancelled', 'expired') AND created_at >= ? AND id <> ?").all(now - cfg.graceMs, orderId) as { a: number }[];

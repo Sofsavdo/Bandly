@@ -36,11 +36,11 @@ export function telegramFeed(creds: TgCreds, sources: string[], log: (m: string)
       client = new TelegramClient(new StringSession(creds.session), creds.apiId, creds.apiHash, { connectionRetries: 5 });
       client.setLogLevel(LogLevel.ERROR);
       await client.connect();
-      if (!(await client.isUserAuthorized())) throw new Error('Telegram sessiyasi yaroqsiz (bekor qilingan) — qayta kirish kerak: npm run pay:login');
+      if (!(await client.isUserAuthorized())) throw new Error('Telegram session invalid (revoked) - log in again: npm run pay:login');
       for (const s of sources) {
         try { const e = await client.getEntity(s); ents.set(String(e.id), { entity: e, name: s }); } catch { log(`[cardpay] manba topilmadi: @${s} (botga akkauntdan /start yuborilganmi?)`); }
       }
-      if (!ents.size) throw new Error('birorta ham manba bot topilmadi');
+      if (!ents.size) throw new Error('no source bot found');
       client.addEventHandler((ev: { message: { id: number; message?: string; date: number; out?: boolean; senderId?: unknown } }) => {
         const src = ents.get(String(ev.message.senderId)); // faqat belgilangan botlardan (yuboruvchi ID'sini soxtalashtirib bo'lmaydi)
         if (src) emit(onNotice, src.name, ev.message);
