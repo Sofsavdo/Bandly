@@ -25,6 +25,9 @@ export interface BotDeps {
   resetOffer?: (tgId: number) => { ok: true; token: string; nickname: string } | { ok: false; reason: 'nophone' | 'noaccount' | 'limit' };
   channel?: string;
   stats?: BotStats;
+  /** /stat: faqat admin hisobiga bog'langan Telegram foydalanuvchisi uchun statistika (boshqalarga — oddiy xush kelibsiz) */
+  isAdmin?: (tgId: number) => boolean;
+  statText?: () => Promise<string>;
   /** Rasm bilan yuborish (fayl yuklash / file_id keshi). Berilmasa yoki xato bo'lsa — matn sifatida yuboriladi. */
   sendPhoto?: (msg: Record<string, unknown>) => Promise<unknown>;
 }
@@ -178,6 +181,7 @@ export async function handleBot(update: unknown, d: BotDeps): Promise<void> {
     return;
   }
   if (name === 'help') { await d.api('sendMessage', helpMsg(chatId, tr)); return; }
+  if (name === 'stat' && d.statText && d.isAdmin?.(from.id)) { await d.api('sendMessage', { chat_id: chatId, text: await d.statText(), link_preview_options: { is_disabled: true } }); return; }
   if (name === 'parol' || (name === 'start' && cmd?.[2] === 'reset')) { await sendReset(d, chatId, from, tr); return; }
   if (name === 'start') { const ref = cmd?.[2]?.match(/^ref_([a-z2-9]{6,10})$/)?.[1]; if (ref) d.setRef(from.id, ref); }
   if (!(await gate(d, chatId, from, tr))) return;
