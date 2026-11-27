@@ -1870,3 +1870,30 @@ main.container.fit .idle-call { margin-block: 0; }
 .gram-topic { display: grid; gap: 4px; font-weight: 650; font-size: 13.5px; }
 .gram-topic select { min-height: 44px; width: 100%; max-width: 420px; }
 .res-empty .row .btn { min-height: 44px; }
+
+/* Telefonda footer yo'q — ilovalardagidek (egasi, 2026-11-27); havolalar menyuda (.dlegal). Kompyuterda footer qoladi. */
+@media (max-width: 719px) { .site-footer { display: none; } }
+.dlegal { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.dlegal a { color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none; min-height: 32px; display: inline-flex; align-items: center; }
+
+/* Bosh sahifa ranglari (egasi, 2026-11-27: "deyarli o'likdek, rangsiz") — mavjud ranglar tizimidan */
+.home .hello { padding: 14px 16px; border-radius: 22px; background: linear-gradient(135deg, var(--brand), var(--blue)); color: #fff; box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--brand) 70%, transparent); }
+.home .hello h2 { color: #fff; }
+.home .hello small { color: rgba(255, 255, 255, .86); }
+.home .plan-today { background: linear-gradient(160deg, var(--lilac-50) 0%, var(--surface) 62%); border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent); }
+.home .plan-today .plan-head h3 svg { color: var(--brand); }
+.home .prog-stats { gap: 6px; padding: 12px 10px 6px; }
+.home .prog-stats > * { padding: 8px 4px; border-radius: 14px; }
+.home .prog-stats > .st-coral { background: var(--coral-50); }
+.home .prog-stats > .st-orange { background: var(--peach-50); }
+.home .prog-stats > .st-mint { background: var(--mint-50); }
+.home .prog-stats > .st-brand { background: var(--lilac-50); }
+.home .prog-stats > .st-coral b { color: var(--coral); }
+.home .prog-stats > .st-mint b { color: var(--teal); }
+.home .prog-stats > .st-brand b { color: var(--brand); }
+.home .prog-stats > a:hover { filter: brightness(.97); }
+.home .quests { background: linear-gradient(160deg, var(--mint-50) 0%, var(--surface) 60%); }
+.home .quests h3 svg { color: var(--teal); }
+.home .insights { background: linear-gradient(160deg, var(--sky-50) 0%, var(--surface) 60%); }
+.home .daily-card.word { background: linear-gradient(160deg, var(--butter-50) 0%, var(--surface) 70%); }
+.home .prog-bar i { background: linear-gradient(90deg, var(--teal), var(--brand)); }

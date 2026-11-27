@@ -86,6 +86,10 @@ export function Header({ hash }: { hash: string }) {
                 ? <button className="btn sm" onClick={() => { setOpen(false); setBye(true); }}><LogOut size={14} />  {L('Chiqish')}</button>
                 : <a className="btn sm primary" href="#/profile"><LogIn size={14} />  {L('Kirish')}</a>}
             </div>
+            {/* Telefonda pastki footer yo'q (egasi, 2026-11-27: "mobil ilovalarda footer menyu ko'rmaganman") — havolalar shu yerda */}
+            <nav className="dlegal" aria-label={L('Pastki havolalar')}>
+              <a href="#/partners">{L('Hamkorlik')}</a><a href="/vositalar/">{L('Bepul vositalar')}</a><a href="/shartlar">{L('Foydalanish shartlari')}</a><a href="/maxfiylik">{L('Maxfiylik siyosati')}</a>
+            </nav>
           </aside>
         </>
       )}
