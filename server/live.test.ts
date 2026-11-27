@@ -3,7 +3,7 @@ import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
 import { handsTurnBack } from './coach';
-import { attachLive, liveUsedWeek, weekMonday, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, liveUsedTodayAll, liveUsedWeek, weekMonday, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
@@ -28,6 +28,8 @@ assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedW
   assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 220 }), 80, 'haftalik qoldiq');
   assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 0, plan: 'general' }), 0, 'oylik daqiqasi tugagan obunachi — bepul zaxira emas');
   assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 300, freeUsedWeekSec: 9999, plan: 'exam' }), 300, 'obunachi — o‘z daqiqalari');
+  assert.equal(liveUsedTodayAll(wdb, mon + 86_400_000), 0, 'platformaning bepul byudjeti — obunachi qo‘ng‘irog‘i kirmaydi');
+  assert.equal(liveUsedTodayAll(wdb, mon), 120);
 }
 
 const sm = setupMessage(cfg0, 'gemini-3.8-live', 'SYS') as { setup: Record<string, any> }; // eslint-disable-line @typescript-eslint/no-explicit-any

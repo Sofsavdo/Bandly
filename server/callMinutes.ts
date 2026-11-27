@@ -36,7 +36,11 @@ export function callLeft(db: DatabaseSync, playerId: number, subscribed: boolean
 export const premiumDailySeconds = (): number => settingValue('PREMIUM_DAILY_MINUTES') * 60;
 /** Bugun ishlatilgan ovozli suhbat soniyalari (live_usage — jonli qo'ng'iroqlar). */
 export function voiceUsedToday(db: DatabaseSync, playerId: number, now = Date.now()): number {
-  try { return (db.prepare('SELECT seconds FROM live_usage WHERE day = ? AND player_id = ?').get(tzDay(now), playerId) as { seconds: number } | undefined)?.seconds ?? 0; } catch { return 0; }
+  try {
+    const all = (db.prepare('SELECT seconds FROM live_usage WHERE day = ? AND player_id = ?').get(tzDay(now), playerId) as { seconds: number } | undefined)?.seconds ?? 0;
+    let free = 0; try { free = (db.prepare('SELECT seconds FROM live_free_usage WHERE day = ? AND player_id = ?').get(tzDay(now), playerId) as { seconds: number } | undefined)?.seconds ?? 0; } catch { /* jadval yo'q */ }
+    return Math.max(0, all - free); // obunasiz paytdagi bepul qo'ng'iroqlar Premium kunlik daqiqasini yemaydi
+  } catch { return 0; }
 }
 /** Ovozli suhbatning qolgan soniyalari tarif bo'yicha: Premium — bugungi kunlik qoldiq; boshqa tariflar — oylik qoldiq; obunasiz — 0. */
 export function voiceLeft(db: DatabaseSync, playerId: number, plan: string | null, now = Date.now()): number {

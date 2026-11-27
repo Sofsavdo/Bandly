@@ -29,6 +29,8 @@ assert.equal(callLeft(db, 1, true, nov, 3600), 0, 'manfiy bo‘lmaydi');
   assert.equal(voiceLeft(d2, 7, 'premium', day1), 100, 'bugungi qoldiq');
   recordLive(d2, 7, 500, day1); assert.equal(voiceLeft(d2, 7, 'premium', day1), 0, 'manfiy bo‘lmaydi');
   assert.equal(voiceLeft(d2, 7, 'premium', day2), 1800, 'ertasi kuni yana 30 daqiqa');
+  recordLive(d2, 8, 300, day2, true); recordLive(d2, 8, 600, day2, false);
+  assert.equal(voiceLeft(d2, 8, 'premium', day2), 1800 - 600, 'obunasiz paytdagi bepul qo‘ng‘iroq Premium kunini yemaydi');
   assert.equal(voiceLeft(d2, 7, null, day1), 0, 'obunasiz — 0');
   // Egasi (2026-11-27): General 60, Exam 90, All Access 120 daqiqa / oy
   assert.equal(voiceLeft(d2, 7, 'general', day1), 60 * 60, 'General — 60 daqiqa / oy');
