@@ -33,7 +33,8 @@ assert.ok(pid > 0);
 assert.equal(PLAN_VOICE_MINUTES, Math.min(...SALE_PLANS.map((p) => p.voiceMin)));
 if (process.env.COACH_CALL_MONTH_MINUTES === undefined) assert.equal(callMonthSeconds(), PLAN_VOICE_MINUTES * 60, 'server oylik daqiqasi = tarifdagi voiceMin');
 // Har tarif: server berayotgan oylik daqiqa = sotilayotgan (tarif kartasidagi) daqiqa
-for (const p of SALE_PLANS.filter((x) => !x.voiceDaily)) assert.equal(planMonthSeconds(p.id), p.voiceMin * 60, `${p.id}: server daqiqasi = tarifdagi ${p.voiceMin}`);
+const VOICE_KEY: Record<string, string> = { general: 'COACH_CALL_MONTH_MINUTES', exam: 'PLAN_EXAM_VOICE_MINUTES', all: 'PLAN_ALL_VOICE_MINUTES' };
+for (const p of SALE_PLANS.filter((x) => !x.voiceDaily)) if (process.env[VOICE_KEY[p.id]!] === undefined) assert.equal(planMonthSeconds(p.id), p.voiceMin * 60, `${p.id}: server daqiqasi = tarifdagi ${p.voiceMin}`);
 // Obunasiz: AI baholash pullik kvotasi yo'q
 assert.equal(assessLimit(null, 'writing'), 0);
 console.log('planParity: OK');

@@ -24,7 +24,7 @@ export interface SalePlan {
 // Limit raqamlari (ovozli daqiqa, AI baholash soni) va narx admin panelda o'zgaradi: ilova ochilganda serverdan olinadi
 // (applyServerLimits) va "features" matni shu raqamlardan quriladi — e'lon qilingan va haqiqiy limit doim bir xil.
 // Egasi (2026-11-27): oylik daqiqa yonida kunlik taxminiy qiymat ham — tariflarni solishtirish oson bo'lsin
-const voiceLine = (n: number) => L('Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})', [n, Math.max(1, Math.round(n / 30))]);
+const voiceLine = (n: number) => (n > 0 ? L('Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})', [n, Math.max(1, Math.round(n / 30))]) : L('Sellzen bilan ovozli suhbat: {0} daqiqa / oy', [n]));
 export const SALE_PLANS: SalePlan[] = [
   {
     id: 'general', title: 'General English', short: L('A1–C2 darslar, grammar va Sellzen bilan ovozli suhbat.'), monthlyUzs: 69_000, usd: '$5.99',

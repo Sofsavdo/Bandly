@@ -5936,7 +5936,6 @@
  "Obuna narxi masalasi: 3,50 / 0,05 = 70.": "Жазылуу баасы маселеси: 3,50 / 0,05 = 70.",
  "Obuna tariflari": "Жазылуу тарифтери",
  "Obuna turlari": "Жазылуу түрлөрү",
- "Obuna: oyiga {0} daqiqa": "Жазылуу: айына {0} мүнөт",
  "Obunangiz yoqildi": "Жазылууңуз күйгүзүлдү",
  "Obunasiz o‘quvchilar uchun kunlik va haftalik chegaralar.": "Жазылуусу жок окуучулар үчүн күндүк жана жумалык чектөөлөр.",
  "Ochilish — Thanks for your email.": "Киришүү — Thanks for your email.",
@@ -16244,11 +16243,14 @@
  "General English: ovozli suhbat, oyiga": "General English: үндүү сүйлөшүү, айына",
  "Bepul ovozli suhbat (Sellzen), haftasiga": "Акысыз үндүү сүйлөшүү (Sellzen), жумасына",
  "Sellzen: haftasiga {0} daqiqa": "Sellzen: жумасына {0} мүнөт",
- "Oxirgi 7 kun bo‘yicha": "Акыркы 7 күн боюнча",
  "Exam Preparation: ovozli suhbat, oyiga": "Exam Preparation: үндүү сүйлөшүү, айына",
  "Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})": "Sellzen менен үндүү сүйлөшүү: {0} мүнөт / ай (≈ күнүнө {1})",
  "All Access: ovozli suhbat, oyiga": "All Access: үндүү сүйлөшүү, айына",
  "Bugungi ovozli suhbat daqiqalari tugadi — ertaga yangilanadi.": "Бүгүнкү үндүү мүнөттөр бүттү — эртең жаңыланат.",
  "Bu oylik ovozli suhbat daqiqalari tugadi — keyingi oyda yangilanadi. Ko‘proq gaplashish uchun — Premium tarifi.": "Ушул айдагы үндүү мүнөттөр бүттү — кийинки айда жаңыланат. Көбүрөөк сүйлөшүү үчүн — Premium тарифи.",
- "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "Ушул жумадагы акысыз үндүү мүнөттөр бүттү — дүйшөмбүдө жаңыланат. Жазылуу менен — айына {0} мүнөттөн баштап."
+ "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "Ушул жумадагы акысыз үндүү мүнөттөр бүттү — дүйшөмбүдө жаңыланат. Жазылуу менен — айына {0} мүнөттөн баштап.",
+ "Premium: kuniga {0} daqiqa": "Premium: күнүнө {0} мүнөт",
+ "Obuna: oyiga {0} daqiqadan": "Жазылуу: айына {0} мүнөттөн баштап",
+ "Har dushanba yangilanadi (Toshkent vaqti)": "Ар дүйшөмбүдө жаңыланат (Ташкент убактысы)",
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Sellzen менен үндүү сүйлөшүү: {0} мүнөт / ай"
 }

@@ -97,6 +97,8 @@ assert.ok(audit.n >= 3);
     const e: NodeJS.ProcessEnv = {};
     ensureSettings(m, e);
     assert.equal(settingValue('LIVE_FREE_WEEKLY_MINUTES', e), want, `eski kunlik ${old} → haftalik ${want}`);
+    assert.equal((m.prepare("SELECT COUNT(*) AS n FROM app_settings WHERE key = 'LIVE_FREE_DAILY_MINUTES'").get() as { n: number }).n, 0, 'eski qator o‘chirildi — migratsiya bir marta');
+    if (old === 0) { m.prepare("DELETE FROM app_settings WHERE key = 'LIVE_FREE_WEEKLY_MINUTES'").run(); const e3: NodeJS.ProcessEnv = {}; ensureSettings(m, e3); assert.equal(settingValue('LIVE_FREE_WEEKLY_MINUTES', e3), 5, 'admin qayta tiklasa — qayta 0 bo‘lmaydi'); }
   }
   const e2: NodeJS.ProcessEnv = { LIVE_FREE_DAILY_MINUTES: '0' }; const m2 = new DatabaseSync(':memory:'); ensureSettings(m2, e2);
   assert.equal(settingValue('LIVE_FREE_WEEKLY_MINUTES', e2), 0, 'Railway o‘zgaruvchisi 0 — o‘chiq qoladi');

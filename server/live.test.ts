@@ -21,7 +21,8 @@ assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedW
   const wdb = new DatabaseSync(':memory:'); ensureLiveTable(wdb);
   const mon = Date.parse('2026-11-23T10:00:00Z'); // dushanba
   assert.equal(weekMonday(mon + 3 * 86_400_000), '2026-11-23'); assert.equal(weekMonday(mon - 86_400_000), '2026-11-16', 'yakshanba — o‘tgan hafta');
-  recordLive(wdb, 5, 120, mon); recordLive(wdb, 5, 100, mon + 3 * 86_400_000);
+  recordLive(wdb, 5, 120, mon, true); recordLive(wdb, 5, 100, mon + 3 * 86_400_000, true);
+  recordLive(wdb, 5, 900, mon + 86_400_000, false); // obuna paytidagi qo'ng'iroq — bepul limitga kirmaydi
   assert.equal(liveUsedWeek(wdb, 5, mon + 3 * 86_400_000), 220, 'shu hafta: dushanba va payshanba');
   assert.equal(liveUsedWeek(wdb, 5, mon + 7 * 86_400_000), 0, 'keyingi dushanba — yangi hafta');
   assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 220 }), 80, 'haftalik qoldiq');
@@ -126,7 +127,7 @@ const port = (http.address() as { port: number }).port;
 }
 // bepul daqiqa tugagan — darhol "limit"
 {
-  recordLive(db, 7, 10_000);
+  recordLive(db, 7, 10_000, Date.now(), true); // bepul qo'ng'iroqlar (haftalik bepul limit)
   const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ai/live?token=good`);
   const msg = await new Promise<string>((r) => ws.on('message', (d) => r(d.toString())));
   assert.equal(JSON.parse(msg).type, 'limit');

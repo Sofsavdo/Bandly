@@ -956,8 +956,9 @@ if (live) attachLive(httpServer, {
     enqueueMemoryJob(db, pid, turns, nativeOf(lang));
     void runMemoryJobs(db, summarizeMemory);
   },
-  onEnd: (pid, secs, model, usage) => {
-    recordLive(db, pid, secs); addCall(db, pid, secs);
+  onEnd: (pid, secs, model, usage, free) => {
+    recordLive(db, pid, secs, Date.now(), free === true);
+    if (!free) addCall(db, pid, secs); // oylik tarif daqiqalari faqat obuna paytidagi qo'ng'iroqlardan
     // Gemini qaytargan haqiqiy tokenlar bo'yicha (audio/matn alohida narx); tokenlar kelmagan bo'lsa — daqiqa narxi bilan taxmin
     const tok = usage ? usage.textIn + usage.audioIn + usage.textOut + usage.audioOut : 0;
     const lp = livePrice();
