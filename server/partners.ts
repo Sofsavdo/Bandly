@@ -64,8 +64,9 @@ export function submitApplication(db: DatabaseSync, b: Record<string, unknown>, 
   const contact = normContact(b.contact); if (!contact) throw new ApiError(400, 'Telegram (@username) yoki telefon raqamingizni yozing');
   const note = clean(b.note, 500) || null;
   // Bir xil aloqa bilan ochiq ariza bo'lsa — yangisi yaratilmaydi (takroriy bosish)
-  const dup = db.prepare("SELECT id FROM partner_applications WHERE contact = ? AND status IN ('new', 'contacted')").get(contact) as { id: number } | undefined;
-  if (dup) return { id: dup.id, duplicate: true, elchi: elchiId !== null && bindElchi(db, elchiId, o.playerId!, dup.id, audience, o.fp ?? null, now) };
+  const dup = db.prepare("SELECT id, player_id, audience, kind FROM partner_applications WHERE contact = ? AND status IN ('new', 'contacted')").get(contact) as { id: number; player_id: number | null; audience: string; kind: string } | undefined;
+  // Takroriy ariza: elchiga faqat o'sha o'quvchining o'z arizasi, saqlangan auditoriyasi va turi bilan bog'lanadi (boshqa birovning aloqasi bilan emas)
+  if (dup) return { id: dup.id, duplicate: true, elchi: elchiId !== null && dup.player_id === o.playerId && dup.kind !== 'elchi' && bindElchi(db, elchiId, o.playerId!, dup.id, dup.audience, o.fp ?? null, now) };
   if (!allowIp(o.ip, now)) throw new ApiError(429, 'Juda ko‘p ariza — birozdan keyin urinib ko‘ring');
   const r = db.prepare('INSERT INTO partner_applications (kind, name, link, audience, contact, note, player_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run(kind, name, link, audience, contact, note, o.playerId ?? null, 'new', now, now);
@@ -86,7 +87,8 @@ export function setApplicationStatus(db: DatabaseSync, id: number, status: unkno
 }
 
 /** Ochiq shartlar (sahifada ko'rsatiladi): video uchun to'lov (egasi belgilagan, admin tahrirlaydi), yoqilgan hamkor qoidalari + do'st taklif mukofoti. Summalar so'mda. */
-export interface PublicTerms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: Omit<VideoTerms, 'updatedAt' | 'enabled' | 'elchiSom' | 'elchiTiers'> | null; elchi: { som: number; tiers: { min: number; som: number }[]; payDays: number } | null }
+/** elchiOk — so'rovdagi elchi kodi haqiqiy (sahifa mehmondan kirishni faqat haqiqiy kod uchun so'raydi) */
+export interface PublicTerms { elchiOk?: boolean; rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: Omit<VideoTerms, 'updatedAt' | 'enabled' | 'elchiSom' | 'elchiTiers'> | null; elchi: { som: number; tiers: { min: number; som: number }[]; payDays: number } | null }
 export function publicTerms(db: DatabaseSync, now = Date.now(), env: NodeJS.ProcessEnv = process.env): PublicTerms {
   const rules = listRules(db)
     .filter((r) => r.enabled && r.approvedAt !== null && r.campaignId === null && (r.startsAt === null || r.startsAt <= now) && (r.endsAt === null || r.endsAt > now))

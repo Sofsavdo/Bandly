@@ -16191,7 +16191,6 @@
  "Bolalar rejimi (PIN bilan)": "Kids mode (with PIN)",
  "Sizni Sellzen elchisi taklif qildi.": "A Sellzen ambassador invited you.",
  "Elchi havolasi bilan ariza yuborish uchun avval hisobingizga kiring": "To apply through an ambassador link, sign in to your account first",
- "Misol: oyda 10 ta faol bloger — 10 × {0} + {1} = {2}.": "Example: 10 active bloggers in a month — 10 × {0} + {1} = {2}.",
  "Olib kelganlar": "Brought in",
  "Oyda {0} ta — +{1}.": "{0} in a month — +{1}.",
  "Kirish va ariza yuborish": "Sign in and apply",
@@ -16252,5 +16251,7 @@
  "Premium: kuniga {0} daqiqa": "Premium: {0} min a day",
  "Obuna: oyiga {0} daqiqadan": "Subscription: from {0} min a month",
  "Har dushanba yangilanadi (Toshkent vaqti)": "Renews every Monday (Tashkent time)",
- "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Voice conversation with Sellzen: {0} min / month"
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Voice conversation with Sellzen: {0} min / month",
+ "Misol: oyda {0} ta faol bloger — {0} × {1} + {2} = {3}.": "Example: {0} active bloggers in a month — {0} × {1} + {2} = {3}.",
+ "Gumon: bir qurilma — admin tekshiradi": "Suspected: same device — admin will review"
 }

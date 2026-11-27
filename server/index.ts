@@ -3,7 +3,7 @@ import { resolvePersona, coachTurn, once, MAX_HISTORY, buildLivePrompt, liveKick
 import { enqueueMemoryJob, ensureMemoryTable, getMemory, memoryForPrompt, runMemoryJobs } from './coachMemory';
 import { tzDay, tzDayStart } from './day';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { ApiError, PROGRESS_BODY_MAX, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
+import { ApiError, PROGRESS_BODY_MAX, tx, expireIdleSessions, refundGlobalAi, revokeSession, requireRole, roleOf, setRole, staffList, aiCostSummary, byToken, createDb, getProgress, loginTelegram, putProgress, createDuel, getDuel, join, leaderboard, recordAiCost, refundAi, refundGlobalVoiceChars, submitDuel, sync, useAi, useGlobalAi, useGlobalVoiceChars } from './db';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
@@ -13,7 +13,7 @@ import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
 import { listeningTests } from '../src/content/listeningTests';
 import { readingTests } from '../src/content/readingTests';
 import { consumeReset, ensureResetTable, offerReset, resetValid } from './passwordReset';
-import { ensureElchiTables, elchiInfo, onVideoApproved } from './elchi';
+import { ensureElchiTables, elchiByCode, elchiInfo, onVideoApproved, reconcileElchi } from './elchi';
 import { ensurePartnersTable, listApplications, publicTerms, setApplicationStatus, submitApplication } from './partners';
 import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listLeads, saveBotPhone, saveLead, setBotRef, updateLead } from './leads';
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
@@ -89,7 +89,7 @@ ensureSettings(db); // admin paneldagi limitlar va narxlar (Railway qiymatidan u
 startAutoBackup(DB_FILE); // kunlik zaxira nusxa: <DB papkasi>/backups, 14 kun
 expireIdleSessions(db); setInterval(() => expireIdleSessions(db), 86_400_000).unref(); purgeCreatorData(db); setInterval(() => purgeCreatorData(db), 86_400_000).unref(); // creator click/barmoq izi saqlash muddati
 // Mukofotni avtomatik hisoblash: yoqilgan qoida bo'lsagina; yozuvlar faqat "kutilmoqda" (admin tasdiqlamaguncha hech narsa o'tmaydi). Har 6 soatda; kutish davri (hold) o'tgan hodisalar olinadi.
-const accrueTick = (): void => { try { accrueRewards(db); } catch (e) { console.error('[creator.accrue]', (e as Error).message); } };
+const accrueTick = (): void => { try { accrueRewards(db); } catch (e) { console.error('[creator.accrue]', (e as Error).message); } try { const n = reconcileElchi(db); if (n) console.log('[elchi.reconcile]', n); } catch (e) { console.error('[elchi.reconcile]', (e as Error).message); } };
 setTimeout(accrueTick, 30_000).unref(); setInterval(accrueTick, 6 * 3_600_000).unref(); // 180 kun ishlatilmagan sessiyalar
 ensureEventsTable(db);
 ensureUserEventsTable(db);
@@ -481,9 +481,9 @@ const httpServer = createServer(async (req, res) => {
       const dm = sub.match(/^ledger\/(\d+)\/(decision|paid|history)$/);
       if (dm && req.method === 'GET' && dm[2] === 'history') return send(res, 200, { history: ledgerHistory(db, Number(dm[1])) });
       if (dm && req.method === 'POST') { const b = await readJson(req, 1024); if (dm[2] === 'paid') return send(res, 200, { entry: markPaid(db, adm.id, Number(dm[1]), b.ref) });
-        const entry = decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note);
-        const elchi = entry.status === 'approved' ? onVideoApproved(db, Number(dm[1])) : null; // blogerning birinchi tasdiqlangan videosi — elchiga to'lov
-        return send(res, 200, { entry, elchi }); }
+        // Qaror va elchi to'lovi bitta tranzaksiyada: to'lov yozilmasa — qaror ham qaytariladi (admin qayta bosa oladi)
+        const r = tx(db, () => { const entry = decideEntry(db, adm.id, Number(dm[1]), b.decision, b.note); return { entry, elchi: entry.status === 'approved' ? onVideoApproved(db, Number(dm[1])) : null }; });
+        return send(res, 200, r); }
       if (sub === 'refund' && req.method === 'POST') { const b = await readJson(req, 1024); return send(res, 200, recordRefund(db, adm.id, b.paymentId, b.amountMinor, b.note)); }
       if (sub === 'accrue' && req.method === 'POST') return send(res, 200, accrueRewards(db));
       // Video uchun to'lov: shartlar (admin tahrirlaydi), navbat va 15-kun hisob-kitobi
@@ -833,7 +833,7 @@ const httpServer = createServer(async (req, res) => {
     }
     // Lidlar: o'quvchi o'zi raqam qoldiradi (rozilik bilan); operator (rol: sales) va admin ro'yxatni ko'radi
     // Hamkorlik: ochiq shartlar (faqat yoqilgan qoidalar) va ariza — mehmon ham yubora oladi; ko'rib chiqish — admin
-    if (req.method === 'GET' && url.pathname === '/api/partners/terms') return send(res, 200, publicTerms(db));
+    if (req.method === 'GET' && url.pathname === '/api/partners/terms') { const ec = url.searchParams.get('elchi'); return send(res, 200, { ...publicTerms(db), ...(ec ? { elchiOk: elchiByCode(db, ec) !== null } : {}) }); }
     if (req.method === 'POST' && url.pathname === '/api/partners/apply') {
       const b = await readJson(req, 4096);
       let pid: number | null = null; try { const tk = String(req.headers['x-token'] ?? ''); if (tk) pid = byToken(db, tk).id; } catch { /* mehmon */ }

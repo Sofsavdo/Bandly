@@ -119,7 +119,6 @@ export function videoQueue(db: DatabaseSync, now = Date.now()): VideoItem[] {
   const t = videoTerms(db);
   const rows = db.prepare("SELECT * FROM creator_posts WHERE status IN ('approved', 'submitted') ORDER BY posted_on DESC, id DESC LIMIT 300").all() as unknown as PostRow[];
   const items = rows.map((p) => item(db, p, t, now, true));
-  // Avval: muddati o'tgan to'lovlar, to'lanishi kerak bo'lganlar, hisobi kelganlar; keyin kutilayotganlar; oxirida to'langanlar
   // Avval: muddati o'tgan to'lovlar, to'lanishi kerak bo'lganlar, tasdiq kutayotgan hisoblar, hisob kuni kelganlar, yangi videolar; keyin kutilayotganlar; oxirida to'langanlar
   const rank = (i: VideoItem) => (i.entry?.overdue ? 0 : i.entry?.status === 'approved' ? 1 : i.entry?.status === 'pending' ? 2 : i.status === 'approved' && !i.entry && i.due ? 3 : i.status === 'submitted' ? 4 : !i.entry ? 5 : 6);
   return items.sort((a, b) => rank(a) - rank(b) || (a.dueAt ?? 0) - (b.dueAt ?? 0));

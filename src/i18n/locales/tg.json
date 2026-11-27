@@ -16191,7 +16191,6 @@
  "Bolalar rejimi (PIN bilan)": "Реҷаи кӯдакон (бо PIN)",
  "Sizni Sellzen elchisi taklif qildi.": "Шуморо сафири Sellzen даъват кард.",
  "Elchi havolasi bilan ariza yuborish uchun avval hisobingizga kiring": "Барои ариза тавассути пайванди сафир аввал ба ҳисоби худ ворид шавед",
- "Misol: oyda 10 ta faol bloger — 10 × {0} + {1} = {2}.": "Мисол: дар як моҳ 10 блогери фаъол — 10 × {0} + {1} = {2}.",
  "Olib kelganlar": "Овардаҳо",
  "Oyda {0} ta — +{1}.": "Дар як моҳ {0} — +{1}.",
  "Kirish va ariza yuborish": "Ворид шудан ва фиристодани ариза",
@@ -16252,5 +16251,7 @@
  "Premium: kuniga {0} daqiqa": "Premium: дар як рӯз {0} дақиқа",
  "Obuna: oyiga {0} daqiqadan": "Обуна: аз {0} дақиқа дар як моҳ",
  "Har dushanba yangilanadi (Toshkent vaqti)": "Ҳар душанбе нав мешавад (вақти Тошкент)",
- "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Суҳбати овозӣ бо Sellzen: {0} дақиқа / моҳ"
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Суҳбати овозӣ бо Sellzen: {0} дақиқа / моҳ",
+ "Misol: oyda {0} ta faol bloger — {0} × {1} + {2} = {3}.": "Мисол: дар як моҳ {0} блогери фаъол — {0} × {1} + {2} = {3}.",
+ "Gumon: bir qurilma — admin tekshiradi": "Шубҳа: як дастгоҳ — админ тафтиш мекунад"
 }

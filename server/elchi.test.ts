@@ -7,7 +7,8 @@ import { reviewPost, savePost } from './creatorOps';
 import { decideEntry } from './creatorLedger';
 import { settleVideo, videoTerms } from './videoPay';
 import { ensurePartnersTable, publicTerms, submitApplication, listApplications } from './partners';
-import { ensureElchiTables, elchiInfo, onVideoApproved } from './elchi';
+import { ensureElchiTables, elchiInfo, onVideoApproved, reconcileElchi } from './elchi';
+import { noteCreatorDevice } from './creatorLinks';
 import { refCodeOf } from './referral';
 
 const DAY = 86_400_000, POSTED = '2026-11-01', T0 = Date.parse(`${POSTED}T00:00:00Z`), T = T0 + 3_600_000, SETTLE = T0 + 15 * DAY + 3_600_000;
@@ -104,5 +105,37 @@ const elchiRows = () => (db.prepare("SELECT kind, amount_minor AS a, status FROM
   assert.deepEqual(own.res, { paid: 0, tier: 0 }, 'elchining o‘z videosi elchi summasi bermaydi');
   assert.equal(elchiRows().filter((r) => r.kind === 'video').length, 1, 'video to‘lovi alohida');
   assert.equal(elchiRows().filter((r) => r.kind === 'elchi').length, before);
+}
+// Kod tekshiruvi (2026-11-27): takroriy ariza, bir qurilma, yo'qolgan to'lovni tiklash
+{
+  // a) Boshqa o'quvchi birovning aloqasi bilan qayta yuborsa — bog'lanmaydi; o'zi qayta yuborsa — saqlangan auditoriya bilan
+  const owner = pl('Asl Egasi');
+  const first = submitApplication(db, { kind: 'teacher', name: 'Asl', link: '@asl_egasi', audience: '<1k', contact: '@asl_egasi', consent: true }, { ip: '10.9.0.1', playerId: owner }, T);
+  const other = pl('Boshqa Kishi');
+  const again = submitApplication(db, { kind: 'blogger', name: 'Boshqa', link: '@asl_egasi', audience: '100k+', contact: '@asl_egasi', consent: true, elchi: code }, { ip: '10.9.0.2', playerId: other }, T);
+  assert.equal(again.duplicate, true); assert.equal(again.elchi, false, 'boshqa birovning arizasi bilan bog‘lanmaydi');
+  const own = submitApplication(db, { kind: 'blogger', name: 'Asl', link: '@asl_egasi', audience: '100k+', contact: '@asl_egasi', consent: true, elchi: code }, { ip: '10.9.0.3', playerId: owner }, T);
+  assert.equal(own.id, first.id); assert.equal(own.elchi, false, 'saqlangan auditoriya <1k — yangi «100k+» deb aytilgani hisobga olinmaydi');
+  // b) Elchining o'z qurilmasidan ikkinchi hisob — bog'lanmaydi
+  noteCreatorDevice(db, elchi, 'fp-elchi-phone');
+  const alt = pl('Elchi Ikkinchi');
+  const r = submitApplication(db, { kind: 'blogger', name: 'Alt', link: '@alt_acc1', audience: '10k-100k', contact: '@alt_acc1', consent: true, elchi: code }, { ip: '10.9.0.4', playerId: alt, fp: 'fp-elchi-phone' }, T);
+  assert.equal(r.elchi, true, 'bir qurilma — bog‘lanadi (ikki odam bitta Wi-Fi/telefon modelida bo‘lishi mumkin)');
+  setRole(db, 'Elchi Ikkinchi', 'creator');
+  const sus = video(alt);
+  assert.deepEqual(sus.res, { paid: 25_000, tier: 0 }, 'summa yozildi, oylik bonusga kirmaydi');
+  const st = (db.prepare("SELECT status, note FROM creator_ledger WHERE event_key = ?").get(`elchi:${alt}`) as { status: string; note: string });
+  assert.equal(st.status, 'pending', 'gumon — admin tasdig‘ini kutadi'); assert.match(st.note, /bir qurilma/);
+  // c) Qaror yozilib, elchi to'lovi yozilmay qolgan holat (masalan, eski versiya) — soatlik qayta tiklash yozadi, takrorlamaydi
+  const lost = pl('Bloger Tiklash'); assert.equal(app(lost, {}).elchi, true); setRole(db, 'Bloger Tiklash', 'creator');
+  const link = createLink(db, lost, { kind: 'reel', label: 'VR' }, T);
+  const post = savePost(db, lost, { platform: 'instagram', url: 'https://www.instagram.com/reel/RECON1/', lang: 'uz', postedOn: POSTED, caption: '#reklama', linkCode: link.code, submit: true }, T);
+  reviewPost(db, admin, post.id, { decision: 'approved', note: 'ok' }, T);
+  const e = settleVideo(db, admin, post.id, { views: 1_000, bio: true, comment: true, tag: true }, SETTLE);
+  decideEntry(db, admin, e.id, 'approved', null, SETTLE); // onVideoApproved chaqirilmadi
+  const before = elchiRows().filter((x) => x.kind === 'elchi').length;
+  assert.equal(reconcileElchi(db, SETTLE), 1, 'tiklandi');
+  assert.equal(reconcileElchi(db, SETTLE), 0, 'takror yozilmaydi');
+  assert.equal(elchiRows().filter((x) => x.kind === 'elchi').length, before + 1);
 }
 console.log('elchi.test: OK');

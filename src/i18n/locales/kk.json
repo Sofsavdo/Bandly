@@ -16191,7 +16191,6 @@
  "Bolalar rejimi (PIN bilan)": "Балалар режимі (PIN арқылы)",
  "Sizni Sellzen elchisi taklif qildi.": "Сізді Sellzen елшісі шақырды.",
  "Elchi havolasi bilan ariza yuborish uchun avval hisobingizga kiring": "Елші сілтемесі арқылы өтінім беру үшін алдымен аккаунтыңызға кіріңіз",
- "Misol: oyda 10 ta faol bloger — 10 × {0} + {1} = {2}.": "Мысал: айына 10 белсенді блогер — 10 × {0} + {1} = {2}.",
  "Olib kelganlar": "Әкелгендер",
  "Oyda {0} ta — +{1}.": "Айына {0} — +{1}.",
  "Kirish va ariza yuborish": "Кіру және өтінім жіберу",
@@ -16252,5 +16251,7 @@
  "Premium: kuniga {0} daqiqa": "Premium: күніне {0} минут",
  "Obuna: oyiga {0} daqiqadan": "Жазылым: айына {0} минуттан бастап",
  "Har dushanba yangilanadi (Toshkent vaqti)": "Әр дүйсенбі жаңарады (Ташкент уақыты)",
- "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Sellzen-мен дауыстық әңгіме: {0} минут / ай"
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Sellzen-мен дауыстық әңгіме: {0} минут / ай",
+ "Misol: oyda {0} ta faol bloger — {0} × {1} + {2} = {3}.": "Мысал: айына {0} белсенді блогер — {0} × {1} + {2} = {3}.",
+ "Gumon: bir qurilma — admin tekshiradi": "Күдік: бір құрылғы — админ тексереді"
 }
