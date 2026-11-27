@@ -12,7 +12,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer, type RawData } from 'ws';
 import { tzDay } from './day';
 import { callMonthSeconds } from './callMinutes';
-import { clampStyle, emotionOf, type LiveEmotion } from './coach';
+import { clampStyle, emotionOf, type LiveEmotion, handsTurnBack } from './coach';
 import { addLiveUsage, emptyLive, type LiveUsage } from './aiUsage';
 
 export interface LiveConfig {
@@ -24,6 +24,8 @@ export interface LiveConfig {
   freeGlobalDailySeconds: number;
   /** Vaqt tugashidan shuncha soniya oldin ustozga "fikrni tugat, xayrlash" deyiladi (standart 25) */
   wrapLeadSec?: number;
+  /** davom ettirish kutishi (ms), testlar uchun */
+  nudgeMs?: number;
 }
 
 /** Gemini kaliti bo'lsa — yoqiq (GEMINI_LIVE=0 o'chiradi). */
@@ -293,8 +295,11 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   // Tanish rejimi: navbat ovozi shu yerda yig'iladi; qo'yib yuborilganda Scribe → matn → Gemini. dropOld — o'quvchi ustozni bosib to'xtatdi: eski javobning qolgan ovozi tashlanadi.
   // playEnd — server tomonidagi taxminiy ijro oxiri (Gemini ovoz oqimi sekinlashganini sanash uchun); holdTimer — ustoz gapirayotganda bosish TAP_MS tasdig'ini kutadi
   let playEnd = 0, holdTimer: NodeJS.Timeout | null = null;
+  // Ustoz savolsiz to'xtab qolsa (faqat "barakalla" yoki so'kish) va o'quvchi jim tursa — bir marta davom ettirishni so'raymiz (egasi, 2026-11-27)
+  let nudgeTimer: NodeJS.Timeout | null = null, nudged = false, wrapSent = false;
+  const cancelNudge = () => { if (nudgeTimer) { clearTimeout(nudgeTimer); nudgeTimer = null; } };
   let viaAudio = false, actBuf: Buffer[] = [], actBytes = 0, modelBusy = false, dropOld = false, dropTimer: NodeJS.Timeout | null = null, asrChain: Promise<void> = Promise.resolve();
-  const st = { acts: 0, taps: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0, emo: {} as Record<string, number>, waits: [] as number[], asrMs: [] as number[], gaps: 0, leadMs: 0, srvGaps: 0 };
+  const st = { acts: 0, taps: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0, emo: {} as Record<string, number>, waits: [] as number[], asrMs: [] as number[], gaps: 0, leadMs: 0, srvGaps: 0, nudges: 0 };
   // Kechikish: o'quvchi tugmani qo'yib yuborgandan ustozning birinchi ovozigacha (jurnalga — "qotib qolish" shikoyatlarini o'lchash uchun)
   let releasedAt = 0;
   const started = Date.now();
@@ -309,7 +314,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     closed = true;
     if (activeCalls.get(who.id) === finish) activeCalls.delete(who.id);
     if (capWait) clearTimeout(capWait);
-    clearTimeout(cap); if (wrapTimer) clearTimeout(wrapTimer); if (actTimer) clearTimeout(actTimer); if (dropTimer) clearTimeout(dropTimer); if (setupTimer) clearTimeout(setupTimer);
+    clearTimeout(cap); cancelNudge(); if (wrapTimer) clearTimeout(wrapTimer); if (actTimer) clearTimeout(actTimer); if (dropTimer) clearTimeout(dropTimer); if (setupTimer) clearTimeout(setupTimer);
     try { upstream?.close(); } catch { /* */ }
     try { client.close(); } catch { /* */ }
     const secs = ready ? (Date.now() - started) / 1000 : 0;
@@ -327,7 +332,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const cap = setTimeout(() => { if (capKind === 'session' && modelBusy) { capDue = true; capWait = setTimeout(capNow, 20_000); capWait.unref?.(); return; } capNow(); }, Math.max(1000, allowance * 1000));
   // Vaqt tugashidan 25 soniya oldin ustozga xabar: fikrini tugatib, xayrlashsin (suhbat o'rtasida to'satdan uzilmasin)
   const wrapLead = d.cfg.wrapLeadSec ?? 25;
-  const wrapTimer = capKind === 'quota' && allowance > wrapLead + 1 ? setTimeout(() => { if (ready && !closed && upstream?.readyState === WebSocket.OPEN) upstream.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: the call ends in about ${wrapLead} seconds. Finish your current thought, give ONE short useful tip and say a warm goodbye — do not start a new topic.)` }] }], turnComplete: true } })); }, (allowance - wrapLead) * 1000) : null;
+  const wrapTimer = capKind === 'quota' && allowance > wrapLead + 1 ? setTimeout(() => { if (ready && !closed && upstream?.readyState === WebSocket.OPEN) { wrapSent = true; cancelNudge(); } if (ready && !closed && upstream?.readyState === WebSocket.OPEN) upstream.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(System: the call ends in about ${wrapLead} seconds. Finish your current thought, give ONE short useful tip and say a warm goodbye — do not start a new topic.)` }] }], turnComplete: true } })); }, (allowance - wrapLead) * 1000) : null;
   wrapTimer?.unref?.();
 
   // Gemini sozlashni (setupComplete) shuncha vaqtda tugatmasa — zaxira model, u ham bo'lmasa xato (foydalanuvchi "o'ylayapman"da qolib ketmasin)
@@ -391,7 +396,12 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
           learnerBuf = (learnerBuf + ' ' + t).slice(-300); maybeNavigate(learnerBuf); // Gemini o'zi eshitgan gap (tanish o'chiq bo'lsa)
         }
         if (sc.interrupted) { playEnd = 0; send({ type: 'interrupted' }); turnOut = ''; muted = false; modelBusy = false; viaAudio = false; clearDrop(); }
-        if (sc.turnComplete) { playEnd = 0; st.replies++; send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); if (capDue) { if (capWait) clearTimeout(capWait); capNow(); } }
+        if (sc.turnComplete) {
+          const said = turnOut; cancelNudge();
+          if (!muted && !dropOld && !nudged && !wrapSent && !capDue && !navSent && !handsTurnBack(said)) {
+            nudgeTimer = setTimeout(() => { nudgeTimer = null; if (closed || inAct || modelBusy || upstream?.readyState !== WebSocket.OPEN) return; nudged = true; st.nudges++; sendText(NUDGE_TEXT); }, (playEnd ? Math.max(0, playEnd - Date.now()) : 0) + (d.cfg.nudgeMs ?? NUDGE_MS)); nudgeTimer.unref?.();
+          }
+          playEnd = 0; st.replies++; send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); if (capDue) { if (capWait) clearTimeout(capWait); capNow(); } }
       }
       if (m.goAway) { send({ type: 'error', code: 503, resume: true, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
     });
@@ -469,6 +479,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   // "qo'yib yuborildi" → javob (tanish: Scribe → matn → Gemini; aks holda activityEnd). 60 soniyadan keyin o'zi tugaydi.
   /** discard — o'quvchi tasodifan qisqa tekkan: yig'ilgan ovoz tashlanadi, Scribe'ga ham, ustozga ham bormaydi */
   const setActivity = (on: boolean, discard = false, barge = false) => {
+    if (on) cancelNudge(); else if (!discard) nudged = false; // o'quvchi gapirdi — keyingi safar yana davom ettirish mumkin
     if (!ptt || !ready || upstream?.readyState !== WebSocket.OPEN || on === inAct || ++actMsgs > 400) return;
     inAct = on;
     if (actTimer) { clearTimeout(actTimer); actTimer = null; }
@@ -523,10 +534,13 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
 /** Jurnal uchun: ustoz javobini kutish (o'quvchi qo'yib yuborgandan birinchi ovozgacha) va tanish vaqti — o'rtacha/eng uzun, soniyada. */
 /** Ustoz gapirayotganda bosish shuncha ms davom etsagina uni to'xtatadi (mijozdagi TAP_MS bilan bir xil). */
 export const HOLD_MS = 300;
-export function statLine(st: { waits: number[]; asrMs: number[]; gaps?: number; leadMs?: number; srvGaps?: number }): string {
+/** Ustoz savolsiz to'xtab, ovozi tugagach o'quvchi shuncha ms jim tursa — davom ettirish so'raladi (bir marta, o'quvchi gapirguncha qayta emas). */
+export const NUDGE_MS = 6000;
+export const NUDGE_TEXT = '(System: the learner is waiting for you — your last turn ended without a question. Continue now in your style with ONE short follow-up question or ONE small speaking task about what you were just talking about. Do not repeat your last reply and do not mention this note.)';
+export function statLine(st: { waits: number[]; asrMs: number[]; gaps?: number; leadMs?: number; srvGaps?: number; nudges?: number }): string {
   const f = (a: number[]) => (a.length ? `${(a.reduce((x, y) => x + y, 0) / a.length / 1000).toFixed(1)}/${(Math.max(...a) / 1000).toFixed(1)}s` : '');
   // uzilish=telefonda/serverda: ustoz ovozida bo'lak kechikkan holatlar (telefon — haqiqiy eshitilgan; server — Gemini oqimi sekinlashgan)
-  return `${st.waits.length ? ` kutish=${f(st.waits)}` : ''}${st.asrMs.length ? ` asr=${f(st.asrMs)}` : ''}${st.gaps || st.srvGaps ? ` uzilish=${st.gaps ?? 0}/${st.srvGaps ?? 0}${st.leadMs ? ` bufer=${st.leadMs}ms` : ''}` : ''}`;
+  return `${st.waits.length ? ` kutish=${f(st.waits)}` : ''}${st.asrMs.length ? ` asr=${f(st.asrMs)}` : ''}${st.nudges ? ` nudge=${st.nudges}` : ''}${st.gaps || st.srvGaps ? ` uzilish=${st.gaps ?? 0}/${st.srvGaps ?? 0}${st.leadMs ? ` bufer=${st.leadMs}ms` : ''}` : ''}`;
 }
 /** Qayta ulanishdan keyingi birinchi ko'rsatma: salomlashmasdan, oldingi gaplardan davom etish. */
 export function continueKick(recent: string | undefined, native: string): string {
