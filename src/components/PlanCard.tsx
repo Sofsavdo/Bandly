@@ -107,7 +107,7 @@ function PlanBody() {
   ];
   const begin = () => { const g = rows.find((r) => r.href === '#/grammar'); if (g) { try { sessionStorage.setItem('bandly.nextTopic', g.title); } catch { /* */ } } startRun(runTasks); };
   return (
-    <section className="card">
+    <section className="card plan-today">
       <div className="plan-head"><h3><CalendarCheck size={18} />  {L('Bugungi reja')} <span className="pill">{plan.reduce((s, t) => s + t.minutes, 0)}  {L('daqiqa')}</span></h3><button type="button" className="linkbtn" onClick={() => setEdit((e) => !e)}>{edit ? L('Yopish') : L('Sozlash')}</button></div>
       {runTasks.length > 0 && <button type="button" className="btn primary plan-go" onClick={begin}><Play size={16} />  {L('Rejani boshlash')} · {L('{0} ta vazifa', [runTasks.length])}</button>}
       <p className="plan-line">{GOALS.find((g) => g.id === prefs.goal)!.labelUz} · {L('kuniga')} {prefs.minutes}  {L('daq')} · {L('bu hafta')} {weekDone}/{weekTarget}  {L('dars')}</p>

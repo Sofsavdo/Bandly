@@ -14,7 +14,8 @@ export function sttConfigFromEnv(env: NodeJS.ProcessEnv = process.env): SttConfi
   const key = (env.ELEVENLABS_API_KEY ?? '').trim();
   const global = Number(env.STT_GLOBAL_DAILY_MINUTES ?? 600);
   if (!key || !(global > 0) || env.STT_PROVIDER === 'none') return null;
-  return { key, model: env.STT_MODEL ?? 'scribe_v2', dailySecondsPerUser: Number(env.STT_DAILY_MINUTES ?? 40) * 60, globalDailySeconds: global * 60, pricePerHour: Number(env.PRICE_STT_PER_HOUR ?? 0.4), ...(env.STT_BASE_URL ? { baseUrl: env.STT_BASE_URL.trim().replace(/\/+$/, '') } : {}) };
+  // Narx: ElevenLabs Scribe — $0.20 / soat audio (2026-11, rasmiy narx sahifasi; avval $0.40 edi)
+  return { key, model: env.STT_MODEL ?? 'scribe_v2', dailySecondsPerUser: Number(env.STT_DAILY_MINUTES ?? 40) * 60, globalDailySeconds: global * 60, pricePerHour: Number(env.PRICE_STT_PER_HOUR ?? 0.2), ...(env.STT_BASE_URL ? { baseUrl: env.STT_BASE_URL.trim().replace(/\/+$/, '') } : {}) };
 }
 
 export function ensureSttTable(db: DatabaseSync): void {

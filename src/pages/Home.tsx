@@ -176,10 +176,10 @@ export default function Home({ preview = false }: { preview?: boolean }) {
           <ArrowRight size={18} className="prog-go" />
         </a>}
         <div className="prog-stats">
-          <a href="#/learn"><b>{passed}<small>/{total}</small></b><span>{L('dars')}</span></a>
-          <a href="#/league"><b><Flame size={15} />{streak}</b><span>{L('kunlik seriya')}</span></a>
-          <div><b>{Math.min(p.dailyXp, p.dailyGoal)}<small>/{p.dailyGoal}</small></b><span>{L('bugun XP')}</span></div>
-          <div><b>{lp.level}</b><span>{lvl ? `${lvl} · ${L('bosqich')}` : L('bosqich')}</span></div>
+          <a className="st-coral" href="#/learn"><b>{passed}<small>/{total}</small></b><span>{L('dars')}</span></a>
+          <a className="st-orange" href="#/league"><b><Flame size={15} />{streak}</b><span>{L('kunlik seriya')}</span></a>
+          <div className="st-mint"><b>{Math.min(p.dailyXp, p.dailyGoal)}<small>/{p.dailyGoal}</small></b><span>{L('bugun XP')}</span></div>
+          <div className="st-brand"><b>{lp.level}</b><span>{lvl ? `${lvl} · ${L('bosqich')}` : L('bosqich')}</span></div>
         </div>
         <div className="prog-bar" role="progressbar" aria-valuemin={0} aria-valuemax={p.dailyGoal} aria-valuenow={Math.min(p.dailyXp, p.dailyGoal)} aria-label={L('Kunlik maqsad {0}/{1} XP', [p.dailyXp, p.dailyGoal])}><i style={{ width: `${Math.min(1, p.dailyXp / Math.max(1, p.dailyGoal)) * 100}%` }} /></div>
       </section>
