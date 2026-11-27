@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { LEAD0, LEAD_MAX, makeResampler, planChunk } from './liveCall';
+import { LEAD0, LEAD_MAX, LEAD_STEP, makeResampler, planChunk, startLead } from './liveCall';
 
 // 16 kHz ga o'tkazuvchi: past chastota saqlanadi, 8 kHz dan yuqori (aliasing) kuchli kesiladi, kadrlarga bo'lib berilsa ham natija bir xil
 const tone = (hz: number, rate: number, sec: number, amp = 0.5): Float32Array => Float32Array.from({ length: Math.round(rate * sec) }, (_, i) => amp * Math.sin((2 * Math.PI * hz * i) / rate));
@@ -33,9 +33,13 @@ for (const rate of [48000, 44100, 32000, 16000]) {
   p = planChunk(10.05, 10.5, LEAD0, true);
   assert.deepEqual(p, { at: 10.5, underrun: false, lead: LEAD0 }, 'navbatdagi bo‘lak — uzluksiz');
   p = planChunk(11, 10.9, LEAD0, true);
-  assert.equal(p.underrun, true, 'javob o‘rtasida kechikdi — uzilish'); assert.ok(Math.abs(p.lead - (LEAD0 + 0.1)) < 1e-9, 'bufer oshdi'); assert.ok(Math.abs(p.at - (11 + p.lead)) < 1e-9);
+  assert.equal(p.underrun, true, 'javob o‘rtasida kechikdi — uzilish'); assert.ok(Math.abs(p.lead - (LEAD0 + LEAD_STEP)) < 1e-9, 'bufer oshdi'); assert.ok(Math.abs(p.at - (11 + p.lead)) < 1e-9);
   let l = LEAD0; for (let i = 0; i < 20; i++) l = planChunk(20 + i, 0, l, true).lead;
   assert.equal(l, LEAD_MAX, 'bufer chegaradan oshmaydi');
+  assert.equal(LEAD_MAX, 1.2, 'egasi: bufer 1,2 s gacha');
+  // Keyingi qo'ng'iroq: o'rganilgan bufer bir qadam kichikroqdan boshlanadi; yomon qiymat — LEAD0
+  assert.equal(startLead(null), LEAD0); assert.equal(startLead('abc'), LEAD0); assert.equal(startLead('0.2'), LEAD0);
+  assert.ok(Math.abs(startLead('1.2') - (1.2 - LEAD_STEP)) < 1e-9); assert.equal(startLead('99'), LEAD_MAX); assert.equal(startLead('-5'), LEAD0);
   assert.equal(planChunk(30, 29, LEAD_MAX, false).underrun, false, 'yangi javob boshi uzilish emas');
 }
 console.log('liveCall (resampler, ovoz buferi): OK');

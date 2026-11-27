@@ -74,7 +74,17 @@ export function makeResampler(fromRate: number, toRate = 16000): { process(input
 // Ustoz ovozi uzilib eshitilardi (egasi, 2026-11-27): bo'laklar atigi 30 ms zaxira bilan chalinardi — internet bir lahza sekinlashsa
 // (Telegram, mobil tarmoq) navbatdagi bo'lak kechikib, so'zlar orasida uzilish bo'lardi. Endi javob boshida kichik bufer (LEAD0),
 // javob o'rtasida bo'lak kechiksa (uzilish) — bufer shu suhbat davomida kattalashadi (LEAD_MAX gacha).
-export const LEAD0 = 0.2, LEAD_STEP = 0.1, LEAD_MAX = 0.6;
+// Egasi (2026-11-27): loglarda 0,6 s bufer ham yetmagan holat bor (19 uzilish, server tomonida 0) — chegara 1,2 s, tezroq o'sadi.
+// Yomon internetli telefon o'rgangan buferni eslab qoladi: keyingi qo'ng'iroq shu buferdan (bir qadam kichikroq) boshlanadi.
+export const LEAD0 = 0.2, LEAD_STEP = 0.15, LEAD_MAX = 1.2;
+const LEAD_KEY = 'sellzen.liveLead';
+/** Oldingi qo'ng'iroqda o'rganilgan bufer (bir qadam kichikroq, LEAD0..LEAD_MAX) — saqlanmagan bo'lsa LEAD0. */
+export function startLead(saved: string | null): number {
+  const v = Number(saved);
+  return saved && Number.isFinite(v) ? Math.min(LEAD_MAX, Math.max(LEAD0, v - LEAD_STEP)) : LEAD0;
+}
+const loadLead = (): number => { try { return startLead(localStorage.getItem(LEAD_KEY)); } catch { return LEAD0; } };
+const saveLead = (l: number): void => { try { localStorage.setItem(LEAD_KEY, String(Math.round(l * 1000) / 1000)); } catch { /* saqlab bo'lmaydi — keyingi safar LEAD0 */ } };
 /** Keyingi bo'lak qachon chalinadi: navbatda ovoz bor — uning orqasidan; javob boshida — bufer bilan; javob o'rtasida ovoz tugab qolgan — uzilish (bufer oshadi). */
 export function planChunk(now: number, nextAt: number, lead: number, inReply: boolean): { at: number; underrun: boolean; lead: number } {
   if (nextAt > now + 0.005) return { at: nextAt, underrun: false, lead };
@@ -123,7 +133,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   // Token URL'da emas (proksi loglariga tushmasin) — subprotocol sarlavhasida (server/live.ts tokenFromProtocols)
 
   let ready = false, ended = false, speaking = false, nextAt = 0, floor = 0.01, asr = false;
-  let lead = LEAD0, inReply = false, gaps = 0, gapsSent = 0;
+  let lead = loadLead(), inReply = false, gaps = 0, gapsSent = 0;
   const playing = new Set<AudioBufferSourceNode>();
   const rs = makeResampler(ctx.sampleRate);
   let pendingPcm: Int16Array[] = [], pendingLen = 0;
@@ -212,7 +222,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     try { m = JSON.parse(e.data as string); } catch { return; }
     if (m.type === 'ready') { ready = true; asr = m.asr === true; h.onReady({ capSec: Number(m.capSec) || 0, ptt: m.ptt === true, asr }); }
     // Javob tugadi: hissiyot effekti ovoz chalinib bo'lgach o'chadi (keyingi javobda eski hissiyot qolmasin)
-    else if (m.type === 'turn') { inReply = false; if (gaps !== gapsSent && ws.readyState === WebSocket.OPEN) { gapsSent = gaps; ws.send(JSON.stringify({ type: 'stats', gaps, leadMs: Math.round(lead * 1000) })); } h.onTurn?.(); const left = Math.max(0, (nextAt - ctx.currentTime) * 1000); setTimeout(() => h.onEmotion?.('neutral'), left + 400); }
+    else if (m.type === 'turn') { inReply = false; if (gaps !== gapsSent && ws.readyState === WebSocket.OPEN) { gapsSent = gaps; ws.send(JSON.stringify({ type: 'stats', gaps, leadMs: Math.round(lead * 1000) })); } saveLead(lead); /* har javob oxirida: keyingi qo'ng'iroq shu buferdan (bir qadam kichikroq) boshlanadi */ h.onTurn?.(); const left = Math.max(0, (nextAt - ctx.currentTime) * 1000); setTimeout(() => h.onEmotion?.('neutral'), left + 400); }
     else if (m.type === 'interrupted') { muteIn = false; stopPlayback(); h.onTurn?.(); }
     else if (m.type === 'in' && m.text) h.onHeard(m.text);
     else if (m.type === 'out' && m.text) h.onSaid(m.text);
