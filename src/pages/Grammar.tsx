@@ -54,19 +54,29 @@ export default function Grammar() {
     saveResult({ kind: 'grammar', title: `Grammar: ${topic}`, correct, total: items.length });
     if (correct === items.length && items.length > 0) addXp(10);
   };
-  const tabs = [...(profile.level ? [FOR_YOU] : []), ALL, ...grammarTopics, MISTAKES];
+  // Egasi (2026-11-27): 19 ta tugmali uzun gorizontal qator o'rniga — 3 ta filtr va mavzu tanlash ro'yxati (telefonda qulay)
+  const filters = [...(profile.level ? [FOR_YOU] : []), ALL, MISTAKES];
+  const isTopic = (grammarTopics as readonly string[]).includes(topic);
 
   return (
     <div>
       <div className="card page-head with-illo t-sky">
         <h2>{L('Grammar')}</h2><Illo kind="pencil" size={124} />
         {profile.level ? <p className="evidence">{L('Sizning darajangiz:')} <b>{profile.level}</b>. “{FOR_YOU}{L('” bo‘limida aynan sizga mos savollar bor.')}</p> : <p className="evidence"><a href="#/placement">{L('Darajangizni aniqlang')}</a>{L(': sizga mos savollar tanlab beriladi.')}</p>}
-        <div className="tabs">
-          {tabs.map((t) => (
-            <button key={t} className={`btn ${t === topic ? 'primary' : ''}`} onClick={() => change(t)}>
-              {!unlocked && !FREE_TOPICS.includes(t) && <Lock size={14} />}{t}{topicLevel[t] && <span className={`lvl-tag ${topicLevel[t]}`}>{topicLevel[t]}</span>}
-            </button>
-          ))}
+        <div className="gram-pick">
+          <div className="row" style={{ gap: 6 }}>
+            {filters.map((t) => (
+              <button key={t} className={`btn sm ${t === topic ? 'primary' : ''}`} aria-pressed={t === topic} onClick={() => change(t)}>
+                {!unlocked && !FREE_TOPICS.includes(t) && <Lock size={14} />}{t}
+              </button>
+            ))}
+          </div>
+          <label className="gram-topic">{L('Mavzu')}
+            <select value={isTopic ? topic : ''} onChange={(e) => { if (e.target.value) change(e.target.value); }}>
+              <option value="" disabled>{L('Mavzuni tanlang')}</option>
+              {grammarTopics.map((t) => <option key={t} value={t}>{t}{topicLevel[t] ? ` · ${topicLevel[t]}` : ''}{!unlocked && !FREE_TOPICS.includes(t) ? ' 🔒' : ''}</option>)}
+            </select>
+          </label>
         </div>
         {!unlocked && <p className="evidence">{L('Bepul:')} {FREE_TOPICS.map((x) => `“${x}”`).join(L(' va '))}  {L('mavzulari. Qolganlari Grammar obunasi bilan ochiladi.')}</p>}
       </div>
