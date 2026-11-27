@@ -59,16 +59,18 @@ export function telegramFeed(creds: TgCreds, sources: string[], log: (m: string)
   return feed;
 }
 
-export interface WatchDeps { db: DatabaseSync; cfg: CardPayConfig | (() => CardPayConfig); creds: TgCreds; log?: (m: string) => void; now?: () => number }
+export interface WatchDeps { db: DatabaseSync; cfg: CardPayConfig | (() => CardPayConfig); creds: TgCreds | null | (() => TgCreds | null); log?: (m: string) => void; now?: () => number }
 
 /** Admin panel uchun holat: o'chiq / ulanmoqda / ulangan / kutmoqda (boshqa nusxa ulangan) / xato. */
-export const watchState: { state: 'disabled' | 'connecting' | 'connected' | 'standby' | 'error'; since: number; error: string; lastNoticeAt: number } = { state: 'disabled', since: Date.now(), error: '', lastNoticeAt: 0 };
+export const watchState: { state: 'disabled' | 'unconfigured' | 'connecting' | 'connected' | 'standby' | 'error'; since: number; error: string; lastNoticeAt: number } = { state: 'disabled', since: Date.now(), error: '', lastNoticeAt: 0 };
 const setState = (state: typeof watchState.state, error = ''): void => { if (watchState.state !== state || watchState.error !== error) { watchState.state = state; watchState.since = Date.now(); watchState.error = error.slice(0, 200); } };
 
 /** Kuzatuvchini ishga tushiradi: lease olinsa ulanadi, yo'qotilsa uzadi, xatoda keyingi tickda qayta urinadi. */
 export function startCardWatch(deps: WatchDeps, makeFeed?: () => NoticeFeed): { stop(): Promise<void> } {
   const { db } = deps;
   const getCfg = typeof deps.cfg === 'function' ? deps.cfg : () => deps.cfg as CardPayConfig;
+  const getCreds = (): TgCreds | null => (typeof deps.creds === 'function' ? deps.creds() : deps.creds);
+  let sessionInUse = '';
   const log = deps.log ?? (() => undefined);
   const now = deps.now ?? Date.now;
   const owner = newLeaseOwner();
@@ -93,6 +95,13 @@ export function startCardWatch(deps: WatchDeps, makeFeed?: () => NoticeFeed): { 
         releaseLease(db, owner); setState('disabled');
         return;
       }
+      const creds = getCreds();
+      if (!creds) { // Telegram hali ulanmagan (sessiya yo'q): kutadi, admin panelda ulangach o'zi ulanadi
+        if (feed) { const f = feed; feed = null; await f.stop(); }
+        releaseLease(db, owner); setState('unconfigured');
+        return;
+      }
+      if (feed && sessionInUse !== creds.session) { const f = feed; feed = null; await f.stop(); log('[cardpay] sessiya almashdi — qayta ulanadi'); } // yangi sessiya (qayta ulash)
       if (!acquireLease(db, owner, now(), LEASE_TTL)) {
         if (feed) { const f = feed; feed = null; await f.stop(); log('[cardpay] boshqa nusxa ulangan — uzildi'); }
         setState('standby');
@@ -100,7 +109,8 @@ export function startCardWatch(deps: WatchDeps, makeFeed?: () => NoticeFeed): { 
       }
       if (!feed) {
         setState('connecting');
-        const f = (makeFeed ?? (() => telegramFeed(deps.creds, cfg.sources, log)))();
+        const f = (makeFeed ?? (() => telegramFeed(creds, cfg.sources, log)))();
+        sessionInUse = creds.session;
         try { await f.start(onNotice); feed = f; setState('connected'); } catch (e) { log(`[cardpay] ulanish xatosi: ${(e as Error).message}`); setState('error', (e as Error).message); await f.stop(); }
         return;
       }

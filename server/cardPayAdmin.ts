@@ -9,7 +9,8 @@ import { watchState } from './cardWatch';
 
 export interface CardView extends PayCard { numberFmt: string; usedDay: number; usedMonth: number; reserved: number; full: boolean }
 
-export function overview(db: DatabaseSync, creds: { configured: boolean }, now = Date.now(), env: NodeJS.ProcessEnv = process.env) {
+export interface TgInfo { configured: boolean; apiReady: boolean; source: 'env' | 'admin' | null; canStore: boolean }
+export function overview(db: DatabaseSync, creds: TgInfo, now = Date.now(), env: NodeJS.ProcessEnv = process.env) {
   const cfg = loadCardPayConfig(db, env);
   const cards: CardView[] = listCards(db).map((c) => {
     const u = cardUsage(db, c.number, now);
@@ -18,7 +19,7 @@ export function overview(db: DatabaseSync, creds: { configured: boolean }, now =
   });
   return {
     config: { mode: cfg.mode, strategy: cfg.strategy, reservePct: cfg.reservePct, windowMin: Math.round(cfg.windowMs / 60_000), sources: cfg.sources, legacyCard: !cards.length && /\d{16}/.test(cfg.card.replace(/\D/g, '')) ? fmtCardNumber(cfg.card.replace(/\D/g, '')) : '' },
-    telegram: { configured: creds.configured, state: watchState.state, since: watchState.since, error: watchState.error, lastNoticeAt: watchState.lastNoticeAt },
+    telegram: { configured: creds.configured, apiReady: creds.apiReady, source: creds.source, canStore: creds.canStore, state: watchState.state, since: watchState.since, error: watchState.error, lastNoticeAt: watchState.lastNoticeAt },
     cards,
     notices: recentNotices(db, 30),
     shadow: shadowReport(db, now - 7 * 86_400_000),

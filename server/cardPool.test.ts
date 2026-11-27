@@ -167,17 +167,17 @@ assert.equal(monthStart(T0), Date.UTC(2026, 0, 1) - 5 * 3_600_000, 'oy boshi —
   const a = addCard(db, { number: C1, label: 'Asosiy', dailyLimit: 100_000 }, null, T0);
   const api = ownCardApi(db, base(), () => T0);
   const p = await open(db, api, T0);
-  let o = overview(db, { configured: false }, T0 + MIN, {});
+  let o = overview(db, { configured: false, apiReady: false, source: null, canStore: true }, T0 + MIN, {});
   assert.equal(o.cards.length, 1); assert.equal(o.cards[0]!.reserved, 69_000); assert.equal(o.cards[0]!.full, false);
   assert.equal(o.cards[0]!.numberFmt, '8600 1234 5678 9012'); assert.equal(o.telegram.configured, false);
   pay(db, p.id, p.pay_amount!, T0 + 2 * MIN);
-  o = overview(db, { configured: true }, T0 + 3 * MIN, {});
+  o = overview(db, { configured: true, apiReady: true, source: 'admin', canStore: true }, T0 + 3 * MIN, {});
   assert.equal(o.cards[0]!.usedDay, 69_000); assert.equal(o.cards[0]!.full, false, '69 000 < 90 000');
   editCard(db, a.id, { dailyLimit: 70_000 }, null, T0);
-  assert.equal(overview(db, { configured: true }, T0 + 3 * MIN, {}).cards[0]!.full, true, '69 000 ≥ 63 000 (zaxira 10%)');
+  assert.equal(overview(db, { configured: true, apiReady: true, source: 'admin', canStore: true }, T0 + 3 * MIN, {}).cards[0]!.full, true, '69 000 ≥ 63 000 (zaxira 10%)');
   assert.equal(o.config.mode, 'off');
   removeCard(db, a.id, null, T0);
-  assert.equal(overview(db, { configured: true }, T0, {}).cards.length, 0);
+  assert.equal(overview(db, { configured: true, apiReady: true, source: 'admin', canStore: true }, T0, {}).cards.length, 0);
   const audits = (db.prepare("SELECT action FROM admin_audit ORDER BY id").all() as { action: string }[]).map((r) => r.action);
   assert.deepEqual(audits, ['pay.card.add', 'pay.card.edit', 'pay.card.remove'], 'har o‘zgarish audit jurnaliga yoziladi');
   // karta raqami jurnalga to'liq yozilmaydi
