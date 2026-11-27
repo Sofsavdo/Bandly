@@ -286,6 +286,13 @@ try {
     for (let i = 0; i < 100 && scribeCalls.length === s0; i++) await wait(50);
     assert.equal(scribeCalls.length - s0, 1, 'bosib turilgan gap bir marta yuborildi');
     await waitStatus(p, /Sellzen gapiryapti/, 6000); await waitStatus(p, /Navbat sizda/, 12000);
+    // Gap aytilib qo'yib yuborildi, keyin barmoq bir lahza (TAIL_MS ichida) qayta tegdi — gap tashlanmaydi (kod tekshiruvi, 2026-11-27)
+    const s1 = scribeCalls.length;
+    await p.mouse.down(); await waitStatus(p, /Tinglayapman/, 2000); await wait(1200); await p.mouse.up();
+    await wait(80); await p.mouse.down(); await wait(90); await p.mouse.up();
+    for (let i = 0; i < 100 && scribeCalls.length === s1; i++) await wait(50);
+    assert.equal(scribeCalls.length - s1, 1, 'qayta tegish aytilgan gapni o‘chirmadi — Scribe’ga bordi');
+    await waitStatus(p, /Sellzen gapiryapti/, 6000); await waitStatus(p, /Navbat sizda/, 12000);
   });
 
   await step('J7. Ekran: skrol yo‘q, tugatish tugmasi ko‘rinadi, yuz siljimaydi (6 xil o‘lcham)', async () => {

@@ -149,7 +149,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   // asr (server tanishi): bosilgan zahoti yoziladi — hech qanday ovoz chegarasi yo'q (server bo'sh/qisqa navbatni o'zi rad etadi).
   // Gemini ovozni o'zi eshitsa: ovoz bor-yo'qligini past chegara bilan sezamiz (faqat butunlay jim mikrofon), 1 soniya bosib turgan bo'lsa — baribir yuboramiz.
   // hold — ustoz gapirayotganda bosildi: TAP_MS o'tguncha kutamiz (tasodifiy qisqa tegish ustozni to'xtatmaydi, faqat ovozi pasayadi)
-  let hold: ReturnType<typeof setTimeout> | null = null;
+  let hold: ReturnType<typeof setTimeout> | null = null, resumed = false; // resumed — qo'yib yuborilgan navbat qayta bosilib davom ettirildi
   const cancelHold = () => { if (hold) { clearTimeout(hold); hold = null; } out.gain.value = 1; };
   let talking = false, tail: ReturnType<typeof setTimeout> | null = null, started = false, voicedMs = 0, heldMs = 0, pre: Int16Array[] = [], preLen = 0;
   const capturing = () => talking || tail !== null;
@@ -162,7 +162,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     pre = []; preLen = 0;
   };
   const finishTalk = () => {
-    muteIn = false;
+    muteIn = false; resumed = false;
     if (started) { flush(true); sendActivity(false); }
     else h.onNoVoice?.(); // butunlay jim — bo'sh navbat yuborilmaydi
     started = false; pre = []; preLen = 0; voicedMs = 0; heldMs = 0; rs.reset();
@@ -243,6 +243,8 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
       if (!on && discard) { // tasodifiy qisqa tegish: navbat bekor — ovoz yuborilmaydi
         if (tail) { clearTimeout(tail); tail = null; }
         if (!talking) return;
+        // Gap allaqachon aytilib, qo'yib yuborilgan edi (keyin barmoq bir lahza qayta tegdi) — gap tashlanmaydi, odatdagidek yuboriladi
+        if (resumed) { resumed = false; talking = false; finishTalk(); return; }
         if (hold) cancelHold(); // ustoz to'xtatilmagan edi — gapini davom ettiradi
         talking = false; pendingPcm = []; pendingLen = 0;
         if (started) sendActivity(false, true);
@@ -250,8 +252,9 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
         return;
       }
       if (on) {
-        if (tail) { clearTimeout(tail); tail = null; talking = true; return; } // qayta bosildi: o'sha navbat davom etadi
+        if (tail) { clearTimeout(tail); tail = null; talking = true; resumed = true; return; } // qayta bosildi: o'sha navbat davom etadi
         if (talking) return;
+        resumed = false;
         talking = true; started = false; voicedMs = 0; heldMs = 0; pre = []; preLen = 0; rs.reset();
         if (speaking) { // ustozni to'xtatish faqat TAP_MS bosib turilganda (tasodifiy tegish gapni kesmaydi); shu orada ovozi pasayadi
           out.gain.value = 0.35;

@@ -198,7 +198,7 @@ export default function Coach() {
         onNoVoice: () => { setPhase('idle'); setHint(L('Ovoz eshitilmadi — mikrofonga yaqinroq gapirib ko‘ring.')); },
         onNavigate: (route) => { if (nav.current) return; nav.current = { route, spoke: false, timer: setTimeout(goNav, 7000) }; }, // ustoz tasdiqlamasa ham 7 soniyada o'tamiz
         onError: (msg, beforeReady, resume) => { if (!cur()) return; if (resume && !beforeReady && resumeCall()) return; if (beforeReady) { liveRefCall.current?.end(); liveRefCall.current = null; setLiveFailed(true); done(false); } else { setErr(msg); setLiveFailed(true); end(); } }, // keyingi urinish — oddiy ovozli rejim (STT + matn AI + ovoz)
-        onLimit: (m, kind, resume) => { if (!cur()) return; if (resume && kind === 'session' && resumeCall()) return; setLimitKind(kind); setLimitMsg(m || (kind === 'session' ? L('Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : L('Bugungi bepul ovozli suhbat daqiqalari tugadi. Yangi daqiqalar ertaga beriladi.'))); end(); },
+        onLimit: (m, kind, resume) => { if (!cur()) return; if (resume && kind === 'session' && resumeCall()) return; setLimitKind(kind); setLimitMsg(m || (kind === 'session' ? L('Suhbat vaqti tugadi — yangi suhbatni boshlashingiz mumkin.') : L('Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.', [SALE_PLANS[0]!.voiceMin]))); end(); },
         onClosed: () => { if (!cur()) return; if (settled && liveRef.current) end(); done(false); },
         onEmotion: (e) => setEmotion(e),
       }).then((c) => { liveRefCall.current = c; }).catch(() => { setLiveFailed(true); done(false); });
