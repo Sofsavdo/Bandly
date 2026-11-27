@@ -25,6 +25,19 @@ export default function Results() {
   const last = series[series.length - 1], prev = series[series.length - 2];
   const last3 = mocks[mocks.length - 1];
   const delta = last && prev ? last.value - prev.value : null;
+  // Egasi (2026-11-27, sahifalar tekshiruvi): yangi o'quvchida 5 ta bo'sh karta o'rniga — bitta aniq bo'sh holat va keyingi qadam
+  const empty = !last && results.length === 0;
+  if (empty) return (
+    <div>
+      <div className="card res-empty">
+        <span className="eyebrow"><TrendingUp size={15} />  {L('Natijalar')}</span>
+        <h2 style={{ margin: '8px 0 4px' }}>{L('Hali natija yo‘q')}</h2>
+        <p className="muted" style={{ marginTop: 0 }}>{L('Birinchi testni topshiring — balingiz, ko‘nikmalaringiz va o‘sishingiz shu yerda ko‘rinadi. Maqsadingiz: {0}.', [p.target.toFixed(1)])}</p>
+        <div className="row" style={{ gap: 8 }}><a className="btn primary" href="#/mocks/full">{L('To‘liq imtihon (bepul)')}</a><a className="btn" href="#/mocks/reading">{L('Qisqa Reading test')}</a></div>
+      </div>
+      <BandProgress />
+    </div>
+  );
   return (
     <div>
       <div className="card">
