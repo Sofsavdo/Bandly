@@ -3,19 +3,28 @@ import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
 import { handsTurnBack } from './coach';
-import { attachLive, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, liveUsedWeek, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
 const cfg0 = { ...liveConfigFromEnv('AQ.k', {})!, nudgeMs: 60_000 }; // davom ettirish — alohida testda qisqa kutish bilan
-assert.equal(cfg0.model, 'gemini-3.8-live'); assert.equal(cfg0.voice, 'Puck'); assert.equal(cfg0.freeDailySeconds, 300);
+assert.equal(cfg0.model, 'gemini-3.8-live'); assert.equal(cfg0.voice, 'Puck'); assert.equal(cfg0.freeWeeklySeconds, 300);
 assert.equal(liveConfigFromEnv('AQ.k', { GEMINI_LIVE: '0' }), null);
 
 // Ruxsat: xodim — sessiya chegarasi; obunachi — oylik qoldiq; bepul — kunlik bepul daqiqa
-assert.equal(liveAllowance(cfg0, { staff: true, subscriberLeftSec: 0, freeUsedTodaySec: 9999 }), 600);
-assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 120, freeUsedTodaySec: 0 }), 120);
-assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 200 }), 100);
-assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 400 }), 0);
+assert.equal(liveAllowance(cfg0, { staff: true, subscriberLeftSec: 0, freeUsedWeekSec: 9999 }), 600);
+assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 120, freeUsedWeekSec: 0 }), 120);
+assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 200 }), 100);
+assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 400 }), 0);
+// Bepul — haftalik (oxirgi 7 kun): 5 daqiqa haftasiga (egasi, 2026-11-27)
+{
+  const wdb = new DatabaseSync(':memory:'); ensureLiveTable(wdb);
+  const d0 = Date.parse('2026-11-20T10:00:00Z');
+  recordLive(wdb, 5, 120, d0); recordLive(wdb, 5, 100, d0 + 3 * 86_400_000);
+  assert.equal(liveUsedWeek(wdb, 5, d0 + 3 * 86_400_000), 220, 'shu hafta: 2 kun');
+  assert.equal(liveUsedWeek(wdb, 5, d0 + 7 * 86_400_000), 100, '7 kundan eski kun hisobga kirmaydi');
+  assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: liveUsedWeek(wdb, 5, d0 + 3 * 86_400_000) }), 80, 'haftalik qoldiq');
+}
 
 const sm = setupMessage(cfg0, 'gemini-3.8-live', 'SYS') as { setup: Record<string, any> }; // eslint-disable-line @typescript-eslint/no-explicit-any
 assert.equal(sm.setup.model, 'models/gemini-3.8-live');
@@ -215,9 +224,9 @@ http.close(); upstream.close();
 {
   const capped = liveConfigFromEnv('k', { LIVE_FREE_GLOBAL_DAILY_MINUTES: '100' } as never)!;
   assert.equal(capped.freeGlobalDailySeconds, 6000);
-  assert.equal(liveAllowance(capped, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 0, platformUsedTodaySec: 5970 }), 30, 'umumiy byudjet oxirida — qolgan soniyalar');
-  assert.equal(liveAllowance(capped, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 0, platformUsedTodaySec: 7000 }), 0, 'byudjet tugadi — bepulga Live yo‘q');
-  assert.ok(liveAllowance(capped, { staff: false, subscriberLeftSec: 600, freeUsedTodaySec: 0, platformUsedTodaySec: 7000 }) > 0, 'obunachiga ta’sir qilmaydi');
+  assert.equal(liveAllowance(capped, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 0, platformUsedTodaySec: 5970 }), 30, 'umumiy byudjet oxirida — qolgan soniyalar');
+  assert.equal(liveAllowance(capped, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 0, platformUsedTodaySec: 7000 }), 0, 'byudjet tugadi — bepulga Live yo‘q');
+  assert.ok(liveAllowance(capped, { staff: false, subscriberLeftSec: 600, freeUsedWeekSec: 0, platformUsedTodaySec: 7000 }) > 0, 'obunachiga ta’sir qilmaydi');
   assert.equal(liveConfigFromEnv('k', {} as never)!.freeGlobalDailySeconds, 0, 'standart — chegarasiz (avvalgidek)');
 }
 // ---- Bosib-gapirish (push-to-talk): navbatni o'quvchi boshqaradi ----

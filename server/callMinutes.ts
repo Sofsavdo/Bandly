@@ -11,6 +11,8 @@ export const PLAN_VOICE_MINUTES = Math.min(...SALE_PLANS.filter((p) => !p.voiceD
 /** COACH_CALL_MONTH_MINUTES — faqat vaqtinchalik qo'lda o'zgartirish uchun (masalan xarajat nazorati); standart — tarifdagi qiymat. */
 /** Obunachining oylik ovozli suhbat soniyalari: admin panel (COACH_CALL_MONTH_MINUTES) > Railway > tarifdagi qiymat. Har chaqiruvda o'qiladi. */
 export const callMonthSeconds = (): number => settingValue('COACH_CALL_MONTH_MINUTES') * 60;
+/** Tarif bo'yicha oylik ovozli suhbat soniyalari (egasi, 2026-11-27): General 60, Exam 90, All Access 120 daqiqa — admin panelda o'zgaradi. */
+export const planMonthSeconds = (plan: string | null): number => (plan === 'exam' ? settingValue('PLAN_EXAM_VOICE_MINUTES') : plan === 'all' ? settingValue('PLAN_ALL_VOICE_MINUTES') : settingValue('COACH_CALL_MONTH_MINUTES')) * 60;
 export const CHARS_PER_SECOND = 15;
 export const ttsSeconds = (chars: number): number => Math.max(1, chars / CHARS_PER_SECOND);
 const month = (now: number): string => tzDay(now).slice(0, 7);
@@ -40,5 +42,5 @@ export function voiceUsedToday(db: DatabaseSync, playerId: number, now = Date.no
 export function voiceLeft(db: DatabaseSync, playerId: number, plan: string | null, now = Date.now()): number {
   if (!plan) return 0;
   if (plan === 'premium') return Math.max(0, premiumDailySeconds() - voiceUsedToday(db, playerId, now));
-  return callLeft(db, playerId, true, now);
+  return callLeft(db, playerId, true, now, planMonthSeconds(plan));
 }

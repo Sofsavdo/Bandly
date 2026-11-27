@@ -17,7 +17,7 @@ import { addLiveUsage, emptyLive, type LiveUsage } from './aiUsage';
 
 export interface LiveConfig {
   key: string; model: string; fallbackModel: string | null; /** Gemini setupComplete kutish muddati (ms), standart 8000 */ setupTimeoutMs?: number; voice: string; /** ayol ustoz ovozi (?voice=f) */ voiceFemale?: string; url: string;
-  freeDailySeconds: number; maxSessionSec: number; pricePerMin: number;
+  freeWeeklySeconds: number; maxSessionSec: number; pricePerMin: number;
   /** Gap tugadi deb hisoblash uchun jimlik (ms): qanchalik kichik — shunchalik tez javob, lekin o'ylab gapirganda bo'lib yuborish xavfi. */
   silenceMs: number;
   /** Bepul foydalanuvchilar uchun platforma bo'yicha kunlik umumiy chegara (soniya); 0 — chegarasiz. Xarajat nazorati. */
@@ -41,7 +41,7 @@ export function liveConfigFromEnv(geminiKey: string | null, env: NodeJS.ProcessE
     voiceFemale: (env.GEMINI_LIVE_VOICE_FEMALE ?? '').trim() || 'Leda', // egasi (2026-11-26): erkak va ayol ustoz; Aoede katta yoshli ayoldek eshitildi — yosh, yoqimli ovoz (Leda: «youthful»)
     url: (env.GEMINI_LIVE_URL ?? '').trim() || 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent',
     // Admin panelda o'zgaradi — har safar env'dan o'qiladi (getter)
-    get freeDailySeconds() { return Math.max(0, Number(env.LIVE_FREE_DAILY_MINUTES ?? 5) || 0) * 60; },
+    get freeWeeklySeconds() { return Math.max(0, Number(env.LIVE_FREE_WEEKLY_MINUTES ?? 5) || 0) * 60; },
     get maxSessionSec() { return Math.max(60, (Number(env.LIVE_MAX_SESSION_MINUTES ?? 10) || 10) * 60); },
     pricePerMin: Number(env.PRICE_LIVE_PER_MIN ?? 0.03),
     get freeGlobalDailySeconds() { return Math.max(0, Number(env.LIVE_FREE_GLOBAL_DAILY_MINUTES ?? 0) || 0) * 60; },
@@ -55,6 +55,10 @@ export function ensureLiveTable(db: DatabaseSync): void {
 export function liveUsedToday(db: DatabaseSync, playerId: number, now = Date.now()): number {
   return (db.prepare('SELECT seconds FROM live_usage WHERE day = ? AND player_id = ?').get(tzDay(now), playerId) as { seconds: number } | undefined)?.seconds ?? 0;
 }
+/** Oxirgi 7 kunda (bugun bilan) ishlatilgan Live soniyalari — bepul haftalik limit uchun. */
+export function liveUsedWeek(db: DatabaseSync, playerId: number, now = Date.now()): number {
+  return (db.prepare('SELECT COALESCE(SUM(seconds), 0) AS s FROM live_usage WHERE player_id = ? AND day >= ?').get(playerId, tzDay(now - 6 * 86_400_000)) as { s: number }).s;
+}
 /** Bugun butun platformada ishlatilgan Live soniyalari. */
 export function liveUsedTodayAll(db: DatabaseSync, now = Date.now()): number {
   return (db.prepare('SELECT COALESCE(SUM(seconds), 0) AS s FROM live_usage WHERE day = ?').get(tzDay(now)) as { s: number }).s;
@@ -65,10 +69,10 @@ export function recordLive(db: DatabaseSync, playerId: number, seconds: number, 
 }
 
 /** Bu qo'ng'iroq uchun ruxsat etilgan soniyalar: xodim — sessiya chegarasi; obunachi — oylik daqiqalari; bepul — kunlik bepul daqiqa. */
-export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriberLeftSec: number; freeUsedTodaySec: number; platformUsedTodaySec?: number }): number {
+export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriberLeftSec: number; freeUsedWeekSec: number; platformUsedTodaySec?: number }): number {
   if (who.staff) return cfg.maxSessionSec;
   if (who.subscriberLeftSec > 0) return Math.min(cfg.maxSessionSec, who.subscriberLeftSec);
-  const personal = Math.max(0, cfg.freeDailySeconds - who.freeUsedTodaySec);
+  const personal = Math.max(0, cfg.freeWeeklySeconds - who.freeUsedWeekSec); // bepul — oxirgi 7 kunda
   // Platformaning kunlik bepul byudjeti tugasa — bepul foydalanuvchilarga ertagacha Live berilmaydi (obunachilarga ta'sir qilmaydi)
   const global = cfg.freeGlobalDailySeconds > 0 ? Math.max(0, cfg.freeGlobalDailySeconds - (who.platformUsedTodaySec ?? 0)) : Number.POSITIVE_INFINITY;
   return Math.min(cfg.maxSessionSec, personal, global);
@@ -267,10 +271,10 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const send = (o: Record<string, unknown>) => { if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify(o)); };
   const who = d.auth(token);
   if (!who) { send({ type: 'error', code: 401, message: 'Hisobga kiring' }); client.close(); return; }
-  const allowance = liveAllowance(d.cfg, { staff: who.staff, subscriberLeftSec: who.subscriberLeftSec, freeUsedTodaySec: liveUsedToday(d.db, who.id), platformUsedTodaySec: liveUsedTodayAll(d.db) });
+  const allowance = liveAllowance(d.cfg, { staff: who.staff, subscriberLeftSec: who.subscriberLeftSec, freeUsedWeekSec: liveUsedWeek(d.db, who.id), platformUsedTodaySec: liveUsedTodayAll(d.db) });
   const lang = String(url.searchParams.get('lang') ?? 'uz').slice(0, 2);
   const tr = d.tr ?? ((_l: string, t: string) => t);
-  if (allowance < 5) { send({ type: 'limit', kind: 'quota', message: tr(lang, `Bugungi bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqa.`) }); client.close(); return; }
+  if (allowance < 5) { send({ type: 'limit', kind: 'quota', message: tr(lang, `Bu haftalik bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqadan.`) }); client.close(); return; }
   const ptt = url.searchParams.get('ptt') === '1'; // bosib-gapirish rejimi
   const asrOn = ptt && !!d.asr; // gap serverda matnga aylantiriladi
   const ctx: { firstCall: boolean; memory: string; followUp?: string } = d.context?.(who.id) ?? { firstCall: false, memory: '' };
