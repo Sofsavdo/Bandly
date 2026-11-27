@@ -380,7 +380,7 @@ export default function Coach() {
             {minutes?.subscribed ? <span className="pill">{minutes.premium ? L('Bugun {0} daqiqa qoldi', [minutes.left]) : L('{0} daqiqa qoldi', [minutes.left])}</span> : minutes && FREE_INFO.liveMinutesPerWeek > 0 ? <span className="pill">{L('Bepul: haftasiga {0} daqiqa', [FREE_INFO.liveMinutesPerWeek])}</span> : null}
           </div>
         </div>
-        {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
+        {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{minutes?.subscribed ? L('Premium: kuniga {0} daqiqa', [SALE_PLANS.find((x) => x.id === 'premium')?.voiceDaily ?? 30]) : L('Obuna: oyiga {0} daqiqadan', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
         {status && !status.coach && <p className="notice">{L('Sellzen tez orada ochiladi.')}</p>}
         {acc ? <TutorSetup onStart={start} disabled={!status?.coach} /> : <JoinForm onJoined={setAcc} text={L('Suhbat uchun hisobingizga kiring.')} />}
       </section>
@@ -414,7 +414,7 @@ export default function Coach() {
           <div className="call-notes">
             {liveFailed && !!status?.live && <p className="notice" role="status">{L('Jonli ovozli suhbat hozir ishlamayapti — oddiy ovozli rejimda davom etamiz: siz gapirasiz, Sellzen matn va ovoz bilan javob beradi.')}</p>}
             {err && <p className="tutor-err">{err}</p>}
-            {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{L('Obuna: oyiga {0} daqiqa', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
+            {limitMsg && <p className="notice voice-limit" role="status">{limitMsg} {limitKind === 'quota' && <a href="#/pricing">{minutes?.subscribed ? L('Premium: kuniga {0} daqiqa', [SALE_PLANS.find((x) => x.id === 'premium')?.voiceDaily ?? 30]) : L('Obuna: oyiga {0} daqiqadan', [SALE_PLANS[0]!.voiceMin])}</a>}</p>}
           </div>
         )}
       </main>

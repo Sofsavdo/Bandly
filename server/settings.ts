@@ -14,7 +14,7 @@ export const SETTINGS: SettingDef[] = [
   { key: 'FREE_FIRST_DAY_LESSONS', group: 'free', label: 'Birinchi kuni bepul darslar (har bir kurs)', def: 3, min: 0, max: 50 },
   { key: 'FREE_WRITING_PER_WEEK', group: 'free', label: 'Haftasiga bepul AI Writing baholash', def: 1, min: 0, max: 50 },
   { key: 'FREE_SPEAKING_PER_WEEK', group: 'free', label: 'Haftasiga bepul AI Speaking baholash', def: 1, min: 0, max: 50 },
-  { key: 'LIVE_FREE_WEEKLY_MINUTES', group: 'free', label: 'Bepul ovozli suhbat (Sellzen), haftasiga', hint: 'Oxirgi 7 kun bo‘yicha', def: 5, min: 0, max: 600, unit: 'min' },
+  { key: 'LIVE_FREE_WEEKLY_MINUTES', group: 'free', label: 'Bepul ovozli suhbat (Sellzen), haftasiga', hint: 'Har dushanba yangilanadi (Toshkent vaqti)', def: 5, min: 0, max: 600, unit: 'min' },
   { key: 'COACH_FREE_DAILY_ANSWERS', group: 'free', label: 'Kuniga bepul ovozli javoblar (matnli suhbatda)', def: 5, min: 0, max: 500 },
   // Obuna tariflari
   { key: 'COACH_CALL_MONTH_MINUTES', group: 'plans', label: 'General English: ovozli suhbat, oyiga', def: 60, min: 0, max: 3000, unit: 'min' },
@@ -65,7 +65,10 @@ export function ensureSettings(db: DatabaseSync, env: NodeJS.ProcessEnv = proces
   // boshqa qiymatlar ko'chirilmaydi (egasi tasdiqlagan yangi standart: haftasiga 5 daqiqa).
   if (env.LIVE_FREE_WEEKLY_MINUTES === undefined && env.LIVE_FREE_DAILY_MINUTES !== undefined && Number(env.LIVE_FREE_DAILY_MINUTES) === 0) env.LIVE_FREE_WEEKLY_MINUTES = '0';
   const oldDaily = db.prepare("SELECT value, updated_at, updated_by FROM app_settings WHERE key = 'LIVE_FREE_DAILY_MINUTES'").get() as { value: number; updated_at: number; updated_by: number | null } | undefined;
-  if (oldDaily && oldDaily.value === 0) db.prepare("INSERT OR IGNORE INTO app_settings (key, value, updated_at, updated_by) VALUES ('LIVE_FREE_WEEKLY_MINUTES', 0, ?, ?)").run(oldDaily.updated_at, oldDaily.updated_by);
+  if (oldDaily) {
+    if (oldDaily.value === 0) db.prepare("INSERT OR IGNORE INTO app_settings (key, value, updated_at, updated_by) VALUES ('LIVE_FREE_WEEKLY_MINUTES', 0, ?, ?)").run(oldDaily.updated_at, oldDaily.updated_by);
+    db.prepare("DELETE FROM app_settings WHERE key = 'LIVE_FREE_DAILY_MINUTES'").run(); // bir marta: keyin admin haftalik qiymatni bemalol o'zgartiradi
+  }
   snapshot(env);
   for (const r of db.prepare('SELECT key, value FROM app_settings').all() as { key: string; value: number }[]) if (BY_KEY.has(r.key)) env[r.key] = String(r.value);
 }

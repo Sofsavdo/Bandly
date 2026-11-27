@@ -51,6 +51,8 @@ export function liveConfigFromEnv(geminiKey: string | null, env: NodeJS.ProcessE
 
 export function ensureLiveTable(db: DatabaseSync): void {
   db.exec('CREATE TABLE IF NOT EXISTS live_usage (day TEXT NOT NULL, player_id INTEGER NOT NULL, seconds REAL NOT NULL DEFAULT 0, PRIMARY KEY (day, player_id))');
+  // Faqat bepul (obunasiz) qo'ng'iroqlar — haftalik bepul limit shu jadvaldan; obunachi pullik daqiqalari bepul limitni yemaydi
+  db.exec('CREATE TABLE IF NOT EXISTS live_free_usage (day TEXT NOT NULL, player_id INTEGER NOT NULL, seconds REAL NOT NULL DEFAULT 0, PRIMARY KEY (day, player_id))');
 }
 export function liveUsedToday(db: DatabaseSync, playerId: number, now = Date.now()): number {
   return (db.prepare('SELECT seconds FROM live_usage WHERE day = ? AND player_id = ?').get(tzDay(now), playerId) as { seconds: number } | undefined)?.seconds ?? 0;
@@ -60,16 +62,17 @@ export function weekMonday(now = Date.now()): string {
   const d = new Date(`${tzDay(now)}T00:00:00Z`); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
   return d.toISOString().slice(0, 10);
 }
-/** Shu haftada (dushanbadan) ishlatilgan Live soniyalari — bepul haftalik limit uchun. */
+/** Shu haftada (dushanbadan) BEPUL ishlatilgan Live soniyalari — bepul haftalik limit uchun (obuna paytidagi daqiqalar kirmaydi). */
 export function liveUsedWeek(db: DatabaseSync, playerId: number, now = Date.now()): number {
-  return (db.prepare('SELECT COALESCE(SUM(seconds), 0) AS s FROM live_usage WHERE player_id = ? AND day >= ?').get(playerId, weekMonday(now)) as { s: number }).s;
+  return (db.prepare('SELECT COALESCE(SUM(seconds), 0) AS s FROM live_free_usage WHERE player_id = ? AND day >= ?').get(playerId, weekMonday(now)) as { s: number }).s;
 }
 /** Bugun butun platformada ishlatilgan Live soniyalari. */
 export function liveUsedTodayAll(db: DatabaseSync, now = Date.now()): number {
   return (db.prepare('SELECT COALESCE(SUM(seconds), 0) AS s FROM live_usage WHERE day = ?').get(tzDay(now)) as { s: number }).s;
 }
-export function recordLive(db: DatabaseSync, playerId: number, seconds: number, now = Date.now()): void {
+export function recordLive(db: DatabaseSync, playerId: number, seconds: number, now = Date.now(), free = false): void {
   if (!(seconds > 0)) return;
+  if (free) db.prepare('INSERT INTO live_free_usage (day, player_id, seconds) VALUES (?, ?, ?) ON CONFLICT(day, player_id) DO UPDATE SET seconds = seconds + excluded.seconds').run(tzDay(now), playerId, seconds);
   db.prepare('INSERT INTO live_usage (day, player_id, seconds) VALUES (?, ?, ?) ON CONFLICT(day, player_id) DO UPDATE SET seconds = seconds + excluded.seconds').run(tzDay(now), playerId, seconds);
 }
 
@@ -79,7 +82,7 @@ export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriber
   // Obunachi — faqat o'z tarifi daqiqalari (bepul haftalik zaxira obunachilarga emas: ularning pullik daqiqalari ham shu jadvalda)
   if (who.plan) return Math.min(cfg.maxSessionSec, Math.max(0, who.subscriberLeftSec));
   if (who.subscriberLeftSec > 0) return Math.min(cfg.maxSessionSec, who.subscriberLeftSec);
-  const personal = Math.max(0, cfg.freeWeeklySeconds - who.freeUsedWeekSec); // bepul — oxirgi 7 kunda
+  const personal = Math.max(0, cfg.freeWeeklySeconds - who.freeUsedWeekSec); // bepul — shu hafta (dushanbadan, Toshkent)
   // Platformaning kunlik bepul byudjeti tugasa — bepul foydalanuvchilarga ertagacha Live berilmaydi (obunachilarga ta'sir qilmaydi)
   const global = cfg.freeGlobalDailySeconds > 0 ? Math.max(0, cfg.freeGlobalDailySeconds - (who.platformUsedTodaySec ?? 0)) : Number.POSITIVE_INFINITY;
   return Math.min(cfg.maxSessionSec, personal, global);
@@ -243,7 +246,8 @@ interface LiveDeps {
   /** Server xabarini o'quvchi tiliga tarjima qilish (limit xabari) */
   tr?: (lang: string, text: string) => string;
   /** Qo'ng'iroq tugadi: daqiqa va xarajat yoziladi */
-  onEnd: (playerId: number, seconds: number, model: string, usage?: LiveUsage) => void;
+  /** free — obunasiz (bepul haftalik limitdan) qo'ng'iroq */
+  onEnd: (playerId: number, seconds: number, model: string, usage?: LiveUsage, free?: boolean) => void;
   log?: (msg: string) => void;
 }
 
@@ -334,7 +338,7 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
     try { upstream?.close(); } catch { /* */ }
     try { client.close(); } catch { /* */ }
     const secs = ready ? (Date.now() - started) / 1000 : 0;
-    if (secs > 0) d.onEnd(who.id, secs, model, usage);
+    if (secs > 0) d.onEnd(who.id, secs, model, usage, !who.staff && !who.plan);
     if (turns.filter((t) => t.who === 'learner').length >= 3) { try { d.onTranscript?.(who.id, turns, lang); } catch { /* xotira ixtiyoriy */ } }
     const dbfs = st.acts && st.lvl > 0 ? ` lvl=${(20 * Math.log10(st.lvl / st.acts)).toFixed(0)}dB` : '';
     log(`[live] ${who.id} ${secs.toFixed(0)}s ${model} (${why}) javob=${st.replies} hissiyot=${Object.entries(st.emo).map(([k, v]) => `${k}:${v}`).join(',') || '-'}${wrongCount ? ` til-xato:${wrongCount}` : ''}${ptt ? ` navbat=${st.acts}${asrOn ? ` tanish=${st.asrOk}/${st.asrEmpty}/${st.asrFail} ishonchsiz=${st.unsure} tegish=${st.taps}` : ''} ${st.audioSec.toFixed(0)}s${dbfs}` : ''}${statLine(st)}`);

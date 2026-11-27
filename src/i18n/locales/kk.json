@@ -5936,7 +5936,6 @@
  "Obuna narxi masalasi: 3,50 / 0,05 = 70.": "Жазылым бағасы есебі: 3,50 / 0,05 = 70.",
  "Obuna tariflari": "Жазылым тарифтері",
  "Obuna turlari": "Жазылым түрлері",
- "Obuna: oyiga {0} daqiqa": "Жазылым: айына {0} минут",
  "Obunangiz yoqildi": "Жазылымыңыз қосылды",
  "Obunasiz o‘quvchilar uchun kunlik va haftalik chegaralar.": "Жазылымы жоқ оқушыларға арналған күндік және апталық шектеулер.",
  "Ochilish — Thanks for your email.": "Кіріспе — Thanks for your email.",
@@ -16244,11 +16243,14 @@
  "General English: ovozli suhbat, oyiga": "General English: дауыстық әңгіме, айына",
  "Bepul ovozli suhbat (Sellzen), haftasiga": "Тегін дауыстық әңгіме (Sellzen), аптасына",
  "Sellzen: haftasiga {0} daqiqa": "Sellzen: аптасына {0} минут",
- "Oxirgi 7 kun bo‘yicha": "Соңғы 7 күн бойынша",
  "Exam Preparation: ovozli suhbat, oyiga": "Exam Preparation: дауыстық әңгіме, айына",
  "Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})": "Sellzen-мен дауыстық әңгіме: {0} минут / ай (≈ күніне {1})",
  "All Access: ovozli suhbat, oyiga": "All Access: дауыстық әңгіме, айына",
  "Bugungi ovozli suhbat daqiqalari tugadi — ertaga yangilanadi.": "Бүгінгі дауыстық минуттар бітті — ертең жаңарады.",
  "Bu oylik ovozli suhbat daqiqalari tugadi — keyingi oyda yangilanadi. Ko‘proq gaplashish uchun — Premium tarifi.": "Осы айдағы дауыстық минуттар бітті — келесі айда жаңарады. Көбірек сөйлесу үшін — Premium тарифі.",
- "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "Осы аптадағы тегін дауыстық минуттар бітті — дүйсенбіде жаңарады. Жазылыммен — айына {0} минуттан бастап."
+ "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "Осы аптадағы тегін дауыстық минуттар бітті — дүйсенбіде жаңарады. Жазылыммен — айына {0} минуттан бастап.",
+ "Premium: kuniga {0} daqiqa": "Premium: күніне {0} минут",
+ "Obuna: oyiga {0} daqiqadan": "Жазылым: айына {0} минуттан бастап",
+ "Har dushanba yangilanadi (Toshkent vaqti)": "Әр дүйсенбі жаңарады (Ташкент уақыты)",
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Sellzen-мен дауыстық әңгіме: {0} минут / ай"
 }

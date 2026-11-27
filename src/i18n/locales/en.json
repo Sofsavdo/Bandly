@@ -5936,7 +5936,6 @@
  "Obuna narxi masalasi: 3,50 / 0,05 = 70.": "A subscription price problem: 3.50 / 0.05 = 70.",
  "Obuna tariflari": "Subscription plans",
  "Obuna turlari": "Subscription plans",
- "Obuna: oyiga {0} daqiqa": "Subscription: {0} min a month",
  "Obunangiz yoqildi": "Your subscription is active",
  "Obunasiz o‘quvchilar uchun kunlik va haftalik chegaralar.": "Daily and weekly limits for learners without a subscription.",
  "Ochilish — Thanks for your email.": "The opening — Thanks for your email.",
@@ -16244,11 +16243,14 @@
  "General English: ovozli suhbat, oyiga": "General English: voice conversation, per month",
  "Bepul ovozli suhbat (Sellzen), haftasiga": "Free voice conversation (Sellzen), per week",
  "Sellzen: haftasiga {0} daqiqa": "Sellzen: {0} min a week",
- "Oxirgi 7 kun bo‘yicha": "Over the last 7 days",
  "Exam Preparation: ovozli suhbat, oyiga": "Exam Preparation: voice conversation, per month",
  "Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})": "Voice conversation with Sellzen: {0} min / month (≈ {1} a day)",
  "All Access: ovozli suhbat, oyiga": "All Access: voice conversation, per month",
  "Bugungi ovozli suhbat daqiqalari tugadi — ertaga yangilanadi.": "Today's voice minutes are used up — they renew tomorrow.",
  "Bu oylik ovozli suhbat daqiqalari tugadi — keyingi oyda yangilanadi. Ko‘proq gaplashish uchun — Premium tarifi.": "This month's voice minutes are used up — they renew next month. To talk more — the Premium plan.",
- "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "This week's free voice minutes are used up — they renew on Monday. With a subscription — from {0} min a month."
+ "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "This week's free voice minutes are used up — they renew on Monday. With a subscription — from {0} min a month.",
+ "Premium: kuniga {0} daqiqa": "Premium: {0} min a day",
+ "Obuna: oyiga {0} daqiqadan": "Subscription: from {0} min a month",
+ "Har dushanba yangilanadi (Toshkent vaqti)": "Renews every Monday (Tashkent time)",
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Voice conversation with Sellzen: {0} min / month"
 }

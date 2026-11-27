@@ -5936,7 +5936,6 @@
  "Obuna narxi masalasi: 3,50 / 0,05 = 70.": "Масъалаи нархи обуна: 3,50 / 0,05 = 70.",
  "Obuna tariflari": "Тарифҳои обуна",
  "Obuna turlari": "Навъҳои обуна",
- "Obuna: oyiga {0} daqiqa": "Обуна: {0} дақиқа дар як моҳ",
  "Obunangiz yoqildi": "Обунаи шумо фаъол шуд",
  "Obunasiz o‘quvchilar uchun kunlik va haftalik chegaralar.": "Маҳдудиятҳои рӯзона ва ҳафтаина барои хонандагони бе обуна.",
  "Ochilish — Thanks for your email.": "Оғоз — Thanks for your email.",
@@ -16244,11 +16243,14 @@
  "General English: ovozli suhbat, oyiga": "General English: суҳбати овозӣ, дар як моҳ",
  "Bepul ovozli suhbat (Sellzen), haftasiga": "Суҳбати овозии ройгон (Sellzen), дар як ҳафта",
  "Sellzen: haftasiga {0} daqiqa": "Sellzen: ҳафтае {0} дақиқа",
- "Oxirgi 7 kun bo‘yicha": "Дар 7 рӯзи охир",
  "Exam Preparation: ovozli suhbat, oyiga": "Exam Preparation: суҳбати овозӣ, дар як моҳ",
  "Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})": "Суҳбати овозӣ бо Sellzen: {0} дақиқа / моҳ (≈ дар як рӯз {1})",
  "All Access: ovozli suhbat, oyiga": "All Access: суҳбати овозӣ, дар як моҳ",
  "Bugungi ovozli suhbat daqiqalari tugadi — ertaga yangilanadi.": "Дақиқаҳои овозии имрӯз тамом шуданд — фардо нав мешаванд.",
  "Bu oylik ovozli suhbat daqiqalari tugadi — keyingi oyda yangilanadi. Ko‘proq gaplashish uchun — Premium tarifi.": "Дақиқаҳои овозии ин моҳ тамом шуданд — моҳи оянда нав мешаванд. Барои бештар гуфтугӯ — тарифи Premium.",
- "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "Дақиқаҳои ройгони овозии ин ҳафта тамом шуданд — рӯзи душанбе нав мешаванд. Бо обуна — аз {0} дақиқа дар як моҳ."
+ "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "Дақиқаҳои ройгони овозии ин ҳафта тамом шуданд — рӯзи душанбе нав мешаванд. Бо обуна — аз {0} дақиқа дар як моҳ.",
+ "Premium: kuniga {0} daqiqa": "Premium: дар як рӯз {0} дақиқа",
+ "Obuna: oyiga {0} daqiqadan": "Обуна: аз {0} дақиқа дар як моҳ",
+ "Har dushanba yangilanadi (Toshkent vaqti)": "Ҳар душанбе нав мешавад (вақти Тошкент)",
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Суҳбати овозӣ бо Sellzen: {0} дақиқа / моҳ"
 }
