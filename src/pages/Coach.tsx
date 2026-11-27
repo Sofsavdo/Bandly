@@ -115,6 +115,7 @@ export default function Coach() {
   const msgId = useRef(0); const youFresh = useRef(true); const botFresh = useRef(true);
   const pttState = useRef<PttState>(PTT_IDLE);
   const talkingRef = useRef(false);
+  const speakingRef = useRef(false); // ustoz ovozi hozir eshitilyaptimi (qisqa tegishdan keyin holatni to'g'ri ko'rsatish uchun)
   const thinkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nav = useRef<{ route: string; spoke: boolean; timer: ReturnType<typeof setTimeout> | null } | null>(null); // "darsga o't": ustoz tasdiqlab bo'lgach o'tamiz
   const finePointer = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
@@ -182,6 +183,7 @@ export default function Coach() {
       void startLive({ token: a.token, adult: adultOn(p), level: p.level, lang: getLang(), style: liveStyle(p), voice: p.tutorVoice ?? 'male', cont, ctx: cont && base ? { ...base, recent: recentLines() } : base }, {
         onReady: (info) => { if (!cur()) return; setCapSec(cont ? secsRef.current + info.capSec : info.capSec); setLiveOn(true); if (!cont || phaseRef.current === 'connecting') setPhase('idle'); setHint(''); done(true); },
         onSpeaking: (on) => {
+          speakingRef.current = on;
           if (thinkTimer.current) { clearTimeout(thinkTimer.current); thinkTimer.current = null; }
           setPhase(on ? 'speaking' : talkingRef.current ? 'listening' : 'idle'); if (!on) setLvl(0);
           const n = nav.current; if (n) { if (on) n.spoke = true; else if (n.spoke) setTimeout(goNav, 500); } // ustoz tasdiqlab bo'lgach — o'tamiz
@@ -312,7 +314,7 @@ export default function Coach() {
   const stopTalk = (tap = false) => {
     talkingRef.current = false; setTalking(false);
     if (liveRefCall.current) {
-      liveRefCall.current.talk(false, tap); setPhase(tap ? 'idle' : 'thinking'); setLvl(0);
+      liveRefCall.current.talk(false, tap); setPhase(tap ? (speakingRef.current ? 'speaking' : 'idle') : 'thinking'); setLvl(0); // tasodifiy tegish ustozni to'xtatmaydi
       if (tap) return; // tasodifiy qisqa tegish: javob kutilmaydi
       // javob kelmasa (aloqa sust) — "o'ylayapman"da qotib qolmaymiz
       if (thinkTimer.current) clearTimeout(thinkTimer.current);

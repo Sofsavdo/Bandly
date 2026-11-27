@@ -246,6 +246,12 @@ try {
     assert.ok(scribeCalls.length - s0 >= 1, 'Space → Scribe');
     await waitCount('text', 1, t, 6000);
     await waitStatus(p, /Sellzen gapiryapti/, 6000);
+    // Tasodifiy qisqa tegish (egasi, 2026-11-27: "uzilib gapiryapti") — ustoz to'xtamaydi, gapini davom ettiradi
+    await wait(300); const s1 = scribeCalls.length;
+    await p.keyboard.down('Space'); await wait(80); await p.keyboard.up('Space');
+    await wait(500);
+    await waitStatus(p, /Sellzen gapiryapti/, 1000);
+    assert.equal(scribeCalls.length, s1, 'qisqa tegish Scribe’ga bormadi');
     await waitStatus(p, /Navbat sizda/, 12000); // ustoz fikrini oxirigacha aytdi (ustidan kesilmadi)
   });
 

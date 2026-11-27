@@ -4,7 +4,7 @@
 // Server ovozni ElevenLabs Scribe bilan matnga aylantiradi (asr=true): bunda bosilgan zahoti yozish boshlanadi, "ovoz bormi" degan qaror serverniki.
 // Qo'lsiz rejim (ptt=false): uzluksiz oqim, gap tugashini va gapni bo'lishni Gemini o'zi aniqlaydi ("interrupted").
 import { micContext, parkMic } from './voiceTurn';
-import { MIN_VOICED_MS, QUIET_RMS, TAIL_MS, tallyVoiced } from './ptt';
+import { MIN_VOICED_MS, QUIET_RMS, TAIL_MS, TAP_MS, tallyVoiced } from './ptt';
 import { L } from '../i18n';
 
 export interface LiveHandlers {
@@ -71,6 +71,17 @@ export function makeResampler(fromRate: number, toRate = 16000): { process(input
   };
   return { process, reset };
 }
+// Ustoz ovozi uzilib eshitilardi (egasi, 2026-11-27): bo'laklar atigi 30 ms zaxira bilan chalinardi — internet bir lahza sekinlashsa
+// (Telegram, mobil tarmoq) navbatdagi bo'lak kechikib, so'zlar orasida uzilish bo'lardi. Endi javob boshida kichik bufer (LEAD0),
+// javob o'rtasida bo'lak kechiksa (uzilish) — bufer shu suhbat davomida kattalashadi (LEAD_MAX gacha).
+export const LEAD0 = 0.2, LEAD_STEP = 0.1, LEAD_MAX = 0.6;
+/** Keyingi bo'lak qachon chalinadi: navbatda ovoz bor — uning orqasidan; javob boshida — bufer bilan; javob o'rtasida ovoz tugab qolgan — uzilish (bufer oshadi). */
+export function planChunk(now: number, nextAt: number, lead: number, inReply: boolean): { at: number; underrun: boolean; lead: number } {
+  if (nextAt > now + 0.005) return { at: nextAt, underrun: false, lead };
+  if (!inReply) return { at: now + lead, underrun: false, lead };
+  const l = Math.min(LEAD_MAX, lead + LEAD_STEP);
+  return { at: now + l, underrun: true, lead: l };
+}
 const rms = (f: Float32Array): number => { let s = 0; for (let i = 0; i < f.length; i++) s += f[i]! * f[i]!; return Math.sqrt(s / Math.max(1, f.length)); };
 
 export async function startLive(o: { token: string; adult: boolean; level: string | null; lang: string; style?: number; ptt?: boolean; /** ustoz ovozi */ voice?: 'male' | 'female'; /** qayta ulanish: ustoz salomlashmaydi, suhbatni davom ettiradi */ cont?: boolean; /** o'quvchi konteksti: daraja, bugungi reja, zaif joylar (ustoz suhbatni tavsiya asosida olib boradi) */ ctx?: unknown }, h: LiveHandlers): Promise<LiveCall> {
@@ -112,6 +123,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   // Token URL'da emas (proksi loglariga tushmasin) — subprotocol sarlavhasida (server/live.ts tokenFromProtocols)
 
   let ready = false, ended = false, speaking = false, nextAt = 0, floor = 0.01, asr = false;
+  let lead = LEAD0, inReply = false, gaps = 0, gapsSent = 0;
   const playing = new Set<AudioBufferSourceNode>();
   const rs = makeResampler(ctx.sampleRate);
   let pendingPcm: Int16Array[] = [], pendingLen = 0;
@@ -122,7 +134,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     if (on && !meterTimer) { mouth = 0; meterTimer = setInterval(meterTick, 50); }
     if (!on && meterTimer) { clearInterval(meterTimer); meterTimer = null; mouth = 0; }
   };
-  const stopPlayback = () => { for (const s of playing) { try { s.stop(); } catch { /* */ } } playing.clear(); nextAt = ctx.currentTime; setSpeaking(false); };
+  const stopPlayback = () => { for (const s of playing) { try { s.stop(); } catch { /* */ } } playing.clear(); nextAt = ctx.currentTime; inReply = false; setSpeaking(false); };
 
   const flush = (force = false) => {
     if (!pendingLen || (!force && pendingLen < 640)) return; // ~40 ms bo'laklar
@@ -136,15 +148,21 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   // ---- Bosib-gapirish holati ----
   // asr (server tanishi): bosilgan zahoti yoziladi — hech qanday ovoz chegarasi yo'q (server bo'sh/qisqa navbatni o'zi rad etadi).
   // Gemini ovozni o'zi eshitsa: ovoz bor-yo'qligini past chegara bilan sezamiz (faqat butunlay jim mikrofon), 1 soniya bosib turgan bo'lsa — baribir yuboramiz.
+  // hold — ustoz gapirayotganda bosildi: TAP_MS o'tguncha kutamiz (tasodifiy qisqa tegish ustozni to'xtatmaydi, faqat ovozi pasayadi)
+  let hold: ReturnType<typeof setTimeout> | null = null;
+  const cancelHold = () => { if (hold) { clearTimeout(hold); hold = null; } out.gain.value = 1; };
   let talking = false, tail: ReturnType<typeof setTimeout> | null = null, started = false, voicedMs = 0, heldMs = 0, pre: Int16Array[] = [], preLen = 0;
   const capturing = () => talking || tail !== null;
-  const sendActivity = (on: boolean, discard = false) => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(discard ? { type: 'activity', on, discard } : { type: 'activity', on })); };
-  const begin = () => { // navbat ochiladi, yig'ilgan boshlanish yuboriladi
-    started = true; sendActivity(true);
+  // barge — o'quvchi ustozni ataylab to'xtatdi (TAP_MS bosib turdi): server javobni darhol to'xtatadi; muteIn — yo'ldagi eski javob bo'laklari chalinmaydi
+  let muteIn = false;
+  const sendActivity = (on: boolean, discard = false, barge = false) => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(discard ? { type: 'activity', on, discard } : barge ? { type: 'activity', on, barge } : { type: 'activity', on })); };
+  const begin = (barge = false) => { // navbat ochiladi, yig'ilgan boshlanish yuboriladi
+    started = true; sendActivity(true, false, barge);
     for (const p of pre) push(p);
     pre = []; preLen = 0;
   };
   const finishTalk = () => {
+    muteIn = false;
     if (started) { flush(true); sendActivity(false); }
     else h.onNoVoice?.(); // butunlay jim — bo'sh navbat yuborilmaydi
     started = false; pre = []; preLen = 0; voicedMs = 0; heldMs = 0; rs.reset();
@@ -160,6 +178,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
       const pcm = rs.process(f);
       if (started) { push(pcm); return; }
       pre.push(pcm); preLen += pcm.length;
+      if (hold) return; // ustozni to'xtatish tasdiqlanmagan — karnaydagi ustoz ovozi navbatni ochmasin
       while (preLen > 48_000 && pre.length > 1) preLen -= pre.shift()!.length; // ~3 soniyagacha
       const frameMs = (f.length / ctx.sampleRate) * 1000;
       voicedMs = tallyVoiced(voicedMs, v, QUIET_RMS, frameMs); heldMs += frameMs;
@@ -175,14 +194,16 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
   ws.onmessage = (e: MessageEvent) => {
     if (typeof e.data !== 'string') {
       const i16 = new Int16Array(e.data as ArrayBuffer);
-      if (!i16.length) return;
+      if (!i16.length || muteIn) return;
       const f = new Float32Array(i16.length);
       for (let i = 0; i < i16.length; i++) f[i] = i16[i]! / 0x8000;
       const b = ctx.createBuffer(1, f.length, 24000);
       b.copyToChannel(f, 0);
       const s = ctx.createBufferSource(); s.buffer = b; s.connect(out);
-      const at = Math.max(ctx.currentTime + 0.03, nextAt);
-      s.start(at); nextAt = at + b.duration; playing.add(s);
+      const p = planChunk(ctx.currentTime, nextAt, lead, inReply);
+      if (p.underrun) gaps++;
+      lead = p.lead; inReply = true;
+      s.start(p.at); nextAt = p.at + b.duration; playing.add(s);
       setSpeaking(true);
       s.onended = () => { playing.delete(s); if (!playing.size && ctx.currentTime >= nextAt - 0.05) setSpeaking(false); };
       return;
@@ -191,8 +212,8 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
     try { m = JSON.parse(e.data as string); } catch { return; }
     if (m.type === 'ready') { ready = true; asr = m.asr === true; h.onReady({ capSec: Number(m.capSec) || 0, ptt: m.ptt === true, asr }); }
     // Javob tugadi: hissiyot effekti ovoz chalinib bo'lgach o'chadi (keyingi javobda eski hissiyot qolmasin)
-    else if (m.type === 'turn') { h.onTurn?.(); const left = Math.max(0, (nextAt - ctx.currentTime) * 1000); setTimeout(() => h.onEmotion?.('neutral'), left + 400); }
-    else if (m.type === 'interrupted') { stopPlayback(); h.onTurn?.(); }
+    else if (m.type === 'turn') { inReply = false; if (gaps !== gapsSent && ws.readyState === WebSocket.OPEN) { gapsSent = gaps; ws.send(JSON.stringify({ type: 'stats', gaps, leadMs: Math.round(lead * 1000) })); } h.onTurn?.(); const left = Math.max(0, (nextAt - ctx.currentTime) * 1000); setTimeout(() => h.onEmotion?.('neutral'), left + 400); }
+    else if (m.type === 'interrupted') { muteIn = false; stopPlayback(); h.onTurn?.(); }
     else if (m.type === 'in' && m.text) h.onHeard(m.text);
     else if (m.type === 'out' && m.text) h.onSaid(m.text);
     else if (m.type === 'noVoice') h.onNoVoice?.();
@@ -210,6 +231,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
 
   function cleanup() {
     if (tail) { clearTimeout(tail); tail = null; }
+    if (hold) { clearTimeout(hold); hold = null; }
     stopPlayback();
     try { src.disconnect(); node.disconnect(); mute.disconnect(); out.disconnect(); } catch { /* */ }
     node.port.onmessage = null;
@@ -221,6 +243,7 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
       if (!on && discard) { // tasodifiy qisqa tegish: navbat bekor — ovoz yuborilmaydi
         if (tail) { clearTimeout(tail); tail = null; }
         if (!talking) return;
+        if (hold) cancelHold(); // ustoz to'xtatilmagan edi — gapini davom ettiradi
         talking = false; pendingPcm = []; pendingLen = 0;
         if (started) sendActivity(false, true);
         started = false; pre = []; preLen = 0; voicedMs = 0; heldMs = 0; rs.reset();
@@ -230,11 +253,16 @@ export async function startLive(o: { token: string; adult: boolean; level: strin
         if (tail) { clearTimeout(tail); tail = null; talking = true; return; } // qayta bosildi: o'sha navbat davom etadi
         if (talking) return;
         talking = true; started = false; voicedMs = 0; heldMs = 0; pre = []; preLen = 0; rs.reset();
-        if (speaking) stopPlayback(); // ustozni ataylab to'xtatish: ovoz darhol tinadi
-        if (asr || speaking) begin(); // tanish rejimi (yoki ustozni to'xtatish): navbat darhol ochiladi
+        if (speaking) { // ustozni to'xtatish faqat TAP_MS bosib turilganda (tasodifiy tegish gapni kesmaydi); shu orada ovozi pasayadi
+          out.gain.value = 0.35;
+          hold = setTimeout(() => { hold = null; out.gain.value = 1; if (!talking || ended) return; stopPlayback(); muteIn = true; begin(true); }, TAP_MS);
+          return;
+        }
+        if (asr) begin(); // tanish rejimi: navbat darhol ochiladi
       } else {
         if (!talking) return;
         talking = false;
+        if (hold) { cancelHold(); pre = []; preLen = 0; return; } // TAP_MS dan qisqa — ustoz gapini davom ettiradi
         tail = setTimeout(() => { tail = null; finishTalk(); }, TAIL_MS); // oxirgi so'z kesilmasin
       }
     },

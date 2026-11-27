@@ -341,6 +341,15 @@ http.close(); upstream.close();
   const press = async (frames: number, hold = 40) => { ws.send(JSON.stringify({ type: 'activity', on: true })); for (let i = 0; i < frames; i++) ws.send(Buffer.alloc(3200), { binary: true }); await wait(hold); ws.send(JSON.stringify({ type: 'activity', on: false })); };
   const upCount = (f: (m: Record<string, any>) => boolean) => seen.filter(f).length; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+  // 0) Tasodifiy qisqa tegish (egasi, 2026-11-27: "uzilib gapiryapti"): ustoz to'xtatilmaydi, javobining ovozi davom etadi
+  {
+    const t0 = audioIn;
+    ws.send(JSON.stringify({ type: 'activity', on: true })); await wait(60); ws.send(JSON.stringify({ type: 'activity', on: false, discard: true }));
+    await wait(400);
+    assert.equal(msgs.some((m) => m.type === 'interrupted'), false, 'qisqa tegish ustozni to‘xtatmadi');
+    upWs!.send(JSON.stringify({ serverContent: { modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.alloc(480).toString('base64') } }] } } }));
+    await until(() => audioIn > t0);
+  }
   // 1) Ustoz gapirayotganda bosildi: "interrupted", eski javobning qolgan ovozi tashlanadi; gap Scribe → matn → Gemini; Gemini'ga ovoz bormaydi
   const a0 = audioIn;
   ws.send(JSON.stringify({ type: 'activity', on: true }));
