@@ -2,6 +2,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { randomBytes } from 'node:crypto';
 import { HamyonError, type Created, type HamyonApi, type HamyonStatus } from './hamyon';
 import { OPEN, applyResult, type PaymentRow } from './payments';
+import { ensureCardPool, fmtCardNumber, pickCard, type PoolConfig, type Strategy } from './cardPool';
 
 // O'z karta-to'lov moduli (Hamyon'ga bog'liq bo'lmagan yo'l). G'oya Hamyon bilan bir xil:
 //   1) har to'lovga AYNAN bir xil bo'lmagan summa beriladi (narx + 1, 2, … so'm) va bizning karta ko'rsatiladi;
@@ -13,7 +14,7 @@ import { OPEN, applyResult, type PaymentRow } from './payments';
 // MUHIM: xabar matni formati namunalar bilan tasdiqlanmagan — parseCardNotice ehtiyotkor (shubhali xabar → "unknown", avtomatik yetkazilmaydi).
 
 export type CardPayMode = 'off' | 'capture' | 'shadow' | 'live';
-export interface CardPayConfig { mode: CardPayMode; card: string; windowMs: number; graceMs: number; sources: string[] }
+export interface CardPayConfig { mode: CardPayMode; card: string; windowMs: number; graceMs: number; sources: string[]; strategy: Strategy; reservePct: number }
 
 export function cardPayConfigFromEnv(env: NodeJS.ProcessEnv = process.env): CardPayConfig {
   const raw = (env.PAY_OWN_MODE ?? 'off').trim().toLowerCase();
@@ -25,8 +26,31 @@ export function cardPayConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Card
     windowMs: mins(env.PAY_OWN_WINDOW_MIN, 15) * 60_000, // to'lov oynasi: shu vaqtgacha summa band
     graceMs: mins(env.PAY_OWN_GRACE_MIN, 180) * 60_000, // oyna tugagach ham shu vaqt ichida kelgan to'lov yetkaziladi
     sources: (env.TG_NOTICE_SOURCES ?? 'CardXabarBot,HUMOcardbot').split(',').map((s) => s.trim().replace(/^@/, '')).filter(Boolean),
+    strategy: (env.PAY_OWN_STRATEGY ?? '').trim().toLowerCase() === 'fill' ? 'fill' : 'spread',
+    reservePct: (() => { const n = Number(env.PAY_OWN_RESERVE_PCT); return Number.isFinite(n) && n >= 0 && n <= 90 ? n : 10; })(),
   };
 }
+
+/** Sozlama: admin panelda saqlangan qiymat (pay_config) > Railway o'zgaruvchisi > standart. Har chaqiruvda o'qiladi — o'zgarish darhol kuchga kiradi. */
+export function loadCardPayConfig(db: DatabaseSync, env: NodeJS.ProcessEnv = process.env): CardPayConfig {
+  const base = cardPayConfigFromEnv(env);
+  let rows: { key: string; value: string }[] = [];
+  try { rows = db.prepare('SELECT key, value FROM pay_config').all() as { key: string; value: string }[]; } catch { /* jadval hali yo'q */ }
+  const v = new Map(rows.map((r) => [r.key, r.value]));
+  const mode = v.get('mode');
+  const strategy = v.get('strategy');
+  const reserve = Number(v.get('reserve_pct'));
+  const win = Number(v.get('window_min'));
+  return {
+    ...base,
+    mode: mode === 'off' || mode === 'capture' || mode === 'shadow' || mode === 'live' ? mode : base.mode,
+    strategy: strategy === 'fill' || strategy === 'spread' ? strategy : base.strategy,
+    reservePct: v.has('reserve_pct') && Number.isFinite(reserve) && reserve >= 0 && reserve <= 90 ? reserve : base.reservePct,
+    windowMs: v.has('window_min') && Number.isFinite(win) && win >= 1 && win <= 24 * 60 ? win * 60_000 : base.windowMs,
+  };
+}
+
+export const poolOf = (cfg: CardPayConfig): PoolConfig => ({ strategy: cfg.strategy, reservePct: cfg.reservePct, legacyCard: cfg.card });
 
 export function ensureCardPayTables(db: DatabaseSync): void {
   db.exec(`
@@ -50,6 +74,8 @@ export function ensureCardPayTables(db: DatabaseSync): void {
       until INTEGER NOT NULL
     );
   `);
+  db.exec('CREATE TABLE IF NOT EXISTS admin_audit (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, actor_id INTEGER, action TEXT NOT NULL, target TEXT, detail TEXT)');
+  ensureCardPool(db);
 }
 
 // ---------------------------------------------------------------- xabarni tahlil qilish
@@ -169,10 +195,11 @@ export const OWN_PREFIX = 'own_';
 export const MAX_OWN_BUMPS = 99;
 
 /** Bizning kartamizga to'lov: summa narx + 1, 2, … so'm (band summalar o'tkazib yuboriladi). */
-export function ownCardApi(db: DatabaseSync, cfg: CardPayConfig, nowFn: () => number = Date.now): HamyonApi {
+export function ownCardApi(db: DatabaseSync, cfgOrGetter: CardPayConfig | (() => CardPayConfig), nowFn: () => number = Date.now): HamyonApi {
+  const getCfg = typeof cfgOrGetter === 'function' ? cfgOrGetter : () => cfgOrGetter;
   return {
     async create(orderId, amount, busy = new Set<number>()): Promise<Created> {
-      if (!cfg.card) throw new HamyonError('PAY_OWN_CARD missing');
+      const cfg = getCfg();
       const now = nowFn();
       // band: oyna ichidagi ochiq to'lovlar + oyna tugagan, lekin hali yetkazilishi mumkin bo'lgan (grace) to'lovlar
       const rows = db.prepare("SELECT hamyon_amount AS a FROM payments WHERE hamyon_amount IS NOT NULL AND status IN ('pending', 'prepared', 'cancelled', 'expired') AND created_at >= ? AND id <> ?").all(now - cfg.graceMs, orderId) as { a: number }[];
@@ -180,7 +207,9 @@ export function ownCardApi(db: DatabaseSync, cfg: CardPayConfig, nowFn: () => nu
       for (let k = 0; k <= MAX_OWN_BUMPS; k++) {
         const cand = amount + k;
         if (taken.has(cand)) continue;
-        return { payment_id: `${OWN_PREFIX}${orderId}`, card: cfg.card, amount: cand, expire_at: Math.floor((now + cfg.windowMs) / 1000) };
+        const card = pickCard(db, cand, poolOf(cfg), now); // limit: sig'maydigan karta mijozga ko'rsatilmaydi
+        if (!card) throw new HamyonError('no card with free limit');
+        return { payment_id: `${OWN_PREFIX}${orderId}`, card: fmtCardNumber(card.number), amount: cand, expire_at: Math.floor((now + cfg.windowMs) / 1000) };
       }
       throw new HamyonError('no free amount');
     },
@@ -196,12 +225,23 @@ export function ownCardApi(db: DatabaseSync, cfg: CardPayConfig, nowFn: () => nu
   };
 }
 
-/** Eski (Hamyon) to'lovlari tugamaguncha ikkala xizmat yonma-yon: yangilar tanlangan xizmatga, mavjudlari o'z xizmatiga ketadi. */
-export function routedApi(own: HamyonApi | null, hamyon: HamyonApi | null, useOwnForNew: boolean): HamyonApi | null {
+/** Eski (Hamyon) to'lovlari tugamaguncha ikkala xizmat yonma-yon: yangilar tanlangan xizmatga, mavjudlari o'z xizmatiga ketadi.
+ *  O'z xizmatimiz yangi to'lov ocha olmasa (karta limiti to'lgan, karta yo'q) va Hamyon ulangan bo'lsa — Hamyonga o'tiladi. */
+export function routedApi(own: HamyonApi | null, hamyon: HamyonApi | null, useOwnForNew: boolean | (() => boolean), warn: (m: string) => void = () => undefined): HamyonApi | null {
   if (!own && !hamyon) return null;
+  const useOwn = typeof useOwnForNew === 'function' ? useOwnForNew : () => useOwnForNew;
   const pick = (id: string): HamyonApi => { const a = id.startsWith(OWN_PREFIX) ? own : hamyon; if (!a) throw new HamyonError('provider off'); return a; };
   return {
-    async create(orderId, amount, busy) { const a = useOwnForNew ? own : hamyon; if (!a) throw new HamyonError('provider off'); return a.create(orderId, amount, busy); },
+    async create(orderId, amount, busy) {
+      if (useOwn() && own) {
+        try { return await own.create(orderId, amount, busy); } catch (e) {
+          if (!hamyon) throw e;
+          warn(`[cardpay] o'z xizmat to'lov ocha olmadi (${(e as Error).message}) — Hamyonga o'tildi`);
+        }
+      }
+      if (!hamyon) throw new HamyonError('provider off');
+      return hamyon.create(orderId, amount, busy);
+    },
     async status(id) { return pick(id).status(id); },
     async cancel(id) { return pick(id).cancel(id); },
   };

@@ -1,6 +1,22 @@
 # O'z karta-to'lov moduli (Hamyon'ga bog'liq bo'lmagan yo'l)
 
-Holat: **kuzatuv bosqichi**. Standart rejim `off` — hech narsa o'zgarmaydi, to'lov Hamyon orqali ishlayveradi.
+Holat: **admin paneldan boshqariladi** (Admin → To'lovlar → «O'z karta-to'lov»). Standart rejim `off` — hech narsa o'zgarmaydi, to'lov Hamyon orqali ishlayveradi.
+
+## Admin panel
+- **Rejim** (off / capture / shadow / live), karta tanlash usuli, limit zaxirasi, to'lov oynasi — saqlansa darhol kuchga kiradi (Railway o'zgaruvchisidan ustun).
+- **Kartalar:** raqam, nom, **kunlik va oylik limit** (so'm, 0 — cheklovsiz), tartib, yoqish/o'chirish. Har kartada bugun/oy to'langan summa, hozir ochiq (band) summa va to'lish darajasi ko'rinadi.
+- **Telegram holati:** ulangan / ulanmoqda / kutmoqda / xato, oxirgi xabar vaqti. `live` karta bo'lmasa yoqilmaydi.
+- **Sinov hisoboti** (shadow) va so'nggi xabarlar.
+- Har o'zgarish audit jurnaliga yoziladi (karta raqami jurnalda faqat oxirgi 4 raqam).
+
+## Kartalarni almashtirish va limit
+Yangi to'lov ochilganda karta shunday tanlanadi:
+1. Faqat yoqilgan kartalar; karta limitga **sig'masa mijozga ko'rsatilmaydi**. Sig'ish: `bugun to'langan + hozir band + yangi summa ≤ limit × (100 − zaxira%)` — kunlik (Toshkent vaqti) va oylik bo'yicha. Zaxira (standart 10%) — kartaga bizdan boshqa tushumlar ham kelishi mumkinligi uchun.
+2. **Barobar taqsimlash** (standart): yuklamasi eng kam karta (teng bo'lsa — eng uzoq ishlatilmagani), shuning uchun birorta karta limitga yetib qolmaydi. **Birinchisi to'lguncha:** tartib bo'yicha birinchi karta limitga yetguncha, keyin keyingisi.
+3. Hech bir karta sig'masa — Hamyon ulangan bo'lsa, to'lov avtomatik Hamyonga o'tadi (jurnalda `[cardpay] … Hamyonga o'tildi`); bo'lmasa to'lov ochilmaydi.
+4. Summa **kartalar bo'yicha ham noyob** (narx + 1, 2, …), shuning uchun xabarni to'lovga bog'lash karta raqamini bilishni talab qilmaydi.
+
+Limit hisobi **bizning to'lovlarimiz bo'yicha**: kartaga boshqa joydan tushgan pul hisobga olinmaydi — shu sababli zaxira foizi bor. Bankdagi haqiqiy limitlarni (Uzcard/Humo) o'zingiz kiriting.
 
 ## Qanday ishlaydi
 1. Foydalanuvchi tarif tanlaydi, server to'lov ochadi: **bizning karta** va **aniq summa** (narx + 1, 2, … so'm — har ochiq to'lovga bir xil bo'lmagan summa).
@@ -9,7 +25,7 @@ Holat: **kuzatuv bosqichi**. Standart rejim `off` — hech narsa o'zgarmaydi, to
 
 Telegram'da bot boshqa botning xabarini ko'ra olmaydi — shuning uchun karta egasining **akkaunti** (MTProto sessiyasi) kerak. Bu cheklov Hamyon'da ham, bizda ham bir xil; farq — sessiya kimning qo'lida va kim javob beradi.
 
-## Rejimlar (`PAY_OWN_MODE`)
+## Rejimlar (`PAY_OWN_MODE` yoki admin panel)
 | Rejim | Nima qiladi | Obuna beradimi |
 |---|---|---|
 | `off` | Hech narsa | — |
@@ -22,10 +38,10 @@ Telegram'da bot boshqa botning xabarini ko'ra olmaydi — shuning uchun karta eg
 ## Ishga tushirish tartibi
 1. https://my.telegram.org → *API development tools*: `api_id` va `api_hash` oling.
 2. Kompyuteringizda: `TG_API_ID=… TG_API_HASH=… npm run pay:login` — telefon, kod (va bo'lsa 2 bosqichli parol) kiriting; chiqqan **SESSION** qatorini Railway Variables'ga `TG_SESSION` qilib qo'ying. Hech kimga yubormang.
-3. Railway Variables: `PAY_OWN_MODE=capture`, `TG_API_ID`, `TG_API_HASH`, `TG_SESSION`. Deploy tugagach jurnalda `[cardpay] Telegram ulandi` chiqadi.
+3. Railway Variables: `TG_API_ID`, `TG_API_HASH`, `TG_SESSION` (rejimni admin paneldan `capture` qiling — yoki `PAY_OWN_MODE=capture`). Telegram'ga faqat rejim `off` bo'lmaganda ulanadi; jurnalda `[cardpay] Telegram ulandi` chiqadi.
 4. Bir necha haqiqiy to'lov/o'tkazma qiling, Telegram'dagi xabarlarni (kartani yashirib) **bizga ko'rsating** — `parseCardNotice` hozir faqat taxminiy namunalar bilan sinalgan, haqiqiy format bilan tasdiqlanishi shart.
 5. `PAY_OWN_MODE=shadow`: Hamyon bilan yonma-yon yuring. `/api/admin/pay/notices` da `missed` va `wrong` bo'sh bo'lsa (kamida ~1–2 hafta yoki 30+ to'lov) tayyor.
-6. `PAY_OWN_MODE=live`, `PAY_OWN_CARD=<karta>`: yangi to'lovlar bizning kartaga. Hamyon'dagi ochiq to'lovlar o'z yo'lida yakunlanadi.
+6. Admin panelda kartalarni (limit bilan) qo'shing va rejimni `live` qiling (eski usul: `PAY_OWN_CARD=<karta>` — bitta karta, limitsiz): yangi to'lovlar bizning kartaga. Hamyon'dagi ochiq to'lovlar o'z yo'lida yakunlanadi.
 
 **Qaytarish:** `PAY_OWN_MODE=off` (yoki `shadow`) — yangi to'lovlar yana Hamyon'ga ketadi; ochiq `own_` to'lovlar muddati tugaguncha o'z holicha yakunlanadi.
 

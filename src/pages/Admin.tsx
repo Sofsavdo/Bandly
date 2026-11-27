@@ -9,6 +9,7 @@ import { CertAdmin } from '../components/CertAdmin';
 import { CreatorAdmin } from '../components/CreatorAdmin';
 import { AuditPanel, LeadsPanel, PaymentsPanel, StaffPanel, UsersPanel } from '../components/AdminOps';
 import { LimitsPanel } from '../components/AdminLimits';
+import { OwnPayPanel } from '../components/AdminPayOwn';
 import { L } from '../i18n';
 
 interface Day { day: string; signups: number; active: number; paid: number; revenue: number; aiUsd: number }
@@ -103,7 +104,7 @@ export default function Admin() {
       {TABS.map(([k, label, Icon]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><Icon size={17} aria-hidden="true" /><span>{label}</span></button>)}
     </nav>
   );
-  if (tab !== 'stats') return <div>{tabs}{tab === 'limits' ? <LimitsPanel /> : tab === 'leads' ? <LeadsPanel /> : tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <PaymentsPanel /> : tab === 'staff' ? <><StaffPanel /><AuditPanel /></> : tab === 'creators' ? <CreatorAdmin /> : <CertAdmin />}</div>;
+  if (tab !== 'stats') return <div>{tabs}{tab === 'limits' ? <LimitsPanel /> : tab === 'leads' ? <LeadsPanel /> : tab === 'users' ? <UsersPanel /> : tab === 'payments' ? <><OwnPayPanel /><PaymentsPanel /></> : tab === 'staff' ? <><StaffPanel /><AuditPanel /></> : tab === 'creators' ? <CreatorAdmin /> : <CertAdmin />}</div>;
 
   const head = (
     <section className="card page-head t-sky">
