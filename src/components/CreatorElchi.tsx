@@ -6,7 +6,7 @@ import { getAccount } from '../lib/account';
 import { fmtSum } from '../lib/pay';
 import { L } from '../i18n';
 
-interface Info { code: string; som: number; tiers: { min: number; som: number }[]; payDays: number; enabled: boolean; activeThisMonth: number; next: { need: number; som: number } | null; bloggers: { nickname: string; joinedAt: number; activeAt: number | null }[]; earnedSom: number }
+interface Info { total: number; activeTotal: number; code: string; som: number; tiers: { min: number; som: number }[]; payDays: number; enabled: boolean; activeThisMonth: number; next: { need: number; som: number } | null; bloggers: { nickname: string; joinedAt: number; activeAt: number | null }[]; earnedSom: number }
 const som = (x: number): string => L('{0} so‘m', [fmtSum(x)]);
 
 export function CreatorElchi() {
@@ -31,7 +31,7 @@ export function CreatorElchi() {
       {msg && <p className="evidence" role="status">{msg}</p>}
       <div className="kpis three elchi-kpis">
         <div className="kpi2"><span>{L('Bu oy faol')}</span><b>{d.activeThisMonth}</b><small>{d.next ? L('yana {0} ta — +{1}', [d.next.need, som(d.next.som)]) : L('eng yuqori bonus')}</small></div>
-        <div className="kpi2"><span>{L('Olib kelganlar')}</span><b>{d.bloggers.length}</b><small>{L('faol: {0}', [d.bloggers.filter((b) => b.activeAt !== null).length])}</small></div>
+        <div className="kpi2"><span>{L('Olib kelganlar')}</span><b>{d.total}</b><small>{L('faol: {0}', [d.activeTotal])}</small></div>
         <div className="kpi2"><span>{L('Ishlangan')}</span><b>{fmtSum(d.earnedSom)}</b><small>{L('so‘m')}</small></div>
       </div>
       {d.bloggers.length > 0 && (

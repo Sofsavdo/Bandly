@@ -16191,7 +16191,6 @@
  "Bolalar rejimi (PIN bilan)": "Балдар режими (PIN менен)",
  "Sizni Sellzen elchisi taklif qildi.": "Сизди Sellzen элчиси чакырды.",
  "Elchi havolasi bilan ariza yuborish uchun avval hisobingizga kiring": "Элчи шилтемеси аркылуу арыз берүү үчүн адегенде аккаунтуңузга кириңиз",
- "Misol: oyda 10 ta faol bloger — 10 × {0} + {1} = {2}.": "Мисал: айына 10 активдүү блогер — 10 × {0} + {1} = {2}.",
  "Olib kelganlar": "Алып келгендер",
  "Oyda {0} ta — +{1}.": "Айына {0} — +{1}.",
  "Kirish va ariza yuborish": "Кирүү жана арыз жөнөтүү",
@@ -16252,5 +16251,7 @@
  "Premium: kuniga {0} daqiqa": "Premium: күнүнө {0} мүнөт",
  "Obuna: oyiga {0} daqiqadan": "Жазылуу: айына {0} мүнөттөн баштап",
  "Har dushanba yangilanadi (Toshkent vaqti)": "Ар дүйшөмбүдө жаңыланат (Ташкент убактысы)",
- "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Sellzen менен үндүү сүйлөшүү: {0} мүнөт / ай"
+ "Sellzen bilan ovozli suhbat: {0} daqiqa / oy": "Sellzen менен үндүү сүйлөшүү: {0} мүнөт / ай",
+ "Misol: oyda {0} ta faol bloger — {0} × {1} + {2} = {3}.": "Мисал: айына {0} активдүү блогер — {0} × {1} + {2} = {3}.",
+ "Gumon: bir qurilma — admin tekshiradi": "Шек: бир түзмөк — админ текшерет"
 }

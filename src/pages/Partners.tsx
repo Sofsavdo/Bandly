@@ -9,7 +9,7 @@ import { L } from '../i18n';
 
 interface Tier { min: number; som: number }
 interface VideoTerms { baseSom: number; windowDays: number; payDays: number; viewTiers: Tier[]; learnerTiers: Tier[]; instagram: string }
-interface Terms { rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: VideoTerms | null; elchi: { som: number; tiers: Tier[]; payDays: number } | null }
+interface Terms { elchiOk?: boolean; rules: { kind: string; pct: number | null; som: number | null; holdDays: number }[]; invite: { xp: number; days: number }; video: VideoTerms | null; elchi: { som: number; tiers: Tier[]; payDays: number } | null }
 type Kind = 'blogger' | 'teacher' | 'learner' | 'elchi';
 /** Elchi havolasi (#/partners?elchi=kod): kirish sahifasidan qaytganda ham saqlanadi. */
 const ELCHI_KEY = 'sellzen.elchi';
@@ -49,8 +49,11 @@ export default function Partners() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [sent, setSent] = useState(false);
-  const [elchi] = useState(elchiCode);
-  useEffect(() => { void fetch('/api/partners/terms').then((r) => (r.ok ? r.json() : null)).then(setTerms).catch(() => undefined); }, []);
+  const [elchi, setElchi] = useState(elchiCode);
+  useEffect(() => { void fetch(`/api/partners/terms${elchi ? `?elchi=${elchi}` : ''}`).then((r) => (r.ok ? r.json() : null)).then((t: Terms | null) => {
+    setTerms(t);
+    if (t && elchi && t.elchiOk === false) { try { sessionStorage.removeItem(ELCHI_KEY); } catch { /* */ } setElchi(''); } // noto'g'ri yoki o'chirilgan kod — mehmon odatdagidek ariza yuboradi
+  }).catch(() => undefined); }, [elchi]);
   const v = terms?.video ?? null;
   const el = terms?.elchi ?? null;
   const small = needsAudience(kind) && f.audience === '<1k';
@@ -133,7 +136,7 @@ export default function Partners() {
             <p style={{ marginTop: 0 }}>{L('Tanish blogerlaringizni elchi havolangiz orqali olib keling. Blogeringizning birinchi videosi tasdiqlansa — siz to‘lov olasiz.')}</p>
             <div className="vp-row base"><span>{L('Har faol bloger uchun')}</span><b>{som(el.som)}</b></div>
             {el.tiers.map((t) => <div className="vp-row" key={`e${t.min}`}><span>{L('Oyda {0} ta faol bloger', [n(t.min)])}</span><b>+{som(t.som)}</b></div>)}
-            <p className="muted">{L('Misol: oyda 10 ta faol bloger — 10 × {0} + {1} = {2}.', [n(el.som), n(bonus(el.tiers, 10)), som(el.som * 10 + bonus(el.tiers, 10))])}</p>
+            <p className="muted">{(() => { const k = el.tiers.at(-1)?.min ?? 10; return L('Misol: oyda {0} ta faol bloger — {0} × {1} + {2} = {3}.', [n(k), n(el.som), n(bonus(el.tiers, k)), som(el.som * k + bonus(el.tiers, k))]); })()}</p>
             <p className="muted" style={{ marginBottom: 8 }}>{L('Elchi bir vaqtda bloger ham bo‘la oladi. Pul tasdiqdan keyin {0} kun ichida to‘lanadi.', [el.payDays])}</p>
             <a className="btn sm" href="#partner-form" onClick={() => setKind('elchi')}>{L('Elchi bo‘lish')} <ArrowRight size={16} /></a>
           </section>
