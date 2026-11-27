@@ -11,7 +11,10 @@ import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
 import { ensureCardPayTables, loadCardPayConfig, ownCardApi, poolOf, pruneNotices, recentNotices, routedApi, shadowReport } from './cardPay';
 import { activeCards } from './cardPool';
 import { addCard, editCard, overview as cardPayOverview, removeCard, setConfig as setCardPayConfig } from './cardPayAdmin';
-import { startCardWatch } from './cardWatch';
+import { startCardWatch, type TgCreds } from './cardWatch';
+import { LoginFlow, gramLoginFactory, gramTerminate } from './tgLogin';
+import { clearSession, loadSession, sessionKey } from './tgSession';
+import { audit as auditPay } from './certificates';
 import { findUsers } from './adminUsers';
 import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
 import { listeningTests } from '../src/content/listeningTests';
@@ -112,8 +115,13 @@ const hapi = hcfg ? hamyonApi(hcfg) : null;
 // Standart off — hech narsa o'zgarmaydi. Yangi to'lovlar faqat live rejimda va kamida bitta karta bo'lganda bizning kartaga ochiladi
 // (karta limiti to'lsa yoki karta bo'lmasa — Hamyon ulangan bo'lsa, shunga o'tiladi). Eski own_ to'lovlar rejim o'zgarsa ham yakunlanadi.
 const getCardCfg = () => loadCardPayConfig(db);
-const tgCreds = { apiId: Number(process.env.TG_API_ID), apiHash: (process.env.TG_API_HASH ?? '').trim(), session: (process.env.TG_SESSION ?? '').trim() };
-const tgConfigured = tgCreds.apiId > 0 && !!tgCreds.apiHash && !!tgCreds.session;
+const tgKeys = { apiId: Number(process.env.TG_API_ID), apiHash: (process.env.TG_API_HASH ?? '').trim() };
+const tgApiReady = tgKeys.apiId > 0 && !!tgKeys.apiHash;
+// Telegram sessiyasi: Railway'dagi TG_SESSION (ustun) yoki admin panel orqali olingan, shifrlangan sessiya (server/tgSession.ts)
+const tgSessionNow = (): { session: string; source: 'env' | 'admin' } | null => { const e = (process.env.TG_SESSION ?? '').trim(); if (e) return { session: e, source: 'env' }; const a = loadSession(db, process.env); return a ? { session: a, source: 'admin' } : null; };
+const tgCredsNow = (): TgCreds | null => { const s = tgApiReady ? tgSessionNow() : null; return s ? { ...tgKeys, session: s.session } : null; };
+const tgInfo = () => ({ configured: !!tgCredsNow(), apiReady: tgApiReady, source: tgSessionNow()?.source ?? null, canStore: !!sessionKey(process.env) });
+const tgLogin = new LoginFlow(db, gramLoginFactory, () => (tgApiReady ? tgKeys : null));
 const ownApi = ownCardApi(db, getCardCfg);
 const payApi = routedApi(ownApi, hapi, () => getCardCfg().mode === 'live', (m) => console.warn(m))!; // ownApi doim bor — null bo'lmaydi
 const ownLiveReady = (): boolean => { const c = getCardCfg(); return c.mode === 'live' && activeCards(db, poolOf(c)).length > 0; };
@@ -431,14 +439,25 @@ const httpServer = createServer(async (req, res) => {
       if (req.method === 'PUT') { const b = await readJson(req, 8192); return send(res, 200, { items: updateSettings(db, (b.values ?? {}) as Record<string, unknown>, me.id) }); }
     }
     // ---- O'z karta-to'lov moduli: sozlama, kartalar, holat (faqat admin) ----
-    if (url.pathname === '/api/admin/pay/own' || url.pathname === '/api/admin/pay/own/config' || url.pathname === '/api/admin/pay/cards' || /^\/api\/admin\/pay\/cards\/[a-f0-9]{12}$/.test(url.pathname)) {
+    if (url.pathname === '/api/admin/pay/own' || url.pathname === '/api/admin/pay/own/config' || url.pathname === '/api/admin/pay/cards' || /^\/api\/admin\/pay\/tg\/(start|code|password|logout)$/.test(url.pathname) || /^\/api\/admin\/pay\/cards\/[a-f0-9]{12}$/.test(url.pathname)) {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), []);
       const cid = url.pathname.match(/^\/api\/admin\/pay\/cards\/([a-f0-9]{12})$/)?.[1];
-      if (url.pathname === '/api/admin/pay/own' && req.method === 'GET') return send(res, 200, cardPayOverview(db, { configured: tgConfigured }));
-      if (url.pathname === '/api/admin/pay/own/config' && req.method === 'PUT') { setCardPayConfig(db, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
-      if (url.pathname === '/api/admin/pay/cards' && req.method === 'POST') { addCard(db, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
-      if (cid && req.method === 'PUT') { editCard(db, cid, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
-      if (cid && req.method === 'DELETE') { removeCard(db, cid, me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
+      const tgStep = url.pathname.match(/^\/api\/admin\/pay\/tg\/(start|code|password|logout)$/)?.[1];
+      if (tgStep && req.method === 'POST') {
+        if (tgStep === 'start') return send(res, 200, await tgLogin.start(me.id, String((await readJson(req, 512)).phone ?? '')));
+        if (tgStep === 'code') return send(res, 200, await tgLogin.code(me.id, String((await readJson(req, 512)).code ?? '')));
+        if (tgStep === 'password') return send(res, 200, await tgLogin.password(me.id, String((await readJson(req, 512)).password ?? '')));
+        const cur = tgSessionNow();
+        if (cur?.source === 'env') throw new ApiError(400, 'Sessiya Railway’da (TG_SESSION) — uni Railway’dan o‘chiring');
+        if (cur && tgApiReady) { try { await gramTerminate(tgKeys, cur.session); } catch { /* Telegram tomonida tugatib bo'lmadi — baza yozuvi baribir o'chiriladi */ } }
+        clearSession(db); auditPay(db, me.id, 'pay.tg.disconnect', null);
+        return send(res, 200, cardPayOverview(db, tgInfo()));
+      }
+      if (url.pathname === '/api/admin/pay/own' && req.method === 'GET') return send(res, 200, cardPayOverview(db, tgInfo()));
+      if (url.pathname === '/api/admin/pay/own/config' && req.method === 'PUT') { setCardPayConfig(db, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, tgInfo())); }
+      if (url.pathname === '/api/admin/pay/cards' && req.method === 'POST') { addCard(db, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, tgInfo())); }
+      if (cid && req.method === 'PUT') { editCard(db, cid, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, tgInfo())); }
+      if (cid && req.method === 'DELETE') { removeCard(db, cid, me.id); return send(res, 200, cardPayOverview(db, tgInfo())); }
     }
     // ---- Creator Growth: tracking linklar va voronka (rol: creator; faqat O'Z linklari/statistikasi — admin ham o'zinikini ko'radi) ----
     if (url.pathname === '/api/creator/links' || url.pathname === '/api/creator/overview' || /^\/api\/creator\/links\/[a-z2-9]{6,10}\/active$/.test(url.pathname)) {
@@ -1012,8 +1031,8 @@ if (bot?.publicUrl && process.env.TG_NUDGES !== '0') setInterval(() => { runNudg
 setInterval(() => { void runMemoryJobs(db, summarizeMemory); }, 60_000).unref(); // xotira navbati: qayta urinishlar
 setInterval(() => { reconcile(db, payApi, hcfg?.shopId ?? '').then((n) => { if (n) console.log('To‘lov reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
 // Karta-xabarlari (Telegram): TG_API_ID/TG_API_HASH/TG_SESSION berilgan bo'lsa kuzatuvchi ishga tushadi, lekin rejim off bo'lsa Telegram'ga ulanmaydi
-const cardWatch = tgConfigured ? startCardWatch({ db, cfg: getCardCfg, creds: tgCreds, log: (m) => console.log(m) }) : null;
-if (getCardCfg().mode !== 'off') console.log(cardWatch ? `[cardpay] rejim: ${getCardCfg().mode}` : `[cardpay] rejim: ${getCardCfg().mode}, lekin TG_API_ID / TG_API_HASH / TG_SESSION to‘liq emas — xabarlar o‘qilmaydi`);
+const cardWatch = startCardWatch({ db, cfg: getCardCfg, creds: tgCredsNow, log: (m) => console.log(m) }); // sessiya yo'q bo'lsa kutadi; admin panelda ulangach o'zi ulanadi
+if (getCardCfg().mode !== 'off') console.log(`[cardpay] rejim: ${getCardCfg().mode}${tgCredsNow() ? '' : ' (Telegram not connected yet: admin panel, Payments)'}`);
 setInterval(() => { try { pruneNotices(db, 30 * 86_400_000); } catch (e) { console.warn('[cardpay.prune]', (e as Error).message); } }, 6 * 3_600_000).unref(); // karta xabarlari 30 kun saqlanadi
 
 // Railway yangi versiyani ishga tushirganda eskisiga SIGTERM yuboradi: so'rovlarni tugatib, bazani yopib, toza chiqamiz

@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { HamyonError, type Created, type HamyonApi, type HamyonStatus } from './hamyon';
 import { OPEN, applyResult, type PaymentRow } from './payments';
 import { ensureCardPool, fmtCardNumber, pickCard, type PoolConfig, type Strategy } from './cardPool';
+import { ensureSecretTable } from './tgSession';
 
 // O'z karta-to'lov moduli (Hamyon'ga bog'liq bo'lmagan yo'l). G'oya Hamyon bilan bir xil:
 //   1) har to'lovga AYNAN bir xil bo'lmagan summa beriladi (narx + 1, 2, … so'm) va bizning karta ko'rsatiladi;
@@ -76,6 +77,7 @@ export function ensureCardPayTables(db: DatabaseSync): void {
   `);
   db.exec('CREATE TABLE IF NOT EXISTS admin_audit (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, actor_id INTEGER, action TEXT NOT NULL, target TEXT, detail TEXT)');
   ensureCardPool(db);
+  ensureSecretTable(db);
 }
 
 // ---------------------------------------------------------------- xabarni tahlil qilish

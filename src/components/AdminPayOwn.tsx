@@ -9,7 +9,7 @@ interface Card { id: string; number: string; numberFmt: string; label: string; e
 interface Notice { id: number; source: string; at: number; direction: string | null; amount: number | null; outcome: string | null; text: string }
 interface Overview {
   config: { mode: string; strategy: string; reservePct: number; windowMin: number; sources: string[]; legacyCard: string };
-  telegram: { configured: boolean; state: string; since: number; error: string; lastNoticeAt: number };
+  telegram: { configured: boolean; apiReady: boolean; source: 'env' | 'admin' | null; canStore: boolean; state: string; since: number; error: string; lastNoticeAt: number };
   cards: Card[]; notices: Notice[];
   shadow: { hamyonPaid: number; found: number; missed: string[]; wouldDeliver: number; wrong: string[] };
 }
@@ -23,7 +23,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 
 const inputStyle = { padding: 8, borderRadius: 10, border: '1.5px solid var(--line)', minWidth: 0 } as const;
 const MODES: [string, string][] = [['off', L('O‘chiq')], ['capture', L('Yig‘ish: xabarlarni yozadi, obuna bermaydi')], ['shadow', L('Sinov: Hamyon bilan solishtiradi, obuna bermaydi')], ['live', L('Yoqilgan: yangi to‘lovlar bizning kartaga')]];
-const TG: Record<string, string> = { disabled: L('o‘chiq'), connecting: L('ulanmoqda'), connected: L('ulangan'), standby: L('kutmoqda (boshqa nusxa ulangan)'), error: L('xato') };
+const TG: Record<string, string> = { disabled: L('o‘chiq'), unconfigured: L('Telegram ulanmagan'), connecting: L('ulanmoqda'), connected: L('ulangan'), standby: L('kutmoqda (boshqa nusxa ulangan)'), error: L('xato') };
 const time = (ms: number): string => new Date(ms).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 const pct = (used: number, limit: number): number => (limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0);
 
@@ -63,6 +63,44 @@ function CardRow({ c, onSave, onDelete }: { c: Card; onSave: (id: string, body: 
   );
 }
 
+/** Telegram'ga ulanish: telefon → Telegram kodi → (bo'lsa) 2 bosqichli parol. Kod va parol faqat shu serverga yuboriladi. */
+function TgConnect({ tg, onChange, onMsg }: { tg: Overview['telegram']; onChange: () => void; onMsg: (m: { ok: boolean; text: string } | null) => void }) {
+  const [phase, setPhase] = useState<'idle' | 'code' | 'password'>('idle');
+  const [v, setV] = useState({ phone: '', code: '', pw: '' });
+  const [busy, setBusy] = useState(false);
+  const step = async (path: string, body: Record<string, string>, next: (r: { step: string }) => void): Promise<void> => {
+    setBusy(true);
+    try { next(await call<{ step: string }>(path, { method: 'POST', body: JSON.stringify(body) })); onMsg(null); } catch (e) { onMsg({ ok: false, text: (e as Error).message }); } finally { setBusy(false); }
+  };
+  const done = (): void => { setPhase('idle'); setV({ phone: '', code: '', pw: '' }); onMsg({ ok: true, text: L('Telegram ulandi.') }); onChange(); };
+  if (tg.configured) {
+    return tg.source === 'admin'
+      ? <p style={{ margin: '4px 0 10px', fontSize: 13 }}><span className="muted">{L('Sessiya shu yerda, shifrlangan holda saqlangan')} · </span><button type="button" className="linkbtn" onClick={() => { if (window.confirm(L('Telegram uzilsinmi? Karta-xabarlari o‘qilmaydi.'))) { void call('/api/admin/pay/tg/logout', { method: 'POST' }).then(onChange).catch((e: Error) => onMsg({ ok: false, text: e.message })); } }}>{L('Uzish')}</button></p>
+      : <p className="muted" style={{ margin: '4px 0 10px', fontSize: 13 }}>{L('Sessiya Railway’da (TG_SESSION)')}</p>;
+  }
+  if (!tg.apiReady) return null;
+  if (!tg.canStore) return <p className="notice">{L('Maxfiy kalit yo‘q (ADMIN_TOKEN yoki PAY_SESSION_KEY)')}</p>;
+  return (
+    <div style={{ margin: '6px 0 12px' }}>
+      {phase === 'idle' && <form onSubmit={(e) => { e.preventDefault(); void step('/api/admin/pay/tg/start', { phone: v.phone }, () => setPhase('code')); }} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
+        <label style={{ fontSize: 12.5 }}>{L('Telefon raqami (+998…)')}<br /><input style={{ ...inputStyle, width: 190 }} inputMode="tel" autoComplete="off" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} placeholder="+998 90 123 45 67" /></label>
+        <button type="submit" className="btn sm primary" disabled={busy || v.phone.replace(/\D/g, '').length < 9}>{L('Kod yuborish')}</button>
+      </form>}
+      {phase === 'code' && <form onSubmit={(e) => { e.preventDefault(); void step('/api/admin/pay/tg/code', { code: v.code }, (r) => (r.step === 'password' ? setPhase('password') : done())); }}>
+        <p className="muted" style={{ fontSize: 12.5, margin: '0 0 6px' }}>{L('Kod Telegram ilovangizga yuborildi. Uni faqat shu yerga kiriting, hech kimga bermang.')}</p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
+          <label style={{ fontSize: 12.5 }}>{L('Telegram kodi')}<br /><input style={{ ...inputStyle, width: 130 }} inputMode="numeric" autoComplete="one-time-code" value={v.code} onChange={(e) => setV({ ...v, code: e.target.value })} /></label>
+          <button type="submit" className="btn sm primary" disabled={busy || v.code.replace(/\D/g, '').length < 4}>{L('Tasdiqlash')}</button>
+        </div>
+      </form>}
+      {phase === 'password' && <form onSubmit={(e) => { e.preventDefault(); void step('/api/admin/pay/tg/password', { password: v.pw }, done); }} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
+        <label style={{ fontSize: 12.5 }}>{L('2 bosqichli parol')}<br /><input style={{ ...inputStyle, width: 190 }} type="password" autoComplete="off" value={v.pw} onChange={(e) => setV({ ...v, pw: e.target.value })} /></label>
+        <button type="submit" className="btn sm primary" disabled={busy || !v.pw}>{L('Tasdiqlash')}</button>
+      </form>}
+    </div>
+  );
+}
+
 export function OwnPayPanel() {
   const [ov, setOv] = useState<Overview | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -76,7 +114,8 @@ export function OwnPayPanel() {
   useEffect(() => { const t = setInterval(() => { void call<Overview>('/api/admin/pay/own').then((o) => setOv(o)).catch(() => undefined); }, 15_000); return () => clearInterval(t); }, []);
   if (!ov) return <section className="card"><h3 style={{ marginTop: 0 }}>{L('O‘z karta-to‘lov (Hamyon’siz)')}</h3>{msg ? <p className="notice">{msg.text}</p> : <p className="muted">{L('Yuklanmoqda…')}</p>}</section>;
   const tg = ov.telegram;
-  const tgText = !tg.configured ? L('sozlanmagan (Railway: TG_API_ID, TG_API_HASH, TG_SESSION)') : TG[tg.state] ?? tg.state;
+  const reload = (): void => { void call<Overview>('/api/admin/pay/own').then(apply).catch(() => undefined); };
+  const tgText = !tg.apiReady ? L('sozlanmagan (Railway: TG_API_ID, TG_API_HASH, TG_SESSION)') : TG[tg.state] ?? tg.state;
   const cfgDirty = cfg.mode !== ov.config.mode || cfg.strategy !== ov.config.strategy || cfg.reservePct !== String(ov.config.reservePct) || cfg.windowMin !== String(ov.config.windowMin);
   return (
     <section className="card">
@@ -84,6 +123,7 @@ export function OwnPayPanel() {
       <p className="muted" style={{ marginTop: 0 }}>{L('Mijoz summani kartaga o‘tkazadi; Telegram’dagi karta-xabari botidan pul kelganini o‘qib, obuna avtomatik ochiladi. Karta limiti to‘lsa, boshqa karta ko‘rsatiladi.')}</p>
       {msg && <p className={msg.ok ? 'muted' : 'notice'} role="status">{msg.text}</p>}
       <p style={{ margin: '6px 0' }}><b>{'Telegram'}</b>{': '}{tgText}{tg.error && ` — ${tg.error}`} · <span className="muted">{L('Oxirgi xabar:')} {tg.lastNoticeAt ? time(tg.lastNoticeAt) : L('hali yo‘q')}</span></p>
+      <TgConnect tg={tg} onChange={reload} onMsg={setMsg} />
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'end', margin: '10px 0' }}>
         <label style={{ fontSize: 13 }}>{L('Rejim')}<br /><select value={cfg.mode} onChange={(e) => setCfg({ ...cfg, mode: e.target.value })} style={inputStyle}>{MODES.map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
         <label style={{ fontSize: 13 }}>{L('Karta tanlash usuli')}<br /><select value={cfg.strategy} onChange={(e) => setCfg({ ...cfg, strategy: e.target.value })} style={inputStyle}><option value="spread">{L('Barobar taqsimlash')}</option><option value="fill">{L('Birinchisi to‘lguncha')}</option></select></label>

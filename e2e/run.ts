@@ -481,6 +481,12 @@ try {
     // 5) Noto'g'ri qiymatlar rad etiladi; admin bo'lmagan kirmaydi
     assert.equal((await api('/api/admin/pay/cards', { method: 'POST', token: adminToken, body: JSON.stringify({ number: '123' }) })).status, 400);
     assert.equal((await api('/api/admin/pay/own', { token })).status, 403, 'oddiy foydalanuvchi ko‘ra olmaydi');
+    // 6) Telegram ulanish: API kalitlari yo'q — oqim boshlanmaydi; admin bo'lmagan kirmaydi
+    assert.equal(ov.telegram.apiReady, false); assert.equal(ov.telegram.configured, false);
+    const tgStart = await api('/api/admin/pay/tg/start', { method: 'POST', token: adminToken, body: JSON.stringify({ phone: '+998901234567' }) });
+    assert.equal(tgStart.status, 400); assert.match(String(tgStart.json.error), /TG_API_ID/);
+    assert.equal((await api('/api/admin/pay/tg/start', { method: 'POST', token, body: JSON.stringify({ phone: '+998901234567' }) })).status, 403);
+    assert.equal((await api('/api/admin/pay/tg/code', { method: 'POST', token: adminToken, body: JSON.stringify({ code: '12345' }) })).status, 400, 'boshlanmagan oqimda kod qabul qilinmaydi');
     // Qaytarish: rejim o'chiq — keyingi ssenariylar Hamyon bilan ishlaydi
     assert.equal((await api('/api/admin/pay/own/config', { method: 'PUT', token: adminToken, body: JSON.stringify({ mode: 'off' }) })).json.config.mode, 'off');
     await a.context().close();

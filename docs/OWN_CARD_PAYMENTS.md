@@ -35,6 +35,14 @@ Telegram'da bot boshqa botning xabarini ko'ra olmaydi — shuning uchun karta eg
 
 `GET /api/admin/pay/notices` (admin): xabarlar ro'yxati va **shadow hisoboti** — Hamyon yetkazgan to'lovlardan nechtasini o'z modulimiz ham topgan bo'lardi (`found`/`missed`), va biz «yetkazardik», Hamyon esa yo'q bo'lganlar (`wrong`).
 
+## Telegram'ga ulanish — kompyutersiz (admin paneldan)
+Admin → To'lovlar → «O'z karta-to'lov» → **Telegramga ulash**: telefon raqam → Telegram ilovangizga kelgan kod → (bo'lsa) 2 bosqichli parol. Shundan keyin sessiya serverda **shifrlangan** (AES-256-GCM) holda saqlanadi; kalit serverning `PAY_SESSION_KEY` (bo'lmasa `ADMIN_TOKEN`, bo'lmasa `TELEGRAM_BOT_TOKEN`) qiymatidan olinadi — baza nusxasi sizib chiqsa ham sessiya ochilmaydi. Kod va parol hech qayerda saqlanmaydi va jurnalga yozilmaydi; audit jurnalida faqat telefonning oxirgi 4 raqami.
+- Oldindan Railway'da faqat `TG_API_ID` va `TG_API_HASH` (my.telegram.org) kerak.
+- Kodni **faqat shu panelga** kiriting. Telegram kodini boshqa hech kimga (shu jumladan «qo'llab-quvvatlash»ga) bermang.
+- «Uzish» — Telegram tomonida sessiyani ham tugatadi va bazadan o'chiradi. Telegram → Sozlamalar → Qurilmalar ro'yxatida ham ko'rinadi.
+- `TG_SESSION` Railway'da berilgan bo'lsa u ustun (panel faqat holatni ko'rsatadi); eski usul — `npm run pay:login` — saqlanib qoladi.
+- Kuzatuvchi sessiya yo'q paytda kutadi va ulangach o'zi ulanadi; sessiya almashsa qayta ulanadi.
+
 ## Ishga tushirish tartibi
 1. https://my.telegram.org → *API development tools*: `api_id` va `api_hash` oling.
 2. Kompyuteringizda: `TG_API_ID=… TG_API_HASH=… npm run pay:login` — telefon, kod (va bo'lsa 2 bosqichli parol) kiriting; chiqqan **SESSION** qatorini Railway Variables'ga `TG_SESSION` qilib qo'ying. Hech kimga yubormang.
