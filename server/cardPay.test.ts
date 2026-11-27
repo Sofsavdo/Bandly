@@ -10,7 +10,7 @@ import type { HamyonApi } from './hamyon';
 
 const T0 = Date.UTC(2026, 0, 1, 10);
 const MIN = 60_000;
-const cfg = (mode: CardPayConfig['mode'] = 'live'): CardPayConfig => ({ mode, card: '8600 1234 5678 9012', windowMs: 15 * MIN, graceMs: 180 * MIN, sources: ['CardXabarBot'] });
+const cfg = (mode: CardPayConfig['mode'] = 'live'): CardPayConfig => ({ mode, card: '8600 1234 5678 9012', windowMs: 15 * MIN, graceMs: 180 * MIN, sources: ['CardXabarBot'], strategy: 'spread', reservePct: 0 });
 
 // ---- Sozlama ----
 assert.equal(cardPayConfigFromEnv({}).mode, 'off', 'standart: o‘chiq');

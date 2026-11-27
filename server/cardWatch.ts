@@ -59,11 +59,16 @@ export function telegramFeed(creds: TgCreds, sources: string[], log: (m: string)
   return feed;
 }
 
-export interface WatchDeps { db: DatabaseSync; cfg: CardPayConfig; creds: TgCreds; log?: (m: string) => void; now?: () => number }
+export interface WatchDeps { db: DatabaseSync; cfg: CardPayConfig | (() => CardPayConfig); creds: TgCreds; log?: (m: string) => void; now?: () => number }
+
+/** Admin panel uchun holat: o'chiq / ulanmoqda / ulangan / kutmoqda (boshqa nusxa ulangan) / xato. */
+export const watchState: { state: 'disabled' | 'connecting' | 'connected' | 'standby' | 'error'; since: number; error: string; lastNoticeAt: number } = { state: 'disabled', since: Date.now(), error: '', lastNoticeAt: 0 };
+const setState = (state: typeof watchState.state, error = ''): void => { if (watchState.state !== state || watchState.error !== error) { watchState.state = state; watchState.since = Date.now(); watchState.error = error.slice(0, 200); } };
 
 /** Kuzatuvchini ishga tushiradi: lease olinsa ulanadi, yo'qotilsa uzadi, xatoda keyingi tickda qayta urinadi. */
 export function startCardWatch(deps: WatchDeps, makeFeed?: () => NoticeFeed): { stop(): Promise<void> } {
-  const { db, cfg } = deps;
+  const { db } = deps;
+  const getCfg = typeof deps.cfg === 'function' ? deps.cfg : () => deps.cfg as CardPayConfig;
   const log = deps.log ?? (() => undefined);
   const now = deps.now ?? Date.now;
   const owner = newLeaseOwner();
@@ -73,26 +78,36 @@ export function startCardWatch(deps: WatchDeps, makeFeed?: () => NoticeFeed): { 
   let busy = false;
   const onNotice = (n: RawNotice): void => {
     try {
-      const r = handleNotice(db, cfg, n, now());
-      if (r.id !== null) log(`[cardpay] xabar #${r.id} (@${n.source}) → ${r.outcome ?? cfg.mode}`); // matn va karta ma'lumoti jurnalga yozilmaydi
+      const r = handleNotice(db, getCfg(), n, now());
+      if (r.id !== null) watchState.lastNoticeAt = now();
+      if (r.id !== null) log(`[cardpay] xabar #${r.id} (@${n.source}) → ${r.outcome ?? getCfg().mode}`); // matn va karta ma'lumoti jurnalga yozilmaydi
     } catch (e) { log(`[cardpay] xabarni qayta ishlashda xato: ${(e as Error).message}`); }
   };
   const tick = async (): Promise<void> => {
     if (stopped || busy) return;
     busy = true;
     try {
+      const cfg = getCfg();
+      if (cfg.mode === 'off') { // admin panelda o'chirilgan: Telegram'ga ulanmaydi, bor ulanish yopiladi
+        if (feed) { const f = feed; feed = null; await f.stop(); log('[cardpay] rejim off — uzildi'); }
+        releaseLease(db, owner); setState('disabled');
+        return;
+      }
       if (!acquireLease(db, owner, now(), LEASE_TTL)) {
         if (feed) { const f = feed; feed = null; await f.stop(); log('[cardpay] boshqa nusxa ulangan — uzildi'); }
+        setState('standby');
         return;
       }
       if (!feed) {
+        setState('connecting');
         const f = (makeFeed ?? (() => telegramFeed(deps.creds, cfg.sources, log)))();
-        try { await f.start(onNotice); feed = f; } catch (e) { log(`[cardpay] ulanish xatosi: ${(e as Error).message}`); await f.stop(); }
+        try { await f.start(onNotice); feed = f; setState('connected'); } catch (e) { log(`[cardpay] ulanish xatosi: ${(e as Error).message}`); setState('error', (e as Error).message); await f.stop(); }
         return;
       }
       if (++ticks % POLL_EVERY === 0) await feed.poll(onNotice);
     } catch (e) {
       log(`[cardpay] tick xatosi: ${(e as Error).message}`);
+      setState('error', (e as Error).message);
       if (feed) { const f = feed; feed = null; await f.stop().catch(() => undefined); } // keyingi tickda qayta ulanadi
     } finally { busy = false; }
   };
@@ -102,6 +117,7 @@ export function startCardWatch(deps: WatchDeps, makeFeed?: () => NoticeFeed): { 
   return {
     async stop() {
       stopped = true;
+      setState('disabled');
       clearInterval(timer);
       try { await feed?.stop(); } catch { /* */ }
       feed = null;

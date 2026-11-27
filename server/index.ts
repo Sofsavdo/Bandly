@@ -8,7 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static';
 import { dirname } from 'node:path';
 import { hamyonApi, hamyonConfigFromEnv, verifySign } from './hamyon';
-import { cardPayConfigFromEnv, ensureCardPayTables, ownCardApi, pruneNotices, recentNotices, routedApi, shadowReport } from './cardPay';
+import { ensureCardPayTables, loadCardPayConfig, ownCardApi, poolOf, pruneNotices, recentNotices, routedApi, shadowReport } from './cardPay';
+import { activeCards } from './cardPool';
+import { addCard, editCard, overview as cardPayOverview, removeCard, setConfig as setCardPayConfig } from './cardPayAdmin';
 import { startCardWatch } from './cardWatch';
 import { findUsers } from './adminUsers';
 import { IELTS_UNITS, UNITS as STATIC_UNITS } from '../src/content/lessons';
@@ -106,13 +108,18 @@ const seeded = seedContent(db); // statik darslardan bazada yo'qlarini qo'shadi 
 if (seeded) console.log('Kontent: %d ta yangi bo‘lim/dars bazaga qo‘shildi', seeded);
 const hcfg = hamyonConfigFromEnv();
 const hapi = hcfg ? hamyonApi(hcfg) : null;
-// O'z karta-to'lov moduli (docs/OWN_CARD_PAYMENTS.md): PAY_OWN_MODE=off|capture|shadow|live. Standart off — hech narsa o'zgarmaydi.
-// own: karta berilgan bo'lsa doim (eski own_ to'lovlar rejim o'zgarsa ham yakunlansin); yangi to'lovlar faqat live'da bizning kartaga ochiladi.
-const ccfg = cardPayConfigFromEnv();
-const ownApi = ccfg.card ? ownCardApi(db, ccfg) : null;
-const payApi = routedApi(ownApi, hapi, ccfg.mode === 'live' && !!ownApi);
+// O'z karta-to'lov moduli (docs/OWN_CARD_PAYMENTS.md): rejim, kartalar va limitlar admin panelda (pay_config, pay_cards) — Railway o'zgaruvchisidan ustun.
+// Standart off — hech narsa o'zgarmaydi. Yangi to'lovlar faqat live rejimda va kamida bitta karta bo'lganda bizning kartaga ochiladi
+// (karta limiti to'lsa yoki karta bo'lmasa — Hamyon ulangan bo'lsa, shunga o'tiladi). Eski own_ to'lovlar rejim o'zgarsa ham yakunlanadi.
+const getCardCfg = () => loadCardPayConfig(db);
+const tgCreds = { apiId: Number(process.env.TG_API_ID), apiHash: (process.env.TG_API_HASH ?? '').trim(), session: (process.env.TG_SESSION ?? '').trim() };
+const tgConfigured = tgCreds.apiId > 0 && !!tgCreds.apiHash && !!tgCreds.session;
+const ownApi = ownCardApi(db, getCardCfg);
+const payApi = routedApi(ownApi, hapi, () => getCardCfg().mode === 'live', (m) => console.warn(m))!; // ownApi doim bor — null bo'lmaydi
+const ownLiveReady = (): boolean => { const c = getCardCfg(); return c.mode === 'live' && activeCards(db, poolOf(c)).length > 0; };
+const payReady = (): boolean => !!hapi || ownLiveReady();
 // Demo rejim (to'lovsiz yoqish) faqat to'lov ulanmaganda; PAY_DEMO=1 bilan majburan yoqish mumkin
-const DEMO = demoMode(process.env, !!payApi);
+const DEMO = demoMode(process.env, payReady());
 const ADMIN_TOKEN = (process.env.ADMIN_TOKEN ?? '').trim();
 // Telegram bot (ixtiyoriy): TELEGRAM_BOT_TOKEN bo'lsa — Telegram orqali kirish, webhook va Mini App tugmasi yoqiladi
 const bot = botFromEnv();
@@ -422,6 +429,16 @@ const httpServer = createServer(async (req, res) => {
       const me = requireRole(db, String(req.headers['x-token'] ?? ''), []);
       if (req.method === 'GET') return send(res, 200, { items: listSettings(db) });
       if (req.method === 'PUT') { const b = await readJson(req, 8192); return send(res, 200, { items: updateSettings(db, (b.values ?? {}) as Record<string, unknown>, me.id) }); }
+    }
+    // ---- O'z karta-to'lov moduli: sozlama, kartalar, holat (faqat admin) ----
+    if (url.pathname === '/api/admin/pay/own' || url.pathname === '/api/admin/pay/own/config' || url.pathname === '/api/admin/pay/cards' || /^\/api\/admin\/pay\/cards\/[a-f0-9]{12}$/.test(url.pathname)) {
+      const me = requireRole(db, String(req.headers['x-token'] ?? ''), []);
+      const cid = url.pathname.match(/^\/api\/admin\/pay\/cards\/([a-f0-9]{12})$/)?.[1];
+      if (url.pathname === '/api/admin/pay/own' && req.method === 'GET') return send(res, 200, cardPayOverview(db, { configured: tgConfigured }));
+      if (url.pathname === '/api/admin/pay/own/config' && req.method === 'PUT') { setCardPayConfig(db, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
+      if (url.pathname === '/api/admin/pay/cards' && req.method === 'POST') { addCard(db, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
+      if (cid && req.method === 'PUT') { editCard(db, cid, await readJson(req, 2048), me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
+      if (cid && req.method === 'DELETE') { removeCard(db, cid, me.id); return send(res, 200, cardPayOverview(db, { configured: tgConfigured })); }
     }
     // ---- Creator Growth: tracking linklar va voronka (rol: creator; faqat O'Z linklari/statistikasi — admin ham o'zinikini ko'radi) ----
     if (url.pathname === '/api/creator/links' || url.pathname === '/api/creator/overview' || /^\/api\/creator\/links\/[a-z2-9]{6,10}\/active$/.test(url.pathname)) {
@@ -808,11 +825,11 @@ const httpServer = createServer(async (req, res) => {
     }
     // ---------------- To'lov (Hamyon) ----------------
     if (req.method === 'GET' && url.pathname === '/api/pay/config') {
-      return send(res, 200, { enabled: !!payApi, demo: DEMO, limits: publicLimits(), periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
+      return send(res, 200, { enabled: payReady(), demo: DEMO, limits: publicLimits(), periods: PERIODS.map((p) => ({ days: p.days, label: p.label, note: p.note ?? null, prices: Object.fromEntries(PLAN_IDS.map((t) => [t, priceFor(t, p.days)])) })) });
     }
     if (req.method === 'GET' && url.pathname === '/api/me') { const tk = String(req.headers['x-token'] ?? ''); const e = entitlements(db, tk); const pid = byToken(db, tk).id; const xl = reqLang(req); if (/^(uz|en|ru|kk|ky|tg)$/.test(xl)) db.prepare('UPDATE players SET lang = ? WHERE id = ?').run(xl, pid); return send(res, 200, { ...e, ai: assessmentUsage(db, pid), role: roleOf(db, pid), photo: (db.prepare('SELECT photo_url FROM players WHERE id = ?').get(pid) as { photo_url: string | null } | undefined)?.photo_url ?? null }); }
     if (req.method === 'POST' && url.pathname === '/api/pay/create') {
-      if (!payApi) throw new ApiError(503, 'To‘lov hali ulanmagan');
+      if (!payReady()) throw new ApiError(503, 'To‘lov hali ulanmagan');
       const b = await readJson(req);
       return send(res, 200, await createPayment(db, payApi, String(b.token ?? ''), String(b.track ?? ''), Number(b.days)));
     }
@@ -881,7 +898,7 @@ const httpServer = createServer(async (req, res) => {
     if (url.pathname.startsWith('/api/admin/')) {
       if (!ADMIN_TOKEN || String(req.headers['x-admin'] ?? '') !== ADMIN_TOKEN) throw new ApiError(403, 'Taqiqlangan');
       if (req.method === 'GET' && url.pathname === '/api/admin/payments') return send(res, 200, { payments: recent(db, 100) });
-      if (req.method === 'GET' && url.pathname === '/api/admin/pay/notices') return send(res, 200, { mode: ccfg.mode, notices: recentNotices(db, 100), shadow: shadowReport(db, Date.now() - 7 * 86_400_000) });
+      if (req.method === 'GET' && url.pathname === '/api/admin/pay/notices') return send(res, 200, { mode: getCardCfg().mode, notices: recentNotices(db, 100), shadow: shadowReport(db, Date.now() - 7 * 86_400_000) });
       if (req.method === 'GET' && url.pathname === '/api/admin/ai-costs') return send(res, 200, aiCostSummary(db, Number(url.searchParams.get('days') ?? 30) || 30));
       if (req.method === 'POST' && url.pathname === '/api/admin/role') { const b = await readJson(req); audit(db, null, 'role.set', String(b.nickname ?? ''), { role: b.role ?? null }); return send(res, 200, setRole(db, String(b.nickname ?? ''), b.role === null || b.role === '' ? null : String(b.role) as 'admin' | 'methodologist')); }
       if (req.method === 'POST' && url.pathname === '/api/admin/grant') { const b = await readJson(req); const until = grant(db, String(b.nickname ?? ''), String(b.track ?? ''), Number(b.days)); audit(db, null, 'subscription.grant', String(b.nickname ?? ''), { track: b.track, days: b.days }); return send(res, 200, { until }); }
@@ -993,11 +1010,10 @@ if (bot?.publicUrl && process.env.TG_REMINDERS === '1') setInterval(() => { runR
 // Aloqa xabarlari (Telegram): har bir ulangan o'quvchiga kamida 2–3 kunda bitta (18:00–21:00 Toshkent). O'chirish: TG_NUDGES=0
 if (bot?.publicUrl && process.env.TG_NUDGES !== '0') setInterval(() => { runNudges(db, (b) => tgApi(bot.token, 'sendMessage', b).then(() => undefined), (route) => appUrl(bot.publicUrl!, route), Date.now(), (lang, t) => trServer(db, lang ?? undefined, t), process.env.TG_REMINDERS === '1').then((n) => { if (n) console.log('nudges sent: %s', n); }).catch((e) => console.warn('nudge failed', (e as Error).message)); }, 10 * 60_000);
 setInterval(() => { void runMemoryJobs(db, summarizeMemory); }, 60_000).unref(); // xotira navbati: qayta urinishlar
-if (payApi) setInterval(() => { reconcile(db, payApi, hcfg?.shopId ?? '').then((n) => { if (n) console.log('To‘lov reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
-// Karta-xabarlari (Telegram): faqat PAY_OWN_MODE o'chiq bo'lmaganda va TG_API_ID/TG_API_HASH/TG_SESSION berilgan bo'lsa
-const tgCreds = { apiId: Number(process.env.TG_API_ID), apiHash: (process.env.TG_API_HASH ?? '').trim(), session: (process.env.TG_SESSION ?? '').trim() };
-const cardWatch = ccfg.mode !== 'off' && tgCreds.apiId > 0 && tgCreds.apiHash && tgCreds.session ? startCardWatch({ db, cfg: ccfg, creds: tgCreds, log: (m) => console.log(m) }) : null;
-if (ccfg.mode !== 'off') console.log(cardWatch ? `[cardpay] rejim: ${ccfg.mode}` : `[cardpay] rejim: ${ccfg.mode}, lekin TG_API_ID / TG_API_HASH / TG_SESSION to‘liq emas — xabarlar o‘qilmaydi`);
+setInterval(() => { reconcile(db, payApi, hcfg?.shopId ?? '').then((n) => { if (n) console.log('To‘lov reconcile: %s ta to‘lov yakunlandi', n); }).catch((e) => console.warn('reconcile xato', e)); }, 90_000);
+// Karta-xabarlari (Telegram): TG_API_ID/TG_API_HASH/TG_SESSION berilgan bo'lsa kuzatuvchi ishga tushadi, lekin rejim off bo'lsa Telegram'ga ulanmaydi
+const cardWatch = tgConfigured ? startCardWatch({ db, cfg: getCardCfg, creds: tgCreds, log: (m) => console.log(m) }) : null;
+if (getCardCfg().mode !== 'off') console.log(cardWatch ? `[cardpay] rejim: ${getCardCfg().mode}` : `[cardpay] rejim: ${getCardCfg().mode}, lekin TG_API_ID / TG_API_HASH / TG_SESSION to‘liq emas — xabarlar o‘qilmaydi`);
 setInterval(() => { try { pruneNotices(db, 30 * 86_400_000); } catch (e) { console.warn('[cardpay.prune]', (e as Error).message); } }, 6 * 3_600_000).unref(); // karta xabarlari 30 kun saqlanadi
 
 // Railway yangi versiyani ishga tushirganda eskisiga SIGTERM yuboradi: so'rovlarni tugatib, bazani yopib, toza chiqamiz

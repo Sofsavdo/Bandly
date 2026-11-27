@@ -450,6 +450,42 @@ try {
     await a.context().close();
   });
 
+  await step('M. O‘z karta-to‘lov: admin paneldan karta qo‘shish, «Yoqilgan» rejim, karta almashtirish va limit', async () => {
+    const a = await page(() => undefined, { 'bandly.account.v1': JSON.stringify({ token: adminToken, nickname: 'E2E Admin' }) });
+    await a.goto(`${base}/#/admin`);
+    await a.getByRole('tab', { name: 'To‘lovlar' }).click();
+    await a.getByText('O‘z karta-to‘lov (Hamyon’siz)').waitFor({ timeout: 8000 });
+    // 1) Karta qo'shish (UI)
+    await a.getByPlaceholder('8600 0000 0000 0000').fill('8600123456789012');
+    await a.getByRole('button', { name: 'Qo‘shish' }).click();
+    await a.getByText('8600 1234 5678 9012').first().waitFor({ timeout: 8000 });
+    // 2) Rejim: Yoqilgan (UI)
+    await a.getByLabel('Rejim').selectOption('live');
+    await a.getByRole('button', { name: 'Saqlash' }).first().click();
+    for (let i = 0; i < 40; i++) { if (((await api('/api/admin/pay/own', { token: adminToken })).json.config ?? {}).mode === 'live') break; await a.waitForTimeout(150); }
+    const ov = (await api('/api/admin/pay/own', { token: adminToken })).json;
+    assert.equal(ov.config.mode, 'live'); assert.equal(ov.cards.length, 1);
+    // 3) Yangi to'lov bizning kartaga ochiladi (Hamyon emas)
+    const mkPay = async () => (await api('/api/pay/create', { method: 'POST', body: JSON.stringify({ token: adminToken, track: 'general', days: 30 }) })).json;
+    const p1 = await mkPay();
+    assert.equal(p1.card, '8600 1234 5678 9012', 'yangi to‘lov o‘z kartamizga'); assert.equal(p1.pay_amount, 69_000);
+    // 4) Ikkinchi karta (limit 100 000, zaxira 10%): to'lovlar kartalar o'rtasida taqsimlanadi, limitga sig'maydigani ko'rsatilmaydi
+    const add = await api('/api/admin/pay/cards', { method: 'POST', token: adminToken, body: JSON.stringify({ number: '5614 6817 4244 9584', label: 'B', dailyLimit: 100_000 }) });
+    assert.equal(add.status, 200); assert.equal(add.json.cards.length, 2);
+    const p2 = await mkPay();
+    assert.equal(p2.card, '5614 6817 4244 9584', 'ketma-ket to‘lov boshqa kartaga (barobar taqsimlash)'); assert.equal(p2.pay_amount, 69_001, 'summa kartalar bo‘yicha ham noyob');
+    const p3 = await mkPay();
+    assert.equal(p3.card, '8600 1234 5678 9012', '2-karta 90 000 gacha: yana 69 002 sig‘maydi → 1-karta'); assert.equal(p3.pay_amount, 69_002);
+    const cardB = (await api('/api/admin/pay/own', { token: adminToken })).json.cards.find((c: { numberFmt: string }) => c.numberFmt === '5614 6817 4244 9584');
+    assert.equal(cardB.reserved, 69_001, 'ochiq to‘lov limitdan band qiladi');
+    // 5) Noto'g'ri qiymatlar rad etiladi; admin bo'lmagan kirmaydi
+    assert.equal((await api('/api/admin/pay/cards', { method: 'POST', token: adminToken, body: JSON.stringify({ number: '123' }) })).status, 400);
+    assert.equal((await api('/api/admin/pay/own', { token })).status, 403, 'oddiy foydalanuvchi ko‘ra olmaydi');
+    // Qaytarish: rejim o'chiq — keyingi ssenariylar Hamyon bilan ishlaydi
+    assert.equal((await api('/api/admin/pay/own/config', { method: 'PUT', token: adminToken, body: JSON.stringify({ mode: 'off' }) })).json.config.mode, 'off');
+    await a.context().close();
+  });
+
   await step('L. Elchi: kabinetdagi elchi havolasi → bloger kiradi, ariza qoldiradi (1 000 dan kam — yo‘q) → elchi kabinetida va admin arizasida ko‘rinadi', async () => {
     const mk = async (nickname: string) => String((await api('/api/join', { method: 'POST', body: JSON.stringify({ nickname }) })).json.token);
     const elT = await mk('E2E Elchi'), blT = await mk('E2E Elchi Bloger');
