@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
+import { handsTurnBack } from './coach';
 import { attachLive, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
-const cfg0 = liveConfigFromEnv('AQ.k', {})!;
+const cfg0 = { ...liveConfigFromEnv('AQ.k', {})!, nudgeMs: 60_000 }; // davom ettirish — alohida testda qisqa kutish bilan
 assert.equal(cfg0.model, 'gemini-3.8-live'); assert.equal(cfg0.voice, 'Puck'); assert.equal(cfg0.freeDailySeconds, 300);
 assert.equal(liveConfigFromEnv('AQ.k', { GEMINI_LIVE: '0' }), null);
 
@@ -466,4 +467,50 @@ http.close(); upstream.close();
   assert.ok(logs.some((l) => / \(replaced\)/.test(l)), 'eski ulanish "replaced" bilan yopildi');
   w2.close(); await new Promise((r) => setTimeout(r, 50)); h.close(); up.close();
 }
+// Ustoz savolsiz to'xtab qoldi (egasi, 2026-11-27: "barakalla yoki so'kish bilan to'xtab qolyapti, men gapirmaguncha jim turibdi"):
+// o'quvchi jim tursa — bir marta davom ettirish so'raladi; savol bilan tugasa, o'quvchi bosib gapira boshlasa yoki xayrlashsa — yo'q; takror-takror emas
+{
+  assert.equal(handsTurnBack('Barakalla! Juda zo‘r.'), false);
+  assert.equal(handsTurnBack('Seriously? «I go yesterday»? It is «I went».'), false, 'savol belgisi oxirida emas — topshiriq yo‘q');
+  assert.equal(handsTurnBack('Nice! What did you eat for breakfast?'), true);
+  assert.equal(handsTurnBack('Zo‘r! Endi shu gapni o‘tgan zamonda ayting.'), true);
+  assert.equal(handsTurnBack('Kecha nima qildingiz'), true, 'savol belgisisiz savol so‘zi');
+  assert.equal(handsTurnBack('Good job today. Goodbye!'), true, 'xayrlashuv');
+  assert.equal(handsTurnBack(''), true);
+  const up = new WebSocketServer({ port: 0 }); const texts: string[] = [];
+  let reply = 'Barakalla! Juda zo‘r.';
+  up.on('connection', (ws) => {
+    ws.on('message', (raw) => {
+      const m = JSON.parse(raw.toString());
+      if (m.setup) { ws.send(JSON.stringify({ setupComplete: {} })); return; }
+      const t = m.clientContent?.turns?.[0]?.parts?.[0]?.text as string | undefined;
+      if (t) { texts.push(t); ws.send(JSON.stringify({ serverContent: { outputTranscription: { text: /waiting for you/.test(t) ? 'Hmm, xo‘sh.' : reply }, turnComplete: true } })); }
+    });
+  });
+  await new Promise((r) => up.once('listening', r));
+  const h = createServer((_q, s) => { s.end(); }); const logs: string[] = [];
+  attachLive(h, { db, cfg: { ...cfg0, url: `ws://127.0.0.1:${(up.address() as { port: number }).port}`, nudgeMs: 150 }, auth: (t) => (t === 'n' ? { id: 41, staff: true, subscriberLeftSec: 0 } : null), prompt: () => 'SYS', native: () => 'Uzbek (Latin script)', tr: (_l, t) => t, onEnd: () => undefined, log: (l) => logs.push(l) });
+  await new Promise<void>((r) => h.listen(0, '127.0.0.1', () => r()));
+  const ws = new WebSocket(`ws://127.0.0.1:${(h.address() as { port: number }).port}/api/ai/live?lang=uz&ptt=1`, ['sellzen.v1', 'tk.n']);
+  const msgs: { type: string }[] = []; ws.on('message', (d, bin) => { if (!bin) msgs.push(JSON.parse(d.toString())); });
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  for (let i = 0; i < 300 && !msgs.some((m) => m.type === 'ready'); i++) await wait(10);
+  const nudges = () => texts.filter((t) => /waiting for you/.test(t)).length;
+  await wait(500); // salomlashuv "Barakalla!" bilan tugadi (savolsiz) → bir marta davom ettirish; javobi ham savolsiz — ikkinchi marta emas
+  assert.equal(nudges(), 1, 'savolsiz to‘xtadi — bir marta davom ettirildi');
+  await wait(400); assert.equal(nudges(), 1, 'takror-takror emas (o‘quvchi gapirguncha)');
+  // O'quvchi gapirdi (bosib turdi va qo'yib yubordi) → yana savolsiz javob → yana davom ettirish mumkin; lekin bosib turgan paytda — yo'q
+  ws.send(JSON.stringify({ type: 'activity', on: true })); await wait(300);
+  assert.equal(nudges(), 1, 'o‘quvchi gapirayotganda davom ettirilmaydi');
+  ws.send(JSON.stringify({ type: 'activity', on: false })); await wait(50);
+  upSend(up, 'Hahaha, voy tovba!'); await wait(450);
+  assert.equal(nudges(), 2, 'o‘quvchi gapirgandan keyingi savolsiz javob — yana davom ettirildi');
+  ws.send(JSON.stringify({ type: 'activity', on: true })); ws.send(JSON.stringify({ type: 'activity', on: false })); await wait(30);
+  reply = 'Zo‘r! Kecha nima qildingiz?'; upSend(up, reply); await wait(450);
+  assert.equal(nudges(), 2, 'savol bilan tugadi — davom ettirish kerak emas');
+  ws.send(JSON.stringify({ type: 'end' })); await new Promise((r) => ws.on('close', r)); await wait(30);
+  assert.ok(logs.some((l) => / nudge=2/.test(l)), 'logda davom ettirishlar soni');
+  h.close(); up.close();
+}
+function upSend(up: WebSocketServer, text: string): void { for (const c of up.clients) c.send(JSON.stringify({ serverContent: { outputTranscription: { text }, turnComplete: true } })); }
 console.log('live: OK');
