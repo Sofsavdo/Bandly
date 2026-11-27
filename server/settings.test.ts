@@ -34,7 +34,7 @@ assert.equal(settingValue('API_RATE_PER_MIN'), 120);
 
 // Admin qiymati Railway'dan ustun va darhol kuchga kiradi (serverni qayta ishga tushirmasdan)
 const admin = byToken(db, join(db, 'Boss').token).id;
-updateSettings(db, { FREE_LESSONS_PER_DAY: 4, PLAN_EXAM_WRITING: 15, COACH_CALL_MONTH_MINUTES: 90, REF_XP: 50, REF_PLAN_DAYS: 7, LIVE_FREE_DAILY_MINUTES: 8, PLAN_PRICE_EXAM: 109_000 }, admin);
+updateSettings(db, { FREE_LESSONS_PER_DAY: 4, PLAN_EXAM_WRITING: 15, COACH_CALL_MONTH_MINUTES: 90, REF_XP: 50, REF_PLAN_DAYS: 7, LIVE_FREE_WEEKLY_MINUTES: 8, PLAN_PRICE_EXAM: 109_000 }, admin);
 assert.equal(freeLimitsFromEnv().perDay, 4);
 assert.equal(assessLimit('exam', 'writing'), 15);
 assert.equal(assessLimit('all', 'writing'), 20);
@@ -44,10 +44,10 @@ assert.equal(refXp(), 50);
 assert.equal(refPlanDays(), 7);
 assert.equal(monthlyPrice('exam'), 109_000);
 const cfg = liveConfigFromEnv('k')!;
-assert.equal(cfg.freeDailySeconds, 8 * 60);
-assert.equal(liveAllowance(cfg, { staff: false, subscriberLeftSec: 0, freeUsedTodaySec: 0 }), 8 * 60);
-updateSettings(db, { LIVE_FREE_DAILY_MINUTES: 3 }, admin);
-assert.equal(cfg.freeDailySeconds, 3 * 60, 'mavjud konfiguratsiya ham yangi qiymatni oladi');
+assert.equal(cfg.freeWeeklySeconds, 8 * 60);
+assert.equal(liveAllowance(cfg, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 0 }), 8 * 60);
+updateSettings(db, { LIVE_FREE_WEEKLY_MINUTES: 3 }, admin);
+assert.equal(cfg.freeWeeklySeconds, 3 * 60, 'mavjud konfiguratsiya ham yangi qiymatni oladi');
 
 // Mijozga e'lon qilinadigan raqamlar bir xil manbadan
 const pub = publicLimits();
@@ -87,4 +87,18 @@ assert.equal(Object.fromEntries(listSettings(db).map((s) => [s.key, s.source])).
 const audit = db.prepare("SELECT COUNT(*) AS n FROM admin_audit WHERE action = 'settings.update'").get() as { n: number };
 assert.ok(audit.n >= 3);
 
+// Migratsiya: eski "kunlik bepul ovoz" 0 (o'chirilgan) bo'lsa — yangi haftalik ham o'chiq; boshqa qiymat ko'chirilmaydi (yangi standart 5)
+{
+  const { DatabaseSync } = await import('node:sqlite');
+  for (const [old, want] of [[0, 0], [3, 5]] as const) {
+    const m = new DatabaseSync(':memory:');
+    m.exec('CREATE TABLE app_settings (key TEXT PRIMARY KEY, value REAL NOT NULL, updated_at INTEGER NOT NULL, updated_by INTEGER)');
+    m.prepare("INSERT INTO app_settings VALUES ('LIVE_FREE_DAILY_MINUTES', ?, 1, NULL)").run(old);
+    const e: NodeJS.ProcessEnv = {};
+    ensureSettings(m, e);
+    assert.equal(settingValue('LIVE_FREE_WEEKLY_MINUTES', e), want, `eski kunlik ${old} → haftalik ${want}`);
+  }
+  const e2: NodeJS.ProcessEnv = { LIVE_FREE_DAILY_MINUTES: '0' }; const m2 = new DatabaseSync(':memory:'); ensureSettings(m2, e2);
+  assert.equal(settingValue('LIVE_FREE_WEEKLY_MINUTES', e2), 0, 'Railway o‘zgaruvchisi 0 — o‘chiq qoladi');
+}
 console.log('settings.test: OK');

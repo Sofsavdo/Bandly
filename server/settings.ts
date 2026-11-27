@@ -14,10 +14,12 @@ export const SETTINGS: SettingDef[] = [
   { key: 'FREE_FIRST_DAY_LESSONS', group: 'free', label: 'Birinchi kuni bepul darslar (har bir kurs)', def: 3, min: 0, max: 50 },
   { key: 'FREE_WRITING_PER_WEEK', group: 'free', label: 'Haftasiga bepul AI Writing baholash', def: 1, min: 0, max: 50 },
   { key: 'FREE_SPEAKING_PER_WEEK', group: 'free', label: 'Haftasiga bepul AI Speaking baholash', def: 1, min: 0, max: 50 },
-  { key: 'LIVE_FREE_DAILY_MINUTES', group: 'free', label: 'Kuniga bepul ovozli suhbat (Sellzen)', def: 5, min: 0, max: 120, unit: 'min' },
+  { key: 'LIVE_FREE_WEEKLY_MINUTES', group: 'free', label: 'Bepul ovozli suhbat (Sellzen), haftasiga', hint: 'Oxirgi 7 kun bo‘yicha', def: 5, min: 0, max: 600, unit: 'min' },
   { key: 'COACH_FREE_DAILY_ANSWERS', group: 'free', label: 'Kuniga bepul ovozli javoblar (matnli suhbatda)', def: 5, min: 0, max: 500 },
   // Obuna tariflari
-  { key: 'COACH_CALL_MONTH_MINUTES', group: 'plans', label: 'Obunachilar: ovozli suhbat, oyiga', hint: 'Barcha tariflar uchun', def: 60, min: 0, max: 3000, unit: 'min' },
+  { key: 'COACH_CALL_MONTH_MINUTES', group: 'plans', label: 'General English: ovozli suhbat, oyiga', def: 60, min: 0, max: 3000, unit: 'min' },
+  { key: 'PLAN_EXAM_VOICE_MINUTES', group: 'plans', label: 'Exam Preparation: ovozli suhbat, oyiga', def: 90, min: 0, max: 3000, unit: 'min' },
+  { key: 'PLAN_ALL_VOICE_MINUTES', group: 'plans', label: 'All Access: ovozli suhbat, oyiga', def: 120, min: 0, max: 3000, unit: 'min' },
   { key: 'PLAN_GENERAL_WRITING', group: 'plans', label: 'General English: AI Writing baholash, oyiga', def: 0, min: 0, max: 500 },
   { key: 'PLAN_GENERAL_SPEAKING', group: 'plans', label: 'General English: AI Speaking baholash, oyiga', def: 0, min: 0, max: 500 },
   { key: 'PLAN_EXAM_WRITING', group: 'plans', label: 'Exam Preparation: AI Writing baholash, oyiga', def: 10, min: 0, max: 500 },
@@ -59,6 +61,11 @@ const snapshot = (env: NodeJS.ProcessEnv) => { if (snap) return; snap = true; fo
 
 export function ensureSettings(db: DatabaseSync, env: NodeJS.ProcessEnv = process.env): void {
   db.exec('CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value REAL NOT NULL, updated_at INTEGER NOT NULL, updated_by INTEGER)');
+  // Migratsiya (2026-11-27): LIVE_FREE_DAILY_MINUTES → LIVE_FREE_WEEKLY_MINUTES. Eski qiymat 0 (bepul ovoz o'chirilgan) bo'lsa — o'chiqligicha qoladi;
+  // boshqa qiymatlar ko'chirilmaydi (egasi tasdiqlagan yangi standart: haftasiga 5 daqiqa).
+  if (env.LIVE_FREE_WEEKLY_MINUTES === undefined && env.LIVE_FREE_DAILY_MINUTES !== undefined && Number(env.LIVE_FREE_DAILY_MINUTES) === 0) env.LIVE_FREE_WEEKLY_MINUTES = '0';
+  const oldDaily = db.prepare("SELECT value, updated_at, updated_by FROM app_settings WHERE key = 'LIVE_FREE_DAILY_MINUTES'").get() as { value: number; updated_at: number; updated_by: number | null } | undefined;
+  if (oldDaily && oldDaily.value === 0) db.prepare("INSERT OR IGNORE INTO app_settings (key, value, updated_at, updated_by) VALUES ('LIVE_FREE_WEEKLY_MINUTES', 0, ?, ?)").run(oldDaily.updated_at, oldDaily.updated_by);
   snapshot(env);
   for (const r of db.prepare('SELECT key, value FROM app_settings').all() as { key: string; value: number }[]) if (BY_KEY.has(r.key)) env[r.key] = String(r.value);
 }
@@ -105,11 +112,11 @@ export function updateSettings(db: DatabaseSync, patch: Record<string, unknown>,
 export function publicLimits(env: NodeJS.ProcessEnv = process.env) {
   const v = (k: string) => settingValue(k, env);
   return {
-    free: { lessonsPerDay: v('FREE_LESSONS_PER_DAY'), firstDayLessons: v('FREE_FIRST_DAY_LESSONS'), writingPerWeek: v('FREE_WRITING_PER_WEEK'), speakingPerWeek: v('FREE_SPEAKING_PER_WEEK'), liveMinutesPerDay: v('LIVE_FREE_DAILY_MINUTES') },
+    free: { lessonsPerDay: v('FREE_LESSONS_PER_DAY'), firstDayLessons: v('FREE_FIRST_DAY_LESSONS'), writingPerWeek: v('FREE_WRITING_PER_WEEK'), speakingPerWeek: v('FREE_SPEAKING_PER_WEEK'), liveMinutesPerWeek: v('LIVE_FREE_WEEKLY_MINUTES') },
     plans: {
       general: { voiceMin: v('COACH_CALL_MONTH_MINUTES'), writing: v('PLAN_GENERAL_WRITING'), speaking: v('PLAN_GENERAL_SPEAKING') },
-      exam: { voiceMin: v('COACH_CALL_MONTH_MINUTES'), writing: v('PLAN_EXAM_WRITING'), speaking: v('PLAN_EXAM_SPEAKING') },
-      all: { voiceMin: v('COACH_CALL_MONTH_MINUTES'), writing: v('PLAN_ALL_WRITING'), speaking: v('PLAN_ALL_SPEAKING') },
+      exam: { voiceMin: v('PLAN_EXAM_VOICE_MINUTES'), writing: v('PLAN_EXAM_WRITING'), speaking: v('PLAN_EXAM_SPEAKING') },
+      all: { voiceMin: v('PLAN_ALL_VOICE_MINUTES'), writing: v('PLAN_ALL_WRITING'), speaking: v('PLAN_ALL_SPEAKING') },
       premium: { voiceMin: v('PREMIUM_DAILY_MINUTES') * 30, voiceDaily: v('PREMIUM_DAILY_MINUTES'), writing: v('PLAN_PREMIUM_WRITING'), speaking: v('PLAN_PREMIUM_SPEAKING') },
     },
     referral: { xp: v('REF_XP'), planDays: v('REF_PLAN_DAYS') },

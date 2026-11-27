@@ -30,7 +30,10 @@ assert.equal(callLeft(db, 1, true, nov, 3600), 0, 'manfiy bo‘lmaydi');
   recordLive(d2, 7, 500, day1); assert.equal(voiceLeft(d2, 7, 'premium', day1), 0, 'manfiy bo‘lmaydi');
   assert.equal(voiceLeft(d2, 7, 'premium', day2), 1800, 'ertasi kuni yana 30 daqiqa');
   assert.equal(voiceLeft(d2, 7, null, day1), 0, 'obunasiz — 0');
-  assert.ok(voiceLeft(d2, 7, 'all', day1) > 0 && voiceLeft(d2, 7, 'all', day1) <= 60 * 60, 'All Access — oylik daqiqa');
+  // Egasi (2026-11-27): General 60, Exam 90, All Access 120 daqiqa / oy
+  assert.equal(voiceLeft(d2, 7, 'general', day1), 60 * 60, 'General — 60 daqiqa / oy');
+  assert.equal(voiceLeft(d2, 7, 'exam', day1), 90 * 60, 'Exam — 90 daqiqa / oy');
+  assert.equal(voiceLeft(d2, 7, 'all', day1), 120 * 60, 'All Access — 120 daqiqa / oy');
   const id = Number(d2.prepare('INSERT INTO players (token, nickname, created_at, updated_at) VALUES (?, ?, ?, ?)').run('tp', 'np', day1, day1).lastInsertRowid);
   for (const t of ['exam', 'grammar', 'mocks', 'voice']) d2.prepare('INSERT INTO subscriptions (player_id, track, until) VALUES (?, ?, ?)').run(id, t, day1 + 86_400_000);
   assert.equal(planOf(d2, id, day1), 'premium');

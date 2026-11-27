@@ -23,7 +23,8 @@ export interface SalePlan {
 }
 // Limit raqamlari (ovozli daqiqa, AI baholash soni) va narx admin panelda o'zgaradi: ilova ochilganda serverdan olinadi
 // (applyServerLimits) va "features" matni shu raqamlardan quriladi — e'lon qilingan va haqiqiy limit doim bir xil.
-const voiceLine = (n: number) => L('Sellzen bilan ovozli suhbat: {0} daqiqa / oy', [n]);
+// Egasi (2026-11-27): oylik daqiqa yonida kunlik taxminiy qiymat ham — tariflarni solishtirish oson bo'lsin
+const voiceLine = (n: number) => L('Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})', [n, Math.max(1, Math.round(n / 30))]);
 export const SALE_PLANS: SalePlan[] = [
   {
     id: 'general', title: 'General English', short: L('A1–C2 darslar, grammar va Sellzen bilan ovozli suhbat.'), monthlyUzs: 69_000, usd: '$5.99',
@@ -32,12 +33,12 @@ export const SALE_PLANS: SalePlan[] = [
   },
   {
     id: 'exam', title: 'Exam Preparation', short: L('IELTS, CEFR (Multilevel) va SAT: bo‘limlar bo‘yicha tayyorgarlik va AI baholash.'), monthlyUzs: 99_000, usd: '$7.99',
-    tracks: ['exam', 'mocks'], voiceMin: 60, writing: 10, speaking: 10,
+    tracks: ['exam', 'mocks'], voiceMin: 90, writing: 10, speaking: 10,
     get features() { return [L('IELTS kursi, CEFR va SAT — kunlik cheklovsiz'), L('Reading, Listening, Writing, Speaking mashqlari'), ...(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : []), ...(this.speaking > 0 ? [L('AI Speaking baholash (to‘liq mock): {0} ta / oy', [this.speaking])] : []), voiceLine(this.voiceMin), L('Eshit va takrorla — cheksiz')]; },
   },
   {
     id: 'all', title: 'All Access', short: L('Hammasi bitta obunada: General English + imtihon tayyorgarligi.'), monthlyUzs: 129_000, usd: '$9.99',
-    tracks: ['exam', 'grammar', 'mocks'], voiceMin: 60, writing: 20, speaking: 20, recommended: true,
+    tracks: ['exam', 'grammar', 'mocks'], voiceMin: 120, writing: 20, speaking: 20, recommended: true,
     get features() { return [L('General English va Exam Preparation’dagi hamma narsa'), ...(this.writing > 0 ? [L('AI Writing baholash: {0} ta / oy', [this.writing])] : []), ...(this.speaking > 0 ? [L('AI Speaking baholash: {0} ta / oy', [this.speaking])] : []), voiceLine(this.voiceMin), L('Barcha Sellzen xarakterlari')]; },
   },
   {
@@ -49,7 +50,8 @@ export const SALE_PLANS: SalePlan[] = [
   },
 ];
 /** Bepul tarif raqamlari (landing va ogohlantirishlarda ko'rsatiladi). Server qiymati bilan yangilanadi. */
-export const FREE_INFO = { lessonsPerDay: 1, firstDayLessons: 3, writingPerWeek: 1, speakingPerWeek: 1, liveMinutesPerDay: 5 };
+/** liveMinutesPerWeek — bepul ovozli suhbat haftasiga (egasi, 2026-11-27: kunlik bepul pullik tariflardan ko'p bo'lib qolardi) */
+export const FREE_INFO = { lessonsPerDay: 1, firstDayLessons: 3, writingPerWeek: 1, speakingPerWeek: 1, liveMinutesPerWeek: 5 };
 export interface ServerLimits {
   free: typeof FREE_INFO;
   plans: Record<PlanId, { voiceMin: number; writing: number; speaking: number; voiceDaily?: number }>;

@@ -19,7 +19,7 @@ import { claimBotPhone, ensureLeadsTable, getBotRef, hasBotPhone, hasLead, listL
 import { liveCost, livePrice, setUsageSink, textCost, textPrice, withAiCtx } from './aiUsage';
 import { cancelPayment, createPayment, entitlements, findByCallback, grant, markPrepared, applyResult, callbackOutcome, reconcile, recent, statusFor } from './payments';
 import { demoMode, PERIODS, PLAN_IDS, priceFor } from './pricing';
-import { addCall, callLeft, callMonthSeconds, premiumDailySeconds, ttsSeconds, voiceLeft } from './callMinutes';
+import { addCall, callLeft, planMonthSeconds, premiumDailySeconds, ttsSeconds, voiceLeft } from './callMinutes';
 import { ensureSettings, listSettings, publicLimits, settingValue, updateSettings } from './settings';
 import { addBand, bandStats, deleteBand, listBands, summary as bandSummary } from './bands';
 import { freeLimitsFromEnv, freeStatus, unlockLesson, wallStats } from './freeQuota';
@@ -667,7 +667,7 @@ const httpServer = createServer(async (req, res) => {
       const tk = String(req.headers['x-token'] ?? ''); const pid = byToken(db, tk).id; const sub = entitlements(db, tk).plan !== null;
       const planNow = sub ? entitlements(db, String(req.headers['x-token'] ?? '')).plan : null;
       if (planNow === 'premium') return send(res, 200, { subscribed: true, premium: true, total: Math.round(premiumDailySeconds() / 60), left: Math.floor(voiceLeft(db, pid, planNow) / 60) });
-      return send(res, 200, { subscribed: sub, total: Math.round(callMonthSeconds() / 60), left: Math.floor(callLeft(db, pid, sub) / 60) });
+      return send(res, 200, { subscribed: sub, total: Math.round(planMonthSeconds(planNow) / 60), left: Math.floor((sub ? voiceLeft(db, pid, planNow) : callLeft(db, pid, false)) / 60) });
     }
     // Nutqni tanish: brauzer yozib olgan bitta navbat (ovoz) → matn. Ovoz saqlanmaydi.
     if (req.method === 'POST' && url.pathname === '/api/ai/stt') {
@@ -927,7 +927,8 @@ if (live) attachLive(httpServer, {
     try {
       const p = byToken(db, token);
       const role = roleOf(db, p.id);
-      return { id: p.id, staff: role === 'admin' || role === 'methodologist', subscriberLeftSec: voiceLeft(db, p.id, entitlements(db, token).plan) };
+      const plan = entitlements(db, token).plan;
+      return { id: p.id, staff: role === 'admin' || role === 'methodologist', subscriberLeftSec: voiceLeft(db, p.id, plan), plan };
     } catch { return null; }
   },
   prompt: (o) => buildLivePrompt(o),
