@@ -16244,9 +16244,11 @@
  "General English: ovozli suhbat, oyiga": "General English: дауыстық әңгіме, айына",
  "Bepul ovozli suhbat (Sellzen), haftasiga": "Тегін дауыстық әңгіме (Sellzen), аптасына",
  "Sellzen: haftasiga {0} daqiqa": "Sellzen: аптасына {0} минут",
- "Bu haftalik bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga {0} daqiqadan.": "Осы аптадағы тегін дауыстық минуттар бітті. Жазылыммен — айына {0} минуттан бастап.",
  "Oxirgi 7 kun bo‘yicha": "Соңғы 7 күн бойынша",
  "Exam Preparation: ovozli suhbat, oyiga": "Exam Preparation: дауыстық әңгіме, айына",
  "Sellzen bilan ovozli suhbat: {0} daqiqa / oy (≈ kuniga {1})": "Sellzen-мен дауыстық әңгіме: {0} минут / ай (≈ күніне {1})",
- "All Access: ovozli suhbat, oyiga": "All Access: дауыстық әңгіме, айына"
+ "All Access: ovozli suhbat, oyiga": "All Access: дауыстық әңгіме, айына",
+ "Bugungi ovozli suhbat daqiqalari tugadi — ertaga yangilanadi.": "Бүгінгі дауыстық минуттар бітті — ертең жаңарады.",
+ "Bu oylik ovozli suhbat daqiqalari tugadi — keyingi oyda yangilanadi. Ko‘proq gaplashish uchun — Premium tarifi.": "Осы айдағы дауыстық минуттар бітті — келесі айда жаңарады. Көбірек сөйлесу үшін — Premium тарифі.",
+ "Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga {0} daqiqadan.": "Осы аптадағы тегін дауыстық минуттар бітті — дүйсенбіде жаңарады. Жазылыммен — айына {0} минуттан бастап."
 }

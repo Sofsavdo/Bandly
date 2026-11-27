@@ -3,7 +3,7 @@ import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { WebSocket, WebSocketServer } from 'ws';
 import { handsTurnBack } from './coach';
-import { attachLive, liveUsedWeek, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
+import { attachLive, liveUsedWeek, weekMonday, ctxPrompt, navIntent, navRoute, partlyTurn, PARTLY_SCORE, pcmRms, pcmToWav, sanitizeCtx, tokenFromProtocols, unsureTurn, UNSURE_SCORE, wrongLanguage, ensureLiveTable, liveAllowance, liveConfigFromEnv, liveUsedToday, recordLive, setupMessage } from './live';
 
 // Sozlama: Gemini kaliti bo'lsa yoqiq, GEMINI_LIVE=0 o'chiradi
 assert.equal(liveConfigFromEnv(null, {}), null);
@@ -16,14 +16,17 @@ assert.equal(liveAllowance(cfg0, { staff: true, subscriberLeftSec: 0, freeUsedWe
 assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 120, freeUsedWeekSec: 0 }), 120);
 assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 200 }), 100);
 assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 400 }), 0);
-// Bepul — haftalik (oxirgi 7 kun): 5 daqiqa haftasiga (egasi, 2026-11-27)
+// Bepul — haftalik, dushanbadan (Toshkent): 5 daqiqa haftasiga (egasi, 2026-11-27); obunachi bepul zaxiraga tushmaydi
 {
   const wdb = new DatabaseSync(':memory:'); ensureLiveTable(wdb);
-  const d0 = Date.parse('2026-11-20T10:00:00Z');
-  recordLive(wdb, 5, 120, d0); recordLive(wdb, 5, 100, d0 + 3 * 86_400_000);
-  assert.equal(liveUsedWeek(wdb, 5, d0 + 3 * 86_400_000), 220, 'shu hafta: 2 kun');
-  assert.equal(liveUsedWeek(wdb, 5, d0 + 7 * 86_400_000), 100, '7 kundan eski kun hisobga kirmaydi');
-  assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: liveUsedWeek(wdb, 5, d0 + 3 * 86_400_000) }), 80, 'haftalik qoldiq');
+  const mon = Date.parse('2026-11-23T10:00:00Z'); // dushanba
+  assert.equal(weekMonday(mon + 3 * 86_400_000), '2026-11-23'); assert.equal(weekMonday(mon - 86_400_000), '2026-11-16', 'yakshanba — o‘tgan hafta');
+  recordLive(wdb, 5, 120, mon); recordLive(wdb, 5, 100, mon + 3 * 86_400_000);
+  assert.equal(liveUsedWeek(wdb, 5, mon + 3 * 86_400_000), 220, 'shu hafta: dushanba va payshanba');
+  assert.equal(liveUsedWeek(wdb, 5, mon + 7 * 86_400_000), 0, 'keyingi dushanba — yangi hafta');
+  assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 220 }), 80, 'haftalik qoldiq');
+  assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 0, freeUsedWeekSec: 0, plan: 'general' }), 0, 'oylik daqiqasi tugagan obunachi — bepul zaxira emas');
+  assert.equal(liveAllowance(cfg0, { staff: false, subscriberLeftSec: 300, freeUsedWeekSec: 9999, plan: 'exam' }), 300, 'obunachi — o‘z daqiqalari');
 }
 
 const sm = setupMessage(cfg0, 'gemini-3.8-live', 'SYS') as { setup: Record<string, any> }; // eslint-disable-line @typescript-eslint/no-explicit-any

@@ -87,4 +87,18 @@ assert.equal(Object.fromEntries(listSettings(db).map((s) => [s.key, s.source])).
 const audit = db.prepare("SELECT COUNT(*) AS n FROM admin_audit WHERE action = 'settings.update'").get() as { n: number };
 assert.ok(audit.n >= 3);
 
+// Migratsiya: eski "kunlik bepul ovoz" 0 (o'chirilgan) bo'lsa — yangi haftalik ham o'chiq; boshqa qiymat ko'chirilmaydi (yangi standart 5)
+{
+  const { DatabaseSync } = await import('node:sqlite');
+  for (const [old, want] of [[0, 0], [3, 5]] as const) {
+    const m = new DatabaseSync(':memory:');
+    m.exec('CREATE TABLE app_settings (key TEXT PRIMARY KEY, value REAL NOT NULL, updated_at INTEGER NOT NULL, updated_by INTEGER)');
+    m.prepare("INSERT INTO app_settings VALUES ('LIVE_FREE_DAILY_MINUTES', ?, 1, NULL)").run(old);
+    const e: NodeJS.ProcessEnv = {};
+    ensureSettings(m, e);
+    assert.equal(settingValue('LIVE_FREE_WEEKLY_MINUTES', e), want, `eski kunlik ${old} → haftalik ${want}`);
+  }
+  const e2: NodeJS.ProcessEnv = { LIVE_FREE_DAILY_MINUTES: '0' }; const m2 = new DatabaseSync(':memory:'); ensureSettings(m2, e2);
+  assert.equal(settingValue('LIVE_FREE_WEEKLY_MINUTES', e2), 0, 'Railway o‘zgaruvchisi 0 — o‘chiq qoladi');
+}
 console.log('settings.test: OK');

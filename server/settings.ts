@@ -61,6 +61,11 @@ const snapshot = (env: NodeJS.ProcessEnv) => { if (snap) return; snap = true; fo
 
 export function ensureSettings(db: DatabaseSync, env: NodeJS.ProcessEnv = process.env): void {
   db.exec('CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value REAL NOT NULL, updated_at INTEGER NOT NULL, updated_by INTEGER)');
+  // Migratsiya (2026-11-27): LIVE_FREE_DAILY_MINUTES → LIVE_FREE_WEEKLY_MINUTES. Eski qiymat 0 (bepul ovoz o'chirilgan) bo'lsa — o'chiqligicha qoladi;
+  // boshqa qiymatlar ko'chirilmaydi (egasi tasdiqlagan yangi standart: haftasiga 5 daqiqa).
+  if (env.LIVE_FREE_WEEKLY_MINUTES === undefined && env.LIVE_FREE_DAILY_MINUTES !== undefined && Number(env.LIVE_FREE_DAILY_MINUTES) === 0) env.LIVE_FREE_WEEKLY_MINUTES = '0';
+  const oldDaily = db.prepare("SELECT value, updated_at, updated_by FROM app_settings WHERE key = 'LIVE_FREE_DAILY_MINUTES'").get() as { value: number; updated_at: number; updated_by: number | null } | undefined;
+  if (oldDaily && oldDaily.value === 0) db.prepare("INSERT OR IGNORE INTO app_settings (key, value, updated_at, updated_by) VALUES ('LIVE_FREE_WEEKLY_MINUTES', 0, ?, ?)").run(oldDaily.updated_at, oldDaily.updated_by);
   snapshot(env);
   for (const r of db.prepare('SELECT key, value FROM app_settings').all() as { key: string; value: number }[]) if (BY_KEY.has(r.key)) env[r.key] = String(r.value);
 }

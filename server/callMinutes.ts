@@ -6,10 +6,10 @@ import { tzDay } from './day';
 import { SALE_PLANS } from '../src/config';
 import { settingValue } from './settings';
 
-/** Tariflarda e'lon qilingan oylik daqiqa (SALE_PLANS.voiceMin — barcha tariflarda bir xil; farq qilsa eng kichigi). Sotilgan va berilgan bitta manbadan. */
+/** Tariflardagi eng kichik oylik daqiqa (General; tariflar bo'yicha: planMonthSeconds). Sotilgan va berilgan bitta manbadan. */
 export const PLAN_VOICE_MINUTES = Math.min(...SALE_PLANS.filter((p) => !p.voiceDaily).map((p) => p.voiceMin));
 /** COACH_CALL_MONTH_MINUTES — faqat vaqtinchalik qo'lda o'zgartirish uchun (masalan xarajat nazorati); standart — tarifdagi qiymat. */
-/** Obunachining oylik ovozli suhbat soniyalari: admin panel (COACH_CALL_MONTH_MINUTES) > Railway > tarifdagi qiymat. Har chaqiruvda o'qiladi. */
+/** General English oylik ovozli suhbat soniyalari (COACH_CALL_MONTH_MINUTES). Boshqa tariflar uchun — planMonthSeconds. */
 export const callMonthSeconds = (): number => settingValue('COACH_CALL_MONTH_MINUTES') * 60;
 /** Tarif bo'yicha oylik ovozli suhbat soniyalari (egasi, 2026-11-27): General 60, Exam 90, All Access 120 daqiqa — admin panelda o'zgaradi. */
 export const planMonthSeconds = (plan: string | null): number => (plan === 'exam' ? settingValue('PLAN_EXAM_VOICE_MINUTES') : plan === 'all' ? settingValue('PLAN_ALL_VOICE_MINUTES') : settingValue('COACH_CALL_MONTH_MINUTES')) * 60;

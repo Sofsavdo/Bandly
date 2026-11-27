@@ -927,7 +927,8 @@ if (live) attachLive(httpServer, {
     try {
       const p = byToken(db, token);
       const role = roleOf(db, p.id);
-      return { id: p.id, staff: role === 'admin' || role === 'methodologist', subscriberLeftSec: voiceLeft(db, p.id, entitlements(db, token).plan) };
+      const plan = entitlements(db, token).plan;
+      return { id: p.id, staff: role === 'admin' || role === 'methodologist', subscriberLeftSec: voiceLeft(db, p.id, plan), plan };
     } catch { return null; }
   },
   prompt: (o) => buildLivePrompt(o),

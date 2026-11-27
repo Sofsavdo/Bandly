@@ -55,9 +55,14 @@ export function ensureLiveTable(db: DatabaseSync): void {
 export function liveUsedToday(db: DatabaseSync, playerId: number, now = Date.now()): number {
   return (db.prepare('SELECT seconds FROM live_usage WHERE day = ? AND player_id = ?').get(tzDay(now), playerId) as { seconds: number } | undefined)?.seconds ?? 0;
 }
-/** Oxirgi 7 kunda (bugun bilan) ishlatilgan Live soniyalari — bepul haftalik limit uchun. */
+/** Joriy hafta dushanbasi (Toshkent vaqti, YYYY-MM-DD) — boshqa haftalik bepul limitlar ham dushanba yangilanadi. */
+export function weekMonday(now = Date.now()): string {
+  const d = new Date(`${tzDay(now)}T00:00:00Z`); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+  return d.toISOString().slice(0, 10);
+}
+/** Shu haftada (dushanbadan) ishlatilgan Live soniyalari — bepul haftalik limit uchun. */
 export function liveUsedWeek(db: DatabaseSync, playerId: number, now = Date.now()): number {
-  return (db.prepare('SELECT COALESCE(SUM(seconds), 0) AS s FROM live_usage WHERE player_id = ? AND day >= ?').get(playerId, tzDay(now - 6 * 86_400_000)) as { s: number }).s;
+  return (db.prepare('SELECT COALESCE(SUM(seconds), 0) AS s FROM live_usage WHERE player_id = ? AND day >= ?').get(playerId, weekMonday(now)) as { s: number }).s;
 }
 /** Bugun butun platformada ishlatilgan Live soniyalari. */
 export function liveUsedTodayAll(db: DatabaseSync, now = Date.now()): number {
@@ -68,9 +73,11 @@ export function recordLive(db: DatabaseSync, playerId: number, seconds: number, 
   db.prepare('INSERT INTO live_usage (day, player_id, seconds) VALUES (?, ?, ?) ON CONFLICT(day, player_id) DO UPDATE SET seconds = seconds + excluded.seconds').run(tzDay(now), playerId, seconds);
 }
 
-/** Bu qo'ng'iroq uchun ruxsat etilgan soniyalar: xodim — sessiya chegarasi; obunachi — oylik daqiqalari; bepul — kunlik bepul daqiqa. */
-export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriberLeftSec: number; freeUsedWeekSec: number; platformUsedTodaySec?: number }): number {
+/** Bu qo'ng'iroq uchun ruxsat etilgan soniyalar: xodim — sessiya chegarasi; obunachi — o'z tarifi daqiqalari (Premium — kunlik, boshqalar — oylik); bepul — haftalik bepul daqiqa (dushanbadan). */
+export function liveAllowance(cfg: LiveConfig, who: { staff: boolean; subscriberLeftSec: number; freeUsedWeekSec: number; platformUsedTodaySec?: number; plan?: string | null }): number {
   if (who.staff) return cfg.maxSessionSec;
+  // Obunachi — faqat o'z tarifi daqiqalari (bepul haftalik zaxira obunachilarga emas: ularning pullik daqiqalari ham shu jadvalda)
+  if (who.plan) return Math.min(cfg.maxSessionSec, Math.max(0, who.subscriberLeftSec));
   if (who.subscriberLeftSec > 0) return Math.min(cfg.maxSessionSec, who.subscriberLeftSec);
   const personal = Math.max(0, cfg.freeWeeklySeconds - who.freeUsedWeekSec); // bepul — oxirgi 7 kunda
   // Platformaning kunlik bepul byudjeti tugasa — bepul foydalanuvchilarga ertagacha Live berilmaydi (obunachilarga ta'sir qilmaydi)
@@ -221,7 +228,7 @@ interface LiveDeps {
   db: DatabaseSync;
   cfg: LiveConfig;
   /** Token → o'quvchi; null — yaroqsiz */
-  auth: (token: string) => { id: number; staff: boolean; subscriberLeftSec: number } | null;
+  auth: (token: string) => { id: number; staff: boolean; subscriberLeftSec: number; plan?: string | null } | null;
   prompt: (o: { adult: boolean; native: string; level: string | null; firstCall: boolean; memory: string; style: 0 | 1 | 2 | 3 | 4 | 5; ptt: boolean; asr: boolean }) => string;
   /** O'quvchi uchun: birinchi qo'ng'iroqmi va xotira matni (ko'rsatmaga qo'shiladi) */
   context?: (playerId: number) => { firstCall: boolean; memory: string; followUp?: string };
@@ -271,10 +278,15 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   const send = (o: Record<string, unknown>) => { if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify(o)); };
   const who = d.auth(token);
   if (!who) { send({ type: 'error', code: 401, message: 'Hisobga kiring' }); client.close(); return; }
-  const allowance = liveAllowance(d.cfg, { staff: who.staff, subscriberLeftSec: who.subscriberLeftSec, freeUsedWeekSec: liveUsedWeek(d.db, who.id), platformUsedTodaySec: liveUsedTodayAll(d.db) });
+  const allowance = liveAllowance(d.cfg, { staff: who.staff, subscriberLeftSec: who.subscriberLeftSec, freeUsedWeekSec: liveUsedWeek(d.db, who.id), platformUsedTodaySec: liveUsedTodayAll(d.db), plan: who.plan ?? null });
   const lang = String(url.searchParams.get('lang') ?? 'uz').slice(0, 2);
   const tr = d.tr ?? ((_l: string, t: string) => t);
-  if (allowance < 5) { send({ type: 'limit', kind: 'quota', message: tr(lang, `Bu haftalik bepul ovozli suhbat daqiqalari tugadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqadan.`) }); client.close(); return; }
+  if (allowance < 5) {
+    const msg = who.plan === 'premium' ? tr(lang, 'Bugungi ovozli suhbat daqiqalari tugadi — ertaga yangilanadi.')
+      : who.plan ? tr(lang, 'Bu oylik ovozli suhbat daqiqalari tugadi — keyingi oyda yangilanadi. Ko‘proq gaplashish uchun — Premium tarifi.')
+      : tr(lang, `Bu haftalik bepul ovozli suhbat daqiqalari tugadi — dushanba kuni yangilanadi. Obuna bilan — oyiga ${Math.round(callMonthSeconds() / 60)} daqiqadan.`);
+    send({ type: 'limit', kind: 'quota', message: msg }); client.close(); return;
+  }
   const ptt = url.searchParams.get('ptt') === '1'; // bosib-gapirish rejimi
   const asrOn = ptt && !!d.asr; // gap serverda matnga aylantiriladi
   const ctx: { firstCall: boolean; memory: string; followUp?: string } = d.context?.(who.id) ?? { firstCall: false, memory: '' };
