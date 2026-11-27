@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { makeResampler } from './liveCall';
+import { LEAD0, LEAD_MAX, makeResampler, planChunk } from './liveCall';
 
 // 16 kHz ga o'tkazuvchi: past chastota saqlanadi, 8 kHz dan yuqori (aliasing) kuchli kesiladi, kadrlarga bo'lib berilsa ham natija bir xil
 const tone = (hz: number, rate: number, sec: number, amp = 0.5): Float32Array => Float32Array.from({ length: Math.round(rate * sec) }, (_, i) => amp * Math.sin((2 * Math.PI * hz * i) / rate));
@@ -25,4 +25,17 @@ for (const rate of [48000, 44100, 32000, 16000]) {
   let maxDiff = 0; for (let i = 100; i < Math.min(a.length, chunks.length) - 10; i++) maxDiff = Math.max(maxDiff, Math.abs(a[i]! - chunks[i]!) / 32768);
   assert.ok(maxDiff < 0.002, `kadrlab farq ${maxDiff}`);
 }
-console.log('liveCall (resampler): OK');
+// Ustoz ovozi bo'laklari (egasi, 2026-11-27: "gapirayotganida uzilib gapiryapti"): javob boshida bufer, navbatdagi bo'lak oldingisining orqasidan,
+// javob o'rtasida ovoz tugab qolsa — uzilish sanaladi va bufer oshadi (LEAD_MAX dan oshmaydi)
+{
+  let p = planChunk(10, 0, LEAD0, false);
+  assert.deepEqual(p, { at: 10 + LEAD0, underrun: false, lead: LEAD0 }, 'javob boshi: bufer bilan');
+  p = planChunk(10.05, 10.5, LEAD0, true);
+  assert.deepEqual(p, { at: 10.5, underrun: false, lead: LEAD0 }, 'navbatdagi bo‘lak — uzluksiz');
+  p = planChunk(11, 10.9, LEAD0, true);
+  assert.equal(p.underrun, true, 'javob o‘rtasida kechikdi — uzilish'); assert.ok(Math.abs(p.lead - (LEAD0 + 0.1)) < 1e-9, 'bufer oshdi'); assert.ok(Math.abs(p.at - (11 + p.lead)) < 1e-9);
+  let l = LEAD0; for (let i = 0; i < 20; i++) l = planChunk(20 + i, 0, l, true).lead;
+  assert.equal(l, LEAD_MAX, 'bufer chegaradan oshmaydi');
+  assert.equal(planChunk(30, 29, LEAD_MAX, false).underrun, false, 'yangi javob boshi uzilish emas');
+}
+console.log('liveCall (resampler, ovoz buferi): OK');

@@ -291,8 +291,10 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   // Bosib-gapirish: Gemini'ga faqat tugma bosilib turgan paytdagi ovoz boradi (navbatni o'quvchi boshqaradi)
   let inAct = false, actTimer: NodeJS.Timeout | null = null, actMsgs = 0;
   // Tanish rejimi: navbat ovozi shu yerda yig'iladi; qo'yib yuborilganda Scribe → matn → Gemini. dropOld — o'quvchi ustozni bosib to'xtatdi: eski javobning qolgan ovozi tashlanadi.
+  // playEnd — server tomonidagi taxminiy ijro oxiri (Gemini ovoz oqimi sekinlashganini sanash uchun); holdTimer — ustoz gapirayotganda bosish TAP_MS tasdig'ini kutadi
+  let playEnd = 0, holdTimer: NodeJS.Timeout | null = null;
   let viaAudio = false, actBuf: Buffer[] = [], actBytes = 0, modelBusy = false, dropOld = false, dropTimer: NodeJS.Timeout | null = null, asrChain: Promise<void> = Promise.resolve();
-  const st = { acts: 0, taps: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0, emo: {} as Record<string, number>, waits: [] as number[], asrMs: [] as number[] };
+  const st = { acts: 0, taps: 0, asrOk: 0, asrEmpty: 0, asrFail: 0, unsure: 0, replies: 0, audioSec: 0, lvl: 0, emo: {} as Record<string, number>, waits: [] as number[], asrMs: [] as number[], gaps: 0, leadMs: 0, srvGaps: 0 };
   // Kechikish: o'quvchi tugmani qo'yib yuborgandan ustozning birinchi ovozigacha (jurnalga — "qotib qolish" shikoyatlarini o'lchash uchun)
   let releasedAt = 0;
   const started = Date.now();
@@ -378,13 +380,18 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
             if (e !== 'neutral' && e !== emo) { emo = e; st.emo[e] = (st.emo[e] ?? 0) + 1; send({ type: 'emotion', value: e }); }
           }
         }
-        if (!muted && !dropOld) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) { if (releasedAt) { st.waits.push(Date.now() - releasedAt); releasedAt = 0; } modelBusy = true; if (client.readyState === WebSocket.OPEN) client.send(Buffer.from(String(p.inlineData.data), 'base64')); }
+        if (!muted && !dropOld) for (const p of sc.modelTurn?.parts ?? []) if (p.inlineData?.data) {
+          if (releasedAt) { st.waits.push(Date.now() - releasedAt); releasedAt = 0; } modelBusy = true;
+          const pcm = Buffer.from(String(p.inlineData.data), 'base64');
+          const nowMs = Date.now(); if (!playEnd) playEnd = nowMs + 200; else if (nowMs > playEnd) { st.srvGaps++; playEnd = nowMs + 200; } playEnd += (pcm.length / 2 / 24000) * 1000;
+          if (client.readyState === WebSocket.OPEN) client.send(pcm);
+        }
         if (sc.inputTranscription?.text && (!asrOn || viaAudio)) { // tanish ishlamagan navbatda (ovoz Gemini'ga ketgan) — Gemini'ning o'z nusxasi
           const t = String(sc.inputTranscription.text); send({ type: 'in', text: t }); addText('learner', t);
           learnerBuf = (learnerBuf + ' ' + t).slice(-300); maybeNavigate(learnerBuf); // Gemini o'zi eshitgan gap (tanish o'chiq bo'lsa)
         }
-        if (sc.interrupted) { send({ type: 'interrupted' }); turnOut = ''; muted = false; modelBusy = false; viaAudio = false; clearDrop(); }
-        if (sc.turnComplete) { st.replies++; send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); if (capDue) { if (capWait) clearTimeout(capWait); capNow(); } }
+        if (sc.interrupted) { playEnd = 0; send({ type: 'interrupted' }); turnOut = ''; muted = false; modelBusy = false; viaAudio = false; clearDrop(); }
+        if (sc.turnComplete) { playEnd = 0; st.replies++; send({ type: 'turn' }); turnOut = ''; muted = false; emo = 'neutral'; learnerBuf = ''; modelBusy = false; viaAudio = false; clearDrop(); if (capDue) { if (capWait) clearTimeout(capWait); capNow(); } }
       }
       if (m.goAway) { send({ type: 'error', code: 503, resume: true, message: 'Suhbat vaqti tugadi, qayta boshlang.' }); finish('goAway'); }
     });
@@ -461,18 +468,24 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
   // Bosib-gapirish: "bosildi" → ustozni to'xtatadi (tanish rejimida: shu yerda ovoz yig'ila boshlaydi, aks holda activityStart);
   // "qo'yib yuborildi" → javob (tanish: Scribe → matn → Gemini; aks holda activityEnd). 60 soniyadan keyin o'zi tugaydi.
   /** discard — o'quvchi tasodifan qisqa tekkan: yig'ilgan ovoz tashlanadi, Scribe'ga ham, ustozga ham bormaydi */
-  const setActivity = (on: boolean, discard = false) => {
+  const setActivity = (on: boolean, discard = false, barge = false) => {
     if (!ptt || !ready || upstream?.readyState !== WebSocket.OPEN || on === inAct || ++actMsgs > 400) return;
     inAct = on;
     if (actTimer) { clearTimeout(actTimer); actTimer = null; }
     if (asrOn) {
       if (on) {
         actBuf = []; actBytes = 0;
-        if (modelBusy) { dropOld = true; if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; } send({ type: 'interrupted' }); } // ataylab to'xtatdi
+        if (modelBusy && barge) { dropOld = true; if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; } playEnd = 0; send({ type: 'interrupted' }); } // mijoz TAP_MS kutib bo'ldi — darhol
+        else if (modelBusy) { // ataylab to'xtatish TAP_MS bosib turilganda tasdiqlanadi (tasodifiy qisqa tegish javobni kesmaydi)
+          if (holdTimer) clearTimeout(holdTimer);
+          holdTimer = setTimeout(() => { holdTimer = null; if (!inAct || !modelBusy) return; dropOld = true; if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; } playEnd = 0; send({ type: 'interrupted' }); }, HOLD_MS); holdTimer.unref?.();
+        }
         actTimer = setTimeout(() => setActivity(false), 60_000); actTimer.unref?.();
       } else if (discard) {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } // ustoz gapini davom ettiradi
         actBuf = []; actBytes = 0; st.taps++;
       } else {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; if (modelBusy) { dropOld = true; playEnd = 0; send({ type: 'interrupted' }); } }
         const audio = Buffer.concat(actBuf); actBuf = []; actBytes = 0; st.acts++; releasedAt = Date.now();
         asrChain = asrChain.then(() => onUtterance(audio)).catch(() => undefined);
       }
@@ -494,9 +507,10 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
       return;
     }
     try {
-      const m = JSON.parse(data.toString()) as { type?: string; on?: unknown; discard?: unknown; ctx?: unknown };
+      const m = JSON.parse(data.toString()) as { type?: string; on?: unknown; discard?: unknown; barge?: unknown; ctx?: unknown; gaps?: unknown; leadMs?: unknown };
       if (m.type === 'end') finish('client');
-      else if (m.type === 'activity') setActivity(m.on === true, m.on !== true && m.discard === true);
+      else if (m.type === 'activity') setActivity(m.on === true, m.on !== true && m.discard === true, m.on === true && m.barge === true);
+      else if (m.type === 'stats') { const g = Number(m.gaps), l = Number(m.leadMs); if (Number.isFinite(g) && g >= 0 && g < 10_000) st.gaps = Math.max(st.gaps, Math.floor(g)); if (Number.isFinite(l) && l >= 0 && l < 5000) st.leadMs = Math.round(l); }
       else if (m.type === 'ctx' && !learnerCtx) { learnerCtx = sanitizeCtx(m.ctx); ctxResolve(); }
     } catch { /* */ }
   });
@@ -507,9 +521,12 @@ function handleClient(client: WebSocket, url: URL, token: string, d: LiveDeps, l
 }
 
 /** Jurnal uchun: ustoz javobini kutish (o'quvchi qo'yib yuborgandan birinchi ovozgacha) va tanish vaqti — o'rtacha/eng uzun, soniyada. */
-export function statLine(st: { waits: number[]; asrMs: number[] }): string {
+/** Ustoz gapirayotganda bosish shuncha ms davom etsagina uni to'xtatadi (mijozdagi TAP_MS bilan bir xil). */
+export const HOLD_MS = 300;
+export function statLine(st: { waits: number[]; asrMs: number[]; gaps?: number; leadMs?: number; srvGaps?: number }): string {
   const f = (a: number[]) => (a.length ? `${(a.reduce((x, y) => x + y, 0) / a.length / 1000).toFixed(1)}/${(Math.max(...a) / 1000).toFixed(1)}s` : '');
-  return `${st.waits.length ? ` kutish=${f(st.waits)}` : ''}${st.asrMs.length ? ` asr=${f(st.asrMs)}` : ''}`;
+  // uzilish=telefonda/serverda: ustoz ovozida bo'lak kechikkan holatlar (telefon — haqiqiy eshitilgan; server — Gemini oqimi sekinlashgan)
+  return `${st.waits.length ? ` kutish=${f(st.waits)}` : ''}${st.asrMs.length ? ` asr=${f(st.asrMs)}` : ''}${st.gaps || st.srvGaps ? ` uzilish=${st.gaps ?? 0}/${st.srvGaps ?? 0}${st.leadMs ? ` bufer=${st.leadMs}ms` : ''}` : ''}`;
 }
 /** Qayta ulanishdan keyingi birinchi ko'rsatma: salomlashmasdan, oldingi gaplardan davom etish. */
 export function continueKick(recent: string | undefined, native: string): string {
