@@ -8,7 +8,8 @@ import { LEVELS } from '../content/roasts';
 import { setPersona, setKidsMode, setTutorChoice, setTutorVoice, useProfile } from '../lib/store';
 import { L } from '../i18n';
 
-export function PersonaPicker() {
+/** only='kids' — profilda faqat bolalar rejimi va 18+ tasdig'i (ustoz va xarakter tanlovi Sellzen sahifasida, egasi 2026-11-27) */
+export function PersonaPicker({ only }: { only?: 'kids' } = {}) {
   const p = useProfile();
   const [pin, setPin] = useState(''); const [pinOpen, setPinOpen] = useState(false); const [msg, setMsg] = useState('');
   const voice = p.tutorVoice ?? 'male';
@@ -25,6 +26,29 @@ export function PersonaPicker() {
     setMsg(ok ? (kids ? L('Bolalar rejimi o‘chirildi') : L('Bolalar rejimi yoqildi — o‘chirish uchun shu PIN kerak bo‘ladi')) : L('PIN kod noto‘g‘ri'));
     if (ok) { setPin(''); setPinOpen(false); }
   };
+  const adultBox = !kids && (
+    <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={p.adult} onChange={(e) => {
+      const adult = e.target.checked;
+      if (!adult && p.tutorExtra === 'romantic') setTutorChoice(0, false); else setPersona(adult ? p.roastLevel : Math.min(p.roastLevel, 1), adult);
+    }} />  {L('Men 18 yoshdan oshganman va qattiq yoki romantik xarakterni o‘zim xohlayman')}</label></p>
+  );
+  const kidsBox = (
+      <div className="kids-box">
+        <h4 className="list-h"><Baby size={16} /> {L('Bolalar rejimi')}</h4>
+        <p className="muted" style={{ marginTop: 0 }}>{kids ? L('Yoqilgan. O‘chirish uchun ota-ona PIN kodini kiriting.') : L('Farzandingiz foydalansa yoqing: ustoz faqat bolalar xarakterida gaplashadi, 18+ xarakterlar yopiladi. 4 xonali PIN kod qo‘yasiz — usiz o‘chirib bo‘lmaydi.')}</p>
+        {pinOpen ? (
+          <div className="row">
+            <input className="input" type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={pin} placeholder={L('4 xonali PIN')} aria-label={L('PIN kod')} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))} />
+            <button type="button" className="btn primary sm" onClick={applyPin}>{kids ? L('O‘chirish') : L('Yoqish')}</button>
+            <button type="button" className="btn sm" onClick={() => { setPinOpen(false); setPin(''); setMsg(''); }}>{L('Bekor qilish')}</button>
+          </div>
+        ) : (
+          <button type="button" className="btn sm" onClick={() => { setPinOpen(true); setMsg(''); }}>{kids ? L('Bolalar rejimini o‘chirish') : L('Bolalar rejimini yoqish')}</button>
+        )}
+        {msg && <p className="evidence" role="status">{msg}</p>}
+      </div>
+  );
+  if (only === 'kids') return <div className="persona-picker">{kidsBox}{adultBox}</div>;
   return (
     <div className="persona-picker">
       <h4 className="list-h">{L('Ustoz ovozi')}</h4>
@@ -48,28 +72,10 @@ export function PersonaPicker() {
           );
         })}
       </div>
-      {!kids && (
-        <p style={{ marginTop: 14 }}><label><input type="checkbox" checked={p.adult} onChange={(e) => {
-          const adult = e.target.checked;
-          if (!adult && p.tutorExtra === 'romantic') setTutorChoice(0, false); else setPersona(adult ? p.roastLevel : Math.min(p.roastLevel, 1), adult);
-        }} />  {L('Men 18 yoshdan oshganman va qattiq yoki romantik xarakterni o‘zim xohlayman')}</label></p>
-      )}
+      {adultBox}
       <p className="evidence">{L('Qattiq rejimlar (18+): ustoz xatolaringiz ustidan kuladi, shaxsiyatga tegmaydi.')}</p>
 
-      <div className="kids-box">
-        <h4 className="list-h"><Baby size={16} /> {L('Bolalar rejimi')}</h4>
-        <p className="muted" style={{ marginTop: 0 }}>{kids ? L('Yoqilgan. O‘chirish uchun ota-ona PIN kodini kiriting.') : L('Farzandingiz foydalansa yoqing: ustoz faqat bolalar xarakterida gaplashadi, 18+ xarakterlar yopiladi. 4 xonali PIN kod qo‘yasiz — usiz o‘chirib bo‘lmaydi.')}</p>
-        {pinOpen ? (
-          <div className="row">
-            <input className="input" type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={pin} placeholder={L('4 xonali PIN')} aria-label={L('PIN kod')} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))} />
-            <button type="button" className="btn primary sm" onClick={applyPin}>{kids ? L('O‘chirish') : L('Yoqish')}</button>
-            <button type="button" className="btn sm" onClick={() => { setPinOpen(false); setPin(''); setMsg(''); }}>{L('Bekor qilish')}</button>
-          </div>
-        ) : (
-          <button type="button" className="btn sm" onClick={() => { setPinOpen(true); setMsg(''); }}>{kids ? L('Bolalar rejimini o‘chirish') : L('Bolalar rejimini yoqish')}</button>
-        )}
-        {msg && <p className="evidence" role="status">{msg}</p>}
-      </div>
+      {kidsBox}
     </div>
   );
 }
